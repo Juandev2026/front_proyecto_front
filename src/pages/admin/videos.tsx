@@ -1,0 +1,579 @@
+import React, { useState, useEffect } from 'react';
+
+import {
+  PlusIcon,
+  TrashIcon,
+  PencilIcon,
+  XIcon,
+} from '@heroicons/react/outline';
+
+import AdminLayout from '../../components/AdminLayout';
+import {
+  cursoCategoriaService,
+  CategoriaGeneral,
+} from '../../services/cursoCategoriaService';
+import { cursoService, Curso } from '../../services/cursoService';
+import { temaService } from '../../services/temaService';
+
+const AdminVideos = () => {
+  const [courses, setCourses] = useState<Curso[]>([]);
+  const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const initialCourseState: Omit<Curso, 'id'> = {
+    nombre: '',
+    descripcion: '',
+    categoriaId: 0,
+    duracion: '',
+    idioma: '',
+    loQueAprenderas: '',
+    precio: 0,
+    precioOferta: 0,
+    imagenUrl: '',
+    numero: '',
+    temas: [],
+  };
+
+  const [currentCourse, setCurrentCourse] =
+    useState<Omit<Curso, 'id'>>(initialCourseState);
+
+  const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [coursesData, categoriesData] = await Promise.all([
+        cursoService.getAll(),
+        cursoCategoriaService.getAll(),
+      ]);
+      setCourses(coursesData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('¿Estás seguro de eliminar este curso?')) {
+      try {
+        await cursoService.delete(id);
+        setCourses(courses.filter((c) => c.id !== id));
+      } catch (error) {
+        console.error(error);
+        alert('Error al eliminar el curso');
+      }
+    }
+  };
+
+  const handleEdit = (course: Curso) => {
+    setCurrentCourse({
+      nombre: course.nombre,
+      descripcion: course.descripcion,
+      categoriaId: course.categoriaId,
+      duracion: course.duracion,
+      idioma: course.idioma,
+      loQueAprenderas: course.loQueAprenderas,
+      precio: course.precio,
+      precioOferta: course.precioOferta,
+      imagenUrl: course.imagenUrl,
+      numero: course.numero || '',
+      temas: course.temas || [],
+    });
+    setEditingId(course.id);
+    setDeletedTopicIds([]); // Reset deleted topics
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setCurrentCourse(initialCourseState);
+    setEditingId(null);
+    setSelectedImage(null);
+    setDeletedTopicIds([]);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // 1. Save Course First
+      let savedCourse: Curso;
+
+      // Prepare course data (excluding topics for the main update)
+      const courseData = { ...currentCourse };
+      // We don't send topics to course service anymore as it ignores them
+      // But we keep them in state to manage them separately
+
+      let dataToSend: Curso | Omit<Curso, 'id'> | FormData = courseData;
+
+      if (selectedImage) {
+        const formData = new FormData();
+        if (editingId) {
+          formData.append('id', String(editingId));
+        }
+        formData.append('nombre', courseData.nombre);
+        formData.append('descripcion', courseData.descripcion);
+        formData.append('categoriaId', String(courseData.categoriaId));
+        formData.append('duracion', courseData.duracion);
+        formData.append('idioma', courseData.idioma);
+        formData.append('loQueAprenderas', courseData.loQueAprenderas);
+        formData.append('precio', String(courseData.precio));
+        formData.append('precioOferta', String(courseData.precioOferta));
+        formData.append('numero', courseData.numero);
+        formData.append('image', selectedImage);
+        // We don't append topics here anymore
+
+        dataToSend = formData;
+      } else if (editingId) {
+        dataToSend = { ...courseData, id: editingId };
+      }
+
+      if (editingId) {
+        savedCourse = await cursoService.update(editingId, dataToSend as any);
+      } else {
+        savedCourse = await cursoService.create(dataToSend);
+      }
+
+      const courseId = savedCourse.id || editingId;
+
+      if (courseId) {
+        // 2. Manage Topics
+
+        // Create/Update existing topics
+        await Promise.all(
+          currentCourse.temas.map((tema) => {
+            const temaData = { ...tema, cursoId: courseId };
+            if (tema.id === 0) {
+              return temaService.create(temaData);
+            }
+            return temaService.update(tema.id, temaData);
+          })
+        );
+
+        // Delete removed topics
+        await Promise.all(deletedTopicIds.map((id) => temaService.delete(id)));
+      }
+
+      setIsModalOpen(false);
+      fetchData();
+      resetForm();
+    } catch (error) {
+      console.error(error);
+      alert('Error al guardar el curso');
+    }
+  };
+
+  // Helper for topics
+  const addTopic = () => {
+    setCurrentCourse({
+      ...currentCourse,
+      temas: [
+        ...currentCourse.temas,
+        { id: 0, nombre: '', descripcion: '', cursoId: 0 },
+      ],
+    });
+  };
+
+  const removeTopic = (index: number) => {
+    const newTemas = [...currentCourse.temas];
+    const temaToRemove = newTemas[index];
+
+    // If it's an existing topic (has ID), track it for deletion
+    if (temaToRemove && temaToRemove.id !== 0) {
+      setDeletedTopicIds([...deletedTopicIds, temaToRemove.id]);
+    }
+
+    newTemas.splice(index, 1);
+    setCurrentCourse({ ...currentCourse, temas: newTemas });
+  };
+
+  const updateTopic = (
+    index: number,
+    field: 'nombre' | 'descripcion',
+    value: string
+  ) => {
+    const newTemas = [...currentCourse.temas];
+    const tema = newTemas[index];
+    if (tema) {
+      newTemas[index] = { ...tema, [field]: value };
+      setCurrentCourse({ ...currentCourse, temas: newTemas });
+    }
+  };
+
+  const getCategoryName = (id: number) => {
+    return categories.find((c) => c.id === id)?.nombre || 'Sin categoría';
+  };
+
+  return (
+    <AdminLayout>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Gestión de Cursos</h1>
+        <button
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+        >
+          <PlusIcon className="w-5 h-5 mr-2" />
+          Nuevo Curso
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Título
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Categoría
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Precio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Duración
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center">
+                  Cargando...
+                </td>
+              </tr>
+            ) : (
+              courses.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {item.nombre}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {getCategoryName(item.categoriaId)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    S/ {item.precio}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.duracion}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white px-8 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold">
+                {editingId ? 'Editar Curso' : 'Agregar Nuevo Curso'}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="p-8 space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.nombre}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        nombre: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Categoría
+                  </label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.categoriaId}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        categoriaId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={0}>Seleccionar categoría</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.descripcion}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        descripcion: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Imagen del Curso
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setSelectedImage(e.target.files[0]);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Deja vacío para mantener la imagen actual (si estás
+                    editando) o usar URL.
+                  </p>
+                  <input
+                    type="text"
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent mt-2"
+                    value={currentCourse.imagenUrl}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        imagenUrl: e.target.value,
+                      })
+                    }
+                    placeholder="O ingresa una URL de imagen"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Número WhatsApp
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.numero}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        numero: e.target.value,
+                      })
+                    }
+                    placeholder="Ej: 51987654321"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Precio (S/)
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.precio}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          precio: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Precio Oferta (S/)
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.precioOferta}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          precioOferta: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Duración
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.duracion}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          duracion: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Idioma
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.idioma}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          idioma: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Learning Points */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lo que aprenderás (separar por saltos de línea)
+                </label>
+                <textarea
+                  rows={4}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={currentCourse.loQueAprenderas}
+                  onChange={(e) =>
+                    setCurrentCourse({
+                      ...currentCourse,
+                      loQueAprenderas: e.target.value,
+                    })
+                  }
+                  placeholder="- Punto 1&#10;- Punto 2&#10;- Punto 3"
+                />
+              </div>
+
+              {/* Topics (Temas) */}
+              <div>
+                <label className="block text-lg font-medium text-gray-900 mb-4">
+                  Temario
+                </label>
+                <div className="space-y-4">
+                  {currentCourse.temas.map((tema, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex gap-4 items-start"
+                    >
+                      <div className="flex-grow space-y-2">
+                        <input
+                          type="text"
+                          className="w-full border rounded px-2 py-1 font-medium"
+                          value={tema.nombre}
+                          onChange={(e) =>
+                            updateTopic(index, 'nombre', e.target.value)
+                          }
+                          placeholder="Nombre del tema"
+                        />
+                        <textarea
+                          className="w-full border rounded px-2 py-1 text-sm"
+                          value={tema.descripcion}
+                          onChange={(e) =>
+                            updateTopic(index, 'descripcion', e.target.value)
+                          }
+                          placeholder="Descripción del tema"
+                          rows={2}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeTopic(index)}
+                        className="text-red-500 hover:text-red-700 mt-1"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addTopic}
+                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-primary hover:text-primary transition-colors flex justify-center items-center"
+                  >
+                    <PlusIcon className="w-5 h-5 mr-2" /> Agregar Tema
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="mr-4 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors"
+                >
+                  Guardar Curso
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
+  );
+};
+
+export default AdminVideos;

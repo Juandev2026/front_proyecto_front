@@ -1,0 +1,611 @@
+{
+  "company": {
+    "name": "React landing page 2021",
+    "logo": "/assets/images/logo_principal.png"
+  },
+  "navigation": [
+    {
+      "name": "Inicio",
+      "href": "/"
+    },
+    {
+      "name": "Quiénes Somos",
+      "href": "/about"
+    },
+    {
+      "name": "Noticias",
+      "href": "/news"
+    },
+    {
+      "name": "Materiales",
+      "href": "/materials"
+    },
+    {
+      "name": "Cursos",
+      "href": "/videos"
+    }
+  ],
+  "callToAction": {
+    "text": "Get started",
+    "href": "#"
+  },
+  "mainHero": {
+    "title": "A",
+    "subtitle": "AAAA.",
+    "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.",
+    "img": "/assets/images/happyTeam.jpeg",
+    "images": [
+      "/assets/images/happyTeam.jpeg",
+      "/assets/images/product1.jpg",
+      "/assets/images/product2.jpg"
+    ],
+    "primaryAction": {
+      "text": "AWEADSADSA",
+      "href": "#"
+    },
+    "secondaryAction": {
+      "text": "Email us",
+      "href": "mailto:issaafakattan@gmail.com?subject=I like react landing page!"
+    }
+  },
+  "product": {
+    "title": "React landing page 2021",
+    "items": [
+      {
+        "title": "A plug n play template",
+        "description": "Just edit the config.json file with details about your company and voila your beautiful state of the art landing page is ready to go live! Remember to also update your assets, add any images you want to show to /assets/images and link them in the config.json",
+        "img": "/assets/images/product1.jpg"
+      },
+      {
+        "title": "Make it your own!",
+        "description": "Play around with the theme.ts file and configure the color palette to match the branding of your company! If you're feeling wild, maybe change some tailwind css as well!",
+        "img": "/assets/images/product2.jpg"
+      }
+    ]
+  },
+  "features": {
+    "title": "Latest & greatest ",
+    "subtitle": "All the best technologies out there!",
+    "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.",
+    "items": [
+      {
+        "name": "React.js",
+        "description": "React is a free and open-source front-end JavaScript library for building user interfaces or UI components.",
+        "icon": "/assets/images/react.png"
+      },
+      {
+        "name": "Tailwind",
+        "description": "Tailwind CSS is a highly customizable, low-level CSS framework for quickly creating beautiful designs without any annoying opinionated stylesheet nonsense.",
+        "icon": "/assets/images/tailwindcss.svg"
+      },
+      {
+        "name": "Next.js",
+        "description": "Next.js is a framework for server-rendered React applications using Next.js.",
+        "icon": "/assets/images/nextjs.svg"
+      },
+      {
+        "name": "Typescript",
+        "description": "TypeScript is a programming language developed and maintained by Microsoft.",
+        "icon": "/assets/images/ts.png"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Pricing",
+    "items": [
+      {
+        "name": "Free",
+        "price": "$0",
+        "priceDetails": "for one user",
+        "features": [
+          "1 user",
+          "Basic Support",
+          "1 GB of storage",
+          "Email support"
+        ]
+      },
+      {
+        "name": "Pro",
+        "price": "$15",
+        "priceDetails": "per user",
+
+        "features": [
+          "5 users",
+          "Priority Support",
+          "10 GB of storage",
+          "Phone and Email support"
+        ]
+      },
+      {
+        "name": "Enterprise",
+        "price": "$29",
+        "priceDetails": "per user",
+        "features": [
+          "50 users",
+          "24/7 Support",
+          "100 GB of storage",
+          "Phone and Email support"
+        ]
+      }
+    ]
+  },
+  "about": {
+    "sections": [
+      {
+        "name": "Features",
+        "href": "#"
+      },
+      {
+        "name": "Pricing",
+        "href": "#"
+      },
+      {
+        "name": "Support",
+        "href": "#"
+      },
+      {
+        "name": "About",
+        "href": "#"
+      }
+    ],
+    "socialMedia": {
+      "github": "https://github.com/issaafalkattan",
+      "twitter": "https://twitter.com/issaafalkattan",
+      "linkedin": "https://www.linkedin.com/in/issaafalkattan/"
+    }
+  },
+  "newsPage": {
+    "featured": [
+      {
+        "title": "REVOLUCIÓN EDUCATIVA 2025: NUEVAS METODOLOGÍAS",
+        "category": "Educación",
+        "description": "Descubre cómo las nuevas tecnologías están transformando el aula y mejorando el aprendizaje significativo en todos los niveles.",
+        "date": "Junio 5, 2025",
+        "author": "Juan Avend",
+        "image": "/assets/images/happyTeam.jpeg"
+      }
+    ],
+    "current": [
+      {
+        "title": "PLAZAS PRELIMINARES PARA LA REASIGNACIÓN DOCENTE 2025",
+        "category": "Convocatorias",
+        "description": "El Ministerio de Educación ya ha publicado el reporte preliminar de plazas disponibles para el proceso de reasignación.",
+        "date": "Junio 4, 2025",
+        "author": "Grupo LD",
+        "image": "/assets/images/product1.jpg"
+      },
+      {
+        "title": "REASIGNACIÓN DOCENTE 2025: DESCARGA LOS ANEXOS",
+        "category": "Trámites",
+        "description": "Todo lo que necesitas saber para presentar tu expediente correctamente y sin contratiempos.",
+        "date": "Junio 4, 2025",
+        "author": "Grupo LD",
+        "image": "/assets/images/product2.jpg"
+      },
+      {
+        "title": "CRONOGRAMA 2025 – PROCESO DE REASIGNACIÓN",
+        "category": "Noticias",
+        "description": "Conoce las fechas clave para no perder ninguna oportunidad en este nuevo proceso.",
+        "date": "Junio 3, 2025",
+        "author": "Grupo LD",
+        "image": "/assets/images/product1.jpg"
+      },
+      {
+        "title": "ANEXOS PARA LA REASIGNACIÓN DOCENTE 2025",
+        "category": "Recursos",
+        "description": "Descarga aquí todos los formatos necesarios para tu postulación por interés personal.",
+        "date": "Junio 2, 2025",
+        "author": "Grupo LD",
+        "image": "/assets/images/product2.jpg"
+      }
+    ],
+    "trends": [
+      {
+        "title": "Inteligencia Artificial en el Aula",
+        "link": "#"
+      },
+      {
+        "title": "Nuevas rúbricas de evaluación",
+        "link": "#"
+      },
+      {
+        "title": "Capacitaciones gratuitas MINEDU",
+        "link": "#"
+      },
+      {
+        "title": "Bienestar socioemocional docente",
+        "link": "#"
+      },
+      {
+        "title": "Estrategias de gamificación",
+        "link": "#"
+      }
+    ]
+  },
+  "materialsPage": {
+    "categories": [
+      {
+        "id": "guias",
+        "title": "Guías y Manuales",
+        "description": "Documentos oficiales y guías paso a paso para docentes.",
+        "items": [
+          {
+            "title": "Guía de Planificación Curricular 2025",
+            "description": "Estrategias y formatos para la programación anual y unidades didácticas.",
+            "format": "PDF",
+            "size": "2.5 MB",
+            "link": "#"
+          },
+          {
+            "title": "Manual de Evaluación Formativa",
+            "description": "Herramientas e instrumentos para evaluar competencias en el aula.",
+            "format": "PDF",
+            "size": "1.8 MB",
+            "link": "#"
+          },
+          {
+            "title": "Protocolos de Convivencia Escolar",
+            "description": "Normativa y procedimientos para la gestión de la convivencia.",
+            "format": "PDF",
+            "size": "3.1 MB",
+            "link": "#"
+          },
+          {
+            "title": "Guía de Tutoría y Orientación Educativa",
+            "description": "Lineamientos para la acción tutorial en las instituciones educativas.",
+            "format": "PDF",
+            "size": "4.2 MB",
+            "link": "#"
+          },
+          {
+            "title": "Manual de Gestión Escolar",
+            "description": "Orientaciones para los directivos de las instituciones educativas.",
+            "format": "PDF",
+            "size": "5.5 MB",
+            "link": "#"
+          },
+          {
+            "title": "Guía para la Inclusión Educativa",
+            "description": "Estrategias para atender a la diversidad en el aula.",
+            "format": "PDF",
+            "size": "2.1 MB",
+            "link": "#"
+          },
+          {
+            "title": "Manual de Uso de TIC en el Aula",
+            "description": "Recursos digitales para mejorar el proceso de enseñanza-aprendizaje.",
+            "format": "PDF",
+            "size": "3.8 MB",
+            "link": "#"
+          }
+        ]
+      },
+      {
+        "id": "plantillas",
+        "title": "Plantillas Editables",
+        "description": "Recursos listos para usar y adaptar a tus necesidades.",
+        "items": [
+          {
+            "title": "Formato de Sesión de Aprendizaje",
+            "description": "Plantilla Word con todos los momentos pedagógicos.",
+            "format": "DOCX",
+            "size": "500 KB",
+            "link": "#"
+          },
+          {
+            "title": "Registro Auxiliar Automatizado",
+            "description": "Excel con fórmulas para el cálculo de promedios y niveles de logro.",
+            "format": "XLSX",
+            "size": "1.2 MB",
+            "link": "#"
+          },
+          {
+            "title": "Ficha de Monitoreo Docente",
+            "description": "Instrumento para la observación de la práctica pedagógica.",
+            "format": "DOCX",
+            "size": "300 KB",
+            "link": "#"
+          },
+          {
+            "title": "Plantilla de Informe Pedagógico",
+            "description": "Modelo para la elaboración de informes de progreso del estudiante.",
+            "format": "DOCX",
+            "size": "450 KB",
+            "link": "#"
+          },
+          {
+            "title": "Formato de Planificación Anual",
+            "description": "Esquema para organizar las unidades didácticas del año escolar.",
+            "format": "XLSX",
+            "size": "800 KB",
+            "link": "#"
+          },
+          {
+            "title": "Plantilla de Rúbrica de Evaluación",
+            "description": "Matriz editable para crear rúbricas de evaluación.",
+            "format": "DOCX",
+            "size": "350 KB",
+            "link": "#"
+          }
+        ]
+      },
+      {
+        "id": "normativa",
+        "title": "Normativa Vigente",
+        "description": "Leyes, decretos y resoluciones del sector educación.",
+        "items": [
+          {
+            "title": "Ley de Reforma Magisterial",
+            "description": "Texto actualizado de la Ley N° 29944 y su reglamento.",
+            "format": "PDF",
+            "size": "4.5 MB",
+            "link": "#"
+          },
+          {
+            "title": "Currículo Nacional de Educación Básica",
+            "description": "Documento marco de la política educativa nacional.",
+            "format": "PDF",
+            "size": "8.2 MB",
+            "link": "#"
+          },
+          {
+            "title": "Reglamento de la Ley General de Educación",
+            "description": "Normas reglamentarias de la Ley N° 28044.",
+            "format": "PDF",
+            "size": "3.5 MB",
+            "link": "#"
+          },
+          {
+            "title": "Resolución Ministerial N° 587-2023-MINEDU",
+            "description": "Lineamientos para el desarrollo del año escolar 2024.",
+            "format": "PDF",
+            "size": "1.5 MB",
+            "link": "#"
+          }
+        ]
+      }
+    ]
+  },
+  "videosPage": {
+    "title": "Nuestros Cursos",
+    "subtitle": "Aprende con los mejores expertos",
+    "categories": ["Clases", "Tutoriales", "Entrevistas"],
+    "items": [
+      {
+        "id": "comprension-lectora",
+        "title": "Estrategias de Comprensión Lectora",
+        "description": "Domina las técnicas más efectivas para mejorar la comprensión lectora en tus estudiantes. Curso completo con material descargable.",
+        "category": "Clases",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/product1.jpg",
+        "price": 120,
+        "originalPrice": 250,
+        "rating": 4.8,
+        "students": 1540,
+        "lastUpdated": "29/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Comprenderás a fondo el perfil y funciones de los cargos directivos.",
+          "Dominarás los lineamientos del Marco del Buen Desempeño.",
+          "Resolverás con precisión preguntas tipo Minedu.",
+          "Aplicarás estrategias efectivas para la gestión escolar."
+        ],
+        "includes": [
+          "50 horas de formación intensiva",
+          "Material descargable y actualizado",
+          "Acompañamiento y grupo privado",
+          "Clases virtuales en vivo vía Zoom",
+          "Certificación oficial para escalafón",
+          "Acceso inmediato al aula virtual"
+        ],
+        "syllabus": [
+          {
+            "title": "Gestión Educativa",
+            "items": [
+              "Liderazgo Directivo",
+              "Monitoreo de la Práctica Pedagógica",
+              "Acompañamiento Pedagógico",
+              "Resolución de Conflictos"
+            ]
+          },
+          {
+            "title": "Gestión Pública",
+            "items": [
+              "Administración Pública",
+              "Presupuesto Público",
+              "Contrataciones del Estado"
+            ]
+          },
+          {
+            "title": "Comprensión Lectora",
+            "items": [
+              "Niveles de Comprensión",
+              "Estrategias de Lectura",
+              "Tipos de Textos"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chatgpt-docentes",
+        "title": "ChatGPT para Docentes: Guía Completa",
+        "description": "Aprende a integrar la Inteligencia Artificial en tu planificación curricular y creación de evaluaciones de manera ética y eficiente.",
+        "category": "Tutoriales",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/product2.jpg",
+        "price": 80,
+        "originalPrice": 160,
+        "rating": 4.9,
+        "students": 850,
+        "lastUpdated": "25/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Crearás planificaciones curriculares en minutos.",
+          "Diseñarás rúbricas de evaluación personalizadas.",
+          "Generarás material didáctico creativo.",
+          "Automatizarás tareas administrativas repetitivas."
+        ],
+        "includes": [
+          "10 horas de video bajo demanda",
+          "Prompts listos para copiar y pegar",
+          "Acceso de por vida",
+          "Certificado de finalización"
+        ],
+        "syllabus": [
+          {
+            "title": "Introducción a la IA",
+            "items": ["Qué es ChatGPT", "Creación de cuenta", "Interfaz básica"]
+          },
+          {
+            "title": "Planificación Curricular",
+            "items": [
+              "Creación de unidades",
+              "Sesiones de aprendizaje",
+              "Proyectos integradores"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "futuro-educacion",
+        "title": "El Futuro de la Educación en el Perú",
+        "description": "Análisis profundo de las tendencias educativas y los desafíos del sistema actual con expertos del sector.",
+        "category": "Entrevistas",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/happyTeam.jpeg",
+        "price": 0,
+        "originalPrice": 0,
+        "rating": 4.7,
+        "students": 3200,
+        "lastUpdated": "20/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Conocerás las últimas tendencias educativas.",
+          "Entenderás los desafíos del sistema peruano.",
+          "Escucharás a expertos del sector."
+        ],
+        "includes": [
+          "Acceso gratuito",
+          "Entrevistas exclusivas",
+          "Material complementario"
+        ],
+        "syllabus": [
+          {
+            "title": "Tendencias Globales",
+            "items": ["Educación Híbrida", "Competencias Digitales"]
+          },
+          {
+            "title": "Realidad Nacional",
+            "items": ["Brecha Digital", "Infraestructura Educativa"]
+          }
+        ]
+      },
+      {
+        "id": "evaluacion-formativa",
+        "title": "Evaluación Formativa en el Aula",
+        "description": "Implementa sistemas de evaluación continua que potencien el aprendizaje. Incluye rúbricas y ejemplos prácticos.",
+        "category": "Clases",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/product1.jpg",
+        "price": 100,
+        "originalPrice": 200,
+        "rating": 4.6,
+        "students": 1200,
+        "lastUpdated": "15/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Diseñarás instrumentos de evaluación formativa.",
+          "Brindarás retroalimentación efectiva.",
+          "Mejorarás el aprendizaje de tus estudiantes."
+        ],
+        "includes": [
+          "20 horas de curso",
+          "Banco de rúbricas",
+          "Certificado oficial"
+        ],
+        "syllabus": [
+          {
+            "title": "Fundamentos",
+            "items": [
+              "Qué es la evaluación formativa",
+              "Diferencias con la sumativa"
+            ]
+          },
+          {
+            "title": "Instrumentos",
+            "items": ["Listas de cotejo", "Rúbricas", "Portafolios"]
+          }
+        ]
+      },
+      {
+        "id": "rubricas-automatizadas",
+        "title": "Diseño de Rúbricas Automatizadas",
+        "description": "Optimiza tu tiempo aprendiendo a crear herramientas de evaluación digitales que se califican automáticamente.",
+        "category": "Tutoriales",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/product2.jpg",
+        "price": 50,
+        "originalPrice": 100,
+        "rating": 4.9,
+        "students": 900,
+        "lastUpdated": "10/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Crearás rúbricas en Google Sheets.",
+          "Automatizarás el cálculo de notas.",
+          "Enviarás resultados por correo automáticamente."
+        ],
+        "includes": [
+          "Plantillas descargables",
+          "Tutoriales paso a paso",
+          "Soporte por correo"
+        ],
+        "syllabus": [
+          {
+            "title": "Google Sheets para Docentes",
+            "items": ["Fórmulas básicas", "Formato condicional"]
+          },
+          {
+            "title": "Automatización",
+            "items": ["Scripts básicos", "Complementos útiles"]
+          }
+        ]
+      },
+      {
+        "id": "innovacion-pedagogica",
+        "title": "Innovación Pedagógica: Casos de Éxito",
+        "description": "Inspírate con historias reales de docentes que han transformado sus aulas con metodologías innovadoras.",
+        "category": "Entrevistas",
+        "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "image": "/assets/images/happyTeam.jpeg",
+        "price": 0,
+        "originalPrice": 0,
+        "rating": 4.8,
+        "students": 2500,
+        "lastUpdated": "05/11/2025",
+        "language": "Español",
+        "learningPoints": [
+          "Conocerás metodologías activas.",
+          "Verás ejemplos reales de aplicación.",
+          "Te motivarás para innovar."
+        ],
+        "includes": ["Acceso gratuito", "Comunidad de docentes innovadores"],
+        "syllabus": [
+          {
+            "title": "Metodologías Activas",
+            "items": ["ABP", "Flipped Classroom", "Gamificación"]
+          },
+          {
+            "title": "Casos Reales",
+            "items": ["Experiencias en primaria", "Experiencias en secundaria"]
+          }
+        ]
+      }
+    ]
+  },
+  "socials": {
+    "tiktok": "https://www.tiktok.com/@juan_avend?_r=1&_t=ZS-91mKzA4uUbJ",
+    "facebook": "https://www.facebook.com/share/17qdHyJ98z/",
+    "youtube": "https://youtube.com/@juancarlosavend?si=axUc_h4ZQPWyFqcK"
+  }
+}
