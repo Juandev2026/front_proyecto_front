@@ -35,6 +35,7 @@ export interface LoginResponse {
   fullName: string;
   email: string;
   role: string;
+  id: number;
 }
 
 import { API_BASE_URL } from '../config/api';

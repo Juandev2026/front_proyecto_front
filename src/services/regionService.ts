@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/Regiones`;
 
@@ -7,8 +8,6 @@ export interface Region {
   nombre: string;
 }
 
-import { getAuthHeaders } from '../utils/apiUtils';
-
 export const regionService = {
   getAll: async (): Promise<Region[]> => {
     try {
@@ -16,20 +15,70 @@ export const regionService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener regiones - ' + response.status);
+        throw new Error('Error al obtener regiones');
       }
       return await response.json();
     } catch (error) {
-      console.warn('API /Regiones unreachable or unauthorized (401). Using fallback data.');
-      // Fallback data
-      return [
-         { id: 1, nombre: 'Lima' },
-         { id: 2, nombre: 'Arequipa' },
-         { id: 3, nombre: 'Cusco' },
-         { id: 4, nombre: 'La Libertad' },
-         { id: 5, nombre: 'Piura' },
-         { id: 6, nombre: 'Junín' }
-      ];
+      console.error('Error fetching regions:', error);
+      throw error;
+    }
+  },
+
+  create: async (region: { nombre: string }): Promise<Region> => {
+    try {
+      const payload = {
+        id: 0,
+        nombre: region.nombre,
+      };
+      
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear región');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating region:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: number, region: { nombre: string }): Promise<void> => {
+    try {
+      const payload = {
+        id: id,
+        nombre: region.nombre,
+      };
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar región');
+      }
+    } catch (error) {
+      console.error('Error updating region:', error);
+      throw error;
+    }
+  },
+
+  delete: async (id: number): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar región');
+      }
+    } catch (error) {
+      console.error('Error deleting region:', error);
+      throw error;
     }
   },
 };

@@ -16,6 +16,7 @@ const AdminNews = () => {
     fecha: new Date().toISOString(),
     imageUrl: '',
     esDestacado: false,
+    usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -92,6 +93,16 @@ const AdminNews = () => {
       return;
     }
 
+    if (!formData.usuarioEdicionId || Number(formData.usuarioEdicionId) <= 0) {
+      // Try to recover from localStorage again just in case
+       const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
+       if (storedId <= 0) {
+          alert('Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente para actualizar sus credenciales.');
+          return;
+       }
+       formData.usuarioEdicionId = storedId;
+    }
+
     try {
       if (imageFile) {
         const dataToSend = new FormData();
@@ -103,6 +114,7 @@ const AdminNews = () => {
           new Date(formData.fecha || new Date()).toISOString()
         );
         dataToSend.append('esDestacado', String(formData.esDestacado || false));
+        dataToSend.append('usuarioEdicionId', String(formData.usuarioEdicionId || 0));
         dataToSend.append('image', imageFile);
 
         if (editingId) {
@@ -120,6 +132,7 @@ const AdminNews = () => {
           fecha: new Date(formData.fecha || new Date()).toISOString(),
           imageUrl: formData.imageUrl || null, // Send null if empty string
           esDestacado: formData.esDestacado || false,
+          usuarioEdicionId: formData.usuarioEdicionId || 0,
         };
 
         if (editingId) {
