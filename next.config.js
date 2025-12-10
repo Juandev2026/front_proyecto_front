@@ -21,7 +21,7 @@ module.exports = withBundleAnalyzer({
     return [
       {
         source: '/api/:path*',
-        destination: 'https://liderdocente-api-4.onrender.com/api/:path*',
+        destination: 'https://proyecto-bd-juan.onrender.com/api/:path*',
       },
     ];
   },

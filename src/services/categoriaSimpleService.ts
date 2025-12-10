@@ -1,31 +1,31 @@
-export interface Categoria {
+export interface CategoriaSimple {
   id: number;
   nombre: string;
 }
 
 import { API_BASE_URL } from '../config/api';
 
-const API_URL = `${API_BASE_URL}/CategoriasCursos`;
+const API_URL = `${API_BASE_URL}/CategoriasMateriales`;
 
 import { getAuthHeaders } from '../utils/apiUtils';
 
-export const categoriaService = {
-  getAll: async (): Promise<Categoria[]> => {
+export const categoriaSimpleService = {
+  getAll: async (): Promise<CategoriaSimple[]> => {
     try {
       const response = await fetch(API_URL, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener categorías');
+        throw new Error('Error al obtener categorías simples');
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching simple categories:', error);
       throw error;
     }
   },
 
-  create: async (categoria: { nombre: string }): Promise<Categoria> => {
+  create: async (categoria: { nombre: string }): Promise<CategoriaSimple> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -33,11 +33,11 @@ export const categoriaService = {
         body: JSON.stringify(categoria),
       });
       if (!response.ok) {
-        throw new Error('Error al crear categoría');
+        throw new Error('Error al crear categoría simple');
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating category:', error);
+      console.error('Error creating simple category:', error);
       throw error;
     }
   },
@@ -50,10 +50,10 @@ export const categoriaService = {
         body: JSON.stringify(categoria),
       });
       if (!response.ok) {
-        throw new Error('Error al actualizar categoría');
+        throw new Error('Error al actualizar categoría simple');
       }
     } catch (error) {
-      console.error('Error updating category:', error);
+      console.error('Error updating simple category:', error);
       throw error;
     }
   },
@@ -65,10 +65,10 @@ export const categoriaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al eliminar categoría');
+        throw new Error('Error al eliminar categoría simple');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
+      console.error('Error deleting simple category:', error);
       throw error;
     }
   },

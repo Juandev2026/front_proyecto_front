@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
-import { categoriaService, Categoria } from '../../services/categoriaService';
+import { categoriaSimpleService, CategoriaSimple } from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
-
+import { modalidadService, Modalidad } from '../../services/modalidadService';
+import { nivelService, Nivel } from '../../services/nivelService';
+// Line 8 removed
 const AdminMaterials = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [categories, setCategories] = useState<CategoriaSimple[]>([]);
+  // Line 13 removed
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,18 +22,23 @@ const AdminMaterials = () => {
     descripcion: '',
     url: '',
     categoriaId: 0,
+    modalidadId: 0,
+    nivelId: 0,
+    usuarioEdicionId: 0,
   });
   const [file, setFile] = useState<File | null>(null);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [materialsData, categoriesData] = await Promise.all([
+      const [materialsData, categoriesData, modalidadesData] = await Promise.all([
         materialService.getAll(),
-        categoriaService.getAll(),
+        categoriaSimpleService.getAll(),
+        modalidadService.getAll(),
       ]);
       setMaterials(materialsData);
       setCategories(categoriesData);
+      setModalidades(modalidadesData);
     } catch (err) {
       setError('Error loading data');
       console.error(err);
@@ -40,6 +50,14 @@ const AdminMaterials = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (newMaterial.modalidadId) {
+      nivelService.getByModalidadId(newMaterial.modalidadId).then(setNiveles).catch(console.error);
+    } else {
+      setNiveles([]);
+    }
+  }, [newMaterial.modalidadId]);
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este material?')) {
@@ -60,6 +78,9 @@ const AdminMaterials = () => {
       descripcion: item.descripcion,
       url: item.url,
       categoriaId: item.categoriaId,
+      modalidadId: item.modalidadId,
+      nivelId: item.nivelId,
+      usuarioEdicionId: item.usuarioEdicionId,
     });
     setFile(null);
     setIsModalOpen(true);
@@ -73,6 +94,9 @@ const AdminMaterials = () => {
         formData.append('titulo', newMaterial.titulo);
         formData.append('descripcion', newMaterial.descripcion);
         formData.append('categoriaId', String(newMaterial.categoriaId));
+        formData.append('modalidadId', String(newMaterial.modalidadId));
+        formData.append('nivelId', String(newMaterial.nivelId));
+        formData.append('usuarioEdicionId', String(newMaterial.usuarioEdicionId));
         formData.append('file', file);
         if (newMaterial.url) formData.append('url', newMaterial.url);
 
@@ -100,6 +124,9 @@ const AdminMaterials = () => {
         descripcion: '',
         url: '',
         categoriaId: 0,
+        modalidadId: 0,
+        nivelId: 0,
+        usuarioEdicionId: 0,
       });
       setFile(null);
       setEditingId(null);
@@ -144,6 +171,9 @@ const AdminMaterials = () => {
               descripcion: '',
               url: '',
               categoriaId: 0,
+              modalidadId: 0,
+              nivelId: 0,
+              usuarioEdicionId: 0,
             });
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -318,6 +348,55 @@ const AdminMaterials = () => {
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Modalidad
+                </label>
+                <select
+                  required
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newMaterial.modalidadId}
+                  onChange={(e) =>
+                    setNewMaterial({
+                      ...newMaterial,
+                      modalidadId: Number(e.target.value),
+                    })
+                  }
+                >
+                  <option value={0}>Seleccionar...</option>
+                  {modalidades.map((mod) => (
+                    <option key={mod.id} value={mod.id}>
+                      {mod.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Nivel
+                </label>
+                <select
+                  required
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newMaterial.nivelId}
+                  onChange={(e) =>
+                    setNewMaterial({
+                      ...newMaterial,
+                      nivelId: Number(e.target.value),
+                    })
+                  }
+                  disabled={!newMaterial.modalidadId}
+                >
+                  <option value={0}>Seleccionar...</option>
+                  {niveles.map((nivel) => (
+                    <option key={nivel.id} value={nivel.id}>
+                      {nivel.nombre}
                     </option>
                   ))}
                 </select>

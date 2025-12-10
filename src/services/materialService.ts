@@ -4,6 +4,9 @@ export interface Material {
   descripcion: string;
   url: string;
   categoriaId: number;
+  modalidadId: number;
+  nivelId: number;
+  usuarioEdicionId: number;
 }
 
 import { API_BASE_URL } from '../config/api';

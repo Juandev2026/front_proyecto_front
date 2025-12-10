@@ -1,83 +1,64 @@
 import React, { useState, useEffect, useCallback } from 'react';
-
-import {
-  PencilIcon,
-  TrashIcon,
-  PlusIcon,
-  XIcon,
-} from '@heroicons/react/outline';
-
+import { PencilIcon, TrashIcon, PlusIcon, XIcon } from '@heroicons/react/outline';
 import AdminLayout from '../../components/AdminLayout';
-import { categoriaService } from '../../services/categoriaService';
-import { categoriaGeneralService } from '../../services/categoriaGeneralService';
-import { categoriaSimpleService } from '../../services/categoriaSimpleService';
+import { modalidadService, Modalidad } from '../../services/modalidadService';
+import { nivelService, Nivel } from '../../services/nivelService';
 
-// Unified Interface for UI handling
-interface CategoryItem {
-  id: number;
-  nombre: string;
-}
+type TabType = 'modalidades' | 'niveles';
 
-type CategoryType = 'standard' | 'general' | 'simple';
-
-const AdminCategories = () => {
-  const [activeTab, setActiveTab] = useState<CategoryType>('standard');
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
+const AcademicStructure = () => {
+  const [activeTab, setActiveTab] = useState<TabType>('modalidades');
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ nombre: '' });
 
-  // Fetch logic based on active tab
-  const fetchCategories = useCallback(async () => {
+  // Form State
+  const [formData, setFormData] = useState({
+    nombre: '',
+    modalidadId: 0,
+  });
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let data: CategoryItem[] = [];
-      switch (activeTab) {
-        case 'standard':
-          data = await categoriaService.getAll();
-          break;
-        case 'general':
-          data = await categoriaGeneralService.getAll();
-          break;
-        case 'simple':
-          data = await categoriaSimpleService.getAll();
-          break;
-        default:
-          break;
+      if (activeTab === 'modalidades') {
+        const data = await modalidadService.getAll();
+        setModalidades(data);
+      } else {
+        const [nivelesData, modalidadesData] = await Promise.all([
+          nivelService.getAll(),
+          modalidadService.getAll(),
+        ]);
+        setNiveles(nivelesData);
+        setModalidades(modalidadesData);
       }
-      setCategories(data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   }, [activeTab]);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    fetchData();
+  }, [fetchData]);
 
   const handleCreate = async () => {
     try {
-      switch (activeTab) {
-        case 'standard':
-          await categoriaService.create({ nombre: formData.nombre });
-          break;
-        case 'general':
-          await categoriaGeneralService.create({ nombre: formData.nombre });
-          break;
-        case 'simple':
-          await categoriaSimpleService.create({ nombre: formData.nombre });
-          break;
-        default:
-          break;
+      if (activeTab === 'modalidades') {
+        await modalidadService.create({ nombre: formData.nombre });
+      } else {
+        await nivelService.create({
+          nombre: formData.nombre,
+          modalidadId: formData.modalidadId,
+        });
       }
-      setIsModalOpen(false);
-      setFormData({ nombre: '' });
-      fetchCategories();
+      closeModal();
+      fetchData();
     } catch (error) {
-      alert('Error creating category');
+      alert('Error creating item');
       console.error(error);
     }
   };
@@ -85,83 +66,58 @@ const AdminCategories = () => {
   const handleUpdate = async () => {
     if (!editingId) return;
     try {
-      switch (activeTab) {
-        case 'standard':
-          await categoriaService.update(editingId, {
-            nombre: formData.nombre,
-          });
-          break;
-        case 'general':
-          await categoriaGeneralService.update(editingId, {
-            // Some APIs might expect ID in body, passing it to be safe as per previous code
-            // but the service interface I wrote takes { nombre } for update payload usually? 
-            // Previous code passed ID. I'll adhere to service signature or previous pattern.
-            // My new service signature for update is (id, {nombre}). 
-            // Previous cursoCategoriaService.update took {id, nombre}.
-            // My new services strictly take {nombre} in the body for update but URL has ID. 
-            // Let's pass {nombre} only as my new service expects that.
-             nombre: formData.nombre,
-          });
-          break;
-        case 'simple':
-          await categoriaSimpleService.update(editingId, {
-             nombre: formData.nombre,
-          });
-          break;
-        default:
-          break;
+      if (activeTab === 'modalidades') {
+        await modalidadService.update(editingId, { nombre: formData.nombre });
+      } else {
+        await nivelService.update(editingId, {
+          nombre: formData.nombre,
+          modalidadId: formData.modalidadId,
+        });
       }
-      setIsModalOpen(false);
-      setEditingId(null);
-      setFormData({ nombre: '' });
-      fetchCategories();
+      closeModal();
+      fetchData();
     } catch (error) {
-      alert('Error updating category');
+      alert('Error updating item');
       console.error(error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta categoría?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar este elemento?')) return;
     try {
-      switch (activeTab) {
-        case 'standard':
-          await categoriaService.delete(id);
-          break;
-        case 'general':
-          await categoriaGeneralService.delete(id);
-          break;
-        case 'simple':
-          await categoriaSimpleService.delete(id);
-          break;
-        default:
-          break;
+      if (activeTab === 'modalidades') {
+        await modalidadService.delete(id);
+      } else {
+        await nivelService.delete(id);
       }
-      fetchCategories();
+      fetchData();
     } catch (error) {
-      alert('Error deleting category');
+      alert('Error deleting item');
       console.error(error);
     }
   };
 
-  const openModal = (category?: CategoryItem) => {
-    if (category) {
-      setEditingId(category.id);
-      setFormData({ nombre: category.nombre });
+  const openModal = (item?: Modalidad | Nivel) => {
+    if (item) {
+      setEditingId(item.id);
+      setFormData({
+        nombre: item.nombre,
+        modalidadId: (item as Nivel).modalidadId || 0,
+      });
     } else {
       setEditingId(null);
-      setFormData({ nombre: '' });
+      setFormData({ nombre: '', modalidadId: 0 });
     }
     setIsModalOpen(true);
   };
 
-  const TabButton = ({
-    type,
-    label,
-  }: {
-    type: CategoryType;
-    label: string;
-  }) => (
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData({ nombre: '', modalidadId: 0 });
+  };
+
+  const TabButton = ({ type, label }: { type: TabType; label: string }) => (
     <button
       onClick={() => setActiveTab(type)}
       className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
@@ -178,23 +134,21 @@ const AdminCategories = () => {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          Gestión de Categorías
+          Estructura Académica
         </h1>
         <button
           onClick={() => openModal()}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
-          Nueva Categoría
+          {activeTab === 'modalidades' ? 'Nueva Modalidad' : 'Nuevo Nivel'}
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <div className="flex space-x-4">
-          <TabButton type="standard" label="Categoría de Videos" />
-          <TabButton type="general" label="Categoría de Noticias" />
-          <TabButton type="simple" label="Categoría de Materiales" />
+          <TabButton type="modalidades" label="Modalidades" />
+          <TabButton type="niveles" label="Niveles" />
         </div>
       </div>
 
@@ -208,6 +162,11 @@ const AdminCategories = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Nombre
               </th>
+              {activeTab === 'niveles' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Modalidad
+                </th>
+              )}
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -216,21 +175,21 @@ const AdminCategories = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                   Cargando...
                 </td>
               </tr>
             )}
-            {!loading && categories.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  No hay categorías registradas.
-                </td>
-              </tr>
-            )}
             {!loading &&
-              categories.length > 0 &&
-              categories.map((item) => (
+              (activeTab === 'modalidades' ? modalidades : niveles).length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                    No hay registros.
+                  </td>
+                </tr>
+              )}
+            {!loading &&
+              (activeTab === 'modalidades' ? modalidades : niveles).map((item) => (
                 <tr key={item.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.id}
@@ -238,6 +197,11 @@ const AdminCategories = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.nombre}
                   </td>
+                  {activeTab === 'niveles' && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {modalidades.find((m) => m.id === (item as Nivel).modalidadId)?.nombre || (item as Nivel).modalidad?.nombre || '-'}
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => openModal(item)}
@@ -258,16 +222,16 @@ const AdminCategories = () => {
         </table>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
-                {editingId ? 'Editar Categoría' : 'Nueva Categoría'}
+                {editingId ? 'Editar' : 'Crear'}{' '}
+                {activeTab === 'modalidades' ? 'Modalidad' : 'Nivel'}
               </h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={closeModal}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XIcon className="w-6 h-6" />
@@ -277,14 +241,10 @@ const AdminCategories = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                if (editingId) {
-                  handleUpdate();
-                } else {
-                  handleCreate();
-                }
+                editingId ? handleUpdate() : handleCreate();
               }}
             >
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Nombre
                 </label>
@@ -298,10 +258,37 @@ const AdminCategories = () => {
                   }
                 />
               </div>
+
+              {activeTab === 'niveles' && (
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Modalidad
+                  </label>
+                  <select
+                    required
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.modalidadId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        modalidadId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={0}>Seleccionar...</option>
+                    {modalidades.map((mod) => (
+                      <option key={mod.id} value={mod.id}>
+                        {mod.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeModal}
                   className="mr-4 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
                 >
                   Cancelar
@@ -321,4 +308,4 @@ const AdminCategories = () => {
   );
 };
 
-export default AdminCategories;
+export default AcademicStructure;

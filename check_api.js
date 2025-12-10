@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const API_URL = 'https://liderdocente-api-4.onrender.com/api/Noticias';
+const API_URL = 'https://proyecto-bd-juan.onrender.com/api/Noticias';
 const TOKEN = '3231232141346';
 
 const headers = {

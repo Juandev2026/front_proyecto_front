@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
-import { categoriaService, Categoria } from '../../services/categoriaService';
+import { categoriaGeneralService, CategoriaGeneral } from '../../services/categoriaGeneralService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 
 const AdminNews = () => {
   const [news, setNews] = useState<Noticia[]>([]);
-  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<Noticia>>({
@@ -30,7 +30,7 @@ const AdminNews = () => {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const data = await categoriaService.getAll();
+      const data = await categoriaGeneralService.getAll();
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);

@@ -20,13 +20,66 @@ export const modalidadService = {
       }
       return await response.json();
     } catch (error) {
-      console.warn('API /Modalidades unreachable or unauthorized (401). Using fallback data.');
-      // Fallback data for registration form
-      return [
-        { id: 1, nombre: 'Presencial' },
-        { id: 2, nombre: 'Virtual' },
-        { id: 3, nombre: 'Híbrido' }
-      ];
+      console.error('Error fetching modalities:', error);
+      throw error;
+    }
+  },
+
+  create: async (modalidad: { nombre: string }): Promise<Modalidad> => {
+    try {
+      const payload = {
+        id: 0,
+        nombre: modalidad.nombre
+      };
+      
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear modalidad');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating modality:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: number, modalidad: { nombre: string }): Promise<void> => {
+    try {
+      const payload = {
+        id: id,
+        nombre: modalidad.nombre
+      };
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar modalidad');
+      }
+    } catch (error) {
+      console.error('Error updating modality:', error);
+      throw error;
+    }
+  },
+
+  delete: async (id: number): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar modalidad');
+      }
+    } catch (error) {
+      console.error('Error deleting modality:', error);
+      throw error;
     }
   },
 };

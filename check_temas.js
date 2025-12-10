@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const API_BASE = 'https://liderdocente-api-4.onrender.com/api';
+const API_BASE = 'https://proyecto-bd-juan.onrender.com/api';
 
 async function checkEndpoints() {
   try {

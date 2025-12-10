@@ -9,15 +9,15 @@ import {
 
 import AdminLayout from '../../components/AdminLayout';
 import {
-  cursoCategoriaService,
-  CategoriaGeneral,
-} from '../../services/cursoCategoriaService';
+  categoriaService,
+  Categoria,
+} from '../../services/categoriaService';
 import { cursoService, Curso } from '../../services/cursoService';
 import { temaService } from '../../services/temaService';
 
 const AdminVideos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
-  const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
+  const [categories, setCategories] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -47,7 +47,7 @@ const AdminVideos = () => {
       setLoading(true);
       const [coursesData, categoriesData] = await Promise.all([
         cursoService.getAll(),
-        cursoCategoriaService.getAll(),
+        categoriaService.getAll(),
       ]);
       setCourses(coursesData);
       setCategories(categoriesData);
