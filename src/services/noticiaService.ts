@@ -27,7 +27,8 @@ export const noticiaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener noticias');
+        console.error('Error al obtener noticias:', response.status, response.statusText);
+        throw new Error(`Error al obtener noticias: ${response.status} ${response.statusText}`);
       }
       return await response.json();
     } catch (error) {
@@ -42,7 +43,8 @@ export const noticiaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener la noticia');
+        console.error('Error al obtener la noticia:', response.status, response.statusText);
+        throw new Error(`Error al obtener la noticia: ${response.status} ${response.statusText}`);
       }
       return await response.json();
     } catch (error) {

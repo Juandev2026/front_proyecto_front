@@ -34,6 +34,7 @@ const Login = () => {
         email: formData.email,
         password: formData.password,
       });
+
       // Handle potential case sensitivity or missing property
       const fullName =
         response.fullName ||

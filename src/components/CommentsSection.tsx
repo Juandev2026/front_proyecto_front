@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { comentarioService, Comentario } from '../services/comentarioService';
-import { authService } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
 
 interface CommentsSectionProps {
   noticiaId: number;
@@ -10,40 +10,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   const [comments, setComments] = useState<Comentario[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ id: number; fullName: string; role?: string } | null>(null);
-
-  useEffect(() => {
-    // Check auth
-    const token = localStorage.getItem('token');
-    const fullName = localStorage.getItem('fullName');
-    // We might not have the ID directly in localStorage efficiently without parsing the token or stored object.
-    // For now, let's assume we can get the user profile or it's stored.
-    // Ideally, authService.getCurrentUser() would return this.
-    // Let's rely on a simple decoded token logic or similar if available, 
-    // but typically we might need to fetch the profile.
-    // Since we don't have a specific endpoint for "me" easily visible without digging, 
-    // I made a `usuarioId` field in the service create payload.
-    // I'll try to get it from a stored user object if it exists, or decode token if possible.
-    // IMPORTANT: The user previously implemented auth. 
-    // I'll check `authService` or `localStorage`. 
-    // The previous login code stored 'token' and 'fullName'. It didn't store ID explicitly.
-    // I will assume for now we might need to fetch profile or parse token.
-    // Let's checking if we can get the user ID. 
-    // Since I can't easily change auth flow right now, I'll fallback to a mock ID or check if I can get it.
-    // WAIT: The login response HAD an ID usually.
-    // Let's peek at `login.tsx` again or `authService.ts`.
-    // Actually, I'll add a check. If I can't find ID, I might not be able to post.
-    
-    // TEMPORARY FIX: I will try to fetch user profile if possible or rely on stored ID if I add it.
-    // For this implementation, I will attempt to read 'userId' from localStorage.
-    // If not present, I'll ask the user to log in again or I'll implement a profile fetch.
-    const userId = localStorage.getItem('userId');
-    
-    if (token && userId) {
-        setUser({ id: Number(userId), fullName: fullName || 'Usuario' });
-    }
-  }, []);
+  const { user } = useAuth();
 
   const fetchComments = useCallback(async () => {
     try {
@@ -52,7 +19,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       setComments(data);
     } catch (err) {
       console.error(err);
-      setError('Error al cargar comentarios.');
     } finally {
       setLoading(false);
     }
@@ -65,7 +31,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    if (!user) {
+    if (!user || user.id === undefined) {
         alert('Debes iniciar sesión para comentar.');
         return;
     }
@@ -115,9 +81,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
                     <span className="text-xs text-gray-500">
                         {new Date(comment.fecha).toLocaleString()}
                     </span>
-                </div>
-                {/* Allow delete if user is admin or owner (simple check) */}
-                {/* For now, just showing delete button, API will enforce permissions or we can hide it */}
+                 </div>
                 <button 
                     onClick={() => handleDelete(comment.id)}
                     className="text-gray-400 hover:text-red-500 transition-colors"

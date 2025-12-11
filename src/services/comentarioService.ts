@@ -41,24 +41,7 @@ export const comentarioService = {
         contenido: comentario.contenido,
         fecha: new Date().toISOString(),
         noticiaId: comentario.noticiaId,
-        usuarioId: comentario.usuarioId,
-        // Optional nested object stub if required by stiff backend validation, 
-        // similar to what we did for Nivel/Modalidad
-        usuario: {
-            id: comentario.usuarioId,
-            email: 'string',
-            passwordHash: 'string',
-            role: 'string',
-            nombreCompleto: 'string',
-            celular: 'string',
-            password: 'string',
-            regionId: 0,
-            region: { id: 0, nombre: 'string' },
-            modalidadId: 0,
-            modalidad: { id: 0, nombre: 'string' },
-            nivelId: 0,
-            nivel: { id: 0, nombre: 'string', modalidadId: 0, modalidad: { id: 0, nombre: 'string' } }
-        }
+        usuarioId: comentario.usuarioId
       };
 
       const response = await fetch(API_URL, {
