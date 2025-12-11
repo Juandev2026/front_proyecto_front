@@ -17,9 +17,14 @@ export interface Comentario {
 }
 
 export const comentarioService = {
-  getAll: async (noticiaId: number): Promise<Comentario[]> => {
+  getAll: async (noticiaId?: number): Promise<Comentario[]> => {
     try {
-      const response = await fetch(`${API_URL}?noticiaId=${noticiaId}`, {
+      let url = API_URL;
+      if (noticiaId) {
+        url += `?noticiaId=${noticiaId}`;
+      }
+      
+      const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
