@@ -6,16 +6,15 @@ export interface RegisterData {
 }
 
 export interface RegisterRequest {
-  id?: number;
-  email: string;
-  passwordHash?: string;
-  role?: string;
   nombreCompleto: string;
-  celular: string;
-  password?: string;
+  email: string;
+  password: string;
+  role?: string;
   regionId: number;
+  celular: string;
   modalidadId: number;
   nivelId: number;
+  especialidadId: number;
 }
 
 export interface RegisterResponse {
@@ -47,23 +46,26 @@ import { getAuthHeaders } from '../utils/apiUtils';
 export const authService = {
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
     try {
-      // Ensure payload matches specific /Auth/register schema
+      // Payload should match RegisterRequest exactly now
+      // Convert 0 to null for optional fields to avoid FK constraint violations if backend expects proper FKs
       const payload = {
         nombreCompleto: data.nombreCompleto,
         email: data.email,
         password: data.password,
-        role: 'Client', // Forced as per standard registration
-        regionId: Number(data.regionId), // User requested regionId
+        role: data.role || 'Client', 
+        regionId: Number(data.regionId),
         celular: data.celular,
-        modalidadId: Number(data.modalidadId),
-        nivelId: Number(data.nivelId)
+        modalidadId: data.modalidadId ? Number(data.modalidadId) : null,
+        nivelId: data.nivelId ? Number(data.nivelId) : null,
+        especialidadId: data.especialidadId ? Number(data.especialidadId) : null
       };
 
       const response = await fetch(`${API_Auth}/register`, {
         method: 'POST',
         headers: {
-          ...getAuthHeaders(), // Includes 'Content-Type': 'application/json' and 'Authorization'
-          Accept: 'text/plain',
+            ...getAuthHeaders(), // Keep existing helpers but ensure content-type
+            'Content-Type': 'application/json',
+             Accept: 'text/plain', 
         },
         body: JSON.stringify(payload),
       });
@@ -73,14 +75,10 @@ export const authService = {
         throw new Error(errorText || 'Error en el registro');
       }
 
-      // Backend returns 201 Created or 200 OK often with created object or just ID.
-      // Assuming it returns JSON similar to input or ID.
-      // If text/plain, handle accordingly.
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         return await response.json();
       } else {
-        // Fallback for text response
         return {} as RegisterResponse; 
       }
     } catch (error) {
@@ -95,6 +93,7 @@ export const authService = {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
+          'Content-Type': 'application/json',
           Accept: 'application/json',
         },
         body: JSON.stringify(data),

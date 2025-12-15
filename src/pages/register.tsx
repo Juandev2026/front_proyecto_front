@@ -9,6 +9,7 @@ import { authService } from '../services/authService';
 import { modalidadService, Modalidad } from '../services/modalidadService';
 import { nivelService, Nivel } from '../services/nivelService';
 import { regionService, Region } from '../services/regionService';
+import { especialidadesService, Especialidad } from '../services/especialidadesService';
 
 const Register = () => {
   const router = useRouter();
@@ -21,12 +22,14 @@ const Register = () => {
     regionId: 0,
     modalidadId: 0,
     nivelId: 0,
+    especialidadId: 0,
   });
 
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   // Removed 'niveles' state as we fetch specific to modality
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +66,7 @@ const Register = () => {
             (n) => n.id === Number(formData.nivelId)
           );
           if (!currentLevelExists) {
-            setFormData((prev) => ({ ...prev, nivelId: 0 }));
+            setFormData((prev) => ({ ...prev, nivelId: 0, especialidadId: 0 }));
           }
         } catch (err) {
           console.error('Error loading levels:', err);
@@ -71,11 +74,36 @@ const Register = () => {
         }
       } else {
         setFilteredNiveles([]);
-        setFormData((prev) => ({ ...prev, nivelId: 0 }));
+        setFormData((prev) => ({ ...prev, nivelId: 0, especialidadId: 0 }));
       }
     };
     fetchNiveles();
   }, [formData.modalidadId]); // Removed formData.nivelId dependency to avoid cycles, just fetching on modality change.
+
+  useEffect(() => {
+    const fetchEspecialidades = async () => {
+      if (formData.nivelId) {
+        try {
+            const data = await especialidadesService.getByNivel(Number(formData.nivelId));
+            setEspecialidades(data);
+            
+             const currentExists = data.some(
+                (n) => n.id === Number(formData.especialidadId)
+              );
+              if (!currentExists) {
+                setFormData((prev) => ({ ...prev, especialidadId: 0 }));
+              }
+        } catch (err) {
+             console.error('Error loading especialidades:', err);
+             setEspecialidades([]);
+        }
+      } else {
+        setEspecialidades([]);
+        setFormData((prev) => ({ ...prev, especialidadId: 0 }));
+      }
+    };
+    fetchEspecialidades();
+  }, [formData.nivelId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -93,6 +121,11 @@ const Register = () => {
     setError('');
 
     try {
+      // Removed mandatory check for especialidadId
+      // if (!formData.especialidadId) {
+      //    throw new Error("Por favor seleccione una especialidad");
+      // }
+
       await authService.register({
         nombreCompleto: formData.name,
         email: formData.email,
@@ -101,6 +134,7 @@ const Register = () => {
         regionId: Number(formData.regionId),
         modalidadId: Number(formData.modalidadId),
         nivelId: Number(formData.nivelId),
+        especialidadId: Number(formData.especialidadId),
       });
       router.push('/login');
     } catch (err: any) {
@@ -286,18 +320,17 @@ const Register = () => {
                     htmlFor="nivelId"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nivel
+                    Nivel <span className="text-gray-400 font-normal">(Opcional)</span>
                   </label>
                   <select
                     id="nivelId"
                     name="nivelId"
-                    required
                     disabled={!formData.modalidadId}
                     value={formData.nivelId}
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
                   >
-                    <option value={0}>Seleccione un nivel</option>
+                    <option value={0}>Seleccione un nivel (Opcional)</option>
                     {filteredNiveles.map((nivel) => (
                       <option key={nivel.id} value={nivel.id}>
                         {nivel.nombre}
@@ -305,6 +338,32 @@ const Register = () => {
                     ))}
                   </select>
                 </div>
+
+                {/* Especialidad */}
+                <div>
+                  <label
+                    htmlFor="especialidadId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Especialidad <span className="text-gray-400 font-normal">(Opcional)</span>
+                  </label>
+                  <select
+                    id="especialidadId"
+                    name="especialidadId"
+                    disabled={!formData.nivelId || especialidades.length === 0}
+                    value={formData.especialidadId}
+                    onChange={handleChange}
+                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                  >
+                    <option value={0}>Seleccione una especialidad (Opcional)</option>
+                    {especialidades.map((esp) => (
+                      <option key={esp.id} value={esp.id}>
+                        {esp.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
 
                 {/* Password */}
                 <div>
