@@ -2,15 +2,20 @@ import { useState, useEffect } from 'react';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ name: string; id?: number } | null>(null);
+  const [user, setUser] = useState<{ name: string; id?: number; nivelId?: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     let fullName = localStorage.getItem('fullName');
     let userId = localStorage.getItem('userId');
+    let nivelId = localStorage.getItem('nivelId');
+
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') {
         userId = null;
+    }
+    if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN') {
+        nivelId = null;
     }
 
     if (token) {
@@ -59,7 +64,12 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       if (fullName) {
         const parsedId = userId ? Number(userId) : undefined;
-        setUser({ name: fullName, id: !isNaN(parsedId!) ? parsedId : undefined });
+        const parsedNivelId = nivelId ? Number(nivelId) : undefined;
+        setUser({ 
+            name: fullName, 
+            id: !isNaN(parsedId!) ? parsedId : undefined,
+            nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined
+        });
       } else {
         setUser(null); // If token exists but no fullName, user is not fully identified
       }

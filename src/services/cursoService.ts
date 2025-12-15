@@ -60,6 +60,21 @@ export const cursoService = {
     }
   },
 
+  getByNivel: async (id: number): Promise<Curso[]> => {
+    try {
+      const response = await fetch(`${API_URL}/nivel/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener cursos por nivel');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching courses by level ${id}:`, error);
+      throw error;
+    }
+  },
+
   create: async (curso: Omit<Curso, 'id'> | FormData): Promise<Curso> => {
     try {
       const isFormData = curso instanceof FormData;

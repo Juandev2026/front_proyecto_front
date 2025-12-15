@@ -13,7 +13,7 @@ import { materialService, Material } from '../services/materialService';
 const ITEMS_PER_PAGE = 6;
 
 const Materials = () => {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
@@ -24,15 +24,23 @@ const Materials = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | 'all'>(
     'all'
   );
+  const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const [cats, mats] = await Promise.all([
+        let mats;
+        
+        if (filterMode === 'level' && user?.nivelId) {
+             mats = await materialService.getByNivel(user.nivelId);
+        } else {
+             mats = await materialService.getAll();
+        }
+
+        const [cats] = await Promise.all([
           categoriaService.getAll(),
-          materialService.getAll(),
         ]);
         setCategories(cats);
         setMaterials(mats);
@@ -47,7 +55,7 @@ const Materials = () => {
     };
 
     fetchData();
-  }, []);
+  }, [filterMode, user?.nivelId]);
 
   // Filter items based on search and category
   const filteredItems = useMemo(() => {
@@ -120,6 +128,30 @@ const Materials = () => {
 
         {/* Controls Section */}
         <div className="mb-12 space-y-6">
+            {isAuthenticated && user?.nivelId && (
+              <div className="flex justify-center space-x-4">
+                 <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    filterMode === 'all'
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  Ver todos los materiales
+                </button>
+                <button
+                  onClick={() => setFilterMode('level')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    filterMode === 'level'
+                      ? 'bg-primary text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  Ver materiales por mi nivel
+                </button>
+              </div>
+            )}
           {/* Search Bar */}
           <div className="max-w-xl mx-auto">
             <div className="relative">

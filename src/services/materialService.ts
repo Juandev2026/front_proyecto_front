@@ -31,6 +31,21 @@ export const materialService = {
     }
   },
 
+  getByNivel: async (id: number): Promise<Material[]> => {
+    try {
+      const response = await fetch(`${API_URL}/nivel/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener materiales por nivel');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching materials by level ${id}:`, error);
+      throw error;
+    }
+  },
+
   create: async (
     material: Omit<Material, 'id'> | FormData
   ): Promise<Material> => {

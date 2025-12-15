@@ -14,15 +14,23 @@ const Videos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [coursesData, categoriesData] = await Promise.all([
-          cursoService.getAll(),
+        setLoading(true);
+        let coursesData;
+        if (filterMode === 'level' && user?.nivelId) {
+             coursesData = await cursoService.getByNivel(user.nivelId);
+        } else {
+             coursesData = await cursoService.getAll();
+        }
+
+        const [categoriesData] = await Promise.all([
           categoriaService.getAll(),
         ]);
         setCourses(coursesData);
@@ -35,7 +43,7 @@ const Videos = () => {
     };
 
     fetchData();
-  }, []);
+  }, [filterMode, user?.nivelId]);
 
   const categoryNames = useMemo(() => {
     return ['Todos', ...categories.map((c) => c.nombre)];
@@ -80,6 +88,33 @@ const Videos = () => {
               </p>
             </div>
           </FadeIn>
+
+           {isAuthenticated && user?.nivelId && (
+            <FadeIn>
+              <div className="flex justify-center space-x-4 mb-8">
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-colors ${
+                    filterMode === 'all'
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  Ver todos
+                </button>
+                <button
+                  onClick={() => setFilterMode('level')}
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-colors ${
+                    filterMode === 'level'
+                      ? 'bg-primary text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  Ver cursos por mi nivel
+                </button>
+              </div>
+            </FadeIn>
+          )}
 
           {/* Category Tabs */}
           <FadeIn delay={0.2}>

@@ -49,6 +49,9 @@ const Login = () => {
       if (response.id) {
         localStorage.setItem('userId', String(response.id));
       }
+      if (response.nivelId) {
+        localStorage.setItem('nivelId', String(response.nivelId));
+      }
 
       if (response.role?.toUpperCase() === 'ADMIN') {
         router.push('/admin/');

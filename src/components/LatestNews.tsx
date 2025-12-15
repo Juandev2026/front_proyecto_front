@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
 
 import config from '../config/index.json';
+import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
 
 const LatestNews = () => {
   const { socials } = config;
+  const { user, isAuthenticated } = useAuth();
   const [latestNews, setLatestNews] = useState<Noticia[]>([]);
   const [featuredNews, setFeaturedNews] = useState<Noticia | null>(null);
+  const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const news = await noticiaService.getAll();
+        let news: Noticia[] = [];
+        if (filterMode === 'level' && user?.nivelId) {
+            news = await noticiaService.getByNivel(user.nivelId);
+        } else {
+            news = await noticiaService.getAll();
+        }
         // Sort by date descending if not already sorted by API, but assuming API returns latest or I should sort?
         // The user asked for "latest 5 news". I'll assume API returns them or I sort them.
         // Let's sort by ID desc or Date desc just in case.
@@ -33,7 +41,7 @@ const LatestNews = () => {
     };
 
     fetchNews();
-  }, []);
+  }, [filterMode, user?.nivelId]);
 
   return (
     <div className="py-12 bg-gray-50">
@@ -44,6 +52,43 @@ const LatestNews = () => {
             <h2 className="text-3xl font-extrabold text-gray-900 border-b-2 border-primary pb-2 inline-block uppercase tracking-wide">
               Últimas Noticias
             </h2>
+            
+            {isAuthenticated && user?.nivelId ? (
+              <div className="flex space-x-4 mt-2 mb-4">
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    filterMode === 'all'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  Ver todas
+                </button>
+                <button
+                  onClick={() => setFilterMode('level')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    filterMode === 'level'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  Ver noticias por mi nivel
+                </button>
+              </div>
+            ) : (
+               <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-bold">¿Quieres ver noticias personalizadas?</span> Inicia sesión para ver contenido de tu nivel.
+                  </p>
+                  <a 
+                    href="/login" 
+                    className="whitespace-nowrap px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors"
+                  >
+                    Iniciar Sesión
+                  </a>
+               </div>
+            )}
             <div className="space-y-6">
               {latestNews.map((news) => (
                 <div

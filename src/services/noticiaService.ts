@@ -53,6 +53,21 @@ export const noticiaService = {
     }
   },
 
+  getByNivel: async (id: number): Promise<Noticia[]> => {
+    try {
+      const response = await fetch(`${API_URL}/nivel/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener noticias por nivel');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching news by level ${id}:`, error);
+      throw error;
+    }
+  },
+
   create: async (noticia: any): Promise<Noticia> => {
     try {
       const isFormData = noticia instanceof FormData;

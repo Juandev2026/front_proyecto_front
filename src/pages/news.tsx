@@ -11,7 +11,8 @@ import { categoriaService, Categoria } from '../services/categoriaService';
 import { noticiaService, Noticia } from '../services/noticiaService';
 
 const News = () => {
-  useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
   const [news, setNews] = useState<Noticia[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
@@ -22,10 +23,15 @@ const News = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [newsData, categoriesData] = await Promise.all([
-          noticiaService.getAll(),
-          categoriaService.getAll(),
-        ]);
+        let newsData: Noticia[] = [];
+        if (filterMode === 'level' && user?.nivelId) {
+             newsData = await noticiaService.getByNivel(user.nivelId);
+        } else {
+             newsData = await noticiaService.getAll();
+        }
+
+        const categoriesData = await categoriaService.getAll();
+        
         setNews(newsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -34,7 +40,7 @@ const News = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [filterMode, user?.nivelId]);
 
   // Filter logic
   const filteredNews = news.filter((item) => {
@@ -88,6 +94,48 @@ const News = () => {
             Entérate de lo último en educación y tecnología.
           </p>
         </div>
+
+            {isAuthenticated && user?.nivelId ? (
+              <div className="flex justify-center space-x-4 mt-2 mb-8">
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                    filterMode === 'all'
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  Ver todas
+                </button>
+                <button
+                  onClick={() => setFilterMode('level')}
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                    filterMode === 'level'
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  Ver noticias por mi nivel
+                </button>
+              </div>
+            ) : (
+               <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 p-2 rounded-full text-primary">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <p className="text-sm text-blue-900">
+                        <span className="font-bold block text-base">¿Buscas contenido personalizado?</span>
+                        Inicia sesión para ver noticias exclusivas para tu nivel educativo.
+                    </p>
+                  </div>
+                  <Link href="/login">
+                    <a className="whitespace-nowrap px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+                        Iniciar Sesión
+                    </a>
+                  </Link>
+               </div>
+            )}
 
         {/* Search Bar */}
         <div className="mb-10 max-w-3xl mx-auto">
