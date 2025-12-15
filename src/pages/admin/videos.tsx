@@ -14,10 +14,16 @@ import {
 } from '../../services/categoriaService';
 import { cursoService, Curso } from '../../services/cursoService';
 import { temaService } from '../../services/temaService';
+import { modalidadService, Modalidad } from '../../services/modalidadService';
+import { nivelService, Nivel } from '../../services/nivelService';
 
 const AdminVideos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -27,6 +33,9 @@ const AdminVideos = () => {
     nombre: '',
     descripcion: '',
     categoriaId: 0,
+    modalidadId: 0,
+    nivelId: 0,
+    usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
     duracion: '',
     idioma: '',
     loQueAprenderas: '',
@@ -45,12 +54,16 @@ const AdminVideos = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [coursesData, categoriesData] = await Promise.all([
+      const [coursesData, categoriesData, modalidadesData, nivelesData] = await Promise.all([
         cursoService.getAll(),
         categoriaService.getAll(),
+        modalidadService.getAll(),
+        nivelService.getAll(),
       ]);
       setCourses(coursesData);
       setCategories(categoriesData);
+      setModalidades(modalidadesData);
+      setNiveles(nivelesData);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -61,6 +74,14 @@ const AdminVideos = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (currentCourse.modalidadId) {
+      setFilteredNiveles(niveles.filter(n => n.modalidadId === Number(currentCourse.modalidadId)));
+    } else {
+      setFilteredNiveles([]);
+    }
+  }, [currentCourse.modalidadId, niveles]);
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este curso?')) {
@@ -79,6 +100,9 @@ const AdminVideos = () => {
       nombre: course.nombre,
       descripcion: course.descripcion,
       categoriaId: course.categoriaId,
+      modalidadId: course.modalidadId || 0,
+      nivelId: course.nivelId || 0,
+      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
       duracion: course.duracion,
       idioma: course.idioma,
       loQueAprenderas: course.loQueAprenderas,
@@ -103,6 +127,16 @@ const AdminVideos = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate usuarioEdicionId
+       if (!currentCourse.usuarioEdicionId || currentCourse.usuarioEdicionId <= 0) {
+        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
+        if (storedId <= 0) {
+           alert('Error: No se ha identificado al usuario editor.');
+           return;
+        }
+        currentCourse.usuarioEdicionId = storedId;
+      }
+
       // 1. Save Course First
       let savedCourse: Curso;
 
@@ -121,6 +155,9 @@ const AdminVideos = () => {
         formData.append('nombre', courseData.nombre);
         formData.append('descripcion', courseData.descripcion);
         formData.append('categoriaId', String(courseData.categoriaId));
+        formData.append('modalidadId', String(courseData.modalidadId || 0));
+        formData.append('nivelId', String(courseData.nivelId || 0));
+        formData.append('usuarioEdicionId', String(courseData.usuarioEdicionId || 0));
         formData.append('duracion', courseData.duracion);
         formData.append('idioma', courseData.idioma);
         formData.append('loQueAprenderas', courseData.loQueAprenderas);
@@ -346,6 +383,54 @@ const AdminVideos = () => {
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Modalidad
+                  </label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.modalidadId || 0}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        modalidadId: Number(e.target.value),
+                        nivelId: 0 // Reset nivel
+                      })
+                    }
+                  >
+                    <option value={0}>Todas / N/A</option>
+                    {modalidades.map((mod) => (
+                      <option key={mod.id} value={mod.id}>
+                        {mod.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nivel
+                  </label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={currentCourse.nivelId || 0}
+                    onChange={(e) =>
+                      setCurrentCourse({
+                        ...currentCourse,
+                        nivelId: Number(e.target.value),
+                      })
+                    }
+                    disabled={!currentCourse.modalidadId || currentCourse.modalidadId === 0}
+                  >
+                    <option value={0}>Todos / N/A</option>
+                    {filteredNiveles.map((niv) => (
+                      <option key={niv.id} value={niv.id}>
+                        {niv.nombre}
                       </option>
                     ))}
                   </select>

@@ -36,14 +36,41 @@ export const materialService = {
   ): Promise<Material> => {
     try {
       const isFormData = material instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
+      if (isFormData) {
+        const fd = material as FormData;
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+            fd.delete('modalidadId'); 
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+            fd.delete('nivelId');
+        }
+        if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
+           // optional handling if needed
+        }
+        body = fd;
+      } else {
+        const m = material as Material;
+        body = JSON.stringify({
+            ...m,
+            modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
+            nivelId: m.nivelId ? Number(m.nivelId) : null,
+            usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null
+        });
+      }
+
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: isFormData ? getAuthHeadersFormData() : getAuthHeaders(),
-        body: isFormData ? material : JSON.stringify(material),
+        headers,
+        body,
       });
 
       if (!response.ok) {
-        throw new Error('Error al crear el material');
+         const errText = await response.text();
+         console.error('Create material error:', errText);
+         throw new Error('Error al crear el material: ' + errText);
       }
 
       return await response.json();
@@ -59,14 +86,40 @@ export const materialService = {
   ): Promise<Material> => {
     try {
       const isFormData = material instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
+      if (isFormData) {
+        const fd = material as FormData;
+        if (!fd.has('id')) fd.append('id', String(id));
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+             fd.delete('modalidadId');
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+             fd.delete('nivelId');
+        }
+        body = fd;
+      } else {
+         const m = material as Material;
+         body = JSON.stringify({
+             ...m,
+             id: id,
+             modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
+             nivelId: m.nivelId ? Number(m.nivelId) : null,
+             usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null
+         });
+      }
+
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: isFormData ? getAuthHeadersFormData() : getAuthHeaders(),
-        body: isFormData ? material : JSON.stringify(material),
+        headers,
+        body,
       });
 
       if (!response.ok) {
-        throw new Error('Error al actualizar el material');
+         const errText = await response.text();
+         console.error('Update material error:', errText);
+         throw new Error('Error al actualizar el material: ' + errText);
       }
 
       // Check if response has content before parsing JSON

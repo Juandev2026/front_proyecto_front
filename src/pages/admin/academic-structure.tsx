@@ -3,13 +3,15 @@ import { PencilIcon, TrashIcon, PlusIcon, XIcon } from '@heroicons/react/outline
 import AdminLayout from '../../components/AdminLayout';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
+import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 
-type TabType = 'modalidades' | 'niveles';
+type TabType = 'modalidades' | 'niveles' | 'especialidades';
 
 const AcademicStructure = () => {
   const [activeTab, setActiveTab] = useState<TabType>('modalidades');
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -18,21 +20,24 @@ const AcademicStructure = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     modalidadId: 0,
+    nivelId: 0,
   });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      if (activeTab === 'modalidades') {
-        const data = await modalidadService.getAll();
-        setModalidades(data);
-      } else {
-        const [nivelesData, modalidadesData] = await Promise.all([
-          nivelService.getAll(),
-          modalidadService.getAll(),
-        ]);
-        setNiveles(nivelesData);
-        setModalidades(modalidadesData);
+      // Always fetch related data if needed for dropdowns (modalidades for niveles, niveles for especialidades)
+      // Optimally we fetch what we need.
+      const [modalidadesData, nivelesData, especialidadesData] = await Promise.all([
+        modalidadService.getAll(),
+        nivelService.getAll(),
+        (activeTab === 'especialidades') ? especialidadesService.getAll() : Promise.resolve([]),
+      ]);
+      
+      setModalidades(modalidadesData);
+      setNiveles(nivelesData);
+      if (activeTab === 'especialidades') {
+        setEspecialidades(especialidadesData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -49,10 +54,15 @@ const AcademicStructure = () => {
     try {
       if (activeTab === 'modalidades') {
         await modalidadService.create({ nombre: formData.nombre });
-      } else {
+      } else if (activeTab === 'niveles') {
         await nivelService.create({
           nombre: formData.nombre,
           modalidadId: formData.modalidadId,
+        });
+      } else {
+        await especialidadesService.create({
+            nombre: formData.nombre,
+            nivelId: formData.nivelId,
         });
       }
       closeModal();
@@ -68,11 +78,16 @@ const AcademicStructure = () => {
     try {
       if (activeTab === 'modalidades') {
         await modalidadService.update(editingId, { nombre: formData.nombre });
-      } else {
+      } else if (activeTab === 'niveles') {
         await nivelService.update(editingId, {
           nombre: formData.nombre,
           modalidadId: formData.modalidadId,
         });
+      } else {
+         await especialidadesService.update(editingId, {
+            nombre: formData.nombre,
+            nivelId: formData.nivelId,
+         });
       }
       closeModal();
       fetchData();
@@ -87,8 +102,10 @@ const AcademicStructure = () => {
     try {
       if (activeTab === 'modalidades') {
         await modalidadService.delete(id);
-      } else {
+      } else if (activeTab === 'niveles') {
         await nivelService.delete(id);
+      } else {
+        await especialidadesService.delete(id);
       }
       fetchData();
     } catch (error) {
@@ -97,16 +114,17 @@ const AcademicStructure = () => {
     }
   };
 
-  const openModal = (item?: Modalidad | Nivel) => {
+  const openModal = (item?: Modalidad | Nivel | Especialidad) => {
     if (item) {
       setEditingId(item.id);
       setFormData({
         nombre: item.nombre,
         modalidadId: (item as Nivel).modalidadId || 0,
+        nivelId: (item as Especialidad).nivelId || 0,
       });
     } else {
       setEditingId(null);
-      setFormData({ nombre: '', modalidadId: 0 });
+      setFormData({ nombre: '', modalidadId: 0, nivelId: 0 });
     }
     setIsModalOpen(true);
   };
@@ -114,7 +132,7 @@ const AcademicStructure = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setFormData({ nombre: '', modalidadId: 0 });
+    setFormData({ nombre: '', modalidadId: 0, nivelId: 0 });
   };
 
   const TabButton = ({ type, label }: { type: TabType; label: string }) => (
@@ -130,6 +148,8 @@ const AcademicStructure = () => {
     </button>
   );
 
+  const currentData = activeTab === 'modalidades' ? modalidades : (activeTab === 'niveles' ? niveles : especialidades);
+
   return (
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
@@ -141,7 +161,7 @@ const AcademicStructure = () => {
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
-          {activeTab === 'modalidades' ? 'Nueva Modalidad' : 'Nuevo Nivel'}
+          {activeTab === 'modalidades' ? 'Nueva Modalidad' : (activeTab === 'niveles' ? 'Nuevo Nivel' : 'Nueva Especialidad')}
         </button>
       </div>
 
@@ -149,6 +169,7 @@ const AcademicStructure = () => {
         <div className="flex space-x-4">
           <TabButton type="modalidades" label="Modalidades" />
           <TabButton type="niveles" label="Niveles" />
+          <TabButton type="especialidades" label="Especialidades" />
         </div>
       </div>
 
@@ -167,6 +188,11 @@ const AcademicStructure = () => {
                   Modalidad
                 </th>
               )}
+               {activeTab === 'especialidades' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nivel
+                </th>
+              )}
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -181,7 +207,7 @@ const AcademicStructure = () => {
               </tr>
             )}
             {!loading &&
-              (activeTab === 'modalidades' ? modalidades : niveles).length === 0 && (
+              currentData.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                     No hay registros.
@@ -189,7 +215,7 @@ const AcademicStructure = () => {
                 </tr>
               )}
             {!loading &&
-              (activeTab === 'modalidades' ? modalidades : niveles).map((item) => (
+              currentData.map((item) => (
                 <tr key={item.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.id}
@@ -202,9 +228,14 @@ const AcademicStructure = () => {
                       {modalidades.find((m) => m.id === (item as Nivel).modalidadId)?.nombre || (item as Nivel).modalidad?.nombre || '-'}
                     </td>
                   )}
+                  {activeTab === 'especialidades' && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {niveles.find((n) => n.id === (item as Especialidad).nivelId)?.nombre || (item as Especialidad).nivel?.nombre || '-'}
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => openModal(item)}
+                      onClick={() => openModal(item as any)}
                       className="text-indigo-600 hover:text-indigo-900 mr-4"
                     >
                       <PencilIcon className="w-5 h-5" />
@@ -228,7 +259,7 @@ const AcademicStructure = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingId ? 'Editar' : 'Crear'}{' '}
-                {activeTab === 'modalidades' ? 'Modalidad' : 'Nivel'}
+                {activeTab === 'modalidades' ? 'Modalidad' : (activeTab === 'niveles' ? 'Nivel' : 'Especialidad')}
               </h2>
               <button
                 onClick={closeModal}
@@ -279,6 +310,32 @@ const AcademicStructure = () => {
                     {modalidades.map((mod) => (
                       <option key={mod.id} value={mod.id}>
                         {mod.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+             {activeTab === 'especialidades' && (
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Nivel
+                  </label>
+                  <select
+                    required
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.nivelId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        nivelId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={0}>Seleccionar...</option>
+                    {niveles.map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.nombre}
                       </option>
                     ))}
                   </select>

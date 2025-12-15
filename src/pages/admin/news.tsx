@@ -3,16 +3,24 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaGeneralService, CategoriaGeneral } from '../../services/categoriaGeneralService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
+import { modalidadService, Modalidad } from '../../services/modalidadService';
+import { nivelService, Nivel } from '../../services/nivelService';
 
 const AdminNews = () => {
   const [news, setNews] = useState<Noticia[]>([]);
   const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<Noticia>>({
     titulo: '',
     descripcion: '',
     categoriaId: 0,
+    modalidadId: 0,
+    nivelId: 0,
     fecha: new Date().toISOString(),
     imageUrl: '',
     esDestacado: false,
@@ -38,10 +46,41 @@ const AdminNews = () => {
     }
   }, []);
 
+  const fetchModalidades = useCallback(async () => {
+    try {
+      const data = await modalidadService.getAll();
+      setModalidades(data);
+    } catch (error) {
+      console.error('Error fetching modalities:', error);
+    }
+  }, []);
+
+  const fetchNiveles = useCallback(async () => {
+    try {
+      const data = await nivelService.getAll();
+      setNiveles(data);
+    } catch (error) {
+      console.error('Error fetching levels:', error);
+    }
+  }, []);
+
+
   useEffect(() => {
     fetchNews();
     fetchCategories();
-  }, [fetchNews, fetchCategories]);
+    fetchModalidades();
+    fetchNiveles();
+  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles]);
+
+  // Filter levels when modality changes or modal opens with data
+  useEffect(() => {
+    if (formData.modalidadId) {
+      const filtered = niveles.filter(n => n.modalidadId === Number(formData.modalidadId));
+      setFilteredNiveles(filtered);
+    } else {
+      setFilteredNiveles([]);
+    }
+  }, [formData.modalidadId, niveles]);
 
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
@@ -61,9 +100,12 @@ const AdminNews = () => {
       titulo: item.titulo,
       descripcion: item.descripcion,
       categoriaId: item.categoriaId || 0,
+      modalidadId: item.modalidadId || 0,
+      nivelId: item.nivelId || 0,
       fecha: item.fecha,
       imageUrl: item.imageUrl,
       esDestacado: item.esDestacado,
+      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
     });
     setImageFile(null);
     setIsModalOpen(true);
@@ -75,9 +117,12 @@ const AdminNews = () => {
       titulo: '',
       descripcion: '',
       categoriaId: categories.length > 0 ? categories[0]?.id : 0,
+      modalidadId: 0,
+      nivelId: 0,
       fecha: new Date().toISOString(),
       imageUrl: '',
       esDestacado: false,
+      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
     });
     setImageFile(null);
     setIsModalOpen(true);
@@ -88,16 +133,21 @@ const AdminNews = () => {
 
     if (!formData.categoriaId || formData.categoriaId <= 0) {
       alert(
-        `Por favor, seleccione una categoría válida. (ID actual: ${formData.categoriaId}, Categorías disponibles: ${categories.length})`
+        `Por favor, seleccione una categoría válida.`
       );
       return;
     }
+    
+    // Check if user requires validation for Modalidad/Nivel?
+    // User request: "DEBES MANDAR MODALIDAD Y NIVEL TAMBIÉN PARA LA CATEGORÍA"
+    // Implicitly they might be required? Let's check if they are 0 and warn?
+    // Or just send 0 if they select "Select...". 
+    // I'll leave them optional (0 allowed) unless user complains again or it fails.
 
     if (!formData.usuarioEdicionId || Number(formData.usuarioEdicionId) <= 0) {
-      // Try to recover from localStorage again just in case
        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
        if (storedId <= 0) {
-          alert('Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente para actualizar sus credenciales.');
+          alert('Error: No se ha identificado al usuario editor.');
           return;
        }
        formData.usuarioEdicionId = storedId;
@@ -109,6 +159,8 @@ const AdminNews = () => {
         dataToSend.append('titulo', formData.titulo || '');
         dataToSend.append('descripcion', formData.descripcion || '');
         dataToSend.append('categoriaId', String(formData.categoriaId || 0));
+        dataToSend.append('modalidadId', String(formData.modalidadId || 0));
+        dataToSend.append('nivelId', String(formData.nivelId || 0));
         dataToSend.append(
           'fecha',
           new Date(formData.fecha || new Date()).toISOString()
@@ -129,6 +181,8 @@ const AdminNews = () => {
           titulo: formData.titulo || '',
           descripcion: formData.descripcion || '',
           categoriaId: formData.categoriaId || 0,
+          modalidadId: formData.modalidadId || 0,
+          nivelId: formData.nivelId || 0,
           fecha: new Date(formData.fecha || new Date()).toISOString(),
           imageUrl: formData.imageUrl || null, // Send null if empty string
           esDestacado: formData.esDestacado || false,
@@ -282,7 +336,7 @@ const AdminNews = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Categoría
@@ -299,7 +353,7 @@ const AdminNews = () => {
                       }
                     >
                       <option value={0} disabled>
-                        Seleccione una categoría
+                        Seleccione
                       </option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
@@ -308,7 +362,60 @@ const AdminNews = () => {
                       ))}
                     </select>
                   </div>
+                  
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Modalidad
+                    </label>
+                    <select
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.modalidadId || 0}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          modalidadId: Number(e.target.value),
+                          nivelId: 0 // Reset nivel when modalidad changes
+                        })
+                      }
+                    >
+                      <option value={0}>
+                        Todas / N/A
+                      </option>
+                      {modalidades.map((mod) => (
+                        <option key={mod.id} value={mod.id}>
+                          {mod.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Nivel
+                    </label>
+                    <select
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.nivelId || 0}
+                      disabled={!formData.modalidadId || Number(formData.modalidadId) === 0}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          nivelId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>
+                        Todos / N/A
+                      </option>
+                      {filteredNiveles.map((niv) => (
+                        <option key={niv.id} value={niv.id}>
+                          {niv.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                  
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Fecha
@@ -330,7 +437,6 @@ const AdminNews = () => {
                       }
                     />
                   </div>
-                </div>
 
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2">

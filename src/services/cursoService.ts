@@ -17,6 +17,9 @@ export interface Curso {
   precioOferta: number;
   imagenUrl: string;
   numero: string;
+  modalidadId?: number;
+  nivelId?: number;
+  usuarioEdicionId?: number;
   temas: Tema[];
 }
 
@@ -60,10 +63,35 @@ export const cursoService = {
   create: async (curso: Omit<Curso, 'id'> | FormData): Promise<Curso> => {
     try {
       const isFormData = curso instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
+      if (isFormData) {
+        const fd = curso as FormData;
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+             fd.delete('modalidadId');
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+             fd.delete('nivelId');
+        }
+        if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
+             // optional handling
+        }
+        body = fd;
+      } else {
+        const c = curso as any; // Cast to any to access potential new properties
+        body = JSON.stringify({
+            ...c,
+            modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
+            nivelId: c.nivelId ? Number(c.nivelId) : null,
+            usuarioEdicionId: c.usuarioEdicionId ? Number(c.usuarioEdicionId) : null
+        });
+      }
+
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: isFormData ? getAuthHeadersFormData() : getAuthHeaders(),
-        body: isFormData ? curso : JSON.stringify(curso),
+        headers,
+        body,
       });
       if (!response.ok) {
         throw new Error('Error al crear el curso');
@@ -78,18 +106,36 @@ export const cursoService = {
   update: async (id: number, curso: Curso | FormData): Promise<Curso> => {
     try {
       const isFormData = curso instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
       console.log('Updating course with payload:', isFormData ? 'FormData' : curso);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (isFormData) {
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (curso as any).forEach((value: any, key: any) => {
-           console.log(key + ', ' + value);
-        });
+         const fd = curso as FormData;
+         if (!fd.has('id')) fd.append('id', String(id));
+         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+             fd.delete('modalidadId');
+         }
+         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+             fd.delete('nivelId');
+         }
+         body = fd;
+      } else {
+         const c = curso as any;
+         body = JSON.stringify({
+             ...c,
+             id: id,
+             modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
+             nivelId: c.nivelId ? Number(c.nivelId) : null,
+             usuarioEdicionId: c.usuarioEdicionId ? Number(c.usuarioEdicionId) : null
+         });
       }
+
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: isFormData ? getAuthHeadersFormData() : getAuthHeaders(),
-        body: isFormData ? curso : JSON.stringify(curso),
+        headers,
+        body,
       });
       if (!response.ok) {
         const errorText = await response.text();

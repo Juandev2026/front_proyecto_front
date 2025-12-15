@@ -60,32 +60,27 @@ export const noticiaService = {
       const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
 
       if (isFormData) {
-        // Append required fields if they don't exist in FormData? 
-        // We can't easily check what's in FormData without looping.
-        // But we can append valid default values or ensuring the UI sent them.
-        // Better strategy: The UI should send them, OR we blindly append if missing?
-        // FormData.append adds a new value, doesn't overwrite if existing usually.
-        // But for nested objects in FormData, we need specific keys.
-        
-        // Let's assume the UI sends basic fields. We add the complex structure.
-        // Actually, for FormData, we can try to rely on the backend NOT requiring nested objects if we send IDs,
-        // BUT if it failed, we might need them.
-        // Let's safe-guard:
         const fd = noticia as FormData;
-        if (!fd.has('modalidadId')) fd.append('modalidadId', '0');
-        if (!fd.has('nivelId')) fd.append('nivelId', '0');
-        if (!fd.has('usuarioEdicionId')) fd.append('usuarioEdicionId', '0');
-        
-        // Append nested stubs for FormData binding
-        fd.append('modalidad.id', fd.get('modalidadId') as string || '0');
-        fd.append('modalidad.nombre', '');
-        
-        fd.append('nivel.id', fd.get('nivelId') as string || '0');
-        fd.append('nivel.nombre', '');
-        fd.append('nivel.modalidadId', fd.get('modalidadId') as string || '0');
-        fd.append('nivel.modalidad.id', fd.get('modalidadId') as string || '0');
-        fd.append('nivel.modalidad.nombre', '');
+        // Don't force '0' if they don't exist, let them be null/undefined or handled by backend if missing.
+        // But if we must send something, send null if possible or just omit.
+        // If the backend expects keys to exist:
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+             fd.delete('modalidadId'); // Ensure we don't send '0'
+             // If we must send it as null, FormData treats everything as strings. 
+             // Ideally we just don't send it if it's null/0.
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+            fd.delete('nivelId');
+        }
+        // UsuarioEdicionId might be required, but if 0 it fails.
+        if (fd.get('usuarioEdicionId') === '0') {
+             // Try to keep it if it's required, strictly it should have been set in UI.
+             // If it's truly 0, maybe we shouldn't send it. 
+        }
 
+        // Remove nested stubs which are likely causing issues if IDs are 0
+        // fd.append('modalidad.id', ...); // REMOVED
+        
         body = fd;
       } else {
         // JSON Payload construction
@@ -94,17 +89,11 @@ export const noticiaService = {
            ...n,
            id: n.id || 0,
            categoriaId: n.categoriaId || 0,
-           modalidadId: (n as any).modalidadId || 0,
-           modalidad: { id: (n as any).modalidadId || 0, nombre: '' },
-           nivelId: (n as any).nivelId || 0,
-           nivel: { 
-             id: (n as any).nivelId || 0, 
-             nombre: '', 
-             modalidadId: (n as any).modalidadId || 0,
-             modalidad: { id: (n as any).modalidadId || 0, nombre: '' }
-           },
-           usuarioEdicionId: (n as any).usuarioEdicionId || 0,
-           comentarios: [], // Default empty array
+           modalidadId: (n as any).modalidadId ? Number((n as any).modalidadId) : null,
+           // Remove nested objects
+           nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
+           usuarioEdicionId: (n as any).usuarioEdicionId ? Number((n as any).usuarioEdicionId) : null,
+           comentarios: [], 
            imageUrl: n.imageUrl || ""
         });
       }
@@ -132,24 +121,20 @@ export const noticiaService = {
        let body;
        const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
  
-       if (isFormData) {
+      if (isFormData) {
          const fd = noticia as FormData;
-         // Ensure keys exist
          if (!fd.has('id')) fd.append('id', String(id));
-         if (!fd.has('modalidadId')) fd.append('modalidadId', '0');
-         if (!fd.has('nivelId')) fd.append('nivelId', '0');
-         if (!fd.has('usuarioEdicionId')) fd.append('usuarioEdicionId', '0');
          
-         // Nested stubs
-         fd.append('modalidad.id', fd.get('modalidadId') as string || '0');
-         fd.append('modalidad.nombre', '');
+         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+             fd.delete('modalidadId');
+         }
+         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+             fd.delete('nivelId');
+         }
          
-         fd.append('nivel.id', fd.get('nivelId') as string || '0');
-         fd.append('nivel.nombre', '');
-         fd.append('nivel.modalidadId', fd.get('modalidadId') as string || '0');
-         fd.append('nivel.modalidad.id', fd.get('modalidadId') as string || '0');
-         fd.append('nivel.modalidad.nombre', '');
- 
+         // Remove nested stubs
+         // fd.append('modalidad.id', ...); // REMOVED
+
          body = fd;
        } else {
          const n = noticia as Partial<Noticia>;
@@ -157,16 +142,10 @@ export const noticiaService = {
             ...n,
             id: id,
             categoriaId: n.categoriaId || 0,
-            modalidadId: (n as any).modalidadId || 0,
-            modalidad: { id: (n as any).modalidadId || 0, nombre: '' },
-            nivelId: (n as any).nivelId || 0,
-            nivel: { 
-              id: (n as any).nivelId || 0, 
-              nombre: '', 
-              modalidadId: (n as any).modalidadId || 0,
-              modalidad: { id: (n as any).modalidadId || 0, nombre: '' }
-            },
-            usuarioEdicionId: (n as any).usuarioEdicionId || 0,
+            modalidadId: (n as any).modalidadId ? Number((n as any).modalidadId) : null,
+            nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
+            // Remove nested objects
+            usuarioEdicionId: (n as any).usuarioEdicionId ? Number((n as any).usuarioEdicionId) : null,
             imageUrl: n.imageUrl || ""
          });
        }

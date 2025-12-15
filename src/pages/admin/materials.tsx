@@ -24,7 +24,7 @@ const AdminMaterials = () => {
     categoriaId: 0,
     modalidadId: 0,
     nivelId: 0,
-    usuarioEdicionId: 0,
+    usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
   });
   const [file, setFile] = useState<File | null>(null);
 
@@ -80,7 +80,7 @@ const AdminMaterials = () => {
       categoriaId: item.categoriaId,
       modalidadId: item.modalidadId,
       nivelId: item.nivelId,
-      usuarioEdicionId: item.usuarioEdicionId,
+      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
     });
     setFile(null);
     setIsModalOpen(true);
@@ -88,6 +88,16 @@ const AdminMaterials = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!newMaterial.usuarioEdicionId || Number(newMaterial.usuarioEdicionId) <= 0) {
+        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
+        if (storedId <= 0) {
+           alert('Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente.');
+           return;
+        }
+        newMaterial.usuarioEdicionId = storedId;
+    }
+
     try {
       if (file) {
         const formData = new FormData();
@@ -126,7 +136,7 @@ const AdminMaterials = () => {
         categoriaId: 0,
         modalidadId: 0,
         nivelId: 0,
-        usuarioEdicionId: 0,
+        usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
       });
       setFile(null);
       setEditingId(null);
@@ -173,7 +183,7 @@ const AdminMaterials = () => {
               categoriaId: 0,
               modalidadId: 0,
               nivelId: 0,
-              usuarioEdicionId: 0,
+              usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
             });
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
