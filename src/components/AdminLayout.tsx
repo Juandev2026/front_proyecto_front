@@ -8,13 +8,17 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [fullName, setFullName] = useState('');
 
   React.useEffect(() => {
     const token = localStorage.getItem('token');
+    const storedName = localStorage.getItem('fullName');
+    
     if (!token) {
       router.push('/login');
     } else {
       setIsAuthorized(true);
+      setFullName(storedName || 'Admin User');
     }
   }, [router]);
 
@@ -311,10 +315,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center space-x-4 ml-auto">
             <div className="flex items-center">
               <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-                A
+                {fullName.charAt(0).toUpperCase()}
               </div>
               <span className="ml-2 text-sm font-medium text-gray-700">
-                Admin User
+                {fullName}
               </span>
             </div>
           </div>
