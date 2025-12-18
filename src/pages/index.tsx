@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import LatestNews from '../components/LatestNews';
 import LazyShow from '../components/LazyShow';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import config from '../config/index.json';
@@ -87,6 +88,7 @@ const App = () => {
       <FadeIn direction="up">
         <LatestNews />
       </FadeIn>
+      <RelevantInfoCarousel />
       <LazyShow>
         <>
           <About />

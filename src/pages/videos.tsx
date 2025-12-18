@@ -145,11 +145,11 @@ const Videos = () => {
             ) : (
               <>
                 {/* Courses Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
                   {displayedCourses.map((course, index) => (
                     <FadeIn key={course.id} delay={index * 0.1}>
                       <div className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full border border-gray-100 overflow-hidden transform hover:-translate-y-2">
-                        <div className="relative h-48 overflow-hidden">
+                        <div className="relative h-64 overflow-hidden">
                           <img
                             src={
                               course.imagenUrl || '/assets/images/product1.jpg'
