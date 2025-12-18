@@ -31,6 +31,21 @@ export const publicidadService = {
     }
   },
 
+  getById: async (id: number): Promise<Publicidad | Publicidad[]> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener publicidad por ID');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching publicidad with id ${id}:`, error);
+      throw error;
+    }
+  },
+
   create: async (publicidad: Omit<Publicidad, 'id' | 'fecha'>): Promise<Publicidad> => {
     try {
       const response = await fetch(API_URL, {

@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import AdSidebar from '../components/AdSidebar';
 import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
 import { noticiaService, Noticia } from '../services/noticiaService';
@@ -350,27 +351,7 @@ const News = () => {
 
           {/* RIGHT COLUMN: Banners */}
           <div className="col-span-12 lg:col-span-3 space-y-8">
-            <div className="sticky top-4 space-y-6">
-              {/* Banner 1 */}
-              <div className="border border-gray-100 rounded-xl bg-gray-50 p-4 flex flex-col items-center justify-center h-64 text-center">
-                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">
-                  Publicidad
-                </span>
-                <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                  Banner 300x250
-                </div>
-              </div>
-
-              {/* Banner 2 */}
-              <div className="border border-gray-100 rounded-xl bg-gray-50 p-4 flex flex-col items-center justify-center h-96 text-center">
-                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">
-                  Publicidad
-                </span>
-                <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                  Banner Vertical
-                </div>
-              </div>
-            </div>
+            <AdSidebar />
           </div>
         </div>
       </main>

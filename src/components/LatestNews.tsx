@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import config from '../config/index.json';
 import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
+import AdSidebar from './AdSidebar';
 
 const LatestNews = () => {
   const { socials } = config;
@@ -299,56 +300,8 @@ const LatestNews = () => {
           </div>
 
           {/* RIGHT COLUMN: Banners (approx 25% -> col-span-3) */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center border-b border-gray-200 pb-2 mb-4">
-              Publicidad
-            </div>
-            {/* Banner 1 */}
-            <a
-              href="#"
-              className="block h-64 bg-gray-100 relative group-hover:opacity-95 transition-opacity rounded-lg overflow-hidden border border-gray-200"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                <span className="text-xs uppercase font-bold mb-1">
-                  Espacio Publicitario
-                </span>
-                <span className="text-[10px]">300x250</span>
-              </div>
-            </a>
-
-            {/* Banner 2 */}
-            <div className="relative">
-              <div className="absolute top-2 right-2 bg-gray-100 text-[10px] px-2 py-0.5 rounded text-gray-500 font-bold uppercase tracking-wider z-10">
-                Publicidad
-              </div>
-              <a
-                href="#"
-                className="block h-96 bg-gray-100 relative group-hover:opacity-95 transition-opacity rounded-lg overflow-hidden border border-gray-200"
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                  <span className="text-xs uppercase font-bold mb-1">
-                    Vertical Banner
-                  </span>
-                  <span className="text-[10px]">300x600</span>
-                </div>
-              </a>
-            </div>
-
-            {/* Banner 3 */}
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center border-b border-gray-200 pb-2 mb-4 mt-8">
-              Publicidad
-            </div>
-            <a
-              href="#"
-              className="block h-64 bg-gray-100 relative group-hover:opacity-95 transition-opacity rounded-lg overflow-hidden border border-gray-200"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                <span className="text-xs uppercase font-bold mb-1">
-                  Espacio Publicitario
-                </span>
-                <span className="text-[10px]">300x250</span>
-              </div>
-            </a>
+          <div className="lg:col-span-3">
+             <AdSidebar />
           </div>
         </div>
       </div>

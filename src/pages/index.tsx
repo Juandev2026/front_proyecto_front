@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import About from '../components/About';
 import Analytics from '../components/Analytics';
-import ChannelsFooter from '../components/ChannelsFooter';
+// import ChannelsFooter from '../components/ChannelsFooter';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -93,7 +93,7 @@ const App = () => {
         </>
       </LazyShow>
       <Analytics />
-      <ChannelsFooter />
+      {/* <ChannelsFooter /> */}
       <Footer />
     </div>
   );
