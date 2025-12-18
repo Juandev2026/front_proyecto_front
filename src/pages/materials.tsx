@@ -47,7 +47,7 @@ const Materials = () => {
       } catch (err) {
         console.error('Error loading data:', err);
         setError(
-          'No se pudieron cargar los materiales. Por favor intenta de nuevo más tarde.'
+          'No se pudieron cargar los recursos. Por favor intenta de nuevo más tarde.'
         );
       } finally {
         setLoadingData(false);
@@ -118,7 +118,7 @@ const Materials = () => {
           <FadeIn direction="up">
             <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
               <span className="block xl:inline">Centro de</span>{' '}
-              <span className="text-primary">Materiales</span>
+              <span className="text-primary">Recursos</span>
             </h1>
             <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">
               Accede a nuestra biblioteca exclusiva de recursos educativos.
@@ -138,7 +138,7 @@ const Materials = () => {
                       : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
-                  Ver todos los materiales
+                  Ver todos los recursos
                 </button>
                 <button
                   onClick={() => setFilterMode('level')}
@@ -148,7 +148,7 @@ const Materials = () => {
                       : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
-                  Ver materiales por mi nivel
+                  Ver recursos por mi nivel
                 </button>
               </div>
             )}
@@ -157,7 +157,7 @@ const Materials = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar materiales..."
+                placeholder="Buscar recursos..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="w-full px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm text-gray-700"
@@ -229,7 +229,7 @@ const Materials = () => {
               return (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">
-                    No se encontraron materiales que coincidan con tu búsqueda.
+                    No se encontraron recursos que coincidan con tu búsqueda.
                   </p>
                 </div>
               );

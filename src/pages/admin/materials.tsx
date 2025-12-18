@@ -169,7 +169,7 @@ const AdminMaterials = () => {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          Gestión de Materiales
+          Gestión de Recursos
         </h1>
         <button
           onClick={() => {
@@ -201,7 +201,7 @@ const AdminMaterials = () => {
               d="M12 4v16m8-8H4"
             ></path>
           </svg>
-          Nuevo Material
+          Nuevo Recurso
         </button>
       </div>
 
@@ -274,7 +274,7 @@ const AdminMaterials = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">
-              {editingId ? 'Editar Material' : 'Agregar Nuevo Material'}
+              {editingId ? 'Editar Recurso' : 'Agregar Nuevo Recurso'}
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">

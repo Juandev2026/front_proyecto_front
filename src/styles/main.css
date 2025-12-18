@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #ec4755;
-  --color-secondary: #a12c34;
+  --color-primary: #4790fd;
+  --color-secondary: #2b6cb0;
   --color-tertiaty: #99a0a3;
 }
 
 a {
-  @apply text-red-700;
+  @apply transition-colors duration-200;
 }
 
 a:hover {
-  @apply border-b-2 border-red-700;
+  @apply text-primary;
 }
 
 .content p {

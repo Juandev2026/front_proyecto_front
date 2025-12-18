@@ -4,7 +4,7 @@ const API_URL = 'https://proyecto-bd-juan.onrender.com/api/Noticias';
 const TOKEN = '3231232141346';
 
 const headers = {
-  'Authorization': `Bearer ${TOKEN}`,
+  'Authorization':asdasdfhfdhsfhsdfhfja  `Bearer ${TOKEN}`,
   'Content-Type': 'application/json',
 };
 
@@ -15,7 +15,7 @@ async function checkApi() {
     if (!response.ok) {
       console.error('Error fetching all news:', response.status, response.statusText);
     } else {
-      const news = await response.json();
+      const news = await response.json();sdasdasdas
       console.log(`Found ${news.length} news items.`);
       const ids = news.map(n => n.id);
       console.log('IDs:', ids);

@@ -137,11 +137,7 @@ const Menu = () => {
                   </a>
                 </Link>
                 <div className="mt-4 text-center">
-                  <Link href="/login">
-                    <a className="text-base font-medium text-gray-500 hover:text-gray-900">
-                      ¿Ya tienes una cuenta? Iniciar Sesión
-                    </a>
-                  </Link>
+                  
                 </div>
               </div>
             </div>

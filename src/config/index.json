@@ -17,17 +17,21 @@
       "href": "/news"
     },
     {
-      "name": "Materiales",
+      "name": "Recursos",
       "href": "/materials"
     },
     {
       "name": "Cursos",
       "href": "/videos"
+    },
+    {
+      "name": "IA (Próximamente)",
+      "href": "#"
     }
   ],
   "callToAction": {
-    "text": "Get started",
-    "href": "#"
+    "text": "Iniciar sesión",
+    "href": "/login"
   },
   "mainHero": {
     "title": "A",

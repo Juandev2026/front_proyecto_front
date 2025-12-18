@@ -118,7 +118,9 @@ export const nivelService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al eliminar nivel');
+        const errorText = await response.text();
+        console.error(`Error deleting level ${id}: ${response.status} ${errorText}`);
+        throw new Error(`Error ${response.status} al eliminar nivel: ${errorText}`);
       }
     } catch (error) {
       console.error('Error deleting level:', error);

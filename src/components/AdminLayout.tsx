@@ -100,7 +100,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       ),
     },
     {
-      name: 'Materiales',
+      name: 'Recursos',
       href: '/admin/materials',
       icon: (
         <svg
@@ -190,6 +190,25 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             strokeLinejoin="round"
             strokeWidth="2"
             d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+          ></path>
+        </svg>
+      ),
+    },
+    {
+      name: 'Publicidad',
+      href: '/admin/publicidad',
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
           ></path>
         </svg>
       ),
