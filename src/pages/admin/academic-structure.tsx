@@ -307,7 +307,9 @@ const AcademicStructure = () => {
                     }
                   >
                     <option value={0}>Seleccionar...</option>
-                    {modalidades.map((mod) => (
+                    {modalidades
+                      .filter(mod => mod.nombre.toLowerCase() !== 'string')
+                      .map((mod) => (
                       <option key={mod.id} value={mod.id}>
                         {mod.nombre}
                       </option>

@@ -65,8 +65,7 @@ export const nivelService = {
         nombre: nivel.nombre,
         modalidadId: nivel.modalidadId,
         modalidad: {
-          id: 0,
-          nombre: 'string'
+          id: nivel.modalidadId
         }
       };
       
@@ -92,8 +91,7 @@ export const nivelService = {
         nombre: nivel.nombre,
         modalidadId: nivel.modalidadId,
         modalidad: {
-          id: 0,
-          nombre: 'string'
+          id: nivel.modalidadId
         }
       };
 
