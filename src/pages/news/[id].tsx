@@ -8,6 +8,7 @@ import Header from '../../components/Header';
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import CommentsSection from '../../components/CommentsSection';
+import AdSidebar from '../../components/AdSidebar';
 
 const NewsDetail = () => {
   const router = useRouter();
@@ -85,7 +86,7 @@ const NewsDetail = () => {
         </div>
       </div>
 
-      <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="mb-8">
           <Link href="/news">
             <a className="text-primary hover:underline flex items-center gap-2 font-medium">
@@ -94,42 +95,54 @@ const NewsDetail = () => {
           </Link>
         </div>
 
-        <article className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="relative h-64 md:h-96 w-full">
-            <img
-              src={newsItem.imageUrl || ''}
-              alt={newsItem.titulo}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
-              {categoryName && (
-                <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full mb-3">
-                  {categoryName}
-                </span>
-              )}
-              <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-2">
-                {newsItem.titulo}
-              </h1>
-              <div className="flex items-center text-sm md:text-base text-gray-200">
-                <span>{new Date(newsItem.fecha).toLocaleDateString()}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Content Column */}
+          <div className="lg:col-span-8">
+            <article className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+              <div className="relative h-64 md:h-96 w-full">
+                <img
+                  src={newsItem.imageUrl || ''}
+                  alt={newsItem.titulo}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
+                  {categoryName && (
+                    <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full mb-3">
+                      {categoryName}
+                    </span>
+                  )}
+                  <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-2">
+                    {newsItem.titulo}
+                  </h1>
+                  <div className="flex items-center text-sm md:text-base text-gray-200">
+                    <span>{new Date(newsItem.fecha).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              <div className="p-6 md:p-10">
+                <div className="prose prose-lg max-w-none text-gray-700">
+                  {/* Render description with line breaks if needed, or just as text */}
+                  {newsItem.descripcion.split('\n').map((paragraph, index) => (
+                    <p key={index} className="mb-4">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </article>
+            
+            {newsItem && <CommentsSection noticiaId={newsItem.id} />}
           </div>
 
-          <div className="p-6 md:p-10">
-            <div className="prose prose-lg max-w-none text-gray-700">
-              {/* Render description with line breaks if needed, or just as text */}
-              {newsItem.descripcion.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-4">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+          {/* Sidebar Column */}
+          <div className="lg:col-span-4 space-y-8">
+             <div className="sticky top-8">
+                <AdSidebar />
+             </div>
           </div>
-        </article>
-        
-        {newsItem && <CommentsSection noticiaId={newsItem.id} />}
+        </div>
       </main>
 
       <Footer />

@@ -18,11 +18,13 @@ const UsersPage = () => {
     nombreCompleto: '',
     email: '',
     password: '',
-    role: 'User',
+    role: 'Client',
     celular: '',
     regionId: 0,
     modalidadId: 0,
-    nivelId: 0
+    nivelId: 0,
+    especialidadId: 0,
+    passwordHash: ''
   });
 
   useEffect(() => {
@@ -54,7 +56,45 @@ const UsersPage = () => {
     e.preventDefault();
     try {
       if (editingUser) {
-        await userService.update(editingUser.id, formData);
+        // Reconstruct nested objects (some backends require them even if ID is present)
+        const selectedRegion = regions.find(r => r.id === formData.regionId);
+        const selectedModalidad = modalidades.find(m => m.id === formData.modalidadId);
+        const selectedNivel = niveles.find(n => n.id === formData.nivelId);
+        // Note: especialidades list is not currently fetched in loadData for the main table, 
+        // but we assume we might need it or backend handles null. 
+        // If especialidadId is updated to 0/null, we send null? 
+        // Let's adhere to the structure:
+        
+        const payload: any = { ...formData };
+        
+        if (selectedRegion) {
+             payload.region = { id: selectedRegion.id, nombre: selectedRegion.nombre };
+        }
+        if (selectedModalidad) {
+             payload.modalidad = { id: selectedModalidad.id, nombre: selectedModalidad.nombre };
+        }
+        // Nesting logic based on schema provided by user (Nivel contains Modalidad?)
+        if (selectedNivel) {
+             payload.nivel = { 
+                 id: selectedNivel.id, 
+                 nombre: selectedNivel.nombre,
+                 modalidadId: selectedNivel.modalidadId,
+                 modalidad: { id: selectedNivel.modalidadId, nombre: 'string' } // Mocking if we don't have full object ref handy without lookup, or lookup again
+             };
+             // Better lookup for nested
+             const modalForNivel = modalidades.find(m => m.id === selectedNivel.modalidadId);
+             if (modalForNivel) {
+                 payload.nivel.modalidad = { id: modalForNivel.id, nombre: modalForNivel.nombre };
+             }
+        }
+        
+        // For Especialidad, we need to know if we have that list. 
+        // We are NOT fetching especialidades in loadData currently except for `nivelService.getAll()`? 
+        // Wait, loadData does NOT fetch especialidades. 
+        // So we can only send ID or we need to fetch them if we want to send the object.
+        // Let's try sending just the properties we can resolve.
+        
+        await userService.update(editingUser.id, payload);
       } else {
         await userService.create(formData as User);
       }
@@ -80,11 +120,13 @@ const UsersPage = () => {
         nombreCompleto: '',
         email: '',
         password: '',
-        role: 'User',
+        role: 'Client',
         celular: '',
         regionId: 0,
         modalidadId: 0,
-        nivelId: 0
+        nivelId: 0,
+        especialidadId: 0,
+        passwordHash: ''
       });
   }
 
@@ -98,7 +140,9 @@ const UsersPage = () => {
       password: '', 
       regionId: user.regionId || 0,
       modalidadId: user.modalidadId || 0,
-      nivelId: user.nivelId || 0
+      nivelId: user.nivelId || 0,
+      especialidadId: user.especialidadId || 0,
+      passwordHash: user.passwordHash || ''
     });
     setIsModalOpen(true);
   };
@@ -264,20 +308,22 @@ const UsersPage = () => {
                     required
                   />
                 </div>
-                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Contraseña {editingUser && '(Dejar en blanco para mantener)'}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                    required={!editingUser}
-                  />
-                </div>
+                {!editingUser && (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                      required
+                    />
+                  </div>
+                )}
                  <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Celular
@@ -302,8 +348,9 @@ const UsersPage = () => {
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
+
                     <option value="Admin">Admin</option>
-                    <option value="User">User</option>
+                    <option value="Client">Client</option>
                   </select>
                 </div>
                 

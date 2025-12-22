@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-import config from '../config/index.json';
+
 import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
 import AdSidebar from './AdSidebar';
 
 const LatestNews = () => {
-  const { socials } = config;
   const { user, isAuthenticated } = useAuth();
   const [latestNews, setLatestNews] = useState<Noticia[]>([]);
   const [featuredNews, setFeaturedNews] = useState<Noticia | null>(null);
@@ -43,6 +42,20 @@ const LatestNews = () => {
 
     fetchNews();
   }, [filterMode, user?.nivelId]);
+  
+  useEffect(() => {
+    // Load TikTok Script
+    const tiktokScript = document.createElement('script');
+    tiktokScript.src = 'https://www.tiktok.com/embed.js';
+    tiktokScript.async = true;
+    document.body.appendChild(tiktokScript);
+
+    return () => {
+      if (document.body.contains(tiktokScript)) {
+          document.body.removeChild(tiktokScript);
+      }
+    };
+  }, []);
 
   return (
     <div className="py-12 bg-gray-50">
@@ -151,23 +164,29 @@ const LatestNews = () => {
                 </svg>
               </div>
               <div className="p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                    <img
-                      src="/assets/images/product2.jpg"
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
+                 <div className="w-full aspect-w-16 aspect-h-9">
+                <a 
+                   href="https://www.youtube.com/@JuanCarlosAvend/videos" 
+                   target="_blank" 
+                   rel="noreferrer"
+                   className="block relative w-full h-[315px] group"
+                >
+                    {/* Thumbnail Image */}
+                    <img 
+                        src="/assets/images/youtube.jpeg" 
+                        alt="YouTube Channel" 
+                        className="w-full h-full object-cover rounded shadow-sm opacity-90 group-hover:opacity-100 transition-opacity"
                     />
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm">Juan Avend</div>
-                    <div className="text-xs text-gray-500">
-                      355 suscriptores
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
                     </div>
-                  </div>
-                  <button className="ml-auto bg-red-600 text-white text-xs px-3 py-1 rounded font-bold uppercase hover:bg-red-700">
-                    Suscribirse
-                  </button>
+                </a>
                 </div>
               </div>
             </div>
@@ -184,22 +203,17 @@ const LatestNews = () => {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </div>
-              <div className="h-32 bg-gray-100 relative">
-                <img
-                  src="/assets/images/happyTeam.jpeg"
-                  className="w-full h-full object-cover opacity-90"
-                  alt="FB Cover"
-                />
-              </div>
-              <div className="p-3 text-center">
-                <a
-                  href={socials?.facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block w-full bg-[#e7f3ff] text-[#1877F2] font-bold text-sm py-2 rounded hover:bg-blue-100"
-                >
-                  Ver Página
-                </a>
+              <div className="p-3 text-center overflow-hidden">
+                <iframe
+                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fjuanavendocente%3Frdid%3DzjANupcVQeTnGgXL%23&tabs=timeline&width=500&height=400&small_header=false&adapt_container_width=false&hide_cover=false&show_facepile=false&appId"
+                    width="500" 
+                    height="400" 
+                    style={{border:'none', overflow:'hidden'}} 
+                    scrolling="no" 
+                    frameBorder="0" 
+                    allowFullScreen={true}
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                ></iframe>
               </div>
             </div>
 
@@ -212,16 +226,18 @@ const LatestNews = () => {
                   TikTok
                 </span>
               </div>
-              <div className="p-4 text-center">
-                <div className="text-sm font-bold mb-2">@juan_avend</div>
-                <a
-                  href="https://www.tiktok.com/@juan_avend"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block px-6 py-2 bg-black text-white text-sm font-bold rounded shadow hover:opacity-80"
-                >
-                  Ver Perfil
-                </a>
+              <div className="p-0 text-center">
+                <blockquote 
+                    className="tiktok-embed" 
+                    cite="https://www.tiktok.com/@juan_avend" 
+                    data-unique-id="juan_avend" 
+                    data-embed-type="creator" 
+                    style={{ maxWidth: '100%', minWidth: '100%' }}
+                > 
+                    <section> 
+                        <a target="_blank" href="https://www.tiktok.com/@juan_avend?refer=creator_embed" rel="noreferrer">@juan_avend</a> 
+                    </section> 
+                </blockquote>
               </div>
             </div>
 
@@ -267,36 +283,7 @@ const LatestNews = () => {
               )}
             </div>
 
-            {/* Recurso Destacado */}
-            <div className="pt-4">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4 uppercase">
-                Recurso Destacado
-              </h2>
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg p-6 text-white shadow-lg text-center transform hover:scale-[1.02] transition-transform">
-                <svg
-                  className="w-12 h-12 mx-auto mb-3 text-blue-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
-                <h3 className="font-bold text-lg mb-2">
-                  Guía Exclusiva para Docentes
-                </h3>
-                <p className="text-blue-100 text-xs mb-4">
-                  Descarga nuestra guía actualizada con las últimas normativas.
-                </p>
-                <button className="bg-white text-blue-700 px-4 py-2 rounded-full font-bold text-xs uppercase hover:bg-blue-50">
-                  Descargar PDF
-                </button>
-              </div>
-            </div>
+
           </div>
 
           {/* RIGHT COLUMN: Banners (approx 25% -> col-span-3) */}

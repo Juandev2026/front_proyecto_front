@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { comentarioService, Comentario } from '../services/comentarioService';
 import { useAuth } from '../hooks/useAuth';
+import { userService, User } from '../services/userService';
 
 interface CommentsSectionProps {
   noticiaId: number;
@@ -8,15 +9,21 @@ interface CommentsSectionProps {
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   const [comments, setComments] = useState<Comentario[]>([]);
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [visibleCount, setVisibleCount] = useState(3);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const fetchComments = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await comentarioService.getAll(noticiaId);
-      setComments(data);
+      const [commentsData, usersData] = await Promise.all([
+        comentarioService.getAll(noticiaId),
+        userService.getAll()
+      ]);
+      setComments(commentsData);
+      setUsersList(usersData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -25,8 +32,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   }, [noticiaId]);
 
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +50,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
         usuarioId: user.id
       });
       setNewComment('');
-      fetchComments();
+      fetchData(); // Refresh both to be safe, though mainly comments needed
     } catch (err) {
       console.error(err);
       alert('Error al publicar el comentario.');
@@ -54,11 +61,24 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
     if (!window.confirm('¿Estás seguro de eliminar este comentario?')) return;
     try {
       await comentarioService.delete(id);
-      fetchComments();
+      fetchData();
     } catch (err) {
       console.error(err);
       alert('Error al eliminar el comentario.');
     }
+  };
+
+  const getAuthorName = (comment: Comentario) => {
+    // Try to find user in the fetched list first (frontend mapping)
+    const author = usersList.find(u => u.id === comment.usuarioId);
+    if (author) return author.nombreCompleto;
+    
+    // Fallback to existing logic
+    return comment.usuario?.nombreCompleto || 'Usuario';
+  };
+
+  const showMoreComments = () => {
+      setVisibleCount(prev => prev + 5);
   };
 
   return (
@@ -66,17 +86,17 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Comentarios</h2>
 
       {/* List of comments */}
-      <div className="space-y-6 mb-8">
+      <div className={`space-y-6 mb-8 ${comments.length > 3 ? 'max-h-[500px] overflow-y-auto pr-2' : ''}`}>
         {comments.length === 0 && !loading && (
           <p className="text-gray-500 italic">No hay comentarios aún. ¡Sé el primero en comentar!</p>
         )}
         
-        {comments.map((comment) => (
+        {comments.slice(0, visibleCount).map((comment) => (
           <div key={comment.id} className="bg-gray-50 rounded-lg p-6 relative">
              <div className="flex justify-between items-start">
                 <div>
                     <h4 className="font-bold text-gray-900">
-                        {comment.usuario?.nombreCompleto || 'Usuario'}
+                        {getAuthorName(comment)}
                     </h4>
                     <span className="text-xs text-gray-500">
                         {new Date(comment.fecha).toLocaleString()}
@@ -95,6 +115,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
           </div>
         ))}
       </div>
+
+      {comments.length > visibleCount && (
+        <button 
+            onClick={showMoreComments}
+            className="w-full text-center text-blue-600 hover:text-blue-800 font-medium py-2 mb-6 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+        >
+            Ver más comentarios ({comments.length - visibleCount} restantes)
+        </button>
+      )}
 
       {/* Add comment form */}
       {user ? (

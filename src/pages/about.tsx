@@ -1,222 +1,142 @@
 import React from 'react';
-
-import AboutSection from '../components/About';
-import FadeIn from '../components/FadeIn';
-import Footer from '../components/Footer';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const About = () => {
   return (
-    <div className="bg-background overflow-hidden">
-      <div className="relative bg-background">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="relative bg-white shadow-sm z-20">
         <div className="max-w-7xl mx-auto">
           <Header />
         </div>
-        <div className="relative">
-          <div className="max-w-7xl mx-auto relative">
-            <div className="relative z-10 pb-8 bg-background sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-              <FadeIn direction="right" padding={false}>
-                <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-                  <div className="sm:text-center lg:text-left">
-                    <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                      <span className="block xl:inline">Nosotros</span>{' '}
-                      <span className="block text-primary xl:inline">
-                        ¿Quiénes somos?
-                      </span>
-                    </h1>
-                    <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                      Somos un espacio educativo dedicado a la enseñanza y
-                      difusión de conocimientos en diversas áreas. A través de
-                      cursos especializados y artículos en nuestro blog,
-                      brindamos contenido de calidad para el aprendizaje
-                      continuo. Nuestro docente, con amplia experiencia en su
-                      campo, comparte su conocimiento para ayudar a estudiantes
-                      y profesionales a fortalecer sus habilidades y alcanzar
-                      sus objetivos.
-                    </p>
-                  </div>
-                </main>
-              </FadeIn>
-            </div>
-            <FadeIn direction="left" delay={0.2} padding={false}>
-              <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-                <img
-                  className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full"
-                  src="/assets/images/happyTeam.jpeg"
-                  alt="Equipo educativo"
-                />
-              </div>
-            </FadeIn>
-          </div>
-        </div>
       </div>
 
-      <div className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:text-center">
-            <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Nuestros Pilares
-            </p>
-          </div>
-
-          <div className="mt-10">
-            <dl className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
-              {[
-                {
-                  name: 'Cursos Especializados',
-                  description:
-                    'Formación de alto nivel adaptada a las necesidades actuales.',
-                },
-                {
-                  name: 'Blog Educativo',
-                  description:
-                    'Artículos y recursos para complementar tu aprendizaje.',
-                },
-                {
-                  name: 'Experiencia Docente',
-                  description:
-                    'Profesionales con trayectoria compartiendo su saber.',
-                },
-                {
-                  name: 'Contacto Directo',
-                  description:
-                    'Atención personalizada para resolver tus dudas.',
-                },
-              ].map((feature) => (
-                <div key={feature.name} className="relative">
-                  <dt>
-                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">
-                      {feature.name}
-                    </p>
-                  </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
-                    {feature.description}
-                  </dd>
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        <div className="space-y-12">
+            
+            {/* Intro Section: Video + Text */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Video Placeholder */}
+                <div className="rounded-xl overflow-hidden shadow-lg h-[300px] md:h-full relative bg-gray-900 group">
+                    {/* Since we don't have the exact video URL, we'll use a placeholder styled like the image */}
+                    <img 
+                        src="/assets/images/happyTeam.jpeg" 
+                        alt="Carpeta Digital Team" 
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                        <h3 className="text-white font-black text-2xl md:text-3xl tracking-wider mb-4 drop-shadow-lg uppercase">
+                            Bienvenido a <br/>
+                            <span className="text-4xl md:text-5xl block mt-2">Carpeta Digital</span>
+                            <span className="text-4xl md:text-5xl block">Education</span>
+                        </h3>
+                        {/* Play Button Icon */}
+                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 transition-transform">
+                            <svg className="w-8 h-8 text-white ml-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-              ))}
-            </dl>
+
+                {/* Text Content */}
+                <div className="flex flex-col justify-center">
+                  <h2 className="text-3xl font-extrabold text-blue-900 mb-6">Quiénes Somos</h2>
+                  <div className="space-y-4 text-gray-600 text-sm leading-relaxed text-justify">
+                    <p>
+                      <span className="font-bold text-primary">Carpeta Digital</span> es una empresa peruana especializada en el
+                      desarrollo de soluciones innovadoras para el fortalecimiento
+                      de la educación. Nos enfocamos en la creación de recursos
+                      pedagógicos digitales, la realización de talleres formativos y la
+                      prestación de servicios de asesoría y acompañamiento
+                      docente.
+                    </p>
+                    <p>
+                      Con más de cinco años de trayectoria, hemos contribuido
+                      significativamente a mejorar la calidad de la enseñanza en el
+                      Perú, impactando positivamente en miles de docentes a nivel
+                      nacional. Nuestra propuesta integra creatividad, tecnología y
+                      un enfoque humano, permitiendo que las clases sean más
+                      efectivas, dinámicas y centradas en el aprendizaje significativo.
+                    </p>
+                    
+                    <div className="bg-orange-50 p-3 rounded-lg border-l-4 border-orange-400 mt-2">
+                        <p className="text-xs text-orange-800">
+                        <span className="font-bold text-orange-600 block mb-1">Misión:</span> 
+                        Brindar recursos pedagógicos innovadores y asesoría a docentes, impactando en la calidad educativa.
+                        </p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                        <p className="text-xs text-blue-800">
+                        <span className="font-bold text-blue-600 block mb-1">Visión:</span> 
+                        Ser el aliado confiable para docentes de toda Latinoamérica, conectando calidad e innovación con corazón.
+                        </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Values Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-blue-900 mb-6 border-b-2 border-gray-200 pb-2">Valores</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Card 1: Compromiso Educativo */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500">
+                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                  </div>
+                  <h3 className="font-bold text-blue-900 mb-3 text-sm">Compromiso Educativo</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed text-justify">
+                    Creemos que la educación transforma vidas y
+                    comunidades. Por eso, creamos soluciones prácticas y de
+                    calidad, pensando siempre en el bienestar y el
+                    aprendizaje real de docentes y estudiantes.
+                  </p>
+                </div>
+
+                {/* Card 2: Relacionales */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500">
+                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                     </svg>
+                  </div>
+                  <h3 className="font-bold text-blue-900 mb-3 text-sm">Relacionales</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed text-justify">
+                    Cada material, cada taller y cada asesoría están
+                    diseñados para impulsar clases más creativas, humanas y
+                    efectivas. Innovamos con sentido, escuchando a los
+                    maestros y respondiendo a sus verdaderos desafíos.
+                  </p>
+                </div>
+
+                {/* Card 3: Comunidad y colaboración */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500">
+                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                     </svg>
+                  </div>
+                  <h3 className="font-bold text-blue-900 mb-3 text-sm">Comunidad y colaboración</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed text-justify">
+                    No caminamos solos: construimos redes de apoyo entre
+                    maestros, aliados y profesionales comprometidos con la
+                    educación. Juntos llegamos más lejos y logramos un
+                    impacto real y sostenible.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
           </div>
-        </div>
-      </div>
+      </main>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Ponte en{' '}
-            <span className="text-primary relative inline-block">
-              Contacto
-              <svg
-                className="absolute w-full h-3 -bottom-1 left-0 text-primary opacity-60"
-                viewBox="0 0 100 10"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M0 5 Q 50 10 100 5"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="none"
-                />
-              </svg>
-            </span>
-          </h1>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nombres
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  placeholder="Nombre ..."
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Apellidos
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  placeholder="Apellidos ..."
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="Email ..."
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Celular
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  placeholder="Celular ..."
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Mensaje
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={4}
-                placeholder="Mensaje ..."
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Enviar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      <AboutSection />
       <Footer />
     </div>
   );

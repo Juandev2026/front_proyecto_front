@@ -31,6 +31,21 @@ export interface User {
       nombre: string;
     };
   };
+  especialidadId: number;
+  especialidad?: {
+    id: number;
+    nombre: string;
+    nivelId: number;
+    nivel?: {
+      id: number;
+      nombre: string;
+      modalidadId: number;
+      modalidad?: {
+        id: number;
+        nombre: string;
+      };
+    };
+  };
 }
 
 export const userService = {
@@ -89,10 +104,20 @@ export const userService = {
 
   update: async (id: number, user: Partial<User>): Promise<void> => {
     try {
+      // Create a shallow copy to modify payload
+      const payload = { ...user, id };
+      
+      // Remove password if it is empty string or undefined, so backend doesn't try to hash an empty password
+      if (!payload.password) {
+        delete payload.password;
+      }
+
+      console.log('Update Payload:', payload); // Debugging
+
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ ...user, id }),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         throw new Error('Error al actualizar usuario');
