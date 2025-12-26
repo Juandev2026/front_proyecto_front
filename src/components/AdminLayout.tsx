@@ -255,7 +255,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <a
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   router.pathname === item.href
-                    ? 'bg-primary text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >

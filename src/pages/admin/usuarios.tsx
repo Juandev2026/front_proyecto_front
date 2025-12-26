@@ -27,6 +27,10 @@ const UsersPage = () => {
     passwordHash: ''
   });
 
+  // View Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -158,6 +162,17 @@ const UsersPage = () => {
     }
   };
 
+  const handleView = async (id: number) => {
+    try {
+      const user = await userService.getById(id);
+      setViewingUser(user);
+      setIsViewModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      alert('Error al cargar detalles del usuario');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex justify-between items-center">
@@ -233,18 +248,36 @@ const UsersPage = () => {
                      {user.region?.nombre || user.regionId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="text-primary hover:text-primary-dark mr-4"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Eliminar
-                    </button>
+                    <div className="flex items-center justify-end space-x-3">
+                      <button
+                        onClick={() => handleView(user.id)}
+                        className="text-blue-600 hover:text-blue-900 focus:outline-none"
+                        title="Ver Detalles"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="text-green-600 hover:text-green-900 focus:outline-none"
+                        title="Editar"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="text-red-600 hover:text-red-900 focus:outline-none"
+                        title="Eliminar"
+                      >
+                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -351,6 +384,7 @@ const UsersPage = () => {
 
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
+                    <option value="subadmin">subadmin</option>
                   </select>
                 </div>
                 
@@ -415,6 +449,90 @@ const UsersPage = () => {
                   {editingUser ? 'Actualizar' : 'Crear'}
                 </button>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {isViewModalOpen && viewingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
+          <div className="relative w-full max-w-lg rounded-lg bg-white shadow-lg my-8">
+            <div className="flex items-center justify-between rounded-t border-b p-4">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Detalles del Usuario
+              </h3>
+              <button
+                onClick={() => {
+                  setIsViewModalOpen(false);
+                  setViewingUser(null);
+                }}
+                className="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">ID</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.id}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Rol</h4>
+                  <p className="mt-1 text-sm text-gray-900 font-semibold">{viewingUser.role}</p>
+                </div>
+                <div className="col-span-2">
+                  <h4 className="text-sm font-medium text-gray-500">Nombre Completo</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.nombreCompleto}</p>
+                </div>
+                <div className="col-span-2">
+                  <h4 className="text-sm font-medium text-gray-500">Email</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.email}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Celular</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.celular || '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Región</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.region?.nombre ||  '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Modalidad</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.modalidad?.nombre ||  '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Nivel</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.nivel?.nombre ||  '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <h4 className="text-sm font-medium text-gray-500">Especialidad</h4>
+                  <p className="mt-1 text-sm text-gray-900">{viewingUser.especialidad?.nombre ||  '-'}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                <button
+                    onClick={() => {
+                        setIsViewModalOpen(false);
+                        setViewingUser(null);
+                    }}
+                    type="button"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                >
+                    Cerrar
+                </button>
             </div>
           </div>
         </div>
