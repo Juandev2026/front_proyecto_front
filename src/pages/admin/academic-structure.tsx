@@ -121,12 +121,11 @@ const AcademicStructure = () => {
     modalidadId: 0,
     nivelId: 0,
   });
+  const [file, setFile] = useState<File | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Always fetch related data if needed for dropdowns (modalidades for niveles, niveles for especialidades)
-      // Optimally we fetch what we need.
       const [modalidadesData, nivelesData, especialidadesData] = await Promise.all([
         modalidadService.getAll(),
         nivelService.getAll(),
@@ -154,11 +153,21 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.create({ nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-        await nivelService.create({
-          nombre: formData.nombre,
-          imageUrl: formData.imageUrl,
-          modalidadId: formData.modalidadId,
-        });
+        if (file) {
+           const fd = new FormData();
+           fd.append('nombre', formData.nombre);
+           fd.append('modalidadId', String(formData.modalidadId));
+           fd.append('file', file);
+           if (formData.imageUrl) fd.append('imageUrl', formData.imageUrl);
+           
+           await nivelService.create(fd);
+        } else {
+           await nivelService.create({
+              nombre: formData.nombre,
+              imageUrl: formData.imageUrl,
+              modalidadId: formData.modalidadId,
+           });
+        }
       } else {
         await especialidadesService.create({
             nombre: formData.nombre,
@@ -179,11 +188,22 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.update(editingId, { nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-        await nivelService.update(editingId, {
-          nombre: formData.nombre,
-          imageUrl: formData.imageUrl,
-          modalidadId: formData.modalidadId,
-        });
+         if (file) {
+           const fd = new FormData();
+           fd.append('id', String(editingId));
+           fd.append('nombre', formData.nombre);
+           fd.append('modalidadId', String(formData.modalidadId));
+           fd.append('file', file);
+           if (formData.imageUrl) fd.append('imageUrl', formData.imageUrl);
+           
+           await nivelService.update(editingId, fd);
+        } else {
+           await nivelService.update(editingId, {
+            nombre: formData.nombre,
+            imageUrl: formData.imageUrl,
+            modalidadId: formData.modalidadId,
+           });
+        }
       } else {
          await especialidadesService.update(editingId, {
             nombre: formData.nombre,
@@ -224,9 +244,11 @@ const AcademicStructure = () => {
         modalidadId: (item as Nivel).modalidadId || 0,
         nivelId: (item as Especialidad).nivelId || 0,
       });
+      setFile(null);
     } else {
       setEditingId(null);
       setFormData({ nombre: '', imageUrl: '', modalidadId: 0, nivelId: 0 });
+      setFile(null);
     }
     setIsModalOpen(true);
   };
@@ -235,6 +257,7 @@ const AcademicStructure = () => {
     setIsModalOpen(false);
     setEditingId(null);
     setFormData({ nombre: '', imageUrl: '', modalidadId: 0, nivelId: 0 });
+    setFile(null);
   };
 
   const TabButton = ({ type, label }: { type: TabType; label: string }) => (
@@ -321,6 +344,11 @@ const AcademicStructure = () => {
               </th>
               {activeTab === 'niveles' && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Imagen
+                </th>
+              )}
+              {activeTab === 'niveles' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Modalidad
                 </th>
               )}
@@ -337,7 +365,7 @@ const AcademicStructure = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                   Cargando...
                 </td>
               </tr>
@@ -345,7 +373,7 @@ const AcademicStructure = () => {
             {!loading &&
               currentData.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                     No hay registros.
                   </td>
                 </tr>
@@ -359,6 +387,19 @@ const AcademicStructure = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.nombre}
                   </td>
+                  {activeTab === 'niveles' && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {(item as Nivel).imageUrl ? (
+                        <img 
+                          src={(item as Nivel).imageUrl} 
+                          alt={(item as Nivel).nombre} 
+                          className="h-10 w-16 object-cover rounded shadow-sm"
+                        />
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">Sin imagen</span>
+                      )}
+                    </td>
+                  )}
                   {activeTab === 'niveles' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {modalidades.find((m) => m.id === (item as Nivel).modalidadId)?.nombre || (item as Nivel).modalidad?.nombre || '-'}
@@ -445,18 +486,37 @@ const AcademicStructure = () => {
               {activeTab === 'niveles' && (
                 <>
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    URL de Imagen (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={formData.imageUrl || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, imageUrl: e.target.value })
-                    }
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                  />
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Imagen del Nivel
+                    </label>
+                    <div className="space-y-3">
+                         <div>
+                            <label className="block text-xs text-gray-500 mb-1">Opción 1: Subir Archivo</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  setFile(e.target.files[0]);
+                                }
+                              }}
+                            />
+                        </div>
+                        <div className="text-center text-xs text-gray-400 font-medium">- O -</div>
+                        <div>
+                             <label className="block text-xs text-gray-500 mb-1">Opción 2: URL de Imagen</label>
+                             <input
+                                type="text"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={formData.imageUrl || ''}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, imageUrl: e.target.value })
+                                }
+                                placeholder="https://ejemplo.com/imagen.jpg"
+                              />
+                        </div>
+                    </div>
                 </div>
                 <div className="mb-6">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -559,12 +619,28 @@ const AcademicStructure = () => {
               </div>
               
               {activeTab === 'niveles' && (
+                <>
+                <div>
+                   <label className="block text-sm font-medium text-gray-500">Imagen</label>
+                   <div className="mt-1">
+                     {(viewingItem as Nivel).imageUrl ? (
+                        <img 
+                          src={(viewingItem as Nivel).imageUrl} 
+                          alt={(viewingItem as Nivel).nombre} 
+                          className="h-48 w-auto object-cover rounded shadow-md"
+                        />
+                      ) : (
+                        <span className="text-gray-400 italic">Sin imagen asignada</span>
+                      )}
+                   </div>
+                </div>
                 <div>
                    <label className="block text-sm font-medium text-gray-500">Modalidad</label>
                    <p className="mt-1 text-gray-900">
                      {modalidades.find((m) => m.id === (viewingItem as Nivel).modalidadId)?.nombre || (viewingItem as Nivel).modalidad?.nombre || '-'}
                    </p>
                 </div>
+                </>
               )}
               
               {activeTab === 'especialidades' && (

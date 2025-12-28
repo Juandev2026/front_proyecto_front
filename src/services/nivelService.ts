@@ -13,7 +13,7 @@ export interface Nivel {
   };
 }
 
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export const nivelService = {
   getAll: async (): Promise<Nivel[]> => {
@@ -44,22 +44,29 @@ export const nivelService = {
     }
   },
 
-  create: async (nivel: { nombre: string; imageUrl?: string; modalidadId: number }): Promise<Nivel> => {
+  create: async (nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData): Promise<Nivel> => {
     try {
-      const payload = {
-        id: 0,
-        nombre: nivel.nombre,
-        imageUrl: nivel.imageUrl || '',
-        modalidadId: nivel.modalidadId,
-        modalidad: {
-          id: nivel.modalidadId
-        }
-      };
+      const isFormData = nivel instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
+      if (isFormData) {
+        body = nivel as FormData;
+      } else {
+         const n = nivel as { nombre: string; imageUrl?: string; modalidadId: number };
+         body = JSON.stringify({
+            id: 0,
+            nombre: n.nombre,
+            imageUrl: n.imageUrl || '',
+            modalidadId: n.modalidadId,
+            modalidad: { id: n.modalidadId }
+         });
+      }
       
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        headers,
+        body,
       });
       if (!response.ok) {
         throw new Error('Error al crear nivel');
@@ -71,22 +78,31 @@ export const nivelService = {
     }
   },
 
-  update: async (id: number, nivel: { nombre: string; imageUrl?: string; modalidadId: number }): Promise<void> => {
+  update: async (id: number, nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData): Promise<void> => {
     try {
-      const payload = {
-        id: id,
-        nombre: nivel.nombre,
-        imageUrl: nivel.imageUrl || '',
-        modalidadId: nivel.modalidadId,
-        modalidad: {
-          id: nivel.modalidadId
-        }
-      };
+      const isFormData = nivel instanceof FormData;
+      let body: string | FormData;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
+
+      if (isFormData) {
+        const fd = nivel as FormData;
+        if (!fd.has('id')) fd.append('id', String(id));
+        body = fd;
+      } else {
+        const n = nivel as { nombre: string; imageUrl?: string; modalidadId: number };
+        body = JSON.stringify({
+            id,
+            nombre: n.nombre,
+            imageUrl: n.imageUrl || '',
+            modalidadId: n.modalidadId,
+            modalidad: { id: n.modalidadId }
+         });
+      }
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        headers,
+        body,
       });
       if (!response.ok) {
         throw new Error('Error al actualizar nivel');
@@ -96,6 +112,7 @@ export const nivelService = {
       throw error;
     }
   },
+
 
   delete: async (id: number): Promise<void> => {
     try {
