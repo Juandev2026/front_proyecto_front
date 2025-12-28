@@ -60,10 +60,16 @@ const AdSidebar = () => {
 
   return (
     <div className="space-y-6 sticky top-4">
-      {ads.map((ad, index) => (
+      {ads.map((ad, index) => {
+        const hasPrice = ad.precio && ad.precio > 0;
+        const link = hasPrice && ad.telefono 
+            ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(`Hola, estoy interesado en ${ad.titulo || 'su publicidad'}`)}`
+            : ad.enlace;
+            
+        return (
         <div key={ad.id || index} className="group border border-gray-100 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-           {ad.enlace ? (
-               <a href={ad.enlace} target="_blank" rel="noopener noreferrer" className="block relative">
+           {link ? (
+               <a href={link} target="_blank" rel="noopener noreferrer" className="block relative">
                    {ad.imageUrl ? (
                        <img src={ad.imageUrl} alt={ad.titulo || 'Publicidad'} className="w-full h-auto object-cover" />
                    ) : (
@@ -72,8 +78,13 @@ const AdSidebar = () => {
                        </div>
                    )}
                    <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
-                       PUBLICIDAD
+                       {hasPrice ? 'VENTA' : 'PUBLICIDAD'}
                    </div>
+                   {hasPrice && (
+                       <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-xs font-bold py-1 px-2 text-center">
+                           Comprar S/ {ad.precio}
+                       </div>
+                   )}
                </a>
            ) : (
                <div className="relative">
@@ -90,7 +101,8 @@ const AdSidebar = () => {
                </div>
            )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

@@ -6,6 +6,8 @@ export interface Publicidad {
   fecha?: string;
   modalidadId: number;
   nivelId: number;
+  precio: number;
+  telefono: string;
 }
 
 import { API_BASE_URL } from '../config/api';
@@ -51,7 +53,11 @@ export const publicidadService = {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(publicidad),
+        body: JSON.stringify({
+            ...publicidad,
+            precio: publicidad.precio ? Number(publicidad.precio) : 0,
+            telefono: publicidad.telefono || ''
+        }),
       });
 
       if (!response.ok) {
@@ -71,7 +77,11 @@ export const publicidadService = {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(publicidad),
+        body: JSON.stringify({
+            ...publicidad,
+            precio: publicidad.precio ? Number(publicidad.precio) : 0,
+            telefono: publicidad.telefono || ''
+        }),
       });
 
       if (!response.ok) {

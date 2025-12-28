@@ -8,6 +8,8 @@ export interface Anuncio {
   celular: string;
   imagenUrl: string;
   ruta: string;
+  precio: number;
+  telefono: string;
 }
 
 const API_URL = `${API_BASE_URL}/AnunciosGenerales`;
@@ -19,12 +21,88 @@ export const anuncioService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        console.error('Error al obtener anuncios:', response.status, response.statusText);
         throw new Error(`Error al obtener anuncios: ${response.status} ${response.statusText}`);
       }
       return await response.json();
     } catch (error) {
       console.error('Error fetching announcements:', error);
+      throw error;
+    }
+  },
+
+  getById: async (id: number): Promise<Anuncio> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener el anuncio');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching announcement with id ${id}:`, error);
+      throw error;
+    }
+  },
+
+  create: async (anuncio: Omit<Anuncio, 'id'>): Promise<Anuncio> => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(anuncio),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al crear anuncio: ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: number, anuncio: Partial<Anuncio>): Promise<Anuncio> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(anuncio),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al actualizar anuncio: ${errorText}`);
+      }
+
+      const text = await response.text();
+      return text ? JSON.parse(text) : ({} as Anuncio);
+    } catch (error) {
+      console.error(`Error updating announcement with id ${id}:`, error);
+      throw error;
+    }
+  },
+
+  delete: async (id: number): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar el anuncio');
+      }
+    } catch (error) {
+      console.error(`Error deleting announcement with id ${id}:`, error);
       throw error;
     }
   },

@@ -25,6 +25,8 @@ const AdminMaterials = () => {
     modalidadId: 0,
     nivelId: 0,
     usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+    precio: 0,
+    telefono: '',
   });
   const [file, setFile] = useState<File | null>(null);
 
@@ -81,6 +83,8 @@ const AdminMaterials = () => {
       modalidadId: item.modalidadId,
       nivelId: item.nivelId,
       usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+      precio: item.precio || 0,
+      telefono: item.telefono || '',
     });
     setFile(null);
     setIsModalOpen(true);
@@ -411,6 +415,36 @@ const AdminMaterials = () => {
                   ))}
                 </select>
               </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Precio (S/ - deje en 0 si es gratis)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newMaterial.precio || 0}
+                  onChange={(e) =>
+                    setNewMaterial({ ...newMaterial, precio: parseFloat(e.target.value) })
+                  }
+                />
+              </div>
+
+               <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                   Teléfono (WhatsApp - opcional)
+                </label>
+                <input
+                  type="text"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newMaterial.telefono || ''}
+                  onChange={(e) =>
+                    setNewMaterial({ ...newMaterial, telefono: e.target.value })
+                  }
+                  placeholder="51999999999"
+                />
+              </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"

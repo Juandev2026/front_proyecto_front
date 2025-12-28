@@ -38,6 +38,12 @@ export interface LoginResponse {
   nivelId: number;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 import { API_BASE_URL } from '../config/api';
 
 const API_Auth = `${API_BASE_URL}/Auth`;
@@ -108,6 +114,47 @@ export const authService = {
       return await response.json();
     } catch (error) {
       console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_Auth}/forgot-password`, {
+        method: 'POST',
+        headers: {
+           // No auth headers needed usually for forgot password
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error al solicitar recuperación de contraseña');
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
+    try {
+      const response = await fetch(`${API_Auth}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error al restablecer la contraseña');
+      }
+    } catch (error) {
+      console.error('Reset password error:', error);
       throw error;
     }
   },

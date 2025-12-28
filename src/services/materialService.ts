@@ -7,6 +7,8 @@ export interface Material {
   modalidadId: number;
   nivelId: number;
   usuarioEdicionId: number;
+  precio: number;
+  telefono: string;
 }
 
 import { API_BASE_URL } from '../config/api';
@@ -72,7 +74,9 @@ export const materialService = {
             ...m,
             modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
             nivelId: m.nivelId ? Number(m.nivelId) : null,
-            usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null
+            usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null,
+            precio: m.precio ? Number(m.precio) : 0,
+            telefono: m.telefono || ''
         });
       }
 
@@ -121,7 +125,9 @@ export const materialService = {
              id: id,
              modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
              nivelId: m.nivelId ? Number(m.nivelId) : null,
-             usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null
+             usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null,
+             precio: m.precio ? Number(m.precio) : 0,
+             telefono: m.telefono || ''
          });
       }
 
