@@ -60,14 +60,11 @@ const AdminMaterials = () => {
     fetchData();
   }, []);
   
-  // Create a filtered list for the form, but keep all levels for display if needed
-  // Or just rely on the fact we fetched all levels above.
+  // Create a filtered list for the form
   const [formNiveles, setFormNiveles] = useState<Nivel[]>([]);
 
   useEffect(() => {
     if (newMaterial.modalidadId) {
-      // client side filter since we fetched all, or fetch from API?
-      // existing code used getByModalidadId. Let's stick to that for the form.
       nivelService.getByModalidadId(newMaterial.modalidadId).then(setFormNiveles).catch(console.error);
     } else {
       setFormNiveles([]);
@@ -181,6 +178,16 @@ const AdminMaterials = () => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'Unknown';
   };
+    const getModalidadName = (id: number) => {
+        const mod = modalidades.find(m => m.id === id);
+        return mod ? mod.nombre : 'Desconocida';
+    };
+
+    const getNivelName = (id: number) => {
+        const niv = niveles.find(n => n.id === id);
+        return niv ? niv.nombre : 'Desconocido';
+    };
+
 
   if (loading)
     return (
@@ -188,12 +195,13 @@ const AdminMaterials = () => {
         <div>Loading...</div>
       </AdminLayout>
     );
+
   if (error)
-    return (
-      <AdminLayout>
-        <div>Error: {error}</div>
-      </AdminLayout>
-    );
+     return (
+        <AdminLayout>
+             <div>Error: {error}</div>
+        </AdminLayout>
+     );
 
   return (
     <AdminLayout>
@@ -248,7 +256,14 @@ const AdminMaterials = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {materials.map((item) => (
+             {materials.length === 0 ? (
+                <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        No hay recursos disponibles.
+                    </td>
+                </tr>
+            ) : (
+                materials.map((item) => (
               <tr key={item.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {item.titulo}
@@ -295,7 +310,8 @@ const AdminMaterials = () => {
                   </button>
                 </td>
               </tr>
-            ))}
+            ))
+            )}
           </tbody>
         </table>
       </div>
@@ -525,18 +541,18 @@ const AdminMaterials = () => {
                     <label className="block text-sm font-medium text-gray-500 mb-1">Descripción</label>
                     <p className="text-gray-900 whitespace-pre-wrap">{viewingItem.descripcion}</p>
                 </div>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-500">Modalidad</label>
                         <p className="text-gray-900 font-medium">
-                            {viewingItem.modalidad?.nombre || modalidades.find(m => m.id === viewingItem.modalidadId)?.nombre || 'N/A'}
+                            {viewingItem.modalidad?.nombre || getModalidadName(viewingItem.modalidadId)}
                         </p>
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-500">Nivel</label>
                         <p className="text-gray-900 font-medium">
-                            {viewingItem.nivel?.nombre || niveles.find(n => n.id === viewingItem.nivelId)?.nombre || 'N/A'}
+                            {viewingItem.nivel?.nombre || getNivelName(viewingItem.nivelId)}
                         </p>
                     </div>
                     <div>
