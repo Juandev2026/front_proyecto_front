@@ -14,6 +14,7 @@ export interface Comentario {
     nombreCompleto: string;
     email: string;
   };
+  nombreUsuario?: string;
 }
 
 export const comentarioService = {

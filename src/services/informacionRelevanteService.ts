@@ -6,6 +6,8 @@ export interface InformacionRelevante {
   titulo: string;
   descripcion: string;
   url: string;
+  precio: number;
+  telefono: string;
 }
 
 const ENDPOINT = `${API_URL}/InformacionRelevante`;

@@ -16,11 +16,124 @@ const AdminInformacionRelevante = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  // View Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<InformacionRelevante | null>(null);
+
+  const handleView = (item: InformacionRelevante) => {
+    setViewingItem(item);
+    setIsViewModalOpen(true);
+  };
+  
+  // ... Update table actions
+  /*
+  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+    <button
+      onClick={() => handleView(item)}
+      className="text-blue-600 hover:text-blue-900 mr-4"
+      title="Ver Detalles"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+      </svg>
+    </button>
+    <button
+      onClick={() => openModal(item)}
+      className="text-indigo-600 hover:text-indigo-900 mr-4"
+      title="Editar"
+    >
+      <PencilIcon className="w-5 h-5" />
+    </button>
+    <button
+      onClick={() => handleDelete(item.id)}
+      className="text-red-600 hover:text-red-900"
+      title="Eliminar"
+    >
+      <TrashIcon className="w-5 h-5" />
+    </button>
+  </td>
+  */
+  
+  // ... Add View Modal jsx
+  /*
+  {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Detalles de Información Relevante</h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <label className="block text-sm font-medium text-gray-500 mb-1">Imagen</label>
+                   {viewingItem.urlImagen ? (
+                     <img src={viewingItem.urlImagen} alt={viewingItem.titulo} className="w-full h-auto rounded-lg shadow-sm object-cover max-h-64" />
+                   ) : (
+                     <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">Sin imagen</div>
+                   )}
+                </div>
+                <div className="space-y-4">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Título</label>
+                     <p className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Precio</label>
+                     <p className="text-gray-900">{viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Contacto (WhatsApp)</label>
+                     <p className="text-gray-900">{viewingItem.telefono || 'No especificado'}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">URL / Enlace</label>
+                     {viewingItem.url ? (
+                       <a href={viewingItem.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+                         {viewingItem.url}
+                       </a>
+                     ) : (
+                       <p className="text-gray-500 italic">Sin enlace</p>
+                     )}
+                   </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-500 mb-2">Descripción</label>
+                <div className="bg-gray-50 p-4 rounded-lg text-gray-700 whitespace-pre-wrap">
+                  {viewingItem.descripcion || 'Sin descripción'}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+  */
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
     urlImagen: '',
     url: '',
+    precio: 0,
+    telefono: '',
   });
 
   const fetchData = useCallback(async () => {
@@ -43,7 +156,7 @@ const AdminInformacionRelevante = () => {
     try {
       await informacionRelevanteService.create(formData);
       setIsModalOpen(false);
-      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '' });
+      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '', precio: 0, telefono: '' });
       fetchData();
     } catch (error) {
       alert('Error creating item');
@@ -57,7 +170,7 @@ const AdminInformacionRelevante = () => {
       await informacionRelevanteService.update(editingId, formData);
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '' });
+      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '', precio: 0, telefono: '' });
       fetchData();
     } catch (error) {
       alert('Error updating item');
@@ -84,10 +197,12 @@ const AdminInformacionRelevante = () => {
         descripcion: item.descripcion,
         urlImagen: item.urlImagen,
         url: item.url,
+        precio: item.precio || 0,
+        telefono: item.telefono || '',
       });
     } else {
       setEditingId(null);
-      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '' });
+      setFormData({ titulo: '', descripcion: '', urlImagen: '', url: '', precio: 0, telefono: '' });
     }
     setIsModalOpen(true);
   };
@@ -121,7 +236,10 @@ const AdminInformacionRelevante = () => {
                 Título
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Descripción
+                Precio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Contacto
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 URL
@@ -134,14 +252,14 @@ const AdminInformacionRelevante = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                   Cargando...
                 </td>
               </tr>
             )}
             {!loading && data.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                   No hay elementos registrados.
                 </td>
               </tr>
@@ -169,8 +287,11 @@ const AdminInformacionRelevante = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.titulo}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                    {item.descripcion}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                     {item.precio > 0 ? `S/ ${item.precio}` : 'Gratis'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                     {item.telefono || '-'}
                   </td>
                   <td className="px-6 py-4 text-sm text-blue-500 max-w-xs truncate">
                     <a href={item.url} target="_blank" rel="noopener noreferrer">
@@ -179,14 +300,26 @@ const AdminInformacionRelevante = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
+                      onClick={() => handleView(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Ver Detalles"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <button
                       onClick={() => openModal(item)}
                       className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="Editar"
                     >
                       <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
                       className="text-red-600 hover:text-red-900"
+                      title="Eliminar"
                     >
                       <TrashIcon className="w-5 h-5" />
                     </button>
@@ -197,10 +330,80 @@ const AdminInformacionRelevante = () => {
         </table>
       </div>
 
+      {/* View Modal */}
+      {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Detalles de Información Relevante</h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <label className="block text-sm font-medium text-gray-500 mb-1">Imagen</label>
+                   {viewingItem.urlImagen ? (
+                     <img src={viewingItem.urlImagen} alt={viewingItem.titulo} className="w-full h-auto rounded-lg shadow-sm object-cover max-h-64" />
+                   ) : (
+                     <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">Sin imagen</div>
+                   )}
+                </div>
+                <div className="space-y-4">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Título</label>
+                     <p className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Precio</label>
+                     <p className="text-gray-900">{viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">Contacto (WhatsApp)</label>
+                     <p className="text-gray-900">{viewingItem.telefono || 'No especificado'}</p>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-500">URL / Enlace</label>
+                     {viewingItem.url ? (
+                       <a href={viewingItem.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+                         {viewingItem.url}
+                       </a>
+                     ) : (
+                       <p className="text-gray-500 italic">Sin enlace</p>
+                     )}
+                   </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-500 mb-2">Descripción</label>
+                <div className="bg-gray-50 p-4 rounded-lg text-gray-700 whitespace-pre-wrap">
+                  {viewingItem.descripcion || 'Sin descripción'}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingId ? 'Editar Elemento' : 'Nuevo Elemento'}
@@ -282,6 +485,36 @@ const AdminInformacionRelevante = () => {
                 />
               </div>
 
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Precio (S/)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.precio}
+                  onChange={(e) =>
+                    setFormData({ ...formData, precio: parseFloat(e.target.value) })
+                  }
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                   Teléfono / Celular (WhatsApp)
+                </label>
+                <input
+                  type="text"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.telefono}
+                  onChange={(e) =>
+                    setFormData({ ...formData, telefono: e.target.value })
+                  }
+                  placeholder="51999999999"
+                />
+              </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -304,5 +537,4 @@ const AdminInformacionRelevante = () => {
     </AdminLayout>
   );
 };
-
 export default AdminInformacionRelevante;

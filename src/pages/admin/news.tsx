@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/react/outline';
 
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaGeneralService, CategoriaGeneral } from '../../services/categoriaGeneralService';
@@ -15,6 +16,11 @@ const AdminNews = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  
+  // View Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<Noticia | null>(null);
+
   const [formData, setFormData] = useState<Partial<Noticia>>({
     titulo: '',
     descripcion: '',
@@ -25,6 +31,7 @@ const AdminNews = () => {
     imageUrl: '',
     esDestacado: false,
     usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+    precio: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -106,9 +113,15 @@ const AdminNews = () => {
       imageUrl: item.imageUrl,
       esDestacado: item.esDestacado,
       usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+      precio: item.precio || 0,
     });
     setImageFile(null);
     setIsModalOpen(true);
+  };
+  
+  const handleView = (item: Noticia) => {
+      setViewingItem(item);
+      setIsViewModalOpen(true);
   };
 
   const handleAddNew = () => {
@@ -123,6 +136,7 @@ const AdminNews = () => {
       imageUrl: '',
       esDestacado: false,
       usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+      precio: 0,
     });
     setImageFile(null);
     setIsModalOpen(true);
@@ -138,12 +152,6 @@ const AdminNews = () => {
       return;
     }
     
-    // Check if user requires validation for Modalidad/Nivel?
-    // User request: "DEBES MANDAR MODALIDAD Y NIVEL TAMBIÉN PARA LA CATEGORÍA"
-    // Implicitly they might be required? Let's check if they are 0 and warn?
-    // Or just send 0 if they select "Select...". 
-    // I'll leave them optional (0 allowed) unless user complains again or it fails.
-
     if (!formData.usuarioEdicionId || Number(formData.usuarioEdicionId) <= 0) {
        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
        if (storedId <= 0) {
@@ -167,6 +175,7 @@ const AdminNews = () => {
         );
         dataToSend.append('esDestacado', String(formData.esDestacado || false));
         dataToSend.append('usuarioEdicionId', String(formData.usuarioEdicionId || 0));
+        dataToSend.append('precio', String(formData.precio || 0));
         dataToSend.append('image', imageFile);
 
         if (editingId) {
@@ -187,6 +196,7 @@ const AdminNews = () => {
           imageUrl: formData.imageUrl || null, // Send null if empty string
           esDestacado: formData.esDestacado || false,
           usuarioEdicionId: formData.usuarioEdicionId || 0,
+          precio: formData.precio || 0,
         };
 
         if (editingId) {
@@ -219,19 +229,7 @@ const AdminNews = () => {
           onClick={handleAddNew}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
+          <PlusIcon className="w-5 h-5 mr-2" />
           Nueva Noticia
         </button>
       </div>
@@ -280,16 +278,25 @@ const AdminNews = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
+                    onClick={() => handleView(item)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                    title="Ver Detalles"
+                  >
+                    <EyeIcon className="w-5 h-5" />
+                  </button>
+                  <button
                     onClick={() => handleEdit(item)}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    title="Editar"
                   >
-                    Editar
+                   <PencilIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
                     className="text-red-600 hover:text-red-900"
+                    title="Eliminar"
                   >
-                    Eliminar
+                    <TrashIcon className="w-5 h-5" />
                   </button>
                 </td>
               </tr>
@@ -298,12 +305,21 @@ const AdminNews = () => {
         </table>
       </div>
 
+      {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-8 max-w-2xl w-full my-8">
-            <h2 className="text-xl font-bold mb-4">
-              {editingId ? 'Editar Noticia' : 'Agregar Nueva Noticia'}
-            </h2>
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full my-8">
+             <div className="flex justify-between items-center mb-6">
+                 <h2 className="text-xl font-bold">
+                  {editingId ? 'Editar Noticia' : 'Agregar Nueva Noticia'}
+                </h2>
+                <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                >
+                    <XIcon className="w-6 h-6" />
+                </button>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-4">
                 <div>
@@ -336,7 +352,7 @@ const AdminNews = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Categoría
@@ -465,6 +481,21 @@ const AdminNews = () => {
                     }}
                   />
                 </div>
+                
+                 <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Precio (S/ - deje en 0 si es gratis)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.precio || 0}
+                      onChange={(e) =>
+                        setFormData({ ...formData, precio: parseFloat(e.target.value) })
+                      }
+                    />
+                  </div>
 
                 <div className="flex items-center">
                   <input
@@ -504,6 +535,81 @@ const AdminNews = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      
+      {/* View Modal */}
+       {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full my-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Detalles de la Noticia</h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between">
+                     <h3 className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</h3>
+                     {viewingItem.esDestacado && (
+                        <span className="px-3 py-1 text-sm font-bold text-green-700 bg-green-100 rounded-full">Destacado</span>
+                     )}
+                  </div>
+                  <p className="text-gray-500 text-sm mt-1">{viewingItem.categoria as string || getCategoryName(viewingItem.categoriaId)} </p>
+                  <p className="text-gray-400 text-xs">{new Date(viewingItem.fecha).toLocaleString()}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Descripción</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{viewingItem.descripcion}</p>
+                </div>
+                
+                {viewingItem.imageUrl && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-2">Imagen</label>
+                        <div className="rounded-lg overflow-hidden max-w-lg">
+                           <img src={viewingItem.imageUrl} alt={viewingItem.titulo} className="w-full h-auto object-cover"/>
+                        </div>
+                    </div>
+                )}
+
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500">Modalidad</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.modalidad?.nombre || modalidades.find(m => m.id === viewingItem.modalidadId)?.nombre || 'Todas / N/A'}
+                        </p>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-500">Nivel</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.nivel?.nombre || niveles.find(n => n.id === viewingItem.nivelId)?.nombre || 'Todos / N/A'}
+                        </p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500">Precio</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.precio && viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -6,12 +6,17 @@ export interface Noticia {
   titulo: string;
   descripcion: string;
   categoriaId: number;
+  categoria?: string; 
   fecha: string;
   imageUrl: string | null;
   esDestacado: boolean;
   usuarioEdicionId?: number;
   modalidadId?: number;
+  modalidad?: { id: number; nombre: string };
   nivelId?: number;
+  nivel?: { id: number; nombre: string };
+  precio?: number;
+  comentarios?: any[];
 }
 
 const API_URL = `${API_BASE_URL}/Noticias`;

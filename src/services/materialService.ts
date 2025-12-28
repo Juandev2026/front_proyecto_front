@@ -4,8 +4,11 @@ export interface Material {
   descripcion: string;
   url: string;
   categoriaId: number;
+  categoria?: { id: number; nombre: string };
   modalidadId: number;
+  modalidad?: { id: number; nombre: string };
   nivelId: number;
+  nivel?: { id: number; nombre: string };
   usuarioEdicionId: number;
   precio: number;
   telefono: string;

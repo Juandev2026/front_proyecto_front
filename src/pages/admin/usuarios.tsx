@@ -289,7 +289,7 @@ const UsersPage = () => {
       {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-md rounded-lg bg-white shadow-lg my-8">
+          <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
             <div className="flex items-center justify-between rounded-t border-b p-4">
               <h3 className="text-xl font-semibold text-gray-900">
                 {editingUser ? 'Editar Usuario' : 'Crear Usuario'}
@@ -457,7 +457,7 @@ const UsersPage = () => {
       {/* View Details Modal */}
       {isViewModalOpen && viewingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-lg rounded-lg bg-white shadow-lg my-8">
+          <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
             <div className="flex items-center justify-between rounded-t border-b p-4">
               <h3 className="text-xl font-semibold text-gray-900">
                 Detalles del Usuario

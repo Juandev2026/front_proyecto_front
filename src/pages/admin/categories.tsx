@@ -26,7 +26,94 @@ const AdminCategories = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  // View Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<CategoryItem | null>(null);
   const [formData, setFormData] = useState({ nombre: '' });
+
+  const handleView = (item: CategoryItem) => {
+    setViewingItem(item);
+    setIsViewModalOpen(true);
+  };
+
+  // ... Update table actions
+  /*
+  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+    <button
+      onClick={() => handleView(item)}
+      className="text-blue-600 hover:text-blue-900 mr-4"
+      title="Ver Detalles"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+      </svg>
+    </button>
+    <button
+      onClick={() => openModal(item)}
+      className="text-indigo-600 hover:text-indigo-900 mr-4"
+      title="Editar"
+    >
+      <PencilIcon className="w-5 h-5" />
+    </button>
+    <button
+      onClick={() => handleDelete(item.id)}
+      className="text-red-600 hover:text-red-900"
+      title="Eliminar"
+    >
+      <TrashIcon className="w-5 h-5" />
+    </button>
+  </td>
+  */
+
+  // ... Add View Modal jsx
+  /*
+  {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">
+                Detalles de Categoría
+              </h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500">ID</label>
+                <p className="mt-1 text-gray-900">{viewingItem.id}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Nombre</label>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{viewingItem.nombre}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Tipo</label>
+                <p className="mt-1 text-gray-900">
+                  {activeTab === 'standard' && 'Categoría de Video'}
+                  {activeTab === 'general' && 'Categoría de Noticia'}
+                  {activeTab === 'simple' && 'Categoría de Material'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+  */
 
   // Fetch logic based on active tab
   const fetchCategories = useCallback(async () => {
@@ -181,7 +268,7 @@ const AdminCategories = () => {
           Gestión de Categorías
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Administra las clasificaciones para Videos, Noticias y Materiales desde este panel.
+          Administra las clasificaciones para Cursos, Noticias y Materiales desde este panel.
         </p>
         <button
           onClick={() => openModal()}
@@ -195,7 +282,7 @@ const AdminCategories = () => {
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <div className="flex space-x-4">
-          <TabButton type="standard" label="Categoría de Videos" />
+          <TabButton type="standard" label="Categoría de Cursos" />
           <TabButton type="general" label="Categoría de Noticias" />
           <TabButton type="simple" label="Categoría de Materiales" />
         </div>
@@ -216,13 +303,13 @@ const AdminCategories = () => {
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                 clipRule="evenodd"
-              />
+                />
             </svg>
           </div>
           <div className="ml-3">
             <p className="text-sm text-blue-700">
               {activeTab === 'standard' &&
-                'Estás gestionando las categorías para **Videos**. Estas etiquetas permitirán filtrar y organizar el contenido de video.'}
+                'Estás gestionando las categorías para **Cursos**. Estas etiquetas permitirán filtrar y organizar el contenido de los cursos.'}
               {activeTab === 'general' &&
                 'Estás gestionando las categorías para **Noticias**. Utilízalas para clasificar los anuncios y novedades.'}
               {activeTab === 'simple' &&
@@ -274,14 +361,26 @@ const AdminCategories = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
+                      onClick={() => handleView(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Ver Detalles"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <button
                       onClick={() => openModal(item)}
                       className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="Editar"
                     >
                       <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
                       className="text-red-600 hover:text-red-900"
+                      title="Eliminar"
                     >
                       <TrashIcon className="w-5 h-5" />
                     </button>
@@ -353,6 +452,53 @@ const AdminCategories = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">
+                Detalles de Categoría
+              </h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500">ID</label>
+                <p className="mt-1 text-gray-900">{viewingItem.id}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Nombre</label>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{viewingItem.nombre}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Tipo</label>
+                <p className="mt-1 text-gray-900">
+                  {activeTab === 'standard' && 'Categoría de Curso'}
+                  {activeTab === 'general' && 'Categoría de Noticia'}
+                  {activeTab === 'simple' && 'Categoría de Material'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

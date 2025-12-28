@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/react/outline';
 
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaSimpleService, CategoriaSimple } from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
-// Line 8 removed
+
 const AdminMaterials = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
-  // Line 13 removed
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +17,11 @@ const AdminMaterials = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  
+  // View Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<Material | null>(null);
+
   const [newMaterial, setNewMaterial] = useState({
     titulo: '',
     descripcion: '',
@@ -33,14 +38,16 @@ const AdminMaterials = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [materialsData, categoriesData, modalidadesData] = await Promise.all([
+      const [materialsData, categoriesData, modalidadesData, nivelesData] = await Promise.all([
         materialService.getAll(),
         categoriaSimpleService.getAll(),
         modalidadService.getAll(),
+        nivelService.getAll(),
       ]);
       setMaterials(materialsData);
       setCategories(categoriesData);
       setModalidades(modalidadesData);
+      setNiveles(nivelesData);
     } catch (err) {
       setError('Error loading data');
       console.error(err);
@@ -52,12 +59,18 @@ const AdminMaterials = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  
+  // Create a filtered list for the form, but keep all levels for display if needed
+  // Or just rely on the fact we fetched all levels above.
+  const [formNiveles, setFormNiveles] = useState<Nivel[]>([]);
 
   useEffect(() => {
     if (newMaterial.modalidadId) {
-      nivelService.getByModalidadId(newMaterial.modalidadId).then(setNiveles).catch(console.error);
+      // client side filter since we fetched all, or fetch from API?
+      // existing code used getByModalidadId. Let's stick to that for the form.
+      nivelService.getByModalidadId(newMaterial.modalidadId).then(setFormNiveles).catch(console.error);
     } else {
-      setNiveles([]);
+      setFormNiveles([]);
     }
   }, [newMaterial.modalidadId]);
 
@@ -88,6 +101,15 @@ const AdminMaterials = () => {
     });
     setFile(null);
     setIsModalOpen(true);
+    // Trigger nivel fetch for form
+    if (item.modalidadId) {
+        nivelService.getByModalidadId(item.modalidadId).then(setFormNiveles).catch(console.error);
+    }
+  };
+
+  const handleView = (item: Material) => {
+    setViewingItem(item);
+    setIsViewModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,6 +133,8 @@ const AdminMaterials = () => {
         formData.append('modalidadId', String(newMaterial.modalidadId));
         formData.append('nivelId', String(newMaterial.nivelId));
         formData.append('usuarioEdicionId', String(newMaterial.usuarioEdicionId));
+        formData.append('precio', String(newMaterial.precio));
+        formData.append('telefono', newMaterial.telefono);
         formData.append('file', file);
         if (newMaterial.url) formData.append('url', newMaterial.url);
 
@@ -141,6 +165,8 @@ const AdminMaterials = () => {
         modalidadId: 0,
         nivelId: 0,
         usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+        precio: 0,
+        telefono: '',
       });
       setFile(null);
       setEditingId(null);
@@ -188,23 +214,14 @@ const AdminMaterials = () => {
               modalidadId: 0,
               nivelId: 0,
               usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+              precio: 0,
+              telefono: '',
             });
+            setFormNiveles([]);
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
+          <PlusIcon className="w-5 h-5 mr-2" />
           Nuevo Recurso
         </button>
       </div>
@@ -236,7 +253,7 @@ const AdminMaterials = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {item.titulo}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">
                   {item.descripcion}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -256,16 +273,25 @@ const AdminMaterials = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
+                    onClick={() => handleView(item)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                    title="Ver Detalles"
+                  >
+                    <EyeIcon className="w-5 h-5" />
+                  </button>
+                  <button
                     onClick={() => handleEdit(item)}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    title="Editar"
                   >
-                    Editar
+                    <PencilIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
                     className="text-red-600 hover:text-red-900"
+                    title="Eliminar"
                   >
-                    Eliminar
+                    <TrashIcon className="w-5 h-5" />
                   </button>
                 </td>
               </tr>
@@ -274,12 +300,22 @@ const AdminMaterials = () => {
         </table>
       </div>
 
+      {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">
-              {editingId ? 'Editar Recurso' : 'Agregar Nuevo Recurso'}
-            </h2>
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+                 <h2 className="text-xl font-bold">
+                  {editingId ? 'Editar Recurso' : 'Agregar Nuevo Recurso'}
+                </h2>
+                <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                >
+                    <XIcon className="w-6 h-6" />
+                </button>
+            </div>
+           
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -408,7 +444,7 @@ const AdminMaterials = () => {
                   disabled={!newMaterial.modalidadId}
                 >
                   <option value={0}>Seleccionar...</option>
-                  {niveles.map((nivel) => (
+                  {formNiveles.map((nivel) => (
                     <option key={nivel.id} value={nivel.id}>
                       {nivel.nombre}
                     </option>
@@ -461,6 +497,82 @@ const AdminMaterials = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+       {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Detalles del Recurso</h2>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</h3>
+                  <p className="text-gray-500 text-sm mt-1">{viewingItem.categoria?.nombre || getCategoryName(viewingItem.categoriaId)}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Descripción</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{viewingItem.descripcion}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500">Modalidad</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.modalidad?.nombre || modalidades.find(m => m.id === viewingItem.modalidadId)?.nombre || 'N/A'}
+                        </p>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-500">Nivel</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.nivel?.nombre || niveles.find(n => n.id === viewingItem.nivelId)?.nombre || 'N/A'}
+                        </p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500">Precio</label>
+                        <p className="text-gray-900 font-medium">
+                            {viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}
+                        </p>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-500">Contacto</label>
+                        <p className="text-gray-900 font-medium">{viewingItem.telefono || 'No especificado'}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-2">Enlace / Recurso</label>
+                     <a
+                        href={viewingItem.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
+                      >
+                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        Abrir Recurso
+                      </a>
+                </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
