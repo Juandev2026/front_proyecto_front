@@ -208,26 +208,58 @@ const Materials = () => {
                                 <FadeIn key={level.id} direction="up" delay={index * 0.1}>
                                     <button
                                         onClick={() => handleLevelSelect(level)}
-                                        className="w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group text-left border border-gray-100 flex flex-col h-64"
+                                        className="w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group text-left border border-gray-100 flex flex-col h-64 relative"
                                     >
-                                        <div className="h-2 bg-gradient-to-r from-blue-400 to-indigo-500 group-hover:h-3 transition-all duration-300"></div>
-                                        <div className="p-8 flex flex-col justify-between h-full bg-gradient-to-br from-white to-blue-50/30">
-                                            <div>
-                                                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
-                                                    Nivel
-                                                </span>
-                                                <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors">
-                                                    {level.nombre}
-                                                </h3>
-                                                <p className="text-gray-500 text-sm">
-                                                    Explora recursos educativos para {level.nombre}.
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center text-primary font-bold mt-4 group-hover:translate-x-2 transition-transform duration-300">
-                                                Ver Recursos 
-                                                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                                            </div>
-                                        </div>
+                                        {level.imageUrl ? (
+                                            <>
+                                                <div className="absolute inset-0">
+                                                    <img 
+                                                        src={level.imageUrl} 
+                                                        alt={level.nombre} 
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300"></div>
+                                                </div>
+                                                <div className="relative p-8 flex flex-col justify-between h-full z-10 text-white">
+                                                     <div>
+                                                        <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-white/30">
+                                                            Nivel
+                                                        </span>
+                                                        <h3 className="text-3xl font-bold mb-2 text-white">
+                                                            {level.nombre}
+                                                        </h3>
+                                                        <p className="text-blue-50 text-sm font-medium">
+                                                            Explora recursos educativos
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center text-white font-bold mt-4 group-hover:translate-x-2 transition-transform duration-300">
+                                                        Ver Recursos 
+                                                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="h-2 bg-gradient-to-r from-blue-400 to-indigo-500 group-hover:h-3 transition-all duration-300"></div>
+                                                <div className="p-8 flex flex-col justify-between h-full bg-gradient-to-br from-white to-blue-50/30">
+                                                    <div>
+                                                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                                                            Nivel
+                                                        </span>
+                                                        <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors">
+                                                            {level.nombre}
+                                                        </h3>
+                                                        <p className="text-gray-500 text-sm">
+                                                            Explora recursos educativos para {level.nombre}.
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center text-primary font-bold mt-4 group-hover:translate-x-2 transition-transform duration-300">
+                                                        Ver Recursos 
+                                                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </button>
                                 </FadeIn>
                             ))}

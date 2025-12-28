@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from '@heroicons/react/outline';
 import AdminLayout from '../../components/AdminLayout';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
-import { nivelService, Nivel, nivelService } from '../../services/nivelService';
+import { nivelService, Nivel } from '../../services/nivelService';
 import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 
 type TabType = 'modalidades' | 'niveles' | 'especialidades';
@@ -117,6 +117,7 @@ const AcademicStructure = () => {
   // Form State
   const [formData, setFormData] = useState({
     nombre: '',
+    imageUrl: '',
     modalidadId: 0,
     nivelId: 0,
   });
@@ -155,6 +156,7 @@ const AcademicStructure = () => {
       } else if (activeTab === 'niveles') {
         await nivelService.create({
           nombre: formData.nombre,
+          imageUrl: formData.imageUrl,
           modalidadId: formData.modalidadId,
         });
       } else {
@@ -179,6 +181,7 @@ const AcademicStructure = () => {
       } else if (activeTab === 'niveles') {
         await nivelService.update(editingId, {
           nombre: formData.nombre,
+          imageUrl: formData.imageUrl,
           modalidadId: formData.modalidadId,
         });
       } else {
@@ -217,12 +220,13 @@ const AcademicStructure = () => {
       setEditingId(item.id);
       setFormData({
         nombre: item.nombre,
+        imageUrl: (item as Nivel).imageUrl || '',
         modalidadId: (item as Nivel).modalidadId || 0,
         nivelId: (item as Especialidad).nivelId || 0,
       });
     } else {
       setEditingId(null);
-      setFormData({ nombre: '', modalidadId: 0, nivelId: 0 });
+      setFormData({ nombre: '', imageUrl: '', modalidadId: 0, nivelId: 0 });
     }
     setIsModalOpen(true);
   };
@@ -230,7 +234,7 @@ const AcademicStructure = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setFormData({ nombre: '', modalidadId: 0, nivelId: 0 });
+    setFormData({ nombre: '', imageUrl: '', modalidadId: 0, nivelId: 0 });
   };
 
   const TabButton = ({ type, label }: { type: TabType; label: string }) => (
@@ -439,6 +443,21 @@ const AcademicStructure = () => {
               </div>
 
               {activeTab === 'niveles' && (
+                <>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    URL de Imagen (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.imageUrl || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
+                    }
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                </div>
                 <div className="mb-6">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     Modalidad
@@ -464,6 +483,7 @@ const AcademicStructure = () => {
                     ))}
                   </select>
                 </div>
+                </>
               )}
 
              {activeTab === 'especialidades' && (
