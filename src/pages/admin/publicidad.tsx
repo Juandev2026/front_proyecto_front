@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from '@heroicons/react/outline';
 import AdminLayout from '../../components/AdminLayout';
 import { publicidadService, Publicidad } from '../../services/publicidadService';
+import { uploadService } from '../../services/uploadService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 
@@ -14,6 +15,7 @@ const AdminPublicidad = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -119,10 +121,25 @@ const AdminPublicidad = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let finalUrl = formData.imageUrl;
+      if (file) {
+          try {
+              finalUrl = await uploadService.uploadImage(file);
+          } catch (uploadError) {
+              alert('Error al subir la imagen');
+              return;
+          }
+      }
+
+      const payload = {
+          ...formData,
+          imageUrl: finalUrl
+      };
+
       if (editingId) {
-        await publicidadService.update(editingId, formData);
+        await publicidadService.update(editingId, payload);
       } else {
-        await publicidadService.create(formData);
+        await publicidadService.create(payload);
       }
       setIsModalOpen(false);
       setFormData({
@@ -134,6 +151,7 @@ const AdminPublicidad = () => {
         precio: 0,
         telefono: '',
       });
+      setFile(null);
       setEditingId(null);
       fetchData();
     } catch (err) {
@@ -153,6 +171,7 @@ const AdminPublicidad = () => {
           onClick={() => {
             setIsModalOpen(true);
             setEditingId(null);
+            setFile(null);
             setFormData({
               titulo: '',
               imageUrl: '',
@@ -202,7 +221,10 @@ const AdminPublicidad = () => {
                       </svg>
                     </button>
                    <button
-                      onClick={() => handleEdit(item)}
+                      onClick={() => {
+                          handleEdit(item);
+                          setFile(null);
+                      }}
                       className="text-indigo-600 hover:text-indigo-900 mr-4"
                       title="Editar"
                     >
@@ -246,13 +268,24 @@ const AdminPublicidad = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">URL Imagen</label>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Imagen</label>
+                 <input
+                    type="file"
+                    accept="image/*"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+                <label className="block text-xs text-gray-500 mb-1">O URL de Imagen:</label>
                 <input
                   type="text"
-                  required
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
               <div className="mb-4">

@@ -4,6 +4,7 @@ import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/reac
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaSimpleService, CategoriaSimple } from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
+import { uploadService } from '../../services/uploadService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 
@@ -122,35 +123,32 @@ const AdminMaterials = () => {
     }
 
     try {
-      if (file) {
-        const formData = new FormData();
-        formData.append('titulo', newMaterial.titulo);
-        formData.append('descripcion', newMaterial.descripcion);
-        formData.append('categoriaId', String(newMaterial.categoriaId));
-        formData.append('modalidadId', String(newMaterial.modalidadId));
-        formData.append('nivelId', String(newMaterial.nivelId));
-        formData.append('usuarioEdicionId', String(newMaterial.usuarioEdicionId));
-        formData.append('precio', String(newMaterial.precio));
-        formData.append('telefono', newMaterial.telefono);
-        formData.append('file', file);
-        if (newMaterial.url) formData.append('url', newMaterial.url);
+      let finalUrl = newMaterial.url;
 
-        if (editingId) {
-          formData.append('id', String(editingId));
-          await materialService.update(editingId, formData);
-        } else {
-          await materialService.create(formData);
+      if (file) {
+        try {
+          finalUrl = await uploadService.uploadImage(file);
+        } catch (uploadError) {
+          alert('Error al subir el archivo. Por favor intente nuevamente.');
+          return;
         }
-      } else {
-        const materialData = {
+      }
+
+      const materialData = {
           ...newMaterial,
           id: editingId || 0,
-        };
-        if (editingId) {
-          await materialService.update(editingId, materialData);
-        } else {
-          await materialService.create(newMaterial);
-        }
+          url: finalUrl,
+          categoriaId: Number(newMaterial.categoriaId),
+          modalidadId: Number(newMaterial.modalidadId),
+          nivelId: Number(newMaterial.nivelId),
+          usuarioEdicionId: Number(newMaterial.usuarioEdicionId),
+          precio: Number(newMaterial.precio),
+      };
+
+      if (editingId) {
+        await materialService.update(editingId, materialData as unknown as Material);
+      } else {
+        await materialService.create(materialData as unknown as Material);
       }
 
       setIsModalOpen(false);

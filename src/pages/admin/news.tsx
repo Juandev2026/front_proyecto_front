@@ -4,6 +4,7 @@ import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/reac
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaGeneralService, CategoriaGeneral } from '../../services/categoriaGeneralService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
+import { uploadService } from '../../services/uploadService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 
@@ -168,30 +169,18 @@ const AdminNews = () => {
     }
 
     try {
-      if (imageFile) {
-        const dataToSend = new FormData();
-        dataToSend.append('titulo', formData.titulo || '');
-        dataToSend.append('descripcion', formData.descripcion || '');
-        dataToSend.append('categoriaId', String(formData.categoriaId || 0));
-        dataToSend.append('modalidadId', String(formData.modalidadId || 0));
-        dataToSend.append('nivelId', String(formData.nivelId || 0));
-        dataToSend.append(
-          'fecha',
-          new Date(formData.fecha || new Date()).toISOString()
-        );
-        dataToSend.append('esDestacado', String(formData.esDestacado || false));
-        dataToSend.append('usuarioEdicionId', String(formData.usuarioEdicionId || 0));
-        dataToSend.append('precio', String(formData.precio || 0));
-        dataToSend.append('image', imageFile);
+      let imageUrl = formData.imageUrl;
 
-        if (editingId) {
-          dataToSend.append('id', String(editingId));
-          await noticiaService.update(editingId, dataToSend);
-        } else {
-          await noticiaService.create(dataToSend);
+      if (imageFile) {
+        try {
+          imageUrl = await uploadService.uploadImage(imageFile);
+        } catch (uploadError) {
+          alert('Error al subir la imagen. Por favor intente nuevamente.');
+          return;
         }
-      } else {
-        const dataToSend = {
+      }
+
+      const dataToSend = {
           id: editingId || 0,
           titulo: formData.titulo || '',
           descripcion: formData.descripcion || '',
@@ -199,20 +188,20 @@ const AdminNews = () => {
           modalidadId: formData.modalidadId || 0,
           nivelId: formData.nivelId || 0,
           fecha: new Date(formData.fecha || new Date()).toISOString(),
-          imageUrl: formData.imageUrl || null, // Send null if empty string
+          imageUrl: imageUrl || null,
           esDestacado: formData.esDestacado || false,
           usuarioEdicionId: formData.usuarioEdicionId || 0,
           precio: formData.precio || 0,
-        };
+      };
 
-        if (editingId) {
-          await noticiaService.update(editingId, dataToSend as Noticia);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-          const { id, ...createData } = dataToSend;
-          await noticiaService.create(createData);
-        }
+      if (editingId) {
+        await noticiaService.update(editingId, dataToSend as Noticia);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...createData } = dataToSend;
+        await noticiaService.create(createData);
       }
+      
       setIsModalOpen(false);
       fetchNews();
     } catch (error) {

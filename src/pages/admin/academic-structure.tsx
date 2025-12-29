@@ -4,6 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { especialidadesService, Especialidad } from '../../services/especialidadesService';
+import { uploadService } from '../../services/uploadService';
 
 type TabType = 'modalidades' | 'niveles' | 'especialidades';
 
@@ -153,21 +154,20 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.create({ nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-        if (file) {
-           const fd = new FormData();
-           fd.append('nombre', formData.nombre);
-           fd.append('modalidadId', String(formData.modalidadId));
-           fd.append('file', file);
-           if (formData.imageUrl) fd.append('imageUrl', formData.imageUrl);
-           
-           await nivelService.create(fd);
-        } else {
-           await nivelService.create({
+          let imageUrl = formData.imageUrl;
+          if (file) {
+             try {
+                 imageUrl = await uploadService.uploadImage(file);
+             } catch (e) {
+                 alert('Error al subir imagen');
+                 return;
+             }
+          }
+          await nivelService.create({
               nombre: formData.nombre,
-              imageUrl: formData.imageUrl,
+              imageUrl,
               modalidadId: formData.modalidadId,
            });
-        }
       } else {
         await especialidadesService.create({
             nombre: formData.nombre,
@@ -188,22 +188,20 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.update(editingId, { nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-         if (file) {
-           const fd = new FormData();
-           fd.append('id', String(editingId));
-           fd.append('nombre', formData.nombre);
-           fd.append('modalidadId', String(formData.modalidadId));
-           fd.append('file', file);
-           if (formData.imageUrl) fd.append('imageUrl', formData.imageUrl);
-           
-           await nivelService.update(editingId, fd);
-        } else {
+          let imageUrl = formData.imageUrl;
+           if (file) {
+               try {
+                   imageUrl = await uploadService.uploadImage(file);
+               } catch (e) {
+                   alert('Error al subir imagen');
+                   return;
+               }
+           }
            await nivelService.update(editingId, {
             nombre: formData.nombre,
-            imageUrl: formData.imageUrl,
+            imageUrl,
             modalidadId: formData.modalidadId,
            });
-        }
       } else {
          await especialidadesService.update(editingId, {
             nombre: formData.nombre,
