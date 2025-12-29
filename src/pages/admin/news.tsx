@@ -89,11 +89,17 @@ const AdminNews = () => {
     }
   }, [formData.modalidadId, niveles]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (item: Noticia) => {
+    // Check again for safety
+    if ((new Date().getTime() - new Date(item.fecha).getTime()) > 7 * 24 * 60 * 60 * 1000) {
+      alert("No puedes eliminar noticias con más de 7 días de antigüedad.");
+      return;
+    }
+
     // eslint-disable-next-line no-alert
     if (window.confirm('¿Estás seguro de eliminar esta noticia?')) {
       try {
-        await noticiaService.delete(id);
+        await noticiaService.delete(item.id);
         fetchNews();
       } catch (error) {
         console.error('Error deleting news:', error);
@@ -292,9 +298,18 @@ const AdminNews = () => {
                    <PencilIcon className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Eliminar"
+                    onClick={() => handleDelete(item)}
+                    className={`mr-4 ${
+                      (new Date().getTime() - new Date(item.fecha).getTime()) > 7 * 24 * 60 * 60 * 1000
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-red-600 hover:text-red-900'
+                    }`}
+                    title={
+                      (new Date().getTime() - new Date(item.fecha).getTime()) > 7 * 24 * 60 * 60 * 1000
+                        ? "No se puede eliminar después de 7 días"
+                        : "Eliminar"
+                    }
+                    disabled={(new Date().getTime() - new Date(item.fecha).getTime()) > 7 * 24 * 60 * 60 * 1000}
                   >
                     <TrashIcon className="w-5 h-5" />
                   </button>
