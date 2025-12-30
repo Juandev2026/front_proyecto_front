@@ -1,7 +1,8 @@
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeadersFormData } from '../utils/apiUtils';
 
-const API_URL = `${API_BASE_URL}/Upload/image`;
+// Bypass proxy to avoid socket hang up and debug CORS/Server issues directly
+const API_URL = '/api/proxy_upload_image';
 
 export const uploadService = {
   uploadImage: async (file: File): Promise<string> => {
@@ -17,11 +18,14 @@ export const uploadService = {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Upload failed with status:', response.status, errorText);
         throw new Error(`Error al subir la imagen: ${response.status} ${errorText}`);
       }
 
-      // The API returns the URL as a string (text/plain)
-      const imageUrl = await response.text();
+      // The API returns the URL. It might be a plain string or a JSON object { url: "..." }
+      const responseData = await response.json();
+      const imageUrl = responseData.url || responseData; 
+      
       return imageUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
