@@ -16,10 +16,10 @@ const Menu = () => {
 
   return (
     <>
-      <Popover className="bg-white relative">
-        <div className="relative py-10 px-4 sm:px-6 lg:px-8">
+      <Popover className="bg-white/90 backdrop-filter backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300 border-b border-gray-100">
+        <div className="relative py-4 px-4 sm:px-6 lg:px-8">
           <nav
-            className="relative flex items-center justify-between sm:h-10"
+            className="relative flex items-center justify-between sm:h-auto"
             aria-label="Global"
           >
             <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0">
@@ -136,9 +136,7 @@ const Menu = () => {
                     Registro
                   </a>
                 </Link>
-                <div className="mt-4 text-center">
-                  
-                </div>
+                <div className="mt-4 text-center"></div>
               </div>
             </div>
           </Popover.Panel>

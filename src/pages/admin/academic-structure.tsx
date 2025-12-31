@@ -1,9 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon, XIcon } from '@heroicons/react/outline';
+
+import {
+  PencilIcon,
+  TrashIcon,
+  PlusIcon,
+  XIcon,
+} from '@heroicons/react/outline';
+
 import AdminLayout from '../../components/AdminLayout';
+import {
+  especialidadesService,
+  Especialidad,
+} from '../../services/especialidadesService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
-import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 import { uploadService } from '../../services/uploadService';
 
 type TabType = 'modalidades' | 'niveles' | 'especialidades';
@@ -19,7 +29,9 @@ const AcademicStructure = () => {
 
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<Modalidad | Nivel | Especialidad | null>(null);
+  const [viewingItem, setViewingItem] = useState<
+    Modalidad | Nivel | Especialidad | null
+  >(null);
 
   const handleView = (item: Modalidad | Nivel | Especialidad) => {
     setViewingItem(item);
@@ -127,12 +139,15 @@ const AcademicStructure = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [modalidadesData, nivelesData, especialidadesData] = await Promise.all([
-        modalidadService.getAll(),
-        nivelService.getAll(),
-        (activeTab === 'especialidades') ? especialidadesService.getAll() : Promise.resolve([]),
-      ]);
-      
+      const [modalidadesData, nivelesData, especialidadesData] =
+        await Promise.all([
+          modalidadService.getAll(),
+          nivelService.getAll(),
+          activeTab === 'especialidades'
+            ? especialidadesService.getAll()
+            : Promise.resolve([]),
+        ]);
+
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
       if (activeTab === 'especialidades') {
@@ -154,24 +169,24 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.create({ nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-          let imageUrl = formData.imageUrl;
-          if (file) {
-             try {
-                 imageUrl = await uploadService.uploadImage(file);
-             } catch (e) {
-                 alert('Error al subir imagen');
-                 return;
-             }
+        let { imageUrl } = formData;
+        if (file) {
+          try {
+            imageUrl = await uploadService.uploadImage(file);
+          } catch (e) {
+            alert('Error al subir imagen');
+            return;
           }
-          await nivelService.create({
-              nombre: formData.nombre,
-              imageUrl,
-              modalidadId: formData.modalidadId,
-           });
+        }
+        await nivelService.create({
+          nombre: formData.nombre,
+          imageUrl,
+          modalidadId: formData.modalidadId,
+        });
       } else {
         await especialidadesService.create({
-            nombre: formData.nombre,
-            nivelId: formData.nivelId,
+          nombre: formData.nombre,
+          nivelId: formData.nivelId,
         });
       }
       closeModal();
@@ -188,25 +203,25 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.update(editingId, { nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-          let imageUrl = formData.imageUrl;
-           if (file) {
-               try {
-                   imageUrl = await uploadService.uploadImage(file);
-               } catch (e) {
-                   alert('Error al subir imagen');
-                   return;
-               }
-           }
-           await nivelService.update(editingId, {
-            nombre: formData.nombre,
-            imageUrl,
-            modalidadId: formData.modalidadId,
-           });
+        let { imageUrl } = formData;
+        if (file) {
+          try {
+            imageUrl = await uploadService.uploadImage(file);
+          } catch (e) {
+            alert('Error al subir imagen');
+            return;
+          }
+        }
+        await nivelService.update(editingId, {
+          nombre: formData.nombre,
+          imageUrl,
+          modalidadId: formData.modalidadId,
+        });
       } else {
-         await especialidadesService.update(editingId, {
-            nombre: formData.nombre,
-            nivelId: formData.nivelId,
-         });
+        await especialidadesService.update(editingId, {
+          nombre: formData.nombre,
+          nivelId: formData.nivelId,
+        });
       }
       closeModal();
       fetchData();
@@ -271,7 +286,12 @@ const AcademicStructure = () => {
     </button>
   );
 
-  const currentData = activeTab === 'modalidades' ? modalidades : (activeTab === 'niveles' ? niveles : especialidades);
+  const currentData =
+    activeTab === 'modalidades'
+      ? modalidades
+      : activeTab === 'niveles'
+      ? niveles
+      : especialidades;
 
   return (
     <AdminLayout>
@@ -280,14 +300,19 @@ const AcademicStructure = () => {
           Estructura Académica
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Define y organiza la jerarquía educativa: Modalidades, Niveles y Especialidades.
+          Define y organiza la jerarquía educativa: Modalidades, Niveles y
+          Especialidades.
         </p>
         <button
           onClick={() => openModal()}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
-          {activeTab === 'modalidades' ? 'Nueva Modalidad' : (activeTab === 'niveles' ? 'Nuevo Nivel' : 'Nueva Especialidad')}
+          {activeTab === 'modalidades'
+            ? 'Nueva Modalidad'
+            : activeTab === 'niveles'
+            ? 'Nuevo Nivel'
+            : 'Nueva Especialidad'}
         </button>
       </div>
 
@@ -350,7 +375,7 @@ const AcademicStructure = () => {
                   Modalidad
                 </th>
               )}
-               {activeTab === 'especialidades' && (
+              {activeTab === 'especialidades' && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nivel
                 </th>
@@ -368,14 +393,13 @@ const AcademicStructure = () => {
                 </td>
               </tr>
             )}
-            {!loading &&
-              currentData.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    No hay registros.
-                  </td>
-                </tr>
-              )}
+            {!loading && currentData.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  No hay registros.
+                </td>
+              </tr>
+            )}
             {!loading &&
               currentData.map((item) => (
                 <tr key={item.id}>
@@ -388,24 +412,34 @@ const AcademicStructure = () => {
                   {activeTab === 'niveles' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {(item as Nivel).imageUrl ? (
-                        <img 
-                          src={(item as Nivel).imageUrl} 
-                          alt={(item as Nivel).nombre} 
+                        <img
+                          src={(item as Nivel).imageUrl}
+                          alt={(item as Nivel).nombre}
                           className="h-10 w-16 object-cover rounded shadow-sm"
                         />
                       ) : (
-                        <span className="text-gray-400 text-xs italic">Sin imagen</span>
+                        <span className="text-gray-400 text-xs italic">
+                          Sin imagen
+                        </span>
                       )}
                     </td>
                   )}
                   {activeTab === 'niveles' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {modalidades.find((m) => m.id === (item as Nivel).modalidadId)?.nombre || (item as Nivel).modalidad?.nombre || '-'}
+                      {modalidades.find(
+                        (m) => m.id === (item as Nivel).modalidadId
+                      )?.nombre ||
+                        (item as Nivel).modalidad?.nombre ||
+                        '-'}
                     </td>
                   )}
                   {activeTab === 'especialidades' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {niveles.find((n) => n.id === (item as Especialidad).nivelId)?.nombre || (item as Especialidad).nivel?.nombre || '-'}
+                      {niveles.find(
+                        (n) => n.id === (item as Especialidad).nivelId
+                      )?.nombre ||
+                        (item as Especialidad).nivel?.nombre ||
+                        '-'}
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -414,9 +448,18 @@ const AcademicStructure = () => {
                       className="text-blue-600 hover:text-blue-900 mr-4"
                       title="Ver Detalles"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </button>
                     <button
@@ -446,7 +489,11 @@ const AcademicStructure = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingId ? 'Editar' : 'Crear'}{' '}
-                {activeTab === 'modalidades' ? 'Modalidad' : (activeTab === 'niveles' ? 'Nivel' : 'Especialidad')}
+                {activeTab === 'modalidades'
+                  ? 'Modalidad'
+                  : activeTab === 'niveles'
+                  ? 'Nivel'
+                  : 'Especialidad'}
               </h2>
               <button
                 onClick={closeModal}
@@ -474,77 +521,93 @@ const AcademicStructure = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, nombre: e.target.value })
                   }
-                  placeholder={`Nombre de ${activeTab === 'modalidades' ? 'la modalidad' : (activeTab === 'niveles' ? 'del nivel' : 'la especialidad')}`}
+                  placeholder={`Nombre de ${
+                    activeTab === 'modalidades'
+                      ? 'la modalidad'
+                      : activeTab === 'niveles'
+                      ? 'del nivel'
+                      : 'la especialidad'
+                  }`}
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Nombre descriptivo para identificar este elemento en la plataforma.
+                  Nombre descriptivo para identificar este elemento en la
+                  plataforma.
                 </p>
               </div>
 
               {activeTab === 'niveles' && (
                 <>
-                <div className="mb-4">
+                  <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Imagen del Nivel
                     </label>
                     <div className="space-y-3">
-                         <div>
-                            <label className="block text-xs text-gray-500 mb-1">Opción 1: Subir Archivo</label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  setFile(e.target.files[0]);
-                                }
-                              }}
-                            />
-                        </div>
-                        <div className="text-center text-xs text-gray-400 font-medium">- O -</div>
-                        <div>
-                             <label className="block text-xs text-gray-500 mb-1">Opción 2: URL de Imagen</label>
-                             <input
-                                type="text"
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                value={formData.imageUrl || ''}
-                                onChange={(e) =>
-                                  setFormData({ ...formData, imageUrl: e.target.value })
-                                }
-                                placeholder="https://ejemplo.com/imagen.jpg"
-                              />
-                        </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Opción 1: Subir Archivo
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="text-center text-xs text-gray-400 font-medium">
+                        - O -
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Opción 2: URL de Imagen
+                        </label>
+                        <input
+                          type="text"
+                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          value={formData.imageUrl || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              imageUrl: e.target.value,
+                            })
+                          }
+                          placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                      </div>
                     </div>
-                </div>
-                <div className="mb-6">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Modalidad
-                  </label>
-                  <select
-                    required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={formData.modalidadId}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        modalidadId: Number(e.target.value),
-                      })
-                    }
-                  >
-                    <option value={0}>Seleccionar...</option>
-                    {modalidades
-                      .filter(mod => mod.nombre.toLowerCase() !== 'string')
-                      .map((mod) => (
-                      <option key={mod.id} value={mod.id}>
-                        {mod.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  </div>
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Modalidad
+                    </label>
+                    <select
+                      required
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.modalidadId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          modalidadId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>Seleccionar...</option>
+                      {modalidades
+                        .filter((mod) => mod.nombre.toLowerCase() !== 'string')
+                        .map((mod) => (
+                          <option key={mod.id} value={mod.id}>
+                            {mod.nombre}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </>
               )}
 
-             {activeTab === 'especialidades' && (
+              {activeTab === 'especialidades' && (
                 <div className="mb-6">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     Nivel
@@ -596,7 +659,12 @@ const AcademicStructure = () => {
           <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
-                Detalles de {activeTab === 'modalidades' ? 'la Modalidad' : (activeTab === 'niveles' ? 'el Nivel' : 'la Especialidad')}
+                Detalles de{' '}
+                {activeTab === 'modalidades'
+                  ? 'la Modalidad'
+                  : activeTab === 'niveles'
+                  ? 'el Nivel'
+                  : 'la Especialidad'}
               </h2>
               <button
                 onClick={() => setIsViewModalOpen(false)}
@@ -608,45 +676,67 @@ const AcademicStructure = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-500">ID</label>
+                <label className="block text-sm font-medium text-gray-500">
+                  ID
+                </label>
                 <p className="mt-1 text-gray-900">{viewingItem.id}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Nombre</label>
-                <p className="mt-1 text-xl font-semibold text-gray-900">{viewingItem.nombre}</p>
+                <label className="block text-sm font-medium text-gray-500">
+                  Nombre
+                </label>
+                <p className="mt-1 text-xl font-semibold text-gray-900">
+                  {viewingItem.nombre}
+                </p>
               </div>
-              
+
               {activeTab === 'niveles' && (
                 <>
-                <div>
-                   <label className="block text-sm font-medium text-gray-500">Imagen</label>
-                   <div className="mt-1">
-                     {(viewingItem as Nivel).imageUrl ? (
-                        <img 
-                          src={(viewingItem as Nivel).imageUrl} 
-                          alt={(viewingItem as Nivel).nombre} 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Imagen
+                    </label>
+                    <div className="mt-1">
+                      {(viewingItem as Nivel).imageUrl ? (
+                        <img
+                          src={(viewingItem as Nivel).imageUrl}
+                          alt={(viewingItem as Nivel).nombre}
                           className="h-48 w-auto object-cover rounded shadow-md"
                         />
                       ) : (
-                        <span className="text-gray-400 italic">Sin imagen asignada</span>
+                        <span className="text-gray-400 italic">
+                          Sin imagen asignada
+                        </span>
                       )}
-                   </div>
-                </div>
-                <div>
-                   <label className="block text-sm font-medium text-gray-500">Modalidad</label>
-                   <p className="mt-1 text-gray-900">
-                     {modalidades.find((m) => m.id === (viewingItem as Nivel).modalidadId)?.nombre || (viewingItem as Nivel).modalidad?.nombre || '-'}
-                   </p>
-                </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Modalidad
+                    </label>
+                    <p className="mt-1 text-gray-900">
+                      {modalidades.find(
+                        (m) => m.id === (viewingItem as Nivel).modalidadId
+                      )?.nombre ||
+                        (viewingItem as Nivel).modalidad?.nombre ||
+                        '-'}
+                    </p>
+                  </div>
                 </>
               )}
-              
+
               {activeTab === 'especialidades' && (
                 <div>
-                   <label className="block text-sm font-medium text-gray-500">Nivel</label>
-                   <p className="mt-1 text-gray-900">
-                     {niveles.find((n) => n.id === (viewingItem as Especialidad).nivelId)?.nombre || (viewingItem as Especialidad).nivel?.nombre || '-'}
-                   </p>
+                  <label className="block text-sm font-medium text-gray-500">
+                    Nivel
+                  </label>
+                  <p className="mt-1 text-gray-900">
+                    {niveles.find(
+                      (n) => n.id === (viewingItem as Especialidad).nivelId
+                    )?.nombre ||
+                      (viewingItem as Especialidad).nivel?.nombre ||
+                      '-'}
+                  </p>
                 </div>
               )}
             </div>

@@ -1,13 +1,12 @@
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
+
 export interface Categoria {
   id: number;
   nombre: string;
 }
 
-import { API_BASE_URL } from '../config/api';
-
 const API_URL = `${API_BASE_URL}/CategoriasCursos`;
-
-import { getAuthHeaders } from '../utils/apiUtils';
 
 export const categoriaService = {
   getAll: async (): Promise<Categoria[]> => {

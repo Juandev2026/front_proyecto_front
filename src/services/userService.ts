@@ -84,7 +84,7 @@ export const userService = {
       const payload = {
         ...user,
         id: 0,
-       // ensure required fields are present if not strictly typed in Omit
+        // ensure required fields are present if not strictly typed in Omit
       };
 
       const response = await fetch(API_URL, {
@@ -106,7 +106,7 @@ export const userService = {
     try {
       // Create a shallow copy to modify payload
       const payload = { ...user, id };
-      
+
       // Remove password if it is empty string or undefined, so backend doesn't try to hash an empty password
       if (!payload.password) {
         delete payload.password;

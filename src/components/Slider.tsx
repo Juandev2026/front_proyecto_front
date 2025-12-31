@@ -45,8 +45,8 @@ const Slider: React.FC<SliderProps> = ({ slides, currentIndex }) => {
           />
         </motion.div>
       </AnimatePresence>
-      
-       {/* Indicators (dots) need to be handled by parent or removed/kept read-only? 
+
+      {/* Indicators (dots) need to be handled by parent or removed/kept read-only? 
            If kept, they need an onChange handler. For now, removing interactive dots or keeping them read-only visual.
            Let's keep them purely visual for now since the prompt didn't ask for interactive dots, just sync. 
            Actually, let's remove them to simplify if not requested, or keep them as visual indicators.

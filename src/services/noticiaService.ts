@@ -6,7 +6,7 @@ export interface Noticia {
   titulo: string;
   descripcion: string;
   categoriaId: number;
-  categoria?: string; 
+  categoria?: string;
   fecha: string;
   imageUrl: string | null;
   esDestacado: boolean;
@@ -32,8 +32,14 @@ export const noticiaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        console.error('Error al obtener noticias:', response.status, response.statusText);
-        throw new Error(`Error al obtener noticias: ${response.status} ${response.statusText}`);
+        console.error(
+          'Error al obtener noticias:',
+          response.status,
+          response.statusText
+        );
+        throw new Error(
+          `Error al obtener noticias: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -48,8 +54,14 @@ export const noticiaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        console.error('Error al obtener la noticia:', response.status, response.statusText);
-        throw new Error(`Error al obtener la noticia: ${response.status} ${response.statusText}`);
+        console.error(
+          'Error al obtener la noticia:',
+          response.status,
+          response.statusText
+        );
+        throw new Error(
+          `Error al obtener la noticia: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -85,36 +97,40 @@ export const noticiaService = {
         // But if we must send something, send null if possible or just omit.
         // If the backend expects keys to exist:
         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-             fd.delete('modalidadId'); // Ensure we don't send '0'
-             // If we must send it as null, FormData treats everything as strings. 
-             // Ideally we just don't send it if it's null/0.
+          fd.delete('modalidadId'); // Ensure we don't send '0'
+          // If we must send it as null, FormData treats everything as strings.
+          // Ideally we just don't send it if it's null/0.
         }
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-            fd.delete('nivelId');
+          fd.delete('nivelId');
         }
         // UsuarioEdicionId might be required, but if 0 it fails.
         if (fd.get('usuarioEdicionId') === '0') {
-             // Try to keep it if it's required, strictly it should have been set in UI.
-             // If it's truly 0, maybe we shouldn't send it. 
+          // Try to keep it if it's required, strictly it should have been set in UI.
+          // If it's truly 0, maybe we shouldn't send it.
         }
 
         // Remove nested stubs which are likely causing issues if IDs are 0
         // fd.append('modalidad.id', ...); // REMOVED
-        
+
         body = fd;
       } else {
         // JSON Payload construction
         const n = noticia as Partial<Noticia>;
         body = JSON.stringify({
-           ...n,
-           id: n.id || 0,
-           categoriaId: n.categoriaId || 0,
-           modalidadId: (n as any).modalidadId ? Number((n as any).modalidadId) : null,
-           // Remove nested objects
-           nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
-           usuarioEdicionId: (n as any).usuarioEdicionId ? Number((n as any).usuarioEdicionId) : null,
-           comentarios: [], 
-           imageUrl: n.imageUrl || ""
+          ...n,
+          id: n.id || 0,
+          categoriaId: n.categoriaId || 0,
+          modalidadId: (n as any).modalidadId
+            ? Number((n as any).modalidadId)
+            : null,
+          // Remove nested objects
+          nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
+          usuarioEdicionId: (n as any).usuarioEdicionId
+            ? Number((n as any).usuarioEdicionId)
+            : null,
+          comentarios: [],
+          imageUrl: n.imageUrl || '',
         });
       }
 
@@ -124,9 +140,9 @@ export const noticiaService = {
         body,
       });
       if (!response.ok) {
-         const errText = await response.text();
-         console.error('Create response error:', errText);
-         throw new Error(`Error al crear la noticia: ${errText}`);
+        const errText = await response.text();
+        console.error('Create response error:', errText);
+        throw new Error(`Error al crear la noticia: ${errText}`);
       }
       return await response.json();
     } catch (error) {
@@ -138,37 +154,41 @@ export const noticiaService = {
   update: async (id: number, noticia: any): Promise<Noticia> => {
     try {
       const isFormData = noticia instanceof FormData;
-       let body;
-       const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
- 
-      if (isFormData) {
-         const fd = noticia as FormData;
-         if (!fd.has('id')) fd.append('id', String(id));
-         
-         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-             fd.delete('modalidadId');
-         }
-         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-             fd.delete('nivelId');
-         }
-         
-         // Remove nested stubs
-         // fd.append('modalidad.id', ...); // REMOVED
+      let body;
+      const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
 
-         body = fd;
-       } else {
-         const n = noticia as Partial<Noticia>;
-         body = JSON.stringify({
-            ...n,
-            id: id,
-            categoriaId: n.categoriaId || 0,
-            modalidadId: (n as any).modalidadId ? Number((n as any).modalidadId) : null,
-            nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
-            // Remove nested objects
-            usuarioEdicionId: (n as any).usuarioEdicionId ? Number((n as any).usuarioEdicionId) : null,
-            imageUrl: n.imageUrl || ""
-         });
-       }
+      if (isFormData) {
+        const fd = noticia as FormData;
+        if (!fd.has('id')) fd.append('id', String(id));
+
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+          fd.delete('modalidadId');
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+          fd.delete('nivelId');
+        }
+
+        // Remove nested stubs
+        // fd.append('modalidad.id', ...); // REMOVED
+
+        body = fd;
+      } else {
+        const n = noticia as Partial<Noticia>;
+        body = JSON.stringify({
+          ...n,
+          id,
+          categoriaId: n.categoriaId || 0,
+          modalidadId: (n as any).modalidadId
+            ? Number((n as any).modalidadId)
+            : null,
+          nivelId: (n as any).nivelId ? Number((n as any).nivelId) : null,
+          // Remove nested objects
+          usuarioEdicionId: (n as any).usuarioEdicionId
+            ? Number((n as any).usuarioEdicionId)
+            : null,
+          imageUrl: n.imageUrl || '',
+        });
+      }
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',

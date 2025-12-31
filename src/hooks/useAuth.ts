@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ name: string; id?: number; nivelId?: number } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    id?: number;
+    nivelId?: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,10 +16,10 @@ export const useAuth = () => {
     let nivelId = localStorage.getItem('nivelId');
 
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') {
-        userId = null;
+      userId = null;
     }
     if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN') {
-        nivelId = null;
+      nivelId = null;
     }
 
     if (token) {
@@ -24,7 +28,7 @@ export const useAuth = () => {
           const tokenParts = token.split('.');
           if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1] as string));
-            
+
             // Extract Full Name
             if (!fullName) {
               fullName =
@@ -34,7 +38,7 @@ export const useAuth = () => {
                 payload[
                   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
                 ];
-              
+
               if (fullName) {
                 localStorage.setItem('fullName', fullName);
               }
@@ -42,33 +46,35 @@ export const useAuth = () => {
 
             // Extract User ID
             if (!userId) {
-               // Check common claim names for ID
-               const extractedId = 
-                 payload.id || 
-                 payload.Id || 
-                 payload.sub || 
-                 payload.nameid ||
-                 payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+              // Check common claim names for ID
+              const extractedId =
+                payload.id ||
+                payload.Id ||
+                payload.sub ||
+                payload.nameid ||
+                payload[
+                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+                ];
 
-               if (extractedId) {
-                 userId = String(extractedId);
-                 localStorage.setItem('userId', userId);
-               }
+              if (extractedId) {
+                userId = String(extractedId);
+                localStorage.setItem('userId', userId);
+              }
             }
           }
         } catch (e) {
           console.error('Error decoding token:', e);
         }
       }
-      
+
       setIsAuthenticated(true);
       if (fullName) {
         const parsedId = userId ? Number(userId) : undefined;
         const parsedNivelId = nivelId ? Number(nivelId) : undefined;
-        setUser({ 
-            name: fullName, 
-            id: !isNaN(parsedId!) ? parsedId : undefined,
-            nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined
+        setUser({
+          name: fullName,
+          id: !isNaN(parsedId!) ? parsedId : undefined,
+          nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
         });
       } else {
         setUser(null); // If token exists but no fullName, user is not fully identified
@@ -82,4 +88,3 @@ export const useAuth = () => {
 
   return { isAuthenticated, user, loading };
 };
-

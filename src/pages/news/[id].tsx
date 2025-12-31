@@ -3,12 +3,12 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import AdSidebar from '../../components/AdSidebar';
+import CommentsSection from '../../components/CommentsSection';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
-import CommentsSection from '../../components/CommentsSection';
-import AdSidebar from '../../components/AdSidebar';
 
 const NewsDetail = () => {
   const router = useRouter();
@@ -132,15 +132,15 @@ const NewsDetail = () => {
                 </div>
               </div>
             </article>
-            
+
             {newsItem && <CommentsSection noticiaId={newsItem.id} />}
           </div>
 
           {/* Sidebar Column */}
           <div className="lg:col-span-4 space-y-8">
-             <div className="sticky top-8">
-                <AdSidebar />
-             </div>
+            <div className="sticky top-8">
+              <AdSidebar />
+            </div>
           </div>
         </div>
       </main>

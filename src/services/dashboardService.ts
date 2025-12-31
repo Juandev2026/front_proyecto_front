@@ -1,7 +1,7 @@
-import { API_URL, getAuthHeaders } from '../config/api';
-import { noticiaService } from './noticiaService';
-import { materialService } from './materialService';
 import { cursoService } from './cursoService';
+import { materialService } from './materialService';
+import { noticiaService } from './noticiaService';
+import { API_URL, getAuthHeaders } from '../config/api';
 
 export interface DashboardTotals {
   totalNoticias: number;
@@ -83,9 +83,8 @@ export const dashboardService = {
           action: 'Nuevo video subido',
         });
       });
-      
-      return activities;
 
+      return activities;
     } catch (error) {
       console.error('Error fetching recent activity:', error);
       return [];

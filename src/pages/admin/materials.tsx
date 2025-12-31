@@ -1,24 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect, useMemo } from 'react';
+
+import {
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  XIcon,
+  PlusIcon,
+  DocumentTextIcon,
+  PhotographIcon,
+} from '@heroicons/react/outline';
+import dynamic from 'next/dynamic';
 
 import AdminLayout from '../../components/AdminLayout';
-import { categoriaSimpleService, CategoriaSimple } from '../../services/categoriaSimpleService';
+import {
+  categoriaSimpleService,
+  CategoriaSimple,
+} from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
 import { uploadService } from '../../services/uploadService';
-import { modalidadService, Modalidad } from '../../services/modalidadService';
-import { nivelService, Nivel } from '../../services/nivelService';
+import 'react-quill/dist/quill.snow.css';
+
+// Dynamic import for ReactQuill
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const AdminMaterials = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  
+
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Material | null>(null);
@@ -28,30 +41,47 @@ const AdminMaterials = () => {
     descripcion: '',
     url: '',
     categoriaId: 0,
-    modalidadId: 0,
-    nivelId: 0,
-    usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+    usuarioEdicionId:
+      typeof window !== 'undefined'
+        ? Number(localStorage.getItem('userId') || 0)
+        : 0,
     precio: 0,
     telefono: '',
   });
   const [file, setFile] = useState<File | null>(null);
 
+  // strip html for table view
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    if (typeof window === 'undefined') return html;
+
+    // First pass
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    let text = tmp.textContent || tmp.innerText || '';
+
+    // Check if result looks like it still has tags (double escaped case)
+    if (text.trim().startsWith('<') && text.includes('>')) {
+      const tmp2 = document.createElement('DIV');
+      tmp2.innerHTML = text;
+      text = tmp2.textContent || tmp2.innerText || '';
+    }
+    return text;
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [materialsData, categoriesData, modalidadesData, nivelesData] = await Promise.all([
+      const [materialsData, categoriesData] = await Promise.all([
         materialService.getAll(),
         categoriaSimpleService.getAll(),
-        modalidadService.getAll(),
-        nivelService.getAll(),
       ]);
-      setMaterials(materialsData);
+      // Sort by ID descending (newest first)
+      setMaterials(materialsData.sort((a, b) => b.id - a.id));
       setCategories(categoriesData);
-      setModalidades(modalidadesData);
-      setNiveles(nivelesData);
     } catch (err) {
       setError('Error loading data');
-      console.error(err);
+      // console.error(err);
     } finally {
       setLoading(false);
     }
@@ -60,26 +90,17 @@ const AdminMaterials = () => {
   useEffect(() => {
     fetchData();
   }, []);
-  
-  // Create a filtered list for the form
-  const [formNiveles, setFormNiveles] = useState<Nivel[]>([]);
-
-  useEffect(() => {
-    if (newMaterial.modalidadId) {
-      nivelService.getByModalidadId(newMaterial.modalidadId).then(setFormNiveles).catch(console.error);
-    } else {
-      setFormNiveles([]);
-    }
-  }, [newMaterial.modalidadId]);
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('¿Estás seguro de eliminar este material?')) {
       try {
         await materialService.delete(id);
         fetchData();
       } catch (err) {
+        // eslint-disable-next-line no-alert
         alert('Error deleting material');
-        console.error(err);
+        // console.error(err);
       }
     }
   };
@@ -88,21 +109,19 @@ const AdminMaterials = () => {
     setEditingId(item.id);
     setNewMaterial({
       titulo: item.titulo,
-      descripcion: item.descripcion,
+      descripcion: item.descripcion, // HTML content
       url: item.url,
       categoriaId: item.categoriaId,
-      modalidadId: item.modalidadId,
-      nivelId: item.nivelId,
-      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+      usuarioEdicionId:
+        typeof window !== 'undefined'
+          ? Number(localStorage.getItem('userId') || 0)
+          : 0,
       precio: item.precio || 0,
       telefono: item.telefono || '',
     });
     setFile(null);
+
     setIsModalOpen(true);
-    // Trigger nivel fetch for form
-    if (item.modalidadId) {
-        nivelService.getByModalidadId(item.modalidadId).then(setFormNiveles).catch(console.error);
-    }
   };
 
   const handleView = (item: Material) => {
@@ -110,16 +129,44 @@ const AdminMaterials = () => {
     setIsViewModalOpen(true);
   };
 
+  const handleAddNew = () => {
+    setIsModalOpen(true);
+    setEditingId(null);
+    setFile(null);
+
+    setNewMaterial({
+      titulo: '',
+      descripcion: '',
+      url: '',
+      categoriaId: 0,
+      usuarioEdicionId:
+        typeof window !== 'undefined'
+          ? Number(localStorage.getItem('userId') || 0)
+          : 0,
+      precio: 0,
+      telefono: '',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newMaterial.usuarioEdicionId || Number(newMaterial.usuarioEdicionId) <= 0) {
-        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
-        if (storedId <= 0) {
-           alert('Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente.');
-           return;
-        }
-        newMaterial.usuarioEdicionId = storedId;
+    if (
+      !newMaterial.usuarioEdicionId ||
+      Number(newMaterial.usuarioEdicionId) <= 0
+    ) {
+      const storedId =
+        typeof window !== 'undefined'
+          ? Number(localStorage.getItem('userId') || 0)
+          : 0;
+      if (storedId <= 0) {
+        // eslint-disable-next-line no-alert
+        alert(
+          'Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente.'
+        );
+        return;
+      }
+      newMaterial.usuarioEdicionId = storedId;
     }
 
     try {
@@ -129,77 +176,76 @@ const AdminMaterials = () => {
         try {
           finalUrl = await uploadService.uploadImage(file);
         } catch (uploadError) {
+          // eslint-disable-next-line no-alert
           alert('Error al subir el archivo. Por favor intente nuevamente.');
           return;
         }
       }
 
       const materialData = {
-          ...newMaterial,
-          id: editingId || 0,
-          url: finalUrl,
-          categoriaId: Number(newMaterial.categoriaId),
-          modalidadId: Number(newMaterial.modalidadId),
-          nivelId: Number(newMaterial.nivelId),
-          usuarioEdicionId: Number(newMaterial.usuarioEdicionId),
-          precio: Number(newMaterial.precio),
+        ...newMaterial,
+        id: editingId || 0,
+        url: finalUrl,
+        categoriaId: Number(newMaterial.categoriaId),
+        // Send 0 or null for removed fields if API requires them, service handles it
+        modalidadId: 0,
+        nivelId: 0,
+        usuarioEdicionId: Number(newMaterial.usuarioEdicionId),
+        precio: Number(newMaterial.precio),
       };
 
       if (editingId) {
-        await materialService.update(editingId, materialData as unknown as Material);
+        await materialService.update(
+          editingId,
+          materialData as unknown as Material
+        );
       } else {
         await materialService.create(materialData as unknown as Material);
       }
 
       setIsModalOpen(false);
-      setNewMaterial({
-        titulo: '',
-        descripcion: '',
-        url: '',
-        categoriaId: 0,
-        modalidadId: 0,
-        nivelId: 0,
-        usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
-        precio: 0,
-        telefono: '',
-      });
-      setFile(null);
-      setEditingId(null);
+      handleAddNew(); // Reset form
       fetchData();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error saving material');
-      console.error(err);
+      // console.error(err);
     }
   };
 
   const getCategoryName = (id: number) => {
     const category = categories.find((c) => c.id === id);
-    return category ? category.nombre : 'Unknown';
+    return category ? category.nombre : 'General';
   };
-    const getModalidadName = (id: number) => {
-        const mod = modalidades.find(m => m.id === id);
-        return mod ? mod.nombre : 'Desconocida';
-    };
 
-    const getNivelName = (id: number) => {
-        const niv = niveles.find(n => n.id === id);
-        return niv ? niv.nombre : 'Desconocido';
-    };
-
+  // Quill Toolbar Modules
+  const modules = useMemo(
+    () => ({
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'clean'],
+      ],
+    }),
+    []
+  );
 
   if (loading)
     return (
       <AdminLayout>
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
       </AdminLayout>
     );
 
   if (error)
-     return (
-        <AdminLayout>
-             <div>Error: {error}</div>
-        </AdminLayout>
-     );
+    return (
+      <AdminLayout>
+        <div className="text-red-500">Error: {error}</div>
+      </AdminLayout>
+    );
 
   return (
     <AdminLayout>
@@ -208,107 +254,106 @@ const AdminMaterials = () => {
           Gestión de Recursos
         </h1>
         <button
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingId(null);
-            setFile(null);
-            setNewMaterial({
-              titulo: '',
-              descripcion: '',
-              url: '',
-              categoriaId: 0,
-              modalidadId: 0,
-              nivelId: 0,
-              usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
-              precio: 0,
-              telefono: '',
-            });
-            setFormNiveles([]);
-          }}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+          onClick={handleAddNew}
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center shadow-md"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
           Nuevo Recurso
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Título
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Descripción
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                URL
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Categoría
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Precio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Archivo
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-             {materials.length === 0 ? (
-                <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                        No hay recursos disponibles.
-                    </td>
-                </tr>
-            ) : (
-                materials.map((item) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {item.titulo}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">
-                  {item.descripcion}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    Ver enlace
-                  </a>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {getCategoryName(item.categoriaId)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleView(item)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                    title="Ver Detalles"
-                  >
-                    <EyeIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    title="Editar"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Eliminar"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
+            {materials.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-6 py-12 text-center text-gray-500"
+                >
+                  No hay recursos disponibles.
                 </td>
               </tr>
-            ))
+            ) : (
+              materials.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {stripHtml(item.titulo)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {stripHtml(getCategoryName(item.categoriaId))}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.precio > 0 ? (
+                      `S/ ${item.precio}`
+                    ) : (
+                      <span className="text-green-600 font-bold">Gratis</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.url ? (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center"
+                      >
+                        <DocumentTextIcon className="w-4 h-4 mr-1" />
+                        Ver
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">Sin archivo</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleView(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Ver Detalles"
+                    >
+                      <EyeIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="Editar"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Eliminar"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
@@ -316,198 +361,196 @@ const AdminMaterials = () => {
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-xl font-bold">
-                  {editingId ? 'Editar Recurso' : 'Agregar Nuevo Recurso'}
-                </h2>
-                <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                >
-                    <XIcon className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {editingId ? 'Editar Recurso' : 'Nuevo Recurso'}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <XIcon className="w-8 h-8" />
+              </button>
             </div>
-           
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.titulo}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, titulo: e.target.value })
-                  }
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Descripción
-                </label>
-                <textarea
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.descripcion}
-                  onChange={(e) =>
-                    setNewMaterial({
-                      ...newMaterial,
-                      descripcion: e.target.value,
-                    })
-                  }
-                />
+
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Col */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Título del Recurso
+                    </label>
+                    <div className="mb-4">
+                      <ReactQuill
+                        theme="snow"
+                        value={newMaterial.titulo}
+                        onChange={(value) =>
+                          setNewMaterial({ ...newMaterial, titulo: value })
+                        }
+                        className="h-16"
+                        modules={modules}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Categoría
+                      </label>
+                      <select
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newMaterial.categoriaId}
+                        onChange={(e) =>
+                          setNewMaterial({
+                            ...newMaterial,
+                            categoriaId: Number(e.target.value),
+                          })
+                        }
+                      >
+                        <option value={0}>Seleccionar...</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Precio (S/)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newMaterial.precio}
+                        onChange={(e) =>
+                          setNewMaterial({
+                            ...newMaterial,
+                            precio: parseFloat(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Teléfono de Contacto (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={newMaterial.telefono}
+                      onChange={(e) =>
+                        setNewMaterial({
+                          ...newMaterial,
+                          telefono: e.target.value,
+                        })
+                      }
+                      placeholder="Ej. 51999999999"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Col */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      URL del Archivo (Existente o Externo)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newMaterial.url}
+                        onChange={(e) =>
+                          setNewMaterial({
+                            ...newMaterial,
+                            url: e.target.value,
+                          })
+                        }
+                        placeholder="https://..."
+                      />
+                      {newMaterial.url && (
+                        <a
+                          href={newMaterial.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-lg flex items-center transition-colors"
+                          title="Visualizar en nueva pestaña"
+                        >
+                          <EyeIcon className="w-5 h-5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <label className="block text-gray-700 text-sm font-bold mb-4">
+                      O subir nuevo archivo (PDF / Imagen)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      className="w-full text-sm text-gray-500
+                                file:mr-4 file:py-2.5 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-bold
+                                file:bg-primary file:text-white
+                                hover:file:bg-blue-700
+                            "
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setFile(e.target.files[0]);
+                          // Optional: setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      * Al subir un archivo, se generará una URL automática que
+                      reemplazará la actual.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="mb-4">
+              {/* Full Width Desc */}
+              <div className="mt-2">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  URL (Opcional si sube archivo)
+                  Descripción (Detallada)
                 </label>
-                <input
-                  type="url"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.url}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, url: e.target.value })
-                  }
-                  placeholder="https://ejemplo.com"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  O Subir Archivo (PDF, Imagen)
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,image/*"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setFile(e.target.files[0]);
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <ReactQuill
+                    theme="snow"
+                    value={newMaterial.descripcion}
+                    onChange={(value) =>
+                      setNewMaterial({ ...newMaterial, descripcion: value })
                     }
-                  }}
-                />
+                    className="h-64 mb-12"
+                    modules={modules}
+                  />
+                </div>
               </div>
 
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Categoría
-                </label>
-                <select
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.categoriaId}
-                  onChange={(e) =>
-                    setNewMaterial({
-                      ...newMaterial,
-                      categoriaId: Number(e.target.value),
-                    })
-                  }
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Modalidad
-                </label>
-                <select
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.modalidadId}
-                  onChange={(e) =>
-                    setNewMaterial({
-                      ...newMaterial,
-                      modalidadId: Number(e.target.value),
-                    })
-                  }
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {modalidades.map((mod) => (
-                    <option key={mod.id} value={mod.id}>
-                      {mod.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Nivel
-                </label>
-                <select
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.nivelId}
-                  onChange={(e) =>
-                    setNewMaterial({
-                      ...newMaterial,
-                      nivelId: Number(e.target.value),
-                    })
-                  }
-                  disabled={!newMaterial.modalidadId}
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {formNiveles.map((nivel) => (
-                    <option key={nivel.id} value={nivel.id}>
-                      {nivel.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Precio (S/ - deje en 0 si es gratis)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.precio || 0}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, precio: parseFloat(e.target.value) })
-                  }
-                />
-              </div>
-
-               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                   Teléfono (WhatsApp - opcional)
-                </label>
-                <input
-                  type="text"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newMaterial.telefono || ''}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, telefono: e.target.value })
-                  }
-                  placeholder="51999999999"
-                />
-              </div>
-
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-6 border-t border-gray-100 mt-8">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="mr-4 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
+                  className="mr-4 text-gray-500 hover:text-gray-700 font-bold py-2 px-6 rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
                 >
-                  Guardar
+                  {editingId ? 'Guardar Cambios' : 'Crear Recurso'}
                 </button>
               </div>
             </form>
@@ -516,73 +559,119 @@ const AdminMaterials = () => {
       )}
 
       {/* View Modal */}
-       {isViewModalOpen && viewingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Detalles del Recurso</h2>
+      {isViewModalOpen && viewingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-6 bg-gray-50 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-800">
+                Detalles del Recurso
+              </h2>
               <button
                 onClick={() => setIsViewModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <XIcon className="w-6 h-6" />
+                <XIcon className="w-8 h-8" />
               </button>
             </div>
 
-            <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{viewingItem.categoria?.nombre || getCategoryName(viewingItem.categoriaId)}</p>
+            <div className="flex-grow overflow-y-auto p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                {/* Content Info */}
+                <div className="space-y-6">
+                  <div>
+                    <span className="inline-block px-3 py-1 bg-blue-100 text-primary rounded-full text-xs font-bold uppercase mb-2">
+                      {getCategoryName(viewingItem.categoriaId)}
+                    </span>
+                    <div
+                      className="text-3xl font-bold text-gray-900 leading-tight mb-4"
+                      dangerouslySetInnerHTML={{ __html: viewingItem.titulo }}
+                    />
+                    <div className="prose prose-blue max-w-none text-gray-600">
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: viewingItem.descripcion,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-100">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase">
+                        Precio
+                      </label>
+                      <p className="text-xl font-bold text-gray-900">
+                        {viewingItem.precio > 0
+                          ? `S/ ${viewingItem.precio}`
+                          : 'Gratis'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase">
+                        Teléfono
+                      </label>
+                      <p className="text-lg font-medium text-gray-900">
+                        {viewingItem.telefono || '-'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Descripción</label>
-                    <p className="text-gray-900 whitespace-pre-wrap">{viewingItem.descripcion}</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500">Modalidad</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.modalidad?.nombre || getModalidadName(viewingItem.modalidadId)}
-                        </p>
-                    </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-500">Nivel</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.nivel?.nombre || getNivelName(viewingItem.nivelId)}
-                        </p>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500">Precio</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}
-                        </p>
-                    </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-500">Contacto</label>
-                        <p className="text-gray-900 font-medium">{viewingItem.telefono || 'No especificado'}</p>
-                    </div>
-                </div>
+                {/* Preview */}
+                <div className="bg-gray-100 rounded-xl overflow-hidden shadow-inner flex items-center justify-center min-h-[400px] border border-gray-200">
+                  {(() => {
+                    if (!viewingItem.url) {
+                      return (
+                        <div className="text-center text-gray-500">
+                          <PhotographIcon className="w-16 h-16 mx-auto mb-2 text-gray-300" />
+                          <p>Este recurso no tiene archivo adjunto.</p>
+                        </div>
+                      );
+                    }
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">Enlace / Recurso</label>
-                     <a
-                        href={viewingItem.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
-                      >
-                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                        Abrir Recurso
-                      </a>
+                    return viewingItem.url.toLowerCase().endsWith('.pdf') ? (
+                      <iframe
+                        src={viewingItem.url}
+                        className="w-full h-[500px]"
+                        title="Vista previa PDF"
+                      ></iframe>
+                    ) : (
+                      <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
+                        <img
+                          src={viewingItem.url}
+                          alt={viewingItem.titulo}
+                          className="max-w-full max-h-[500px] object-contain shadow-sm rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              'none';
+                            (
+                              e.target as HTMLImageElement
+                            ).nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden text-center text-gray-500">
+                          <DocumentTextIcon className="w-16 h-16 mx-auto mb-2 text-gray-400" />
+                          <p>No se puede previsualizar este archivo.</p>
+                          <a
+                            href={viewingItem.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary hover:underline mt-2 inline-block"
+                          >
+                            Descargar
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
+              </div>
             </div>
 
-            <div className="mt-8 flex justify-end">
+            <div className="p-6 border-t border-gray-100 flex justify-end bg-gray-50">
               <button
                 onClick={() => setIsViewModalOpen(false)}
-                className="bg-gray-100 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors"
+                className="bg-white text-gray-700 font-bold py-2 px-6 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-sm"
               >
                 Cerrar
               </button>

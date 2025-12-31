@@ -1,3 +1,6 @@
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+
 export interface Material {
   id: number;
   titulo: string;
@@ -14,11 +17,7 @@ export interface Material {
   telefono: string;
 }
 
-import { API_BASE_URL } from '../config/api';
-
 const API_URL = `${API_BASE_URL}/Materiales`;
-
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export const materialService = {
   getAll: async (): Promise<Material[]> => {
@@ -62,24 +61,26 @@ export const materialService = {
       if (isFormData) {
         const fd = material as FormData;
         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-            fd.delete('modalidadId'); 
+          fd.delete('modalidadId');
         }
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-            fd.delete('nivelId');
+          fd.delete('nivelId');
         }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
-           // optional handling if needed
+          // optional handling if needed
         }
         body = fd;
       } else {
         const m = material as Material;
         body = JSON.stringify({
-            ...m,
-            modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
-            nivelId: m.nivelId ? Number(m.nivelId) : null,
-            usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null,
-            precio: m.precio ? Number(m.precio) : 0,
-            telefono: m.telefono || ''
+          ...m,
+          modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
+          nivelId: m.nivelId ? Number(m.nivelId) : null,
+          usuarioEdicionId: m.usuarioEdicionId
+            ? Number(m.usuarioEdicionId)
+            : null,
+          precio: m.precio ? Number(m.precio) : 0,
+          telefono: m.telefono || '',
         });
       }
 
@@ -90,9 +91,9 @@ export const materialService = {
       });
 
       if (!response.ok) {
-         const errText = await response.text();
-         console.error('Create material error:', errText);
-         throw new Error('Error al crear el material: ' + errText);
+        const errText = await response.text();
+        console.error('Create material error:', errText);
+        throw new Error(`Error al crear el material: ${errText}`);
       }
 
       return await response.json();
@@ -115,23 +116,25 @@ export const materialService = {
         const fd = material as FormData;
         if (!fd.has('id')) fd.append('id', String(id));
         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-             fd.delete('modalidadId');
+          fd.delete('modalidadId');
         }
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-             fd.delete('nivelId');
+          fd.delete('nivelId');
         }
         body = fd;
       } else {
-         const m = material as Material;
-         body = JSON.stringify({
-             ...m,
-             id: id,
-             modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
-             nivelId: m.nivelId ? Number(m.nivelId) : null,
-             usuarioEdicionId: m.usuarioEdicionId ? Number(m.usuarioEdicionId) : null,
-             precio: m.precio ? Number(m.precio) : 0,
-             telefono: m.telefono || ''
-         });
+        const m = material as Material;
+        body = JSON.stringify({
+          ...m,
+          id,
+          modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
+          nivelId: m.nivelId ? Number(m.nivelId) : null,
+          usuarioEdicionId: m.usuarioEdicionId
+            ? Number(m.usuarioEdicionId)
+            : null,
+          precio: m.precio ? Number(m.precio) : 0,
+          telefono: m.telefono || '',
+        });
       }
 
       const response = await fetch(`${API_URL}/${id}`, {
@@ -141,9 +144,9 @@ export const materialService = {
       });
 
       if (!response.ok) {
-         const errText = await response.text();
-         console.error('Update material error:', errText);
-         throw new Error('Error al actualizar el material: ' + errText);
+        const errText = await response.text();
+        console.error('Update material error:', errText);
+        throw new Error(`Error al actualizar el material: ${errText}`);
       }
 
       // Check if response has content before parsing JSON

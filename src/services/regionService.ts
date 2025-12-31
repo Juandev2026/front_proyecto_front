@@ -30,7 +30,7 @@ export const regionService = {
         id: 0,
         nombre: region.nombre,
       };
-      
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -49,7 +49,7 @@ export const regionService = {
   update: async (id: number, region: { nombre: string }): Promise<void> => {
     try {
       const payload = {
-        id: id,
+        id,
         nombre: region.nombre,
       };
 

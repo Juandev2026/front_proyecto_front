@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
 
@@ -25,7 +24,9 @@ export const materialCategoriaService = {
     }
   },
 
-  create: async (categoria: Omit<CategoriaSimple, 'id'>): Promise<CategoriaSimple> => {
+  create: async (
+    categoria: Omit<CategoriaSimple, 'id'>
+  ): Promise<CategoriaSimple> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -37,27 +38,30 @@ export const materialCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-       console.error('Error creating material category:', error);
-       throw error;
+      console.error('Error creating material category:', error);
+      throw error;
     }
   },
 
-  update: async (id: number, categoria: CategoriaSimple): Promise<CategoriaSimple> => {
-     try {
-       const response = await fetch(`${API_URL}/${id}`, {
-         method: 'PUT',
-         headers: getAuthHeaders(),
-         body: JSON.stringify(categoria),
-       });
-       if (!response.ok) {
-         throw new Error('Error al actualizar categoría de material');
-       }
-       const text = await response.text();
-       return text ? JSON.parse(text) : categoria;
-     } catch (error) {
-        console.error('Error updating material category:', error);
-        throw error;
-     }
+  update: async (
+    id: number,
+    categoria: CategoriaSimple
+  ): Promise<CategoriaSimple> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoria),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar categoría de material');
+      }
+      const text = await response.text();
+      return text ? JSON.parse(text) : categoria;
+    } catch (error) {
+      console.error('Error updating material category:', error);
+      throw error;
+    }
   },
 
   delete: async (id: number): Promise<void> => {
@@ -70,8 +74,8 @@ export const materialCategoriaService = {
         throw new Error('Error al eliminar categoría de material');
       }
     } catch (error) {
-       console.error('Error deleting material category:', error);
-       throw error;
+      console.error('Error deleting material category:', error);
+      throw error;
     }
-  }
+  },
 };

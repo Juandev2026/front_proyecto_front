@@ -58,7 +58,8 @@ export const especialidadesService = {
         method: 'GET',
         headers: getAuthHeaders(),
       });
-      if (!response.ok) throw new Error('Error al obtener especialidades por nivel');
+      if (!response.ok)
+        throw new Error('Error al obtener especialidades por nivel');
       return await response.json();
     } catch (error) {
       console.error('Error in getByNivel especialidades:', error);
@@ -71,8 +72,8 @@ export const especialidadesService = {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json'
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
@@ -84,13 +85,16 @@ export const especialidadesService = {
     }
   },
 
-  update: async (id: number, data: UpdateEspecialidadRequest): Promise<void> => {
+  update: async (
+    id: number,
+    data: UpdateEspecialidadRequest
+  ): Promise<void> => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json'
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });

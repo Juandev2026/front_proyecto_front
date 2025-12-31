@@ -53,7 +53,10 @@ const Login = () => {
         localStorage.setItem('nivelId', String(response.nivelId));
       }
 
-      if (response.role?.toUpperCase() === 'ADMIN' || response.role?.toUpperCase() === 'SUBADMIN') {
+      if (
+        response.role?.toUpperCase() === 'ADMIN' ||
+        response.role?.toUpperCase() === 'SUBADMIN'
+      ) {
         router.push('/admin/');
       } else {
         router.push('/'); // Redirect to home or dashboard

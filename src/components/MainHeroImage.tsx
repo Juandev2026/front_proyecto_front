@@ -7,10 +7,17 @@ interface MainHeroImageProps {
   currentIndex: number;
 }
 
-const MainHeroImage: React.FC<MainHeroImageProps> = ({ slides, currentIndex }) => {
+const MainHeroImage: React.FC<MainHeroImageProps> = ({
+  slides,
+  currentIndex,
+}) => {
   return (
-    <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 h-56 sm:h-72 md:h-96 lg:h-full">
+    <div className="absolute inset-0 w-full h-full z-0">
       <Slider slides={slides} currentIndex={currentIndex} />
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{ backgroundColor: 'rgba(55, 90, 100, 0.75)' }}
+      ></div>
     </div>
   );
 };

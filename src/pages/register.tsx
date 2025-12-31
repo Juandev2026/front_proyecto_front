@@ -6,10 +6,13 @@ import { useRouter } from 'next/router';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { authService } from '../services/authService';
+import {
+  especialidadesService,
+  Especialidad,
+} from '../services/especialidadesService';
 import { modalidadService, Modalidad } from '../services/modalidadService';
 import { nivelService, Nivel } from '../services/nivelService';
 import { regionService, Region } from '../services/regionService';
-import { especialidadesService, Especialidad } from '../services/especialidadesService';
 
 const Register = () => {
   const router = useRouter();
@@ -84,18 +87,20 @@ const Register = () => {
     const fetchEspecialidades = async () => {
       if (formData.nivelId) {
         try {
-            const data = await especialidadesService.getByNivel(Number(formData.nivelId));
-            setEspecialidades(data);
-            
-             const currentExists = data.some(
-                (n) => n.id === Number(formData.especialidadId)
-              );
-              if (!currentExists) {
-                setFormData((prev) => ({ ...prev, especialidadId: 0 }));
-              }
+          const data = await especialidadesService.getByNivel(
+            Number(formData.nivelId)
+          );
+          setEspecialidades(data);
+
+          const currentExists = data.some(
+            (n) => n.id === Number(formData.especialidadId)
+          );
+          if (!currentExists) {
+            setFormData((prev) => ({ ...prev, especialidadId: 0 }));
+          }
         } catch (err) {
-             console.error('Error loading especialidades:', err);
-             setEspecialidades([]);
+          console.error('Error loading especialidades:', err);
+          setEspecialidades([]);
         }
       } else {
         setEspecialidades([]);
@@ -320,7 +325,10 @@ const Register = () => {
                     htmlFor="nivelId"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nivel <span className="text-gray-400 font-normal">(Opcional)</span>
+                    Nivel{' '}
+                    <span className="text-gray-400 font-normal">
+                      (Opcional)
+                    </span>
                   </label>
                   <select
                     id="nivelId"
@@ -345,7 +353,10 @@ const Register = () => {
                     htmlFor="especialidadId"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Especialidad <span className="text-gray-400 font-normal">(Opcional)</span>
+                    Especialidad{' '}
+                    <span className="text-gray-400 font-normal">
+                      (Opcional)
+                    </span>
                   </label>
                   <select
                     id="especialidadId"
@@ -355,7 +366,9 @@ const Register = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
                   >
-                    <option value={0}>Seleccione una especialidad (Opcional)</option>
+                    <option value={0}>
+                      Seleccione una especialidad (Opcional)
+                    </option>
                     {especialidades.map((esp) => (
                       <option key={esp.id} value={esp.id}>
                         {esp.nombre}
@@ -363,7 +376,6 @@ const Register = () => {
                     ))}
                   </select>
                 </div>
-
 
                 {/* Password */}
                 <div>

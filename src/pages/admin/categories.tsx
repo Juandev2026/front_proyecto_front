@@ -8,8 +8,8 @@ import {
 } from '@heroicons/react/outline';
 
 import AdminLayout from '../../components/AdminLayout';
-import { categoriaService } from '../../services/categoriaService';
 import { categoriaGeneralService } from '../../services/categoriaGeneralService';
+import { categoriaService } from '../../services/categoriaService';
 import { categoriaSimpleService } from '../../services/categoriaSimpleService';
 
 // Unified Interface for UI handling
@@ -181,18 +181,18 @@ const AdminCategories = () => {
         case 'general':
           await categoriaGeneralService.update(editingId, {
             // Some APIs might expect ID in body, passing it to be safe as per previous code
-            // but the service interface I wrote takes { nombre } for update payload usually? 
+            // but the service interface I wrote takes { nombre } for update payload usually?
             // Previous code passed ID. I'll adhere to service signature or previous pattern.
-            // My new service signature for update is (id, {nombre}). 
+            // My new service signature for update is (id, {nombre}).
             // Previous cursoCategoriaService.update took {id, nombre}.
-            // My new services strictly take {nombre} in the body for update but URL has ID. 
+            // My new services strictly take {nombre} in the body for update but URL has ID.
             // Let's pass {nombre} only as my new service expects that.
-             nombre: formData.nombre,
+            nombre: formData.nombre,
           });
           break;
         case 'simple':
           await categoriaSimpleService.update(editingId, {
-             nombre: formData.nombre,
+            nombre: formData.nombre,
           });
           break;
         default:
@@ -268,7 +268,8 @@ const AdminCategories = () => {
           Gestión de Categorías
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Administra las clasificaciones para Cursos, Noticias y Materiales desde este panel.
+          Administra las clasificaciones para Cursos, Noticias y Materiales
+          desde este panel.
         </p>
         <button
           onClick={() => openModal()}
@@ -303,7 +304,7 @@ const AdminCategories = () => {
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                 clipRule="evenodd"
-                />
+              />
             </svg>
           </div>
           <div className="ml-3">
@@ -365,9 +366,18 @@ const AdminCategories = () => {
                       className="text-blue-600 hover:text-blue-900 mr-4"
                       title="Ver Detalles"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </button>
                     <button
@@ -461,9 +471,7 @@ const AdminCategories = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">
-                Detalles de Categoría
-              </h2>
+              <h2 className="text-xl font-bold">Detalles de Categoría</h2>
               <button
                 onClick={() => setIsViewModalOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -474,15 +482,23 @@ const AdminCategories = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-500">ID</label>
+                <label className="block text-sm font-medium text-gray-500">
+                  ID
+                </label>
                 <p className="mt-1 text-gray-900">{viewingItem.id}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Nombre</label>
-                <p className="mt-1 text-xl font-semibold text-gray-900">{viewingItem.nombre}</p>
+                <label className="block text-sm font-medium text-gray-500">
+                  Nombre
+                </label>
+                <p className="mt-1 text-xl font-semibold text-gray-900">
+                  {viewingItem.nombre}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Tipo</label>
+                <label className="block text-sm font-medium text-gray-500">
+                  Tipo
+                </label>
                 <p className="mt-1 text-gray-900">
                   {activeTab === 'standard' && 'Categoría de Curso'}
                   {activeTab === 'general' && 'Categoría de Noticia'}

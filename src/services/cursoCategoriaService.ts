@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
 
@@ -25,7 +24,9 @@ export const cursoCategoriaService = {
     }
   },
 
-  create: async (categoria: Omit<CategoriaGeneral, 'id'>): Promise<CategoriaGeneral> => {
+  create: async (
+    categoria: Omit<CategoriaGeneral, 'id'>
+  ): Promise<CategoriaGeneral> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -37,28 +38,31 @@ export const cursoCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-       console.error('Error creating course category:', error);
-       throw error;
+      console.error('Error creating course category:', error);
+      throw error;
     }
   },
 
-  update: async (id: number, categoria: CategoriaGeneral): Promise<CategoriaGeneral> => {
-     try {
-       const response = await fetch(`${API_URL}/${id}`, {
-         method: 'PUT',
-         headers: getAuthHeaders(),
-         body: JSON.stringify(categoria),
-       });
-       if (!response.ok) {
-         throw new Error('Error al actualizar categoría de curso');
-       }
-       // Some APIs return 200 OK with empty body on PUT
-       const text = await response.text();
-       return text ? JSON.parse(text) : categoria; 
-     } catch (error) {
-        console.error('Error updating course category:', error);
-        throw error;
-     }
+  update: async (
+    id: number,
+    categoria: CategoriaGeneral
+  ): Promise<CategoriaGeneral> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoria),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar categoría de curso');
+      }
+      // Some APIs return 200 OK with empty body on PUT
+      const text = await response.text();
+      return text ? JSON.parse(text) : categoria;
+    } catch (error) {
+      console.error('Error updating course category:', error);
+      throw error;
+    }
   },
 
   delete: async (id: number): Promise<void> => {
@@ -71,8 +75,8 @@ export const cursoCategoriaService = {
         throw new Error('Error al eliminar categoría de curso');
       }
     } catch (error) {
-       console.error('Error deleting course category:', error);
-       throw error;
+      console.error('Error deleting course category:', error);
+      throw error;
     }
-  }
+  },
 };

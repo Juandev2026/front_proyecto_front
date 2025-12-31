@@ -6,16 +6,17 @@ import {
   PencilIcon,
   XIcon,
 } from '@heroicons/react/outline';
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
 
 import AdminLayout from '../../components/AdminLayout';
-import {
-  categoriaService,
-  Categoria,
-} from '../../services/categoriaService';
+import { categoriaService, Categoria } from '../../services/categoriaService';
 import { cursoService, Curso } from '../../services/cursoService';
-import { temaService } from '../../services/temaService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
+import { temaService } from '../../services/temaService';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const AdminVideos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
@@ -28,6 +29,7 @@ const AdminVideos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const initialCourseState: Omit<Curso, 'id'> = {
     nombre: '',
@@ -35,7 +37,10 @@ const AdminVideos = () => {
     categoriaId: 0,
     modalidadId: 0,
     nivelId: 0,
-    usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+    usuarioEdicionId:
+      typeof window !== 'undefined'
+        ? Number(localStorage.getItem('userId') || 0)
+        : 0,
     duracion: '',
     idioma: '',
     loQueAprenderas: '',
@@ -51,21 +56,51 @@ const AdminVideos = () => {
 
   const [deletedTopicIds, setDeletedTopicIds] = useState<number[]>([]);
 
+  // strip html for table view
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    if (typeof window === 'undefined') return html;
+
+    // First pass
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    let text = tmp.textContent || tmp.innerText || '';
+
+    // Check if result looks like it still has tags (double escaped case)
+    if (text.trim().startsWith('<') && text.includes('>')) {
+      const tmp2 = document.createElement('DIV');
+      tmp2.innerHTML = text;
+      text = tmp2.textContent || tmp2.innerText || '';
+    }
+    return text;
+  };
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      ['clean'],
+    ],
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [coursesData, categoriesData, modalidadesData, nivelesData] = await Promise.all([
-        cursoService.getAll(),
-        categoriaService.getAll(),
-        modalidadService.getAll(),
-        nivelService.getAll(),
-      ]);
+      const [coursesData, categoriesData, modalidadesData, nivelesData] =
+        await Promise.all([
+          cursoService.getAll(),
+          categoriaService.getAll(),
+          modalidadService.getAll(),
+          nivelService.getAll(),
+        ]);
       setCourses(coursesData);
       setCategories(categoriesData);
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      // console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -77,19 +112,25 @@ const AdminVideos = () => {
 
   useEffect(() => {
     if (currentCourse.modalidadId) {
-      setFilteredNiveles(niveles.filter(n => n.modalidadId === Number(currentCourse.modalidadId)));
+      setFilteredNiveles(
+        niveles.filter(
+          (n) => n.modalidadId === Number(currentCourse.modalidadId)
+        )
+      );
     } else {
       setFilteredNiveles([]);
     }
   }, [currentCourse.modalidadId, niveles]);
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('¿Estás seguro de eliminar este curso?')) {
       try {
         await cursoService.delete(id);
         setCourses(courses.filter((c) => c.id !== id));
       } catch (error) {
-        console.error(error);
+        // console.error(error);
+        // eslint-disable-next-line no-alert
         alert('Error al eliminar el curso');
       }
     }
@@ -102,7 +143,10 @@ const AdminVideos = () => {
       categoriaId: course.categoriaId,
       modalidadId: course.modalidadId || 0,
       nivelId: course.nivelId || 0,
-      usuarioEdicionId: typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0,
+      usuarioEdicionId:
+        typeof window !== 'undefined'
+          ? Number(localStorage.getItem('userId') || 0)
+          : 0,
       duracion: course.duracion,
       idioma: course.idioma,
       loQueAprenderas: course.loQueAprenderas,
@@ -113,6 +157,7 @@ const AdminVideos = () => {
       temas: course.temas || [],
     });
     setEditingId(course.id);
+    setPreviewUrl(course.imagenUrl || '');
     setDeletedTopicIds([]); // Reset deleted topics
     setIsModalOpen(true);
   };
@@ -121,6 +166,7 @@ const AdminVideos = () => {
     setCurrentCourse(initialCourseState);
     setEditingId(null);
     setSelectedImage(null);
+    setPreviewUrl('');
     setDeletedTopicIds([]);
   };
 
@@ -128,11 +174,18 @@ const AdminVideos = () => {
     e.preventDefault();
     try {
       // Validate usuarioEdicionId
-       if (!currentCourse.usuarioEdicionId || currentCourse.usuarioEdicionId <= 0) {
-        const storedId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId') || 0) : 0;
+      if (
+        !currentCourse.usuarioEdicionId ||
+        currentCourse.usuarioEdicionId <= 0
+      ) {
+        const storedId =
+          typeof window !== 'undefined'
+            ? Number(localStorage.getItem('userId') || 0)
+            : 0;
         if (storedId <= 0) {
-           alert('Error: No se ha identificado al usuario editor.');
-           return;
+          // eslint-disable-next-line no-alert
+          alert('Error: No se ha identificado al usuario editor.');
+          return;
         }
         currentCourse.usuarioEdicionId = storedId;
       }
@@ -157,7 +210,10 @@ const AdminVideos = () => {
         formData.append('categoriaId', String(courseData.categoriaId));
         formData.append('modalidadId', String(courseData.modalidadId || 0));
         formData.append('nivelId', String(courseData.nivelId || 0));
-        formData.append('usuarioEdicionId', String(courseData.usuarioEdicionId || 0));
+        formData.append(
+          'usuarioEdicionId',
+          String(courseData.usuarioEdicionId || 0)
+        );
         formData.append('duracion', courseData.duracion);
         formData.append('idioma', courseData.idioma);
         formData.append('loQueAprenderas', courseData.loQueAprenderas);
@@ -202,7 +258,8 @@ const AdminVideos = () => {
       fetchData();
       resetForm();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
+      // eslint-disable-next-line no-alert
       alert('Error al guardar el curso');
     }
   };
@@ -296,7 +353,7 @@ const AdminVideos = () => {
               courses.map((item) => (
                 <tr key={item.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.nombre}
+                    {stripHtml(item.nombre)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -347,224 +404,255 @@ const AdminVideos = () => {
 
             <form onSubmit={handleSave} className="p-8 space-y-6">
               {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                {/* Name - Full Width */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nombre
                   </label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.nombre}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        nombre: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categoría
-                  </label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.categoriaId}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        categoriaId: Number(e.target.value),
-                      })
-                    }
-                  >
-                    <option value={0}>Seleccionar categoría</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Modalidad
-                  </label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.modalidadId || 0}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        modalidadId: Number(e.target.value),
-                        nivelId: 0 // Reset nivel
-                      })
-                    }
-                  >
-                    <option value={0}>Todas / N/A</option>
-                    {modalidades.map((mod) => (
-                      <option key={mod.id} value={mod.id}>
-                        {mod.nombre}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="mb-12">
+                    <ReactQuill
+                      theme="snow"
+                      value={currentCourse.nombre}
+                      onChange={(value) =>
+                        setCurrentCourse({ ...currentCourse, nombre: value })
+                      }
+                      className="h-16"
+                      modules={modules}
+                    />
+                  </div>
                 </div>
 
+                {/* Description - Full Width */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nivel
-                  </label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.nivelId || 0}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        nivelId: Number(e.target.value),
-                      })
-                    }
-                    disabled={!currentCourse.modalidadId || currentCourse.modalidadId === 0}
-                  >
-                    <option value={0}>Todos / N/A</option>
-                    {filteredNiveles.map((niv) => (
-                      <option key={niv.id} value={niv.id}>
-                        {niv.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descripción
                   </label>
-                  <textarea
-                    rows={3}
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.descripcion}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        descripcion: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imagen del Curso
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setSelectedImage(e.target.files[0]);
-                      }
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Deja vacío para mantener la imagen actual (si estás
-                    editando) o usar URL.
-                  </p>
-                  <input
-                    type="text"
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent mt-2"
-                    value={currentCourse.imagenUrl}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        imagenUrl: e.target.value,
-                      })
-                    }
-                    placeholder="O ingresa una URL de imagen"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Número WhatsApp
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={currentCourse.numero}
-                    onChange={(e) =>
-                      setCurrentCourse({
-                        ...currentCourse,
-                        numero: e.target.value,
-                      })
-                    }
-                    placeholder="Ej: 51987654321"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Precio (S/)
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={currentCourse.precio}
-                      onChange={(e) =>
+                  <div className="mb-16">
+                    <ReactQuill
+                      theme="snow"
+                      value={currentCourse.descripcion}
+                      onChange={(value) =>
                         setCurrentCourse({
                           ...currentCourse,
-                          precio: Number(e.target.value),
+                          descripcion: value,
                         })
                       }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Precio Oferta (S/)
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={currentCourse.precioOferta}
-                      onChange={(e) =>
-                        setCurrentCourse({
-                          ...currentCourse,
-                          precioOferta: Number(e.target.value),
-                        })
-                      }
+                      className="h-32"
+                      modules={modules}
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+
+                {/* 3 Columns: Category / Modality / Level */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Duración
+                      Categoría
+                    </label>
+                    <select
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.categoriaId}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          categoriaId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>Seleccionar categoría</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Modalidad
+                    </label>
+                    <select
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.modalidadId || 0}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          modalidadId: Number(e.target.value),
+                          nivelId: 0, // Reset nivel
+                        })
+                      }
+                    >
+                      <option value={0}>Todas / N/A</option>
+                      {modalidades.map((mod) => (
+                        <option key={mod.id} value={mod.id}>
+                          {mod.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nivel
+                    </label>
+                    <select
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.nivelId || 0}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          nivelId: Number(e.target.value),
+                        })
+                      }
+                      disabled={
+                        !currentCourse.modalidadId ||
+                        currentCourse.modalidadId === 0
+                      }
+                    >
+                      <option value={0}>Todos / N/A</option>
+                      {filteredNiveles.map((niv) => (
+                        <option key={niv.id} value={niv.id}>
+                          {niv.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Open Grid for the rest of the fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Imagen del Curso
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          setSelectedImage(file);
+                          setPreviewUrl(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Deja vacío para mantener la imagen actual (si estás
+                      editando) o usar URL.
+                    </p>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent mt-2"
+                      value={currentCourse.imagenUrl}
+                      onChange={(e) => {
+                        setCurrentCourse({
+                          ...currentCourse,
+                          imagenUrl: e.target.value,
+                        });
+                        setPreviewUrl(e.target.value);
+                      }}
+                      placeholder="O ingresa una URL de imagen"
+                    />
+                    {previewUrl && (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium text-gray-700 mb-2">
+                          Vista Previa:
+                        </p>
+                        <img
+                          src={previewUrl}
+                          alt="Vista previa del curso"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Número WhatsApp
                     </label>
                     <input
                       type="text"
                       className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={currentCourse.duracion}
+                      value={currentCourse.numero}
                       onChange={(e) =>
                         setCurrentCourse({
                           ...currentCourse,
-                          duracion: e.target.value,
+                          numero: e.target.value,
                         })
                       }
+                      placeholder="Ej: 51987654321"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Idioma
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={currentCourse.idioma}
-                      onChange={(e) =>
-                        setCurrentCourse({
-                          ...currentCourse,
-                          idioma: e.target.value,
-                        })
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Precio (S/)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                        value={currentCourse.precio}
+                        onChange={(e) =>
+                          setCurrentCourse({
+                            ...currentCourse,
+                            precio: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Precio Oferta (S/)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                        value={currentCourse.precioOferta}
+                        onChange={(e) =>
+                          setCurrentCourse({
+                            ...currentCourse,
+                            precioOferta: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Duración
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                        value={currentCourse.duracion}
+                        onChange={(e) =>
+                          setCurrentCourse({
+                            ...currentCourse,
+                            duracion: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Idioma
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                        value={currentCourse.idioma}
+                        onChange={(e) =>
+                          setCurrentCourse({
+                            ...currentCourse,
+                            idioma: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

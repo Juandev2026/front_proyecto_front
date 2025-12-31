@@ -5,7 +5,7 @@ export const getAuthHeaders = () => {
     'Content-Type': 'application/json',
   };
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
   return headers;
 };
@@ -14,7 +14,7 @@ export const getAuthHeadersFormData = () => {
   const token = '3231232141346';
   const headers: any = {};
   if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
   return headers;
 };

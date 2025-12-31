@@ -1,3 +1,6 @@
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
+
 export interface Publicidad {
   id: number;
   titulo: string;
@@ -10,9 +13,6 @@ export interface Publicidad {
   telefono: string;
 }
 
-import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
-
 const API_URL = `${API_BASE_URL}/Publicidad`;
 
 export const publicidadService = {
@@ -24,7 +24,9 @@ export const publicidadService = {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Error fetching publicidad:', response.status, errorText);
-        throw new Error(`Error ${response.status} al obtener publicidad: ${errorText}`);
+        throw new Error(
+          `Error ${response.status} al obtener publicidad: ${errorText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -48,21 +50,23 @@ export const publicidadService = {
     }
   },
 
-  create: async (publicidad: Omit<Publicidad, 'id' | 'fecha'>): Promise<Publicidad> => {
+  create: async (
+    publicidad: Omit<Publicidad, 'id' | 'fecha'>
+  ): Promise<Publicidad> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-            ...publicidad,
-            precio: publicidad.precio ? Number(publicidad.precio) : 0,
-            telefono: publicidad.telefono || ''
+          ...publicidad,
+          precio: publicidad.precio ? Number(publicidad.precio) : 0,
+          telefono: publicidad.telefono || '',
         }),
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error('Error al crear publicidad: ' + errText);
+        throw new Error(`Error al crear publicidad: ${errText}`);
       }
 
       return await response.json();
@@ -72,26 +76,29 @@ export const publicidadService = {
     }
   },
 
-  update: async (id: number, publicidad: Partial<Publicidad>): Promise<Publicidad> => {
+  update: async (
+    id: number,
+    publicidad: Partial<Publicidad>
+  ): Promise<Publicidad> => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-            ...publicidad,
-            precio: publicidad.precio ? Number(publicidad.precio) : 0,
-            telefono: publicidad.telefono || ''
+          ...publicidad,
+          precio: publicidad.precio ? Number(publicidad.precio) : 0,
+          telefono: publicidad.telefono || '',
         }),
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error('Error al actualizar publicidad: ' + errText);
+        throw new Error(`Error al actualizar publicidad: ${errText}`);
       }
-      
+
       const text = await response.text();
-       // Try parsing JSON if response is not empty, otherwise return empty object or handle accordingly
-       return text ? JSON.parse(text) : {} as Publicidad;
+      // Try parsing JSON if response is not empty, otherwise return empty object or handle accordingly
+      return text ? JSON.parse(text) : ({} as Publicidad);
     } catch (error) {
       console.error(`Error updating publicidad with id ${id}:`, error);
       throw error;

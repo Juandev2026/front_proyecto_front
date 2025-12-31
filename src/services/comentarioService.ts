@@ -24,7 +24,7 @@ export const comentarioService = {
       if (noticiaId) {
         url += `?noticiaId=${noticiaId}`;
       }
-      
+
       const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
@@ -38,7 +38,11 @@ export const comentarioService = {
     }
   },
 
-  create: async (comentario: { contenido: string; noticiaId: number; usuarioId: number }): Promise<Comentario> => {
+  create: async (comentario: {
+    contenido: string;
+    noticiaId: number;
+    usuarioId: number;
+  }): Promise<Comentario> => {
     try {
       // The API likely expects a structure similar to what we observed in other services
       // We'll send the basic fields.
@@ -47,7 +51,7 @@ export const comentarioService = {
         contenido: comentario.contenido,
         fecha: new Date().toISOString(),
         noticiaId: comentario.noticiaId,
-        usuarioId: comentario.usuarioId
+        usuarioId: comentario.usuarioId,
       };
 
       const response = await fetch(API_URL, {

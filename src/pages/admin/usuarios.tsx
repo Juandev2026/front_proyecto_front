@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
+
 import AdminLayout from '../../components/AdminLayout';
-import { userService, User } from '../../services/userService';
-import { regionService, Region } from '../../services/regionService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
+import { regionService, Region } from '../../services/regionService';
+import { userService, User } from '../../services/userService';
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -24,7 +25,7 @@ const UsersPage = () => {
     modalidadId: 0,
     nivelId: 0,
     especialidadId: 0,
-    passwordHash: ''
+    passwordHash: '',
   });
 
   // View Modal State
@@ -38,13 +39,14 @@ const UsersPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, modalidadesData, nivelesData] = await Promise.all([
-        userService.getAll(),
-        regionService.getAll(),
-        modalidadService.getAll(),
-        nivelService.getAll()
-      ]);
-      
+      const [usersData, regionsData, modalidadesData, nivelesData] =
+        await Promise.all([
+          userService.getAll(),
+          regionService.getAll(),
+          modalidadService.getAll(),
+          nivelService.getAll(),
+        ]);
+
       setUsers(usersData);
       setRegions(regionsData);
       setModalidades(modalidadesData);
@@ -61,43 +63,56 @@ const UsersPage = () => {
     try {
       if (editingUser) {
         // Reconstruct nested objects (some backends require them even if ID is present)
-        const selectedRegion = regions.find(r => r.id === formData.regionId);
-        const selectedModalidad = modalidades.find(m => m.id === formData.modalidadId);
-        const selectedNivel = niveles.find(n => n.id === formData.nivelId);
-        // Note: especialidades list is not currently fetched in loadData for the main table, 
-        // but we assume we might need it or backend handles null. 
-        // If especialidadId is updated to 0/null, we send null? 
+        const selectedRegion = regions.find((r) => r.id === formData.regionId);
+        const selectedModalidad = modalidades.find(
+          (m) => m.id === formData.modalidadId
+        );
+        const selectedNivel = niveles.find((n) => n.id === formData.nivelId);
+        // Note: especialidades list is not currently fetched in loadData for the main table,
+        // but we assume we might need it or backend handles null.
+        // If especialidadId is updated to 0/null, we send null?
         // Let's adhere to the structure:
-        
+
         const payload: any = { ...formData };
-        
+
         if (selectedRegion) {
-             payload.region = { id: selectedRegion.id, nombre: selectedRegion.nombre };
+          payload.region = {
+            id: selectedRegion.id,
+            nombre: selectedRegion.nombre,
+          };
         }
         if (selectedModalidad) {
-             payload.modalidad = { id: selectedModalidad.id, nombre: selectedModalidad.nombre };
+          payload.modalidad = {
+            id: selectedModalidad.id,
+            nombre: selectedModalidad.nombre,
+          };
         }
         // Nesting logic based on schema provided by user (Nivel contains Modalidad?)
         if (selectedNivel) {
-             payload.nivel = { 
-                 id: selectedNivel.id, 
-                 nombre: selectedNivel.nombre,
-                 modalidadId: selectedNivel.modalidadId,
-                 modalidad: { id: selectedNivel.modalidadId, nombre: 'string' } // Mocking if we don't have full object ref handy without lookup, or lookup again
-             };
-             // Better lookup for nested
-             const modalForNivel = modalidades.find(m => m.id === selectedNivel.modalidadId);
-             if (modalForNivel) {
-                 payload.nivel.modalidad = { id: modalForNivel.id, nombre: modalForNivel.nombre };
-             }
+          payload.nivel = {
+            id: selectedNivel.id,
+            nombre: selectedNivel.nombre,
+            modalidadId: selectedNivel.modalidadId,
+            modalidad: { id: selectedNivel.modalidadId, nombre: 'string' }, // Mocking if we don't have full object ref handy without lookup, or lookup again
+          };
+          // Better lookup for nested
+          const modalForNivel = modalidades.find(
+            (m) => m.id === selectedNivel.modalidadId
+          );
+          if (modalForNivel) {
+            payload.nivel.modalidad = {
+              id: modalForNivel.id,
+              nombre: modalForNivel.nombre,
+            };
+          }
         }
-        
-        // For Especialidad, we need to know if we have that list. 
-        // We are NOT fetching especialidades in loadData currently except for `nivelService.getAll()`? 
-        // Wait, loadData does NOT fetch especialidades. 
+
+        // For Especialidad, we need to know if we have that list.
+        // We are NOT fetching especialidades in loadData currently except for `nivelService.getAll()`?
+        // Wait, loadData does NOT fetch especialidades.
         // So we can only send ID or we need to fetch them if we want to send the object.
         // Let's try sending just the properties we can resolve.
-        
+
         await userService.update(editingUser.id, payload);
       } else {
         await userService.create(formData as User);
@@ -108,31 +123,37 @@ const UsersPage = () => {
       loadUsersOnly();
     } catch (error) {
       console.error('Error saving user:', error);
-      alert('Error saving user: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        `Error saving user: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   };
-  
+
   const loadUsersOnly = async () => {
-     try {
-         const data = await userService.getAll();
-         setUsers(data);
-     } catch(e) { console.error(e); }
-  }
+    try {
+      const data = await userService.getAll();
+      setUsers(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const resetForm = () => {
-      setFormData({
-        nombreCompleto: '',
-        email: '',
-        password: '',
-        role: 'Client',
-        celular: '',
-        regionId: 0,
-        modalidadId: 0,
-        nivelId: 0,
-        especialidadId: 0,
-        passwordHash: ''
-      });
-  }
+    setFormData({
+      nombreCompleto: '',
+      email: '',
+      password: '',
+      role: 'Client',
+      celular: '',
+      regionId: 0,
+      modalidadId: 0,
+      nivelId: 0,
+      especialidadId: 0,
+      passwordHash: '',
+    });
+  };
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -141,12 +162,12 @@ const UsersPage = () => {
       email: user.email,
       role: user.role,
       celular: user.celular,
-      password: '', 
+      password: '',
       regionId: user.regionId || 0,
       modalidadId: user.modalidadId || 0,
       nivelId: user.nivelId || 0,
       especialidadId: user.especialidadId || 0,
-      passwordHash: user.passwordHash || ''
+      passwordHash: user.passwordHash || '',
     });
     setIsModalOpen(true);
   };
@@ -188,7 +209,7 @@ const UsersPage = () => {
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
         >
-            Crear Usuario
+          Crear Usuario
         </button>
       </div>
 
@@ -208,7 +229,7 @@ const UsersPage = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Rol
               </th>
-               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Región
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -224,7 +245,7 @@ const UsersPage = () => {
                 </td>
               </tr>
             ) : users.length === 0 ? (
-               <tr>
+              <tr>
                 <td colSpan={6} className="px-6 py-4 text-center">
                   No hay usuarios registrados
                 </td>
@@ -241,11 +262,11 @@ const UsersPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.email}
                   </td>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.role}
                   </td>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                     {user.region?.nombre || user.regionId}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {user.region?.nombre || user.regionId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-3">
@@ -254,9 +275,18 @@ const UsersPage = () => {
                         className="text-blue-600 hover:text-blue-900 focus:outline-none"
                         title="Ver Detalles"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
                           <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                          <path
+                            fillRule="evenodd"
+                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                       <button
@@ -264,7 +294,12 @@ const UsersPage = () => {
                         className="text-green-600 hover:text-green-900 focus:outline-none"
                         title="Editar"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                       </button>
@@ -273,8 +308,17 @@ const UsersPage = () => {
                         className="text-red-600 hover:text-red-900 focus:outline-none"
                         title="Eliminar"
                       >
-                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -321,13 +365,16 @@ const UsersPage = () => {
                     type="text"
                     value={formData.nombreCompleto}
                     onChange={(e) =>
-                      setFormData({ ...formData, nombreCompleto: e.target.value })
+                      setFormData({
+                        ...formData,
+                        nombreCompleto: e.target.value,
+                      })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                     required
                   />
                 </div>
-                 <div>
+                <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Email
                   </label>
@@ -357,7 +404,7 @@ const UsersPage = () => {
                     />
                   </div>
                 )}
-                 <div>
+                <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Celular
                   </label>
@@ -374,34 +421,38 @@ const UsersPage = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Rol
                   </label>
-                   <select
+                  <select
                     value={formData.role ?? 'User'}
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
-
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
                     <option value="subadmin">subadmin</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Región
                   </label>
-                   <select
+                  <select
                     value={formData.regionId ?? 0}
                     onChange={(e) =>
-                      setFormData({ ...formData, regionId: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        regionId: Number(e.target.value),
+                      })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
                     <option value={0}>Seleccionar Región</option>
-                    {regions.map(r => (
-                        <option key={r.id} value={r.id}>{r.nombre}</option>
+                    {regions.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.nombre}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -410,16 +461,21 @@ const UsersPage = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Modalidad
                   </label>
-                   <select
+                  <select
                     value={formData.modalidadId ?? 0}
                     onChange={(e) =>
-                      setFormData({ ...formData, modalidadId: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        modalidadId: Number(e.target.value),
+                      })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
                     <option value={0}>Seleccionar Modalidad</option>
-                    {modalidades.map(m => (
-                        <option key={m.id} value={m.id}>{m.nombre}</option>
+                    {modalidades.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.nombre}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -428,20 +484,25 @@ const UsersPage = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Nivel
                   </label>
-                   <select
+                  <select
                     value={formData.nivelId ?? 0}
                     onChange={(e) =>
-                      setFormData({ ...formData, nivelId: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        nivelId: Number(e.target.value),
+                      })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
                     <option value={0}>Seleccionar Nivel</option>
-                    {niveles.map(n => (
-                        <option key={n.id} value={n.id}>{n.nombre}</option>
+                    {niveles.map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.nombre}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <button
                   type="submit"
                   className="w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300"
@@ -490,49 +551,71 @@ const UsersPage = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Rol</h4>
-                  <p className="mt-1 text-sm text-gray-900 font-semibold">{viewingUser.role}</p>
+                  <p className="mt-1 text-sm text-gray-900 font-semibold">
+                    {viewingUser.role}
+                  </p>
                 </div>
                 <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">Nombre Completo</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.nombreCompleto}</p>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Nombre Completo
+                  </h4>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.nombreCompleto}
+                  </p>
                 </div>
                 <div className="col-span-2">
                   <h4 className="text-sm font-medium text-gray-500">Email</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.email}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.email}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Celular</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.celular || '-'}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.celular || '-'}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Región</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.region?.nombre ||  '-'}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.region?.nombre || '-'}
+                  </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Modalidad</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.modalidad?.nombre ||  '-'}</p>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Modalidad
+                  </h4>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.modalidad?.nombre || '-'}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Nivel</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.nivel?.nombre ||  '-'}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.nivel?.nombre || '-'}
+                  </p>
                 </div>
                 <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">Especialidad</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.especialidad?.nombre ||  '-'}</p>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Especialidad
+                  </h4>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingUser.especialidad?.nombre || '-'}
+                  </p>
                 </div>
               </div>
             </div>
             <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-                <button
-                    onClick={() => {
-                        setIsViewModalOpen(false);
-                        setViewingUser(null);
-                    }}
-                    type="button"
-                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                >
-                    Cerrar
-                </button>
+              <button
+                onClick={() => {
+                  setIsViewModalOpen(false);
+                  setViewingUser(null);
+                }}
+                type="button"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

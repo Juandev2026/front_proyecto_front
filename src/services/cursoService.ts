@@ -1,3 +1,6 @@
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+
 export interface Tema {
   id: number;
   nombre: string;
@@ -23,11 +26,7 @@ export interface Curso {
   temas: Tema[];
 }
 
-import { API_BASE_URL } from '../config/api';
-
 const API_URL = `${API_BASE_URL}/Cursos`;
-
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export const cursoService = {
   getAll: async (): Promise<Curso[]> => {
@@ -84,22 +83,24 @@ export const cursoService = {
       if (isFormData) {
         const fd = curso as FormData;
         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-             fd.delete('modalidadId');
+          fd.delete('modalidadId');
         }
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-             fd.delete('nivelId');
+          fd.delete('nivelId');
         }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
-             // optional handling
+          // optional handling
         }
         body = fd;
       } else {
         const c = curso as any; // Cast to any to access potential new properties
         body = JSON.stringify({
-            ...c,
-            modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
-            nivelId: c.nivelId ? Number(c.nivelId) : null,
-            usuarioEdicionId: c.usuarioEdicionId ? Number(c.usuarioEdicionId) : null
+          ...c,
+          modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
+          nivelId: c.nivelId ? Number(c.nivelId) : null,
+          usuarioEdicionId: c.usuarioEdicionId
+            ? Number(c.usuarioEdicionId)
+            : null,
         });
       }
 
@@ -124,27 +125,32 @@ export const cursoService = {
       let body: string | FormData;
       const headers = isFormData ? getAuthHeadersFormData() : getAuthHeaders();
 
-      console.log('Updating course with payload:', isFormData ? 'FormData' : curso);
+      console.log(
+        'Updating course with payload:',
+        isFormData ? 'FormData' : curso
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (isFormData) {
-         const fd = curso as FormData;
-         if (!fd.has('id')) fd.append('id', String(id));
-         if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
-             fd.delete('modalidadId');
-         }
-         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
-             fd.delete('nivelId');
-         }
-         body = fd;
+        const fd = curso as FormData;
+        if (!fd.has('id')) fd.append('id', String(id));
+        if (!fd.has('modalidadId') || fd.get('modalidadId') === '0') {
+          fd.delete('modalidadId');
+        }
+        if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
+          fd.delete('nivelId');
+        }
+        body = fd;
       } else {
-         const c = curso as any;
-         body = JSON.stringify({
-             ...c,
-             id: id,
-             modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
-             nivelId: c.nivelId ? Number(c.nivelId) : null,
-             usuarioEdicionId: c.usuarioEdicionId ? Number(c.usuarioEdicionId) : null
-         });
+        const c = curso as any;
+        body = JSON.stringify({
+          ...c,
+          id,
+          modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
+          nivelId: c.nivelId ? Number(c.nivelId) : null,
+          usuarioEdicionId: c.usuarioEdicionId
+            ? Number(c.usuarioEdicionId)
+            : null,
+        });
       }
 
       const response = await fetch(`${API_URL}/${id}`, {
@@ -155,7 +161,9 @@ export const cursoService = {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Server response:', errorText);
-        throw new Error(`Error al actualizar el curso: ${response.status} ${errorText}`);
+        throw new Error(
+          `Error al actualizar el curso: ${response.status} ${errorText}`
+        );
       }
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Curso);

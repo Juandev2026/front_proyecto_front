@@ -21,7 +21,9 @@ export const anuncioService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error(`Error al obtener anuncios: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error al obtener anuncios: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {

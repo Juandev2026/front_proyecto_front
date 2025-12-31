@@ -23,3 +23,13 @@ a:hover {
 .content ul {
   @apply my-6;
 }
+
+/* React Quill Fixes */
+.ql-toolbar svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: inline-block;
+}
+.ql-container {
+  font-size: 16px;
+}

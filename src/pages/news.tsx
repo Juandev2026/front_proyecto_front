@@ -4,18 +4,21 @@ import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
 import Link from 'next/link';
 
+import AdSidebar from '../components/AdSidebar';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import AdSidebar from '../components/AdSidebar';
 import { useAuth } from '../hooks/useAuth';
-import { categoriaService, Categoria } from '../services/categoriaService';
+import {
+  categoriaGeneralService,
+  CategoriaGeneral,
+} from '../services/categoriaGeneralService';
 import { noticiaService, Noticia } from '../services/noticiaService';
 
 const News = () => {
   const { user, isAuthenticated } = useAuth();
   const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
   const [news, setNews] = useState<Noticia[]>([]);
-  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null
   );
@@ -26,13 +29,13 @@ const News = () => {
       try {
         let newsData: Noticia[] = [];
         if (filterMode === 'level' && user?.nivelId) {
-             newsData = await noticiaService.getByNivel(user.nivelId);
+          newsData = await noticiaService.getByNivel(user.nivelId);
         } else {
-             newsData = await noticiaService.getAll();
+          newsData = await noticiaService.getAll();
         }
 
-        const categoriesData = await categoriaService.getAll();
-        
+        const categoriesData = await categoriaGeneralService.getAll();
+
         setNews(newsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -43,14 +46,22 @@ const News = () => {
     fetchData();
   }, [filterMode, user?.nivelId]);
 
+  // Helper to strip HTML tags for preview
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   // Filter logic
   const filteredNews = news.filter((item) => {
     const matchesCategory = selectedCategoryId
       ? item.categoriaId === selectedCategoryId
       : true;
     const matchesSearch =
-      item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+      stripHtml(item.titulo).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stripHtml(item.descripcion)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -96,47 +107,62 @@ const News = () => {
           </p>
         </div>
 
-            {isAuthenticated && user?.nivelId ? (
-              <div className="flex justify-center space-x-4 mt-2 mb-8">
-                <button
-                  onClick={() => setFilterMode('all')}
-                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
-                    filterMode === 'all'
-                      ? 'bg-primary text-white shadow-lg'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                  }`}
+        {isAuthenticated && user?.nivelId ? (
+          <div className="flex justify-center space-x-4 mt-2 mb-8">
+            <button
+              onClick={() => setFilterMode('all')}
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                filterMode === 'all'
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              Ver todas
+            </button>
+            <button
+              onClick={() => setFilterMode('level')}
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                filterMode === 'level'
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              Ver noticias por mi nivel
+            </button>
+          </div>
+        ) : (
+          <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-full text-primary">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Ver todas
-                </button>
-                <button
-                  onClick={() => setFilterMode('level')}
-                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
-                    filterMode === 'level'
-                      ? 'bg-primary text-white shadow-lg'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  Ver noticias por mi nivel
-                </button>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
               </div>
-            ) : (
-               <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full text-primary">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <p className="text-sm text-blue-900">
-                        <span className="font-bold block text-base">¿Buscas contenido personalizado?</span>
-                        Inicia sesión para ver noticias exclusivas para tu nivel educativo.
-                    </p>
-                  </div>
-                  <Link href="/login">
-                    <a className="whitespace-nowrap px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
-                        Iniciar Sesión
-                    </a>
-                  </Link>
-               </div>
-            )}
+              <p className="text-sm text-blue-900">
+                <span className="font-bold block text-base">
+                  ¿Buscas contenido personalizado?
+                </span>
+                Inicia sesión para ver noticias exclusivas para tu nivel
+                educativo.
+              </p>
+            </div>
+            <Link href="/login">
+              <a className="whitespace-nowrap px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+                Iniciar Sesión
+              </a>
+            </Link>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="mb-10 max-w-3xl mx-auto">
@@ -217,7 +243,7 @@ const News = () => {
                           featuredArticle.imageUrl ||
                           'https://via.placeholder.com/800x450'
                         }
-                        alt={featuredArticle.titulo}
+                        alt={stripHtml(featuredArticle.titulo)}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     </div>
@@ -230,10 +256,10 @@ const News = () => {
                       </span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors">
-                      {featuredArticle.titulo}
+                      {stripHtml(featuredArticle.titulo)}
                     </h2>
                     <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
-                      {featuredArticle.descripcion}
+                      {stripHtml(featuredArticle.descripcion)}
                     </p>
                   </a>
                 </Link>
@@ -254,7 +280,7 @@ const News = () => {
                         src={
                           item.imageUrl || 'https://via.placeholder.com/400x300'
                         }
-                        alt={item.titulo}
+                        alt={stripHtml(item.titulo)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
@@ -263,7 +289,7 @@ const News = () => {
                         {getCategoryName(item.categoriaId)}
                       </span>
                       <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-3">
-                        {item.titulo}
+                        {stripHtml(item.titulo)}
                       </h3>
                     </div>
                   </a>
@@ -289,10 +315,10 @@ const News = () => {
                       </div>
                       <div className="w-2/3">
                         <h4 className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2">
-                          {item.titulo}
+                          {stripHtml(item.titulo)}
                         </h4>
                         <p className="text-sm text-gray-500 line-clamp-2">
-                          {item.descripcion}
+                          {stripHtml(item.descripcion)}
                         </p>
                       </div>
                     </a>
@@ -318,7 +344,7 @@ const News = () => {
                           {getCategoryName(item.categoriaId)}
                         </span>
                         <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-3">
-                          {item.titulo}
+                          {stripHtml(item.titulo)}
                         </h3>
                       </div>
 

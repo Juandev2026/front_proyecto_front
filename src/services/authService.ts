@@ -1,3 +1,6 @@
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
+
 export interface RegisterData {
   fullName: string;
   email: string;
@@ -44,11 +47,7 @@ export interface ResetPasswordRequest {
   confirmPassword: string;
 }
 
-import { API_BASE_URL } from '../config/api';
-
 const API_Auth = `${API_BASE_URL}/Auth`;
-
-import { getAuthHeaders } from '../utils/apiUtils';
 
 export const authService = {
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
@@ -59,20 +58,22 @@ export const authService = {
         nombreCompleto: data.nombreCompleto,
         email: data.email,
         password: data.password,
-        role: data.role || 'Client', 
+        role: data.role || 'Client',
         regionId: Number(data.regionId),
         celular: data.celular,
         modalidadId: data.modalidadId ? Number(data.modalidadId) : null,
         nivelId: data.nivelId ? Number(data.nivelId) : null,
-        especialidadId: data.especialidadId ? Number(data.especialidadId) : null
+        especialidadId: data.especialidadId
+          ? Number(data.especialidadId)
+          : null,
       };
 
       const response = await fetch(`${API_Auth}/register`, {
         method: 'POST',
         headers: {
-            ...getAuthHeaders(), // Keep existing helpers but ensure content-type
-            'Content-Type': 'application/json',
-             Accept: 'text/plain', 
+          ...getAuthHeaders(), // Keep existing helpers but ensure content-type
+          'Content-Type': 'application/json',
+          Accept: 'text/plain',
         },
         body: JSON.stringify(payload),
       });
@@ -85,9 +86,8 @@ export const authService = {
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         return await response.json();
-      } else {
-        return {} as RegisterResponse; 
       }
+      return {} as RegisterResponse;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -123,7 +123,7 @@ export const authService = {
       const response = await fetch(`${API_Auth}/forgot-password`, {
         method: 'POST',
         headers: {
-           // No auth headers needed usually for forgot password
+          // No auth headers needed usually for forgot password
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),
@@ -131,7 +131,9 @@ export const authService = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Error al solicitar recuperación de contraseña');
+        throw new Error(
+          errorText || 'Error al solicitar recuperación de contraseña'
+        );
       }
     } catch (error) {
       console.error('Forgot password error:', error);

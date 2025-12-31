@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/Niveles`;
 
@@ -12,8 +13,6 @@ export interface Nivel {
     nombre: string;
   };
 }
-
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export const nivelService = {
   getAll: async (): Promise<Nivel[]> => {
@@ -33,18 +32,20 @@ export const nivelService = {
 
   getByModalidadId: async (modalidadId: number): Promise<Nivel[]> => {
     try {
-        // Fallback to fetch all and filter
+      // Fallback to fetch all and filter
       const response = await fetch(API_URL, { headers: getAuthHeaders() });
       if (!response.ok) throw new Error('Error fetching levels');
       const all: Nivel[] = await response.json();
-      return all.filter(n => n.modalidadId === modalidadId);
+      return all.filter((n) => n.modalidadId === modalidadId);
     } catch (error) {
       console.error('Error fetching levels by modality:', error);
       return [];
     }
   },
 
-  create: async (nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData): Promise<Nivel> => {
+  create: async (
+    nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData
+  ): Promise<Nivel> => {
     try {
       const isFormData = nivel instanceof FormData;
       let body: string | FormData;
@@ -53,16 +54,20 @@ export const nivelService = {
       if (isFormData) {
         body = nivel as FormData;
       } else {
-         const n = nivel as { nombre: string; imageUrl?: string; modalidadId: number };
-         body = JSON.stringify({
-            id: 0,
-            nombre: n.nombre,
-            imageUrl: n.imageUrl || '',
-            modalidadId: n.modalidadId,
-            modalidad: { id: n.modalidadId }
-         });
+        const n = nivel as {
+          nombre: string;
+          imageUrl?: string;
+          modalidadId: number;
+        };
+        body = JSON.stringify({
+          id: 0,
+          nombre: n.nombre,
+          imageUrl: n.imageUrl || '',
+          modalidadId: n.modalidadId,
+          modalidad: { id: n.modalidadId },
+        });
       }
-      
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers,
@@ -78,7 +83,10 @@ export const nivelService = {
     }
   },
 
-  update: async (id: number, nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData): Promise<void> => {
+  update: async (
+    id: number,
+    nivel: { nombre: string; imageUrl?: string; modalidadId: number } | FormData
+  ): Promise<void> => {
     try {
       const isFormData = nivel instanceof FormData;
       let body: string | FormData;
@@ -89,14 +97,18 @@ export const nivelService = {
         if (!fd.has('id')) fd.append('id', String(id));
         body = fd;
       } else {
-        const n = nivel as { nombre: string; imageUrl?: string; modalidadId: number };
+        const n = nivel as {
+          nombre: string;
+          imageUrl?: string;
+          modalidadId: number;
+        };
         body = JSON.stringify({
-            id,
-            nombre: n.nombre,
-            imageUrl: n.imageUrl || '',
-            modalidadId: n.modalidadId,
-            modalidad: { id: n.modalidadId }
-         });
+          id,
+          nombre: n.nombre,
+          imageUrl: n.imageUrl || '',
+          modalidadId: n.modalidadId,
+          modalidad: { id: n.modalidadId },
+        });
       }
 
       const response = await fetch(`${API_URL}/${id}`, {
@@ -113,7 +125,6 @@ export const nivelService = {
     }
   },
 
-
   delete: async (id: number): Promise<void> => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
@@ -122,8 +133,12 @@ export const nivelService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`Error deleting level ${id}: ${response.status} ${errorText}`);
-        throw new Error(`Error ${response.status} al eliminar nivel: ${errorText}`);
+        console.error(
+          `Error deleting level ${id}: ${response.status} ${errorText}`
+        );
+        throw new Error(
+          `Error ${response.status} al eliminar nivel: ${errorText}`
+        );
       }
     } catch (error) {
       console.error('Error deleting level:', error);

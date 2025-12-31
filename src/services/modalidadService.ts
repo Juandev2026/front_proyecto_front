@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/Modalidades`;
 
@@ -7,8 +8,6 @@ export interface Modalidad {
   nombre: string;
 }
 
-import { getAuthHeaders } from '../utils/apiUtils';
-
 export const modalidadService = {
   getAll: async (): Promise<Modalidad[]> => {
     try {
@@ -16,7 +15,7 @@ export const modalidadService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener modalidades - ' + response.status);
+        throw new Error(`Error al obtener modalidades - ${response.status}`);
       }
       return await response.json();
     } catch (error) {
@@ -29,9 +28,9 @@ export const modalidadService = {
     try {
       const payload = {
         id: 0,
-        nombre: modalidad.nombre
+        nombre: modalidad.nombre,
       };
-      
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -50,8 +49,8 @@ export const modalidadService = {
   update: async (id: number, modalidad: { nombre: string }): Promise<void> => {
     try {
       const payload = {
-        id: id,
-        nombre: modalidad.nombre
+        id,
+        nombre: modalidad.nombre,
       };
 
       const response = await fetch(`${API_URL}/${id}`, {

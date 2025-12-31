@@ -1,6 +1,6 @@
+import { Tema } from './cursoService';
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
-import { Tema } from './cursoService';
 
 const API_URL = `${API_BASE_URL}/Temas`;
 
@@ -14,7 +14,9 @@ export const temaService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al crear el tema: ${response.status} ${errorText}`);
+        throw new Error(
+          `Error al crear el tema: ${response.status} ${errorText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -32,7 +34,9 @@ export const temaService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al actualizar el tema: ${response.status} ${errorText}`);
+        throw new Error(
+          `Error al actualizar el tema: ${response.status} ${errorText}`
+        );
       }
       // Handle potential empty response (204 No Content)
       const text = await response.text();
@@ -51,7 +55,9 @@ export const temaService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al eliminar el tema: ${response.status} ${errorText}`);
+        throw new Error(
+          `Error al eliminar el tema: ${response.status} ${errorText}`
+        );
       }
     } catch (error) {
       console.error(`Error deleting topic with id ${id}:`, error);

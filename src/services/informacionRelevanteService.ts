@@ -28,7 +28,9 @@ export const informacionRelevanteService = {
     }
   },
 
-  create: async (data: Omit<InformacionRelevante, 'id'>): Promise<InformacionRelevante> => {
+  create: async (
+    data: Omit<InformacionRelevante, 'id'>
+  ): Promise<InformacionRelevante> => {
     try {
       const response = await fetch(ENDPOINT, {
         method: 'POST',
@@ -45,7 +47,10 @@ export const informacionRelevanteService = {
     }
   },
 
-  update: async (id: number, data: Omit<InformacionRelevante, 'id'>): Promise<void> => {
+  update: async (
+    id: number,
+    data: Omit<InformacionRelevante, 'id'>
+  ): Promise<void> => {
     try {
       const response = await fetch(`${ENDPOINT}/${id}`, {
         method: 'PUT',

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+
 import AdminLayout from '../../components/AdminLayout';
-import { especialidadesService, Especialidad } from '../../services/especialidadesService';
+import {
+  especialidadesService,
+  Especialidad,
+} from '../../services/especialidadesService';
 import { nivelService, Nivel } from '../../services/nivelService';
 
 const AdminEspecialidades = () => {
@@ -21,7 +25,7 @@ const AdminEspecialidades = () => {
       setLoading(true);
       const [especialidadesData, nivelesData] = await Promise.all([
         especialidadesService.getAll(),
-        nivelService.getAll()
+        nivelService.getAll(),
       ]);
       setEspecialidades(especialidadesData);
       setNiveles(nivelesData);
@@ -82,7 +86,7 @@ const AdminEspecialidades = () => {
   };
 
   const getNivelName = (nivelId: number) => {
-    const nivel = niveles.find(n => n.id === nivelId);
+    const nivel = niveles.find((n) => n.id === nivelId);
     return nivel ? nivel.nombre : 'Desconocido';
   };
 
@@ -90,7 +94,7 @@ const AdminEspecialidades = () => {
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-64">
-           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       </AdminLayout>
     );
@@ -105,7 +109,9 @@ const AdminEspecialidades = () => {
   return (
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Especialidades</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Gestión de Especialidades
+        </h1>
         <button
           onClick={() => {
             setIsModalOpen(true);
@@ -114,8 +120,18 @@ const AdminEspecialidades = () => {
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 4v16m8-8H4"
+            ></path>
           </svg>
           Nueva Especialidad
         </button>
@@ -168,11 +184,14 @@ const AdminEspecialidades = () => {
               </tr>
             ))}
             {especialidades.length === 0 && (
-                <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
-                        No hay especialidades registradas.
-                    </td>
-                </tr>
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-6 py-10 text-center text-gray-500"
+                >
+                  No hay especialidades registradas.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -195,7 +214,10 @@ const AdminEspecialidades = () => {
                   className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   value={newEspecialidad.nombre}
                   onChange={(e) =>
-                    setNewEspecialidad({ ...newEspecialidad, nombre: e.target.value })
+                    setNewEspecialidad({
+                      ...newEspecialidad,
+                      nombre: e.target.value,
+                    })
                   }
                   placeholder="Ej: Matemáticas"
                 />
@@ -210,7 +232,10 @@ const AdminEspecialidades = () => {
                   className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   value={newEspecialidad.nivelId}
                   onChange={(e) =>
-                    setNewEspecialidad({ ...newEspecialidad, nivelId: Number(e.target.value) })
+                    setNewEspecialidad({
+                      ...newEspecialidad,
+                      nivelId: Number(e.target.value),
+                    })
                   }
                 >
                   <option value={0}>Seleccione un nivel</option>

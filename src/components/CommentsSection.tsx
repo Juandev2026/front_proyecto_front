@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { comentarioService, Comentario } from '../services/comentarioService';
+
 import { useAuth } from '../hooks/useAuth';
+import { comentarioService, Comentario } from '../services/comentarioService';
 import { userService, User } from '../services/userService';
 
 interface CommentsSectionProps {
@@ -20,7 +21,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       setLoading(true);
       const [commentsData, usersData] = await Promise.all([
         comentarioService.getAll(noticiaId),
-        userService.getAll()
+        userService.getAll(),
       ]);
       setComments(commentsData);
       setUsersList(usersData);
@@ -39,15 +40,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     if (!user || user.id === undefined) {
-        alert('Debes iniciar sesión para comentar.');
-        return;
+      alert('Debes iniciar sesión para comentar.');
+      return;
     }
 
     try {
       await comentarioService.create({
         contenido: newComment,
         noticiaId,
-        usuarioId: user.id
+        usuarioId: user.id,
       });
       setNewComment('');
       fetchData(); // Refresh both to be safe, though mainly comments needed
@@ -70,15 +71,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
 
   const getAuthorName = (comment: Comentario) => {
     // Try to find user in the fetched list first (frontend mapping)
-    const author = usersList.find(u => u.id === comment.usuarioId);
+    const author = usersList.find((u) => u.id === comment.usuarioId);
     if (author) return author.nombreCompleto;
-    
+
     // Fallback to existing logic
     return comment.usuario?.nombreCompleto || 'Usuario';
   };
 
   const showMoreComments = () => {
-      setVisibleCount(prev => prev + 5);
+    setVisibleCount((prev) => prev + 5);
   };
 
   return (
@@ -86,49 +87,72 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Comentarios</h2>
 
       {/* List of comments */}
-      <div className={`space-y-6 mb-8 ${comments.length > 3 ? 'max-h-[500px] overflow-y-auto pr-2' : ''}`}>
+      <div
+        className={`space-y-6 mb-8 ${
+          comments.length > 3 ? 'max-h-[500px] overflow-y-auto pr-2' : ''
+        }`}
+      >
         {comments.length === 0 && !loading && (
-          <p className="text-gray-500 italic">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+          <p className="text-gray-500 italic">
+            No hay comentarios aún. ¡Sé el primero en comentar!
+          </p>
         )}
-        
+
         {comments.slice(0, visibleCount).map((comment) => (
           <div key={comment.id} className="bg-gray-50 rounded-lg p-6 relative">
-             <div className="flex justify-between items-start">
-                <div>
-                    <h4 className="font-bold text-gray-900">
-                        {getAuthorName(comment)}
-                    </h4>
-                    <span className="text-xs text-gray-500">
-                        {new Date(comment.fecha).toLocaleString()}
-                    </span>
-                 </div>
-                <button 
-                    onClick={() => handleDelete(comment.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
+            <div className="flex justify-between items-start">
+              <div>
+                <h4 className="font-bold text-gray-900">
+                  {getAuthorName(comment)}
+                </h4>
+                <span className="text-xs text-gray-500">
+                  {new Date(comment.fecha).toLocaleString()}
+                </span>
+              </div>
+              <button
+                onClick={() => handleDelete(comment.id)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-             </div>
-             <p className="mt-2 text-gray-700 whitespace-pre-wrap">{comment.contenido}</p>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+            <p className="mt-2 text-gray-700 whitespace-pre-wrap">
+              {comment.contenido}
+            </p>
           </div>
         ))}
       </div>
 
       {comments.length > visibleCount && (
-        <button 
-            onClick={showMoreComments}
-            className="w-full text-center text-blue-600 hover:text-blue-800 font-medium py-2 mb-6 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+        <button
+          onClick={showMoreComments}
+          className="w-full text-center text-blue-600 hover:text-blue-800 font-medium py-2 mb-6 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
         >
-            Ver más comentarios ({comments.length - visibleCount} restantes)
+          Ver más comentarios ({comments.length - visibleCount} restantes)
         </button>
       )}
 
       {/* Add comment form */}
       {user ? (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Deja tu comentario</h3>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        >
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Deja tu comentario
+          </h3>
           <div className="mb-4">
             <textarea
               className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary p-3 border"
@@ -152,7 +176,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
         <div className="bg-blue-50 rounded-lg p-6 text-center text-blue-800">
           <p>
             Para dejar un comentario, necesitas{' '}
-            <a href="/login" className="font-bold underline hover:text-blue-900">
+            <a
+              href="/login"
+              className="font-bold underline hover:text-blue-900"
+            >
               iniciar sesión
             </a>
             .

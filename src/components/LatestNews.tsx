@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
+import Link from 'next/link';
 
+import AdSidebar from './AdSidebar';
 import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
-import AdSidebar from './AdSidebar';
 
 const LatestNews = () => {
   const { user, isAuthenticated } = useAuth();
@@ -16,16 +17,12 @@ const LatestNews = () => {
       try {
         let news: Noticia[] = [];
         if (filterMode === 'level' && user?.nivelId) {
-            news = await noticiaService.getByNivel(user.nivelId);
+          news = await noticiaService.getByNivel(user.nivelId);
         } else {
-            news = await noticiaService.getAll();
+          news = await noticiaService.getAll();
         }
-        // Sort by date descending if not already sorted by API, but assuming API returns latest or I should sort?
-        // The user asked for "latest 5 news". I'll assume API returns them or I sort them.
-        // Let's sort by ID desc or Date desc just in case.
-        const sortedNews = news.sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
+        // Sort by ID desc (newest first)
+        const sortedNews = news.sort((a, b) => b.id - a.id);
 
         // Take first for featured if marked, else just first
         const featured = sortedNews.find((n) => n.esDestacado) || sortedNews[0];
@@ -36,13 +33,13 @@ const LatestNews = () => {
           sortedNews.filter((n) => n.id !== featured?.id).slice(0, 5)
         );
       } catch (error) {
-        console.error('Error loading news:', error);
+        // console.error('Error loading news:', error);
       }
     };
 
     fetchNews();
   }, [filterMode, user?.nivelId]);
-  
+
   useEffect(() => {
     // Load TikTok Script
     const tiktokScript = document.createElement('script');
@@ -52,21 +49,28 @@ const LatestNews = () => {
 
     return () => {
       if (document.body.contains(tiktokScript)) {
-          document.body.removeChild(tiktokScript);
+        document.body.removeChild(tiktokScript);
       }
     };
   }, []);
 
+  // Helper to strip HTML tags for preview
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   return (
-    <div className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-12 bg-white">
+      {/* Changed max-w-7xl to w-full and added px-4 for basic padding */}
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT COLUMN: Latest News (approx 40% -> col-span-5) */}
-          <div className="lg:col-span-5 space-y-8">
+          {/* LEFT COLUMN: Latest News (approx 58% -> col-span-7) */}
+          <div className="lg:col-span-7 space-y-8">
             <h2 className="text-3xl font-extrabold text-gray-900 border-b-2 border-primary pb-2 inline-block uppercase tracking-wide">
               Últimas Noticias
             </h2>
-            
+
             {isAuthenticated && user?.nivelId ? (
               <div className="flex space-x-4 mt-2 mb-4">
                 <button
@@ -91,48 +95,49 @@ const LatestNews = () => {
                 </button>
               </div>
             ) : (
-               <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <p className="text-sm text-blue-800">
-                    <span className="font-bold">¿Quieres ver noticias personalizadas?</span> Inicia sesión para ver contenido de tu nivel.
-                  </p>
-                  <a 
-                    href="/login" 
-                    className="whitespace-nowrap px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors"
-                  >
+              <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-sm text-blue-800">
+                  <span className="font-bold">
+                    ¿Quieres ver noticias personalizadas?
+                  </span>{' '}
+                  Inicia sesión para ver contenido de tu nivel.
+                </p>
+                <Link href="/login">
+                  <a className="whitespace-nowrap px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors">
                     Iniciar Sesión
                   </a>
-               </div>
+                </Link>
+              </div>
             )}
             <div className="space-y-6">
               {latestNews.map((news) => (
                 <div
                   key={news.id}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden flex flex-row border border-gray-100 hover:shadow-md transition-shadow"
+                  className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
                 >
-                  <div className="w-1/3 relative">
+                  <div className="w-1/3 relative overflow-hidden">
                     <img
-                      className="w-full h-full object-cover absolute inset-0"
+                      className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
                       src={news.imageUrl || '/assets/images/placeholder.png'}
-                      alt={news.titulo}
+                      alt={stripHtml(news.titulo)}
                     />
                   </div>
-                  <div className="w-2/3 p-4 flex flex-col justify-between">
+                  <div className="w-2/3 p-8 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                        {news.titulo}
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                        {stripHtml(news.titulo)}
                       </h3>
-                      <div className="w-full border-t border-gray-100 my-2"></div>
-                      <p className="text-xs text-gray-500 line-clamp-2">
-                        {news.descripcion}
+                      <div className="w-full border-t border-gray-100 my-4"></div>
+                      <p className="text-lg text-gray-600 line-clamp-3">
+                        {stripHtml(news.descripcion)}
                       </p>
                     </div>
-                    <div className="mt-3">
-                      <a
-                        href={`/news/${news.id}`}
-                        className="inline-block px-4 py-1.5 border border-gray-300 rounded-full text-xs font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase"
-                      >
-                        Ver más
-                      </a>
+                    <div className="mt-6">
+                      <Link href={`/news/${news.id}`}>
+                        <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
+                          Ver más
+                        </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -145,14 +150,14 @@ const LatestNews = () => {
             </div>
           </div>
 
-          {/* MIDDLE COLUMN: Socials + Featured (approx 33% -> col-span-4) */}
-          <div className="lg:col-span-4 space-y-8">
+          {/* MIDDLE COLUMN: Socials + Featured (approx 25% -> col-span-3) */}
+          <div className="lg:col-span-3 space-y-8">
             <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">
               Síguenos en:
             </h2>
 
             {/* YouTube */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <div className="bg-red-600 px-4 py-2 text-white font-bold flex items-center justify-between">
                 <span>Youtube</span>
                 <svg
@@ -164,35 +169,39 @@ const LatestNews = () => {
                 </svg>
               </div>
               <div className="p-4">
-                 <div className="w-full aspect-w-16 aspect-h-9">
-                <a 
-                   href="https://www.youtube.com/@JuanCarlosAvend/videos" 
-                   target="_blank" 
-                   rel="noreferrer"
-                   className="block relative w-full h-[315px] group"
-                >
+                <div className="w-full aspect-w-16 aspect-h-9">
+                  <a
+                    href="https://www.youtube.com/@JuanCarlosAvend/videos"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block relative w-full h-[315px] group"
+                  >
                     {/* Thumbnail Image */}
-                    <img 
-                        src="/assets/images/youtube.jpeg" 
-                        alt="YouTube Channel" 
-                        className="w-full h-full object-cover rounded shadow-sm opacity-90 group-hover:opacity-100 transition-opacity"
+                    <img
+                      src="/assets/images/youtube.jpeg"
+                      alt="YouTube Channel"
+                      className="w-full h-full object-cover rounded shadow-sm opacity-90 group-hover:opacity-100 transition-opacity"
                     />
-                    
+
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                        </div>
+                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <svg
+                          className="w-8 h-8 text-white ml-1"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
                     </div>
-                </a>
+                  </a>
                 </div>
               </div>
             </div>
 
             {/* Facebook */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <div className="bg-[#1877F2] px-4 py-2 text-white font-bold flex items-center justify-between">
                 <span>Facebook</span>
                 <svg
@@ -200,25 +209,25 @@ const LatestNews = () => {
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.954 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </div>
               <div className="p-3 text-center overflow-hidden">
                 <iframe
-                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fjuanavendocente%3Frdid%3DzjANupcVQeTnGgXL%23&tabs=timeline&width=500&height=400&small_header=false&adapt_container_width=false&hide_cover=false&show_facepile=false&appId"
-                    width="500" 
-                    height="400" 
-                    style={{border:'none', overflow:'hidden'}} 
-                    scrolling="no" 
-                    frameBorder="0" 
-                    allowFullScreen={true}
-                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fjuanavendocente%3Frdid%3DzjANupcVQeTnGgXL%23&tabs=timeline&width=500&height=400&small_header=false&adapt_container_width=false&hide_cover=false&show_facepile=false&appId"
+                  width="500"
+                  height="400"
+                  style={{ border: 'none', overflow: 'hidden' }}
+                  scrolling="no"
+                  frameBorder="0"
+                  allowFullScreen={true}
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                 ></iframe>
               </div>
             </div>
 
             {/* TikTok */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <div className="bg-black px-4 py-2 text-white font-bold flex items-center justify-between">
                 <span>TikTok</span>
                 <span className="font-bold flex items-center">
@@ -227,16 +236,22 @@ const LatestNews = () => {
                 </span>
               </div>
               <div className="p-0 text-center">
-                <blockquote 
-                    className="tiktok-embed" 
-                    cite="https://www.tiktok.com/@juan_avend" 
-                    data-unique-id="juan_avend" 
-                    data-embed-type="creator" 
-                    style={{ maxWidth: '100%', minWidth: '100%' }}
-                > 
-                    <section> 
-                        <a target="_blank" href="https://www.tiktok.com/@juan_avend?refer=creator_embed" rel="noreferrer">@juan_avend</a> 
-                    </section> 
+                <blockquote
+                  className="tiktok-embed"
+                  cite="https://www.tiktok.com/@juan_avend"
+                  data-unique-id="juan_avend"
+                  data-embed-type="creator"
+                  style={{ maxWidth: '100%', minWidth: '100%' }}
+                >
+                  <section>
+                    <a
+                      target="_blank"
+                      href="https://www.tiktok.com/@juan_avend?refer=creator_embed"
+                      rel="noreferrer"
+                    >
+                      @juan_avend
+                    </a>
+                  </section>
                 </blockquote>
               </div>
             </div>
@@ -260,20 +275,19 @@ const LatestNews = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-4">
                       <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">
-                        {featuredNews.titulo}
+                        {stripHtml(featuredNews.titulo)}
                       </h3>
                     </div>
                   </div>
                   <div className="p-4 bg-gray-900">
                     <p className="text-xs text-gray-300 line-clamp-3 mb-3">
-                      {featuredNews.descripcion}
+                      {stripHtml(featuredNews.descripcion)}
                     </p>
-                    <a
-                      href={`/news/${featuredNews.id}`}
-                      className="text-primary text-sm font-semibold hover:underline"
-                    >
-                      Leer artículo completo &rarr;
-                    </a>
+                    <Link href={`/news/${featuredNews.id}`}>
+                      <a className="text-primary text-sm font-semibold hover:underline">
+                        Leer artículo completo &rarr;
+                      </a>
+                    </Link>
                   </div>
                 </div>
               ) : (
@@ -282,13 +296,11 @@ const LatestNews = () => {
                 </div>
               )}
             </div>
-
-
           </div>
 
-          {/* RIGHT COLUMN: Banners (approx 25% -> col-span-3) */}
-          <div className="lg:col-span-3">
-             <AdSidebar />
+          {/* RIGHT COLUMN: Banners (approx 16% -> col-span-2) */}
+          <div className="lg:col-span-2">
+            <AdSidebar />
           </div>
         </div>
       </div>

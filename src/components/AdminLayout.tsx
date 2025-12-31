@@ -13,7 +13,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
     const token = localStorage.getItem('token');
     const storedName = localStorage.getItem('fullName');
-    
+
     if (!token) {
       router.push('/login');
     } else {
