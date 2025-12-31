@@ -169,17 +169,21 @@ const Materials = () => {
         <div className="grid grid-cols-12 gap-8">
           {/* Main Content (9 cols) */}
           <div className="col-span-12 lg:col-span-9">
-            {loading ? (
+            {loading && (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
               </div>
-            ) : paginatedItems.length === 0 ? (
+            )}
+
+            {!loading && paginatedItems.length === 0 && (
               <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100">
                 <p className="text-xl text-gray-500">
                   No se encontraron recursos.
                 </p>
               </div>
-            ) : (
+            )}
+
+            {!loading && paginatedItems.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedItems.map((item, index) => (
                   <FadeIn key={item.id} direction="up" delay={index * 0.05}>

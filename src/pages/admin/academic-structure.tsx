@@ -154,7 +154,7 @@ const AcademicStructure = () => {
         setEspecialidades(especialidadesData);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      // Error fetching data
     } finally {
       setLoading(false);
     }
@@ -192,8 +192,7 @@ const AcademicStructure = () => {
       closeModal();
       fetchData();
     } catch (error) {
-      alert('Error creating item');
-      console.error(error);
+      // Error creating item
     }
   };
 
@@ -226,8 +225,7 @@ const AcademicStructure = () => {
       closeModal();
       fetchData();
     } catch (error) {
-      alert('Error updating item');
-      console.error(error);
+      // Error updating item
     }
   };
 
@@ -243,8 +241,7 @@ const AcademicStructure = () => {
       }
       fetchData();
     } catch (error) {
-      alert('Error deleting item');
-      console.error(error);
+      // Error deleting item
     }
   };
 
@@ -286,12 +283,14 @@ const AcademicStructure = () => {
     </button>
   );
 
-  const currentData =
-    activeTab === 'modalidades'
-      ? modalidades
-      : activeTab === 'niveles'
-      ? niveles
-      : especialidades;
+  let currentData: Array<Modalidad | Nivel | Especialidad>;
+  if (activeTab === 'modalidades') {
+    currentData = modalidades;
+  } else if (activeTab === 'niveles') {
+    currentData = niveles;
+  } else {
+    currentData = especialidades;
+  }
 
   return (
     <AdminLayout>
@@ -308,11 +307,11 @@ const AcademicStructure = () => {
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
-          {activeTab === 'modalidades'
-            ? 'Nueva Modalidad'
-            : activeTab === 'niveles'
-            ? 'Nuevo Nivel'
-            : 'Nueva Especialidad'}
+          {(() => {
+            if (activeTab === 'modalidades') return 'Nueva Modalidad';
+            if (activeTab === 'niveles') return 'Nuevo Nivel';
+            return 'Nueva Especialidad';
+          })()}
         </button>
       </div>
 
@@ -488,12 +487,15 @@ const AcademicStructure = () => {
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
-                {editingId ? 'Editar' : 'Crear'}{' '}
-                {activeTab === 'modalidades'
-                  ? 'Modalidad'
-                  : activeTab === 'niveles'
-                  ? 'Nivel'
-                  : 'Especialidad'}
+                {(() => {
+                  if (editingId) return 'Editar';
+                  return 'Crear';
+                })()}{' '}
+                {(() => {
+                  if (activeTab === 'modalidades') return 'Modalidad';
+                  if (activeTab === 'niveles') return 'Nivel';
+                  return 'Especialidad';
+                })()}
               </h2>
               <button
                 onClick={closeModal}

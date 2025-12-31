@@ -47,7 +47,7 @@ const Register = () => {
         setRegiones(regionsData);
         setModalidades(modalitiesData);
       } catch (err) {
-        console.error('Error loading registration data:', err);
+        // console.error('Error loading registration data:', err);
       }
     };
     fetchData();
@@ -72,7 +72,7 @@ const Register = () => {
             setFormData((prev) => ({ ...prev, nivelId: 0, especialidadId: 0 }));
           }
         } catch (err) {
-          console.error('Error loading levels:', err);
+          // console.error('Error loading levels:', err);
           setFilteredNiveles([]);
         }
       } else {
@@ -81,6 +81,7 @@ const Register = () => {
       }
     };
     fetchNiveles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.modalidadId]); // Removed formData.nivelId dependency to avoid cycles, just fetching on modality change.
 
   useEffect(() => {
@@ -99,7 +100,7 @@ const Register = () => {
             setFormData((prev) => ({ ...prev, especialidadId: 0 }));
           }
         } catch (err) {
-          console.error('Error loading especialidades:', err);
+          // console.error('Error loading especialidades:', err);
           setEspecialidades([]);
         }
       } else {
@@ -108,6 +109,7 @@ const Register = () => {
       }
     };
     fetchEspecialidades();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.nivelId]);
 
   const handleChange = (

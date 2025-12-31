@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
+import Link from 'next/link';
+
 import { useAuth } from '../hooks/useAuth';
 import { comentarioService, Comentario } from '../services/comentarioService';
 import { userService, User } from '../services/userService';
@@ -26,7 +28,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       setComments(commentsData);
       setUsersList(usersData);
     } catch (err) {
-      console.error(err);
+      // Error loading data
     } finally {
       setLoading(false);
     }
@@ -40,7 +42,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     if (!user || user.id === undefined) {
-      alert('Debes iniciar sesión para comentar.');
       return;
     }
 
@@ -51,10 +52,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
         usuarioId: user.id,
       });
       setNewComment('');
-      fetchData(); // Refresh both to be safe, though mainly comments needed
+      fetchData();
     } catch (err) {
-      console.error(err);
-      alert('Error al publicar el comentario.');
+      // Error posting comment
     }
   };
 
@@ -64,8 +64,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
       await comentarioService.delete(id);
       fetchData();
     } catch (err) {
-      console.error(err);
-      alert('Error al eliminar el comentario.');
+      // Error deleting comment
     }
   };
 
@@ -176,12 +175,12 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
         <div className="bg-blue-50 rounded-lg p-6 text-center text-blue-800">
           <p>
             Para dejar un comentario, necesitas{' '}
-            <a
+            <Link
               href="/login"
               className="font-bold underline hover:text-blue-900"
             >
               iniciar sesión
-            </a>
+            </Link>
             .
           </p>
         </div>
