@@ -47,7 +47,7 @@ export interface ResetPasswordRequest {
   confirmPassword: string;
 }
 
-const API_Auth = `${API_BASE_URL}/Auth`;
+const apiAuth = `${API_BASE_URL}/Auth`;
 
 export const authService = {
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
@@ -68,7 +68,7 @@ export const authService = {
           : null,
       };
 
-      const response = await fetch(`${API_Auth}/register`, {
+      const response = await fetch(`${apiAuth}/register`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(), // Keep existing helpers but ensure content-type
@@ -89,14 +89,14 @@ export const authService = {
       }
       return {} as RegisterResponse;
     } catch (error) {
-      console.error('Registration error:', error);
+      // // Log removed
       throw error;
     }
   },
 
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     try {
-      const response = await fetch(`${API_Auth}/login`, {
+      const response = await fetch(`${apiAuth}/login`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
@@ -113,14 +113,14 @@ export const authService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Login error:', error);
+      // // Log removed
       throw error;
     }
   },
 
   forgotPassword: async (email: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_Auth}/forgot-password`, {
+      const response = await fetch(`${apiAuth}/forgot-password`, {
         method: 'POST',
         headers: {
           // No auth headers needed usually for forgot password
@@ -136,14 +136,14 @@ export const authService = {
         );
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
+      // // Log removed
       throw error;
     }
   },
 
   resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
     try {
-      const response = await fetch(`${API_Auth}/reset-password`, {
+      const response = await fetch(`${apiAuth}/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ export const authService = {
         throw new Error(errorText || 'Error al restablecer la contraseña');
       }
     } catch (error) {
-      console.error('Reset password error:', error);
+      // // Log removed
       throw error;
     }
   },

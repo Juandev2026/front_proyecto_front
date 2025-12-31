@@ -23,7 +23,7 @@ export const informacionRelevanteService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching informacion relevante:', error);
+      // Log removed
       throw error;
     }
   },
@@ -42,7 +42,7 @@ export const informacionRelevanteService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating informacion relevante:', error);
+      // Log removed
       throw error;
     }
   },
@@ -61,7 +61,7 @@ export const informacionRelevanteService = {
         throw new Error('Error al actualizar informacion relevante');
       }
     } catch (error) {
-      console.error(`Error updating informacion relevante ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -76,7 +76,7 @@ export const informacionRelevanteService = {
         throw new Error('Error al eliminar informacion relevante');
       }
     } catch (error) {
-      console.error(`Error deleting informacion relevante ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

@@ -33,7 +33,7 @@ export const comentarioService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      // Log removed
       throw error;
     }
   },
@@ -64,7 +64,7 @@ export const comentarioService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating comment:', error);
+      // Log removed
       throw error;
     }
   },
@@ -79,7 +79,7 @@ export const comentarioService = {
         throw new Error('Error al eliminar comentario');
       }
     } catch (error) {
-      console.error('Error deleting comment:', error);
+      // Log removed
       throw error;
     }
   },

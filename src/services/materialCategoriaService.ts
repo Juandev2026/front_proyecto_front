@@ -19,7 +19,7 @@ export const materialCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching material categories:', error);
+      // Log removed
       throw error;
     }
   },
@@ -38,7 +38,7 @@ export const materialCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating material category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -59,7 +59,7 @@ export const materialCategoriaService = {
       const text = await response.text();
       return text ? JSON.parse(text) : categoria;
     } catch (error) {
-      console.error('Error updating material category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -74,7 +74,7 @@ export const materialCategoriaService = {
         throw new Error('Error al eliminar categoría de material');
       }
     } catch (error) {
-      console.error('Error deleting material category:', error);
+      // Log removed
       throw error;
     }
   },

@@ -58,7 +58,7 @@ const AdminPublicidad = () => {
       setNiveles(nivData);
     } catch (err) {
       setError('Error loading data');
-      console.error(err);
+      // console.error(err);
     } finally {
       setLoading(false);
     }
@@ -97,21 +97,23 @@ const AdminPublicidad = () => {
       // existing code used `getByModalidadId`. I'll stick to that pattern for the dropdown but populate `filteredNiveles`.
       nivelService
         .getByModalidadId(formData.modalidadId)
-        .then(setFilteredNiveles)
-        .catch(console.error);
+        .then(setFilteredNiveles);
+      // .catch(console.error);
     } else {
       setFilteredNiveles([]);
     }
   }, [formData.modalidadId]);
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('¿Estás seguro de eliminar esta publicidad?')) {
       try {
         await publicidadService.delete(id);
         fetchData();
       } catch (err) {
+        // eslint-disable-next-line no-alert
         alert('Error deleting publicidad');
-        console.error(err);
+        // console.error(err);
       }
     }
   };
@@ -139,6 +141,7 @@ const AdminPublicidad = () => {
         try {
           finalUrl = await uploadService.uploadImage(file);
         } catch (uploadError) {
+          // eslint-disable-next-line no-alert
           alert('Error al subir la imagen');
           return;
         }
@@ -168,8 +171,9 @@ const AdminPublicidad = () => {
       setEditingId(null);
       fetchData();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error saving publicidad');
-      console.error(err);
+      // console.error(err);
     }
   };
 

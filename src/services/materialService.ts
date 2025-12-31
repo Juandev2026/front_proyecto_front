@@ -30,7 +30,7 @@ export const materialService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching materials:', error);
+      // Log removed
       throw error;
     }
   },
@@ -45,7 +45,7 @@ export const materialService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching materials by level ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -92,13 +92,13 @@ export const materialService = {
 
       if (!response.ok) {
         const errText = await response.text();
-        console.error('Create material error:', errText);
+        // Log removed
         throw new Error(`Error al crear el material: ${errText}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error creating material:', error);
+      // Log removed
       throw error;
     }
   },
@@ -145,7 +145,7 @@ export const materialService = {
 
       if (!response.ok) {
         const errText = await response.text();
-        console.error('Update material error:', errText);
+        // Log removed
         throw new Error(`Error al actualizar el material: ${errText}`);
       }
 
@@ -153,7 +153,7 @@ export const materialService = {
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Material);
     } catch (error) {
-      console.error(`Error updating material with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -168,7 +168,7 @@ export const materialService = {
         throw new Error('Error al eliminar el material');
       }
     } catch (error) {
-      console.error(`Error deleting material with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

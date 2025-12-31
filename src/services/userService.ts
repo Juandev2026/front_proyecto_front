@@ -59,7 +59,7 @@ export const userService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching users:', error);
+      // Log removed
       throw error;
     }
   },
@@ -74,7 +74,7 @@ export const userService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching user:', error);
+      // Log removed
       throw error;
     }
   },
@@ -97,7 +97,7 @@ export const userService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating user:', error);
+      // Log removed
       throw error;
     }
   },
@@ -112,7 +112,7 @@ export const userService = {
         delete payload.password;
       }
 
-      console.log('Update Payload:', payload); // Debugging
+      // Log removed // Debugging
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
@@ -123,7 +123,7 @@ export const userService = {
         throw new Error('Error al actualizar usuario');
       }
     } catch (error) {
-      console.error('Error updating user:', error);
+      // Log removed
       throw error;
     }
   },
@@ -138,7 +138,7 @@ export const userService = {
         throw new Error('Error al eliminar usuario');
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
+      // Log removed
       throw error;
     }
   },

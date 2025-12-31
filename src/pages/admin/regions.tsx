@@ -93,7 +93,7 @@ const AdminRegions = () => {
       setRegions(data);
     } catch (err) {
       setError('Error al cargar regiones');
-      console.error(err);
+      // console.error(err);
     } finally {
       setLoading(false);
     }
@@ -104,13 +104,15 @@ const AdminRegions = () => {
   }, []);
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('¿Estás seguro de eliminar esta región?')) {
       try {
         await regionService.delete(id);
         fetchData();
       } catch (err) {
+        // eslint-disable-next-line no-alert
         alert('Error al eliminar región');
-        console.error(err);
+        // console.error(err);
       }
     }
   };
@@ -134,10 +136,12 @@ const AdminRegions = () => {
       setIsModalOpen(false);
       setNewRegion({ nombre: '' });
       setEditingId(null);
+      setEditingId(null);
       fetchData();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error al guardar región');
-      console.error(err);
+      // console.error(err);
     }
   };
 

@@ -22,16 +22,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Parse the incoming request
     const { files } = await new Promise<{ fields: any; files: any }>(
       (resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) return reject(err);
-          resolve({ fields, files });
+        form.parse(req, (err, fields, parsedFiles) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve({ fields, files: parsedFiles });
         });
       }
     );
 
     let { file } = files; // Assuming the field name is 'file'
     if (Array.isArray(file)) {
-      file = file[0];
+      [file] = file;
     }
 
     if (!file) {
@@ -67,7 +70,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Return the response from the external API
     return res.status(200).send(response.data);
   } catch (error: any) {
-    console.error('Proxy Upload Error:', error.response?.data || error.message);
+    // console.error('Proxy Upload Error:', error.response?.data || error.message);
     return res.status(500).json({
       message: 'Error uploading file',
       error: error.response?.data || error.message,

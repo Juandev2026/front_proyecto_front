@@ -39,7 +39,7 @@ export const cursoService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      // Log removed
       throw error;
     }
   },
@@ -54,7 +54,7 @@ export const cursoService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching course with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -69,7 +69,7 @@ export const cursoService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching courses by level ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -114,7 +114,7 @@ export const cursoService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating course:', error);
+      // Log removed
       throw error;
     }
   },
@@ -160,7 +160,7 @@ export const cursoService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Server response:', errorText);
+        // Log removed
         throw new Error(
           `Error al actualizar el curso: ${response.status} ${errorText}`
         );
@@ -168,7 +168,7 @@ export const cursoService = {
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Curso);
     } catch (error) {
-      console.error(`Error updating course with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -183,7 +183,7 @@ export const cursoService = {
         throw new Error('Error al eliminar el curso');
       }
     } catch (error) {
-      console.error(`Error deleting course with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

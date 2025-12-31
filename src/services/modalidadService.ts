@@ -19,7 +19,7 @@ export const modalidadService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching modalities:', error);
+      // Log removed
       throw error;
     }
   },
@@ -41,7 +41,7 @@ export const modalidadService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating modality:', error);
+      // Log removed
       throw error;
     }
   },
@@ -62,7 +62,7 @@ export const modalidadService = {
         throw new Error('Error al actualizar modalidad');
       }
     } catch (error) {
-      console.error('Error updating modality:', error);
+      // Log removed
       throw error;
     }
   },
@@ -77,7 +77,7 @@ export const modalidadService = {
         throw new Error('Error al eliminar modalidad');
       }
     } catch (error) {
-      console.error('Error deleting modality:', error);
+      // Log removed
       throw error;
     }
   },

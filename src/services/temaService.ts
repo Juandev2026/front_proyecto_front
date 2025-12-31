@@ -20,7 +20,7 @@ export const temaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating topic:', error);
+      // Log removed
       throw error;
     }
   },
@@ -42,7 +42,7 @@ export const temaService = {
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Tema);
     } catch (error) {
-      console.error(`Error updating topic with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -60,7 +60,7 @@ export const temaService = {
         );
       }
     } catch (error) {
-      console.error(`Error deleting topic with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

@@ -25,7 +25,7 @@ export const nivelService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching levels:', error);
+      // Log removed
       throw error;
     }
   },
@@ -38,7 +38,7 @@ export const nivelService = {
       const all: Nivel[] = await response.json();
       return all.filter((n) => n.modalidadId === modalidadId);
     } catch (error) {
-      console.error('Error fetching levels by modality:', error);
+      // Log removed
       return [];
     }
   },
@@ -78,7 +78,7 @@ export const nivelService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating level:', error);
+      // Log removed
       throw error;
     }
   },
@@ -120,7 +120,7 @@ export const nivelService = {
         throw new Error('Error al actualizar nivel');
       }
     } catch (error) {
-      console.error('Error updating level:', error);
+      // Log removed
       throw error;
     }
   },
@@ -141,7 +141,7 @@ export const nivelService = {
         );
       }
     } catch (error) {
-      console.error('Error deleting level:', error);
+      // Log removed
       throw error;
     }
   },

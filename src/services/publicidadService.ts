@@ -23,14 +23,14 @@ export const publicidadService = {
       });
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error fetching publicidad:', response.status, errorText);
+        // Log removed
         throw new Error(
           `Error ${response.status} al obtener publicidad: ${errorText}`
         );
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching publicidad:', error);
+      // Log removed
       throw error;
     }
   },
@@ -45,7 +45,7 @@ export const publicidadService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching publicidad with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -71,7 +71,7 @@ export const publicidadService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error creating publicidad:', error);
+      // Log removed
       throw error;
     }
   },
@@ -100,7 +100,7 @@ export const publicidadService = {
       // Try parsing JSON if response is not empty, otherwise return empty object or handle accordingly
       return text ? JSON.parse(text) : ({} as Publicidad);
     } catch (error) {
-      console.error(`Error updating publicidad with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -115,7 +115,7 @@ export const publicidadService = {
         throw new Error('Error al eliminar publicidad');
       }
     } catch (error) {
-      console.error(`Error deleting publicidad with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

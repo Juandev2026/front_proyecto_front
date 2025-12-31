@@ -43,7 +43,7 @@ export const noticiaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching news:', error);
+      // Log removed
       throw error;
     }
   },
@@ -65,7 +65,7 @@ export const noticiaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching news with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -80,7 +80,7 @@ export const noticiaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching news by level ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -141,12 +141,12 @@ export const noticiaService = {
       });
       if (!response.ok) {
         const errText = await response.text();
-        console.error('Create response error:', errText);
+        // Log removed
         throw new Error(`Error al crear la noticia: ${errText}`);
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating news:', error);
+      // Log removed
       throw error;
     }
   },
@@ -210,7 +210,7 @@ export const noticiaService = {
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Noticia);
     } catch (error) {
-      console.error(`Error updating news with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -225,7 +225,7 @@ export const noticiaService = {
         throw new Error('Error al eliminar la noticia');
       }
     } catch (error) {
-      console.error(`Error deleting news with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

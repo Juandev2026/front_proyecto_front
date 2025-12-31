@@ -28,13 +28,32 @@ const UsersPage = () => {
     passwordHash: '',
   });
 
-  // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const resetForm = () => {
+    setFormData({
+      nombreCompleto: '',
+      email: '',
+      password: '',
+      role: 'Client',
+      celular: '',
+      regionId: 0,
+      modalidadId: 0,
+      nivelId: 0,
+      especialidadId: 0,
+      passwordHash: '',
+    });
+  };
+
+  const loadUsersOnly = async () => {
+    try {
+      const data = await userService.getAll();
+      setUsers(data);
+    } catch (e) {
+      // Error loading users
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -52,11 +71,15 @@ const UsersPage = () => {
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      // Error loading data
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,37 +145,8 @@ const UsersPage = () => {
       resetForm();
       loadUsersOnly();
     } catch (error) {
-      console.error('Error saving user:', error);
-      alert(
-        `Error saving user: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
+      // Error saving user
     }
-  };
-
-  const loadUsersOnly = async () => {
-    try {
-      const data = await userService.getAll();
-      setUsers(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      nombreCompleto: '',
-      email: '',
-      password: '',
-      role: 'Client',
-      celular: '',
-      regionId: 0,
-      modalidadId: 0,
-      nivelId: 0,
-      especialidadId: 0,
-      passwordHash: '',
-    });
   };
 
   const handleEdit = (user: User) => {
@@ -173,12 +167,12 @@ const UsersPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
+    if (window.confirm('¿Está seguro de que desea eliminar este usuario?')) {
       try {
         await userService.delete(id);
-        loadUsersOnly();
+        await loadUsersOnly();
       } catch (error) {
-        console.error('Error deleting user:', error);
+        // Error deleting user
       }
     }
   };
@@ -189,8 +183,7 @@ const UsersPage = () => {
       setViewingUser(user);
       setIsViewModalOpen(true);
     } catch (error) {
-      console.error('Error fetching user details:', error);
-      alert('Error al cargar detalles del usuario');
+      // Error fetching user details
     }
   };
 
@@ -251,80 +244,83 @@ const UsersPage = () => {
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.nombreCompleto}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.role}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.region?.nombre || user.regionId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-3">
-                      <button
-                        onClick={() => handleView(user.id)}
-                        className="text-blue-600 hover:text-blue-900 focus:outline-none"
-                        title="Ver Detalles"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+              users.map((user) => {
+                const regionName = user.region?.nombre || user.regionId?.toString() || '-';
+                return (
+                  <tr key={user.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.nombreCompleto}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.role}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {regionName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-3">
+                        <button
+                          onClick={() => handleView(user.id)}
+                          className="text-blue-600 hover:text-blue-900 focus:outline-none"
+                          title="Ver Detalles"
                         >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-green-600 hover:text-green-900 focus:outline-none"
-                        title="Editar"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path
+                              fillRule="evenodd"
+                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-green-600 hover:text-green-900 focus:outline-none"
+                          title="Editar"
                         >
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-600 hover:text-red-900 focus:outline-none"
-                        title="Eliminar"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="text-red-600 hover:text-red-900 focus:outline-none"
+                          title="Eliminar"
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

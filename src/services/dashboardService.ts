@@ -30,7 +30,7 @@ export const dashboardService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching dashboard totals:', error);
+      // Log removed
       throw error;
     }
   },
@@ -86,7 +86,7 @@ export const dashboardService = {
 
       return activities;
     } catch (error) {
-      console.error('Error fetching recent activity:', error);
+      // Log removed
       return [];
     }
   },

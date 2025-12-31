@@ -19,7 +19,7 @@ export const categoriaSimpleService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching simple categories:', error);
+      // Log removed
       throw error;
     }
   },
@@ -36,7 +36,7 @@ export const categoriaSimpleService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating simple category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -52,7 +52,7 @@ export const categoriaSimpleService = {
         throw new Error('Error al actualizar categoría simple');
       }
     } catch (error) {
-      console.error('Error updating simple category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -67,7 +67,7 @@ export const categoriaSimpleService = {
         throw new Error('Error al eliminar categoría simple');
       }
     } catch (error) {
-      console.error('Error deleting simple category:', error);
+      // Log removed
       throw error;
     }
   },

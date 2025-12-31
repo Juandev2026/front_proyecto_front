@@ -19,7 +19,7 @@ export const regionService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching regions:', error);
+      // Log removed
       throw error;
     }
   },
@@ -41,7 +41,7 @@ export const regionService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating region:', error);
+      // Log removed
       throw error;
     }
   },
@@ -62,7 +62,7 @@ export const regionService = {
         throw new Error('Error al actualizar región');
       }
     } catch (error) {
-      console.error('Error updating region:', error);
+      // Log removed
       throw error;
     }
   },
@@ -77,7 +77,7 @@ export const regionService = {
         throw new Error('Error al eliminar región');
       }
     } catch (error) {
-      console.error('Error deleting region:', error);
+      // Log removed
       throw error;
     }
   },

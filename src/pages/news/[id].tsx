@@ -35,7 +35,7 @@ const NewsDetail = () => {
             }
           }
         } catch (err) {
-          console.error('Error fetching news detail:', err);
+          // console.error('Error fetching news detail:', err);
           setError('No se pudo cargar la noticia.');
         } finally {
           setLoading(false);

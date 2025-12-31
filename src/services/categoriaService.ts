@@ -19,7 +19,7 @@ export const categoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      // Log removed
       throw error;
     }
   },
@@ -36,7 +36,7 @@ export const categoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -52,7 +52,7 @@ export const categoriaService = {
         throw new Error('Error al actualizar categoría');
       }
     } catch (error) {
-      console.error('Error updating category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -67,7 +67,7 @@ export const categoriaService = {
         throw new Error('Error al eliminar categoría');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
+      // Log removed
       throw error;
     }
   },

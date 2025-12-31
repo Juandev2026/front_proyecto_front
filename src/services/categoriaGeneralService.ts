@@ -19,7 +19,7 @@ export const categoriaGeneralService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching general categories:', error);
+      // Log removed
       throw error;
     }
   },
@@ -36,7 +36,7 @@ export const categoriaGeneralService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating general category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -52,7 +52,7 @@ export const categoriaGeneralService = {
         throw new Error('Error al actualizar categoría general');
       }
     } catch (error) {
-      console.error('Error updating general category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -67,7 +67,7 @@ export const categoriaGeneralService = {
         throw new Error('Error al eliminar categoría general');
       }
     } catch (error) {
-      console.error('Error deleting general category:', error);
+      // Log removed
       throw error;
     }
   },

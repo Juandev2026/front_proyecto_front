@@ -33,7 +33,7 @@ export const especialidadesService = {
       if (!response.ok) throw new Error('Error al obtener especialidades');
       return await response.json();
     } catch (error) {
-      console.error('Error in getAll especialidades:', error);
+      // Log removed
       throw error;
     }
   },
@@ -47,7 +47,7 @@ export const especialidadesService = {
       if (!response.ok) throw new Error('Error al obtener especialidad');
       return await response.json();
     } catch (error) {
-      console.error('Error in getById especialidad:', error);
+      // Log removed
       throw error;
     }
   },
@@ -62,7 +62,7 @@ export const especialidadesService = {
         throw new Error('Error al obtener especialidades por nivel');
       return await response.json();
     } catch (error) {
-      console.error('Error in getByNivel especialidades:', error);
+      // Log removed
       throw error;
     }
   },
@@ -80,7 +80,7 @@ export const especialidadesService = {
       if (!response.ok) throw new Error('Error al crear especialidad');
       return await response.json();
     } catch (error) {
-      console.error('Error in create especialidad:', error);
+      // Log removed
       throw error;
     }
   },
@@ -100,7 +100,7 @@ export const especialidadesService = {
       });
       if (!response.ok) throw new Error('Error al actualizar especialidad');
     } catch (error) {
-      console.error('Error in update especialidad:', error);
+      // Log removed
       throw error;
     }
   },
@@ -113,7 +113,7 @@ export const especialidadesService = {
       });
       if (!response.ok) throw new Error('Error al eliminar especialidad');
     } catch (error) {
-      console.error('Error in delete especialidad:', error);
+      // Log removed
       throw error;
     }
   },

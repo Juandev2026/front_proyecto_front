@@ -27,7 +27,7 @@ export const anuncioService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching announcements:', error);
+      // Log removed
       throw error;
     }
   },
@@ -42,7 +42,7 @@ export const anuncioService = {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching announcement with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -65,7 +65,7 @@ export const anuncioService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error creating announcement:', error);
+      // Log removed
       throw error;
     }
   },
@@ -89,7 +89,7 @@ export const anuncioService = {
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as Anuncio);
     } catch (error) {
-      console.error(`Error updating announcement with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },
@@ -104,7 +104,7 @@ export const anuncioService = {
         throw new Error('Error al eliminar el anuncio');
       }
     } catch (error) {
-      console.error(`Error deleting announcement with id ${id}:`, error);
+      // Log removed
       throw error;
     }
   },

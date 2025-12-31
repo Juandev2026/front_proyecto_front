@@ -282,7 +282,7 @@ const AdminNews = () => {
         await noticiaService.update(editingId, dataToSend as Noticia);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id: _id, ...createData } = dataToSend;
+        const { id: unusedId, ...createData } = dataToSend;
         await noticiaService.create(createData);
       }
 

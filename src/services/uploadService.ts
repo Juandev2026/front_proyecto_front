@@ -16,7 +16,7 @@ export const uploadService = {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // console.error('Upload failed with status:', response.status, errorText);
+      // // Log removed
       throw new Error(
         `Error al subir la imagen: ${response.status} ${errorText}`
       );

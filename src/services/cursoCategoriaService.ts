@@ -19,7 +19,7 @@ export const cursoCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error fetching course categories:', error);
+      // Log removed
       throw error;
     }
   },
@@ -38,7 +38,7 @@ export const cursoCategoriaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error('Error creating course category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -60,7 +60,7 @@ export const cursoCategoriaService = {
       const text = await response.text();
       return text ? JSON.parse(text) : categoria;
     } catch (error) {
-      console.error('Error updating course category:', error);
+      // Log removed
       throw error;
     }
   },
@@ -75,7 +75,7 @@ export const cursoCategoriaService = {
         throw new Error('Error al eliminar categoría de curso');
       }
     } catch (error) {
-      console.error('Error deleting course category:', error);
+      // Log removed
       throw error;
     }
   },
