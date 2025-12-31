@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon } from '@heroicons/react/outline';
+import { PencilIcon, TrashIcon, EyeIcon, XIcon, PlusIcon, CalendarIcon, StarIcon, CurrencyDollarIcon, BriefcaseIcon, AcademicCapIcon, TagIcon } from '@heroicons/react/outline';
 
 import AdminLayout from '../../components/AdminLayout';
 import { categoriaGeneralService, CategoriaGeneral } from '../../services/categoriaGeneralService';
@@ -545,7 +545,7 @@ const AdminNews = () => {
       
       {/* View Modal */}
        {isViewModalOpen && viewingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto py-10">
           <div className="bg-white rounded-lg p-8 max-w-4xl w-full my-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">Detalles de la Noticia</h2>
@@ -557,53 +557,102 @@ const AdminNews = () => {
               </button>
             </div>
 
-            <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between">
-                     <h3 className="text-lg font-semibold text-gray-900">{viewingItem.titulo}</h3>
+            <div className="space-y-5 text-center">
+              {/* Layout Centrado - Actualizado */}
+              
+              {/* Header Section (Centered) */}
+              <div className="max-w-3xl mx-auto space-y-3">
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                    {viewingItem.titulo}
+                  </h3>
+                  
+                  <div className="flex flex-wrap justify-center items-center gap-3">
                      {viewingItem.esDestacado && (
-                        <span className="px-3 py-1 text-sm font-bold text-green-700 bg-green-100 rounded-full">Destacado</span>
+                        <span className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-yellow-700 bg-yellow-100 rounded-full border border-yellow-200 shadow-sm">
+                          <StarIcon className="w-3.5 h-3.5 text-yellow-600" />
+                          Destacado
+                        </span>
                      )}
+                     <span className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
+                        <TagIcon className="w-3.5 h-3.5 text-blue-100" />
+                        {viewingItem.categoria as string || getCategoryName(viewingItem.categoriaId)}
+                     </span>
+                     <span className="flex items-center gap-1.5 text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                       <CalendarIcon className="w-4 h-4 text-gray-400" />
+                       {new Date(viewingItem.fecha).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                     </span>
                   </div>
-                  <p className="text-gray-500 text-sm mt-1">{viewingItem.categoria as string || getCategoryName(viewingItem.categoriaId)} </p>
-                  <p className="text-gray-400 text-xs">{new Date(viewingItem.fecha).toLocaleString()}</p>
-                </div>
+              </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Descripción</label>
-                    <p className="text-gray-900 whitespace-pre-wrap">{viewingItem.descripcion}</p>
-                </div>
-                
-                {viewingItem.imageUrl && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-2">Imagen</label>
-                        <div className="rounded-lg overflow-hidden max-w-lg">
-                           <img src={viewingItem.imageUrl} alt={viewingItem.titulo} className="w-full h-auto object-cover"/>
-                        </div>
+              {/* Image Section (Centered & Controlled Size) */}
+              <div className="w-full max-w-lg mx-auto">
+                 {viewingItem.imageUrl ? (
+                    <div className="w-full relative shadow-xl border border-gray-200 bg-gray-50 rounded-2xl overflow-hidden group" style={{ paddingBottom: '56.25%' }}>
+                      <img 
+                        src={viewingItem.imageUrl} 
+                        alt={viewingItem.titulo} 
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                      />
                     </div>
-                )}
+                  ) : (
+                    <div className="w-full h-64 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-200">
+                      <span className="text-lg font-medium">Sin imagen disponible</span>
+                    </div>
+                  )}
+              </div>
 
+              {/* Metadata Minimalist Row */}
+              <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8 text-gray-600 border-t border-b border-gray-100 py-6 max-w-2xl mx-auto mt-6">
+                 {/* Precio */}
+                 <div className="flex flex-col items-center gap-1">
+                    <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">
+                        <CurrencyDollarIcon className="w-3.5 h-3.5" />
+                        Precio
+                    </span>
+                    <span className="font-semibold text-gray-900 text-lg">
+                       {viewingItem.precio && viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}
+                    </span>
+                 </div>
+                 
+                 <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
+                 
+                 {/* Modalidad */}
+                 <div className="flex flex-col items-center gap-1">
+                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">
+                        <BriefcaseIcon className="w-3.5 h-3.5" />
+                        Modalidad
+                     </span>
+                     <span className="font-medium text-gray-900">
+                        {viewingItem.modalidad?.nombre || modalidades.find(m => m.id === viewingItem.modalidadId)?.nombre || 'Todas'}
+                     </span>
+                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500">Modalidad</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.modalidad?.nombre || modalidades.find(m => m.id === viewingItem.modalidadId)?.nombre || 'Todas / N/A'}
-                        </p>
-                    </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-500">Nivel</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.nivel?.nombre || niveles.find(n => n.id === viewingItem.nivelId)?.nombre || 'Todos / N/A'}
-                        </p>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500">Precio</label>
-                        <p className="text-gray-900 font-medium">
-                            {viewingItem.precio && viewingItem.precio > 0 ? `S/ ${viewingItem.precio}` : 'Gratis'}
-                        </p>
-                    </div>
-                </div>
+                 <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
+
+                 {/* Nivel */}
+                 <div className="flex flex-col items-center gap-1">
+                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">
+                        <AcademicCapIcon className="w-3.5 h-3.5" />
+                        Nivel
+                     </span>
+                     <span className="font-medium text-gray-900">
+                        {viewingItem.nivel?.nombre || niveles.find(n => n.id === viewingItem.nivelId)?.nombre || 'Todos'}
+                     </span>
+                 </div>
+              </div>
+
+              {/* Description Section */}
+              <div className="max-w-3xl mx-auto text-left py-4">
+                  <h4 className="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest text-center">
+                    Descripción
+                  </h4>
+                  <div className="prose prose-blue max-w-none text-gray-700">
+                     <p className="whitespace-pre-wrap leading-relaxed text-base text-justify">
+                       {viewingItem.descripcion}
+                     </p>
+                  </div>
+              </div>
+
             </div>
 
             <div className="mt-8 flex justify-end">
