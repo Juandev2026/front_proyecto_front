@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Tema {
   id: number;
@@ -34,7 +34,7 @@ export const cursoService = {
   getAll: async (): Promise<Curso[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener cursos');

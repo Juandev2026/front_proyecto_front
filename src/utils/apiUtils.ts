@@ -17,6 +17,15 @@ export const getAuthHeaders = () => {
   return headers;
 };
 
+// Headers for public data (always use the fixed token)
+export const getPublicHeaders = () => {
+  const token = '3231232141346';
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 export const getAuthHeadersFormData = () => {
   let token = null;
   if (typeof window !== 'undefined') {

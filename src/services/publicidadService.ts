@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Publicidad {
   id: number;
@@ -26,7 +26,7 @@ export const publicidadService = {
   getAll: async (): Promise<Publicidad[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         const errorText = await response.text();

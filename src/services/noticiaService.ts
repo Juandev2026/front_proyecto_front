@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Noticia {
   id: number;
@@ -37,7 +37,7 @@ export const noticiaService = {
         url += `?destacado=${destacado}`;
       }
       const response = await fetch(url, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         console.error(

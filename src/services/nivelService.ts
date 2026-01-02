@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/Niveles`;
 
@@ -18,7 +18,7 @@ export const nivelService = {
   getAll: async (): Promise<Nivel[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener niveles');
