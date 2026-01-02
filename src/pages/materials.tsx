@@ -193,28 +193,56 @@ const Materials = () => {
                   <FadeIn key={item.id} direction="up" delay={index * 0.05}>
                     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full relative">
                       {/* Decorative Header - mimicking an image since we don't have one */}
-                      <div className="h-32 bg-gradient-to-br from-blue-50 to-indigo-50 relative p-4 flex items-start justify-between group-hover:from-blue-100 group-hover:to-indigo-100 transition-colors">
-                        <span className="bg-white/80 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
-                          {getCategoryName(item.categoriaId)}
-                        </span>
-                        <span className="bg-gray-900/10 text-gray-600 text-xs px-2 py-1 rounded font-bold uppercase">
-                          {getFileFormat(item.url)}
-                        </span>
-                        {/* Center Icon */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                          <svg
-                            className="w-20 h-20 text-primary"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-                          </svg>
+                      {/* Content Preview Header */}
+                      <div className="h-56 relative bg-gray-100 overflow-hidden group-hover:opacity-90 transition-opacity">
+                        {item.url &&
+                        item.url.toLowerCase().endsWith('.pdf') ? (
+                          <div className="w-full h-full relative">
+                            {/* Overlay to prevent interaction/download from thumbnail */}
+                            <div className="absolute inset-0 z-10 bg-transparent"></div>
+                            <iframe
+                              src={`${item.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                              className="w-full h-full object-cover border-none"
+                              title="Preview"
+                              tabIndex={-1}
+                            />
+                          </div>
+                        ) : item.url &&
+                          /\.(jpeg|jpg|gif|png|webp)$/i.test(item.url) ? (
+                          <img
+                            src={item.url}
+                            alt={item.titulo}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center relative p-4">
+                            {/* Center Icon */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                              <svg
+                                className="w-20 h-20 text-primary"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Badges Overlay */}
+                        <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none z-20">
+                          <span className="bg-white/90 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
+                            {getCategoryName(item.categoriaId)}
+                          </span>
+                          <span className="bg-white/80 backdrop-blur text-gray-700 text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-gray-200">
+                            {getFileFormat(item.url)}
+                          </span>
                         </div>
                       </div>
 
                       <div className="p-6 flex-grow flex flex-col">
                         <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {item.titulo}
+                          {stripHtml(item.titulo)}
                         </h3>
                         <p className="text-gray-500 text-sm mb-4 line-clamp-3">
                           {stripHtml(item.descripcion)}

@@ -16,11 +16,14 @@ const AdSidebar = () => {
         let fetchedAds: Publicidad[] | Publicidad = await publicidadService.getAll();
 
         // Normalize to array
-        if (Array.isArray(fetchedAds)) {
-          setAds(fetchedAds);
-        } else {
-          setAds([fetchedAds]);
-        }
+        let adsArray = Array.isArray(fetchedAds) ? fetchedAds : [fetchedAds];
+
+        // Filter valid ads (only PUBLICADO)
+        adsArray = adsArray.filter(
+          (ad) => ad.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
+
+        setAds(adsArray);
       } catch (error) {
         console.error('Error loading ads:', error);
         // Fallback or empty state could be handled here

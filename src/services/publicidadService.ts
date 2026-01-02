@@ -11,6 +11,13 @@ export interface Publicidad {
   nivelId: number;
   precio: number;
   telefono: string;
+  estadoId?: number;
+  estado?: {
+    id: number;
+    nombre: string;
+    codigo: string;
+    colorHex: string;
+  };
 }
 
 const API_URL = `${API_BASE_URL}/Publicidad`;
@@ -61,6 +68,7 @@ export const publicidadService = {
           ...publicidad,
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
+          estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
         }),
       });
 
@@ -88,6 +96,7 @@ export const publicidadService = {
           ...publicidad,
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
+          estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
         }),
       });
 

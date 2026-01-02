@@ -72,6 +72,12 @@ const AdminMaterials = () => {
     return text;
   };
 
+  const getFileFormat = (url: string) => {
+    if (!url) return 'FILE';
+    const extension = url.split('.').pop()?.toUpperCase();
+    return extension && extension.length <= 4 ? extension : 'FILE';
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -135,8 +141,7 @@ const AdminMaterials = () => {
     setIsViewModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setIsModalOpen(true);
+  const resetForm = () => {
     setEditingId(null);
     setFile(null);
 
@@ -153,6 +158,11 @@ const AdminMaterials = () => {
       precio: 0,
       telefono: '',
     });
+  };
+
+  const handleAddNew = () => {
+    setIsModalOpen(true);
+    resetForm();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,7 +222,7 @@ const AdminMaterials = () => {
       }
 
       setIsModalOpen(false);
-      handleAddNew(); // Reset form
+      resetForm(); // Reset form
       fetchData();
     } catch (err) {
       // eslint-disable-next-line no-alert
@@ -289,6 +299,9 @@ const AdminMaterials = () => {
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Archivo
               </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Tipo
+              </th>
               <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -298,7 +311,7 @@ const AdminMaterials = () => {
             {materials.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-6 py-12 text-center text-gray-500"
                 >
                   No hay recursos disponibles.
@@ -344,6 +357,11 @@ const AdminMaterials = () => {
                     ) : (
                       <span className="text-gray-400">Sin archivo</span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded bg-gray-100 text-gray-600 uppercase border border-gray-200">
+                      {getFileFormat(item.url)}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button

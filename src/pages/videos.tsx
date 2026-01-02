@@ -75,6 +75,12 @@ const Videos = () => {
     return category ? category.nombre : 'General';
   };
 
+  // Helper to strip HTML tags
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
       <div className="w-full">
@@ -171,10 +177,10 @@ const Videos = () => {
 
                           <div className="p-8 flex flex-col flex-grow">
                             <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors duration-300">
-                              {course.nombre}
+                              {stripHtml(course.nombre)}
                             </h3>
                             <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow line-clamp-3">
-                              {course.descripcion}
+                              {stripHtml(course.descripcion)}
                             </p>
 
                             {/* Content Preview */}

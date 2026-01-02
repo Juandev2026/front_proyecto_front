@@ -15,11 +15,13 @@ import {
   Publicidad,
 } from '../../services/publicidadService';
 import { uploadService } from '../../services/uploadService';
+import { estadoService, Estado } from '../../services/estadoService';
 
 const AdminPublicidad = () => {
   const [publicidades, setPublicidades] = useState<Publicidad[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,23 +41,22 @@ const AdminPublicidad = () => {
     nivelId: 0,
     precio: 0,
     telefono: '',
+    estadoId: 0,
   });
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [pubData, modData, nivData] = await Promise.all([
+      const [pubData, modData, nivData, estadosData] = await Promise.all([
         publicidadService.getAll(),
         modalidadService.getAll(),
-        nivelService.getAll(), // Fetching all levels for view resolution if possible, or we can fetch only on view? Let's assume we can fetch all or just resolve efficiently.
-        // The original code only fetched specific levels when editing.
-        // To properly show Level name in View, we might need all levels or fetch specifically.
-        // Let's fetch all levels here for simplicity if the list isn't huge, or just show ID or "Loading".
-        // Re-reading nivelService, getAll is available. I'll fetch it.
+        nivelService.getAll(), 
+        estadoService.getAll(),
       ]);
       setPublicidades(pubData);
       setModalidades(modData);
       setNiveles(nivData);
+      setEstados(estadosData);
     } catch (err) {
       setError('Error loading data');
       // console.error(err);
@@ -128,6 +129,7 @@ const AdminPublicidad = () => {
       nivelId: item.nivelId,
       precio: item.precio || 0,
       telefono: item.telefono || '',
+      estadoId: item.estadoId || 0,
     });
     setIsModalOpen(true);
   };
@@ -166,6 +168,7 @@ const AdminPublicidad = () => {
         nivelId: 0,
         precio: 0,
         telefono: '',
+        estadoId: 0,
       });
       setFile(null);
       setEditingId(null);
@@ -198,6 +201,11 @@ const AdminPublicidad = () => {
         </h1>
         <button
           onClick={() => {
+            if (publicidades.length >= 4) {
+              // eslint-disable-next-line no-alert
+              alert('Solo se permiten 4 publicidades activas. Edite o elimine una existente.');
+              return;
+            }
             setIsModalOpen(true);
             setEditingId(null);
             setFile(null);
@@ -209,6 +217,7 @@ const AdminPublicidad = () => {
               nivelId: 0,
               precio: 0,
               telefono: '',
+              estadoId: 0,
             });
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -223,6 +232,9 @@ const AdminPublicidad = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Posición
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Título
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -231,14 +243,20 @@ const AdminPublicidad = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Enlace
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {publicidades.map((item) => (
+            {publicidades.map((item, index) => (
               <tr key={item.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                  {index + 1}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {item.titulo}
                 </td>
@@ -258,6 +276,19 @@ const AdminPublicidad = () => {
                   >
                     Link
                   </a>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <span
+                    className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    style={{
+                      backgroundColor: item.estado?.colorHex
+                        ? item.estado.colorHex + '20'
+                        : '#e5e7eb',
+                      color: item.estado?.colorHex || '#374151',
+                    }}
+                  >
+                    {item.estado?.nombre || 'Sin Estado'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -452,6 +483,30 @@ const AdminPublicidad = () => {
                   }
                   placeholder="51999999999"
                 />
+              </div>
+
+               <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Estado
+                </label>
+                <select
+                  required
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.estadoId}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      estadoId: Number(e.target.value),
+                    })
+                  }
+                >
+                  <option value={0}>Seleccionar Estado...</option>
+                  {estados.map((est) => (
+                    <option key={est.id} value={est.id}>
+                      {est.nombre}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex justify-end">
