@@ -18,6 +18,7 @@ import {
 } from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
 import { uploadService } from '../../services/uploadService';
+import { estadoService, Estado } from '../../services/estadoService';
 import 'react-quill/dist/quill.snow.css';
 
 // Dynamic import for ReactQuill
@@ -26,6 +27,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 const AdminMaterials = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +43,7 @@ const AdminMaterials = () => {
     descripcion: '',
     url: '',
     categoriaId: 0,
+    estadoId: 0,
     usuarioEdicionId:
       typeof window !== 'undefined'
         ? Number(localStorage.getItem('userId') || 0)
@@ -72,13 +75,15 @@ const AdminMaterials = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [materialsData, categoriesData] = await Promise.all([
+      const [materialsData, categoriesData, estadosData] = await Promise.all([
         materialService.getAll(),
         categoriaSimpleService.getAll(),
+        estadoService.getAll(),
       ]);
       // Sort by ID descending (newest first)
       setMaterials(materialsData.sort((a, b) => b.id - a.id));
       setCategories(categoriesData);
+      setEstados(estadosData);
     } catch (err) {
       setError('Error loading data');
       // console.error(err);
@@ -112,6 +117,7 @@ const AdminMaterials = () => {
       descripcion: item.descripcion, // HTML content
       url: item.url,
       categoriaId: item.categoriaId,
+      estadoId: item.estadoId || 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -139,6 +145,7 @@ const AdminMaterials = () => {
       descripcion: '',
       url: '',
       categoriaId: 0,
+      estadoId: 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -187,6 +194,7 @@ const AdminMaterials = () => {
         id: editingId || 0,
         url: finalUrl,
         categoriaId: Number(newMaterial.categoriaId),
+        estadoId: Number(newMaterial.estadoId),
         // Send 0 or null for removed fields if API requires them, service handles it
         modalidadId: 0,
         nivelId: 0,
@@ -273,6 +281,9 @@ const AdminMaterials = () => {
                 Categoría
               </th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Precio
               </th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -287,7 +298,7 @@ const AdminMaterials = () => {
             {materials.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-6 py-12 text-center text-gray-500"
                 >
                   No hay recursos disponibles.
@@ -305,6 +316,11 @@ const AdminMaterials = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                       {stripHtml(getCategoryName(item.categoriaId))}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" style={{ backgroundColor: item.estado?.colorHex ? item.estado.colorHex + '20' : '#e5e7eb', color: item.estado?.colorHex || '#374151' }}>
+                      {item.estado?.nombre || 'Sin Estado'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -383,14 +399,14 @@ const AdminMaterials = () => {
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Título del Recurso
                     </label>
-                    <div className="mb-4">
+                    <div className="mb-12">
                       <ReactQuill
                         theme="snow"
                         value={newMaterial.titulo}
                         onChange={(value) =>
                           setNewMaterial({ ...newMaterial, titulo: value })
                         }
-                        className="h-16"
+                        className="h-auto bg-white"
                         modules={modules}
                       />
                     </div>
@@ -420,7 +436,33 @@ const AdminMaterials = () => {
                         ))}
                       </select>
                     </div>
-                    <div>
+                      <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Estado
+                      </label>
+                      <select
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newMaterial.estadoId}
+                        onChange={(e) =>
+                          setNewMaterial({
+                            ...newMaterial,
+                            estadoId: Number(e.target.value),
+                          })
+                        }
+                      >
+                        <option value={0}>Seleccionar Estado...</option>
+                        {estados.map((est) => (
+                          <option key={est.id} value={est.id}>
+                            {est.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                   <div>
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Precio (S/)
                       </label>
@@ -508,10 +550,23 @@ const AdminMaterials = () => {
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
                           setFile(e.target.files[0]);
-                          // Optional: setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+                          // Create a preview URL right away (logic moved to button onClick to avoid state)
                         }
                       }}
                     />
+                     {file && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                              const url = URL.createObjectURL(file);
+                              window.open(url, '_blank');
+                          }}
+                          className="mt-3 bg-white text-primary border border-primary hover:bg-blue-50 font-bold py-2 px-4 rounded-lg flex items-center shadow-sm text-sm"
+                        >
+                          <EyeIcon className="w-4 h-4 mr-2" />
+                          Visualizar Archivo Seleccionado
+                        </button>
+                     )}
                     <p className="text-xs text-gray-500 mt-2">
                       * Al subir un archivo, se generará una URL automática que
                       reemplazará la actual.

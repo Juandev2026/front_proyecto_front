@@ -32,7 +32,13 @@ const Videos = () => {
         }
 
         const [categoriesData] = await Promise.all([categoriaService.getAll()]);
-        setCourses(coursesData);
+        
+        // Filter by state "PUBLICADO"
+        const publishedCourses = coursesData.filter(
+          (c) => c.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
+        
+        setCourses(publishedCourses);
         setCategories(categoriesData);
       } catch (error) {
         // console.error('Error fetching data:', error);

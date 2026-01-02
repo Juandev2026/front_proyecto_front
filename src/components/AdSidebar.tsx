@@ -49,7 +49,10 @@ const AdSidebar = () => {
   return (
     <div className="space-y-6 sticky top-4">
       {ads.map((ad, index) => {
-        const hasPrice = ad.precio && ad.precio > 0;
+        // Only show price if it's strictly greater than 0
+        const hasPrice = typeof ad.precio === 'number' && ad.precio > 0;
+        
+        // Define link: if it has a price (is for sale), whatsapp. Else, generic link.
         const link =
           hasPrice && ad.telefono
             ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(
@@ -80,9 +83,13 @@ const AdSidebar = () => {
                     {ad.titulo || 'Publicidad'}
                   </div>
                 )}
+                
+                {/* Badge: "VENTA" if price > 0, else "PUBLICIDAD" */}
                 <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
                   {hasPrice ? 'VENTA' : 'PUBLICIDAD'}
                 </div>
+
+                {/* Price Bar: ONLY show if hasPrice is true (price > 0) */}
                 {hasPrice && (
                   <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-xs font-bold py-1 px-2 text-center">
                     Comprar S/ {ad.precio}
@@ -105,6 +112,7 @@ const AdSidebar = () => {
                 <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
                   PUBLICIDAD
                 </div>
+                {/* No price bar here, and no 0 shown */}
               </div>
             )}
           </div>

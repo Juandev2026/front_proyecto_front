@@ -15,6 +15,7 @@ import { cursoService, Curso } from '../../services/cursoService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { temaService } from '../../services/temaService';
+import { estadoService, Estado } from '../../services/estadoService';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -24,6 +25,7 @@ const AdminVideos = () => {
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +39,7 @@ const AdminVideos = () => {
     categoriaId: 0,
     modalidadId: 0,
     nivelId: 0,
+    estadoId: 0,
     usuarioEdicionId:
       typeof window !== 'undefined'
         ? Number(localStorage.getItem('userId') || 0)
@@ -88,17 +91,19 @@ const AdminVideos = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [coursesData, categoriesData, modalidadesData, nivelesData] =
+      const [coursesData, categoriesData, modalidadesData, nivelesData, estadosData] =
         await Promise.all([
           cursoService.getAll(),
           categoriaService.getAll(),
           modalidadService.getAll(),
           nivelService.getAll(),
+          estadoService.getAll(),
         ]);
       setCourses(coursesData);
       setCategories(categoriesData);
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
+      setEstados(estadosData);
     } catch (error) {
       // console.error('Error fetching data:', error);
     } finally {
@@ -143,6 +148,7 @@ const AdminVideos = () => {
       categoriaId: course.categoriaId,
       modalidadId: course.modalidadId || 0,
       nivelId: course.nivelId || 0,
+      estadoId: course.estadoId || 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -210,6 +216,7 @@ const AdminVideos = () => {
         formData.append('categoriaId', String(courseData.categoriaId));
         formData.append('modalidadId', String(courseData.modalidadId || 0));
         formData.append('nivelId', String(courseData.nivelId || 0));
+        formData.append('estadoId', String(courseData.estadoId || 0));
         formData.append(
           'usuarioEdicionId',
           String(courseData.usuarioEdicionId || 0)
@@ -332,6 +339,9 @@ const AdminVideos = () => {
                 Categoría
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Precio
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -345,7 +355,7 @@ const AdminVideos = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center">
+                <td colSpan={6} className="px-6 py-4 text-center">
                   Cargando...
                 </td>
               </tr>
@@ -358,6 +368,11 @@ const AdminVideos = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                       {getCategoryName(item.categoriaId)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" style={{ backgroundColor: item.estado?.colorHex ? item.estado.colorHex + '20' : '#e5e7eb', color: item.estado?.colorHex || '#374151' }}>
+                      {item.estado?.nombre || 'Sin Estado'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -444,8 +459,8 @@ const AdminVideos = () => {
                   </div>
                 </div>
 
-                {/* 3 Columns: Category / Modality / Level */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 4 Columns: Category / Modality / Level / State */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Categoría
@@ -515,6 +530,29 @@ const AdminVideos = () => {
                       {filteredNiveles.map((niv) => (
                         <option key={niv.id} value={niv.id}>
                           {niv.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Estado
+                    </label>
+                    <select
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.estadoId || 0}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          estadoId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>Seleccionar Estado...</option>
+                      {estados.map((est) => (
+                        <option key={est.id} value={est.id}>
+                          {est.nombre}
                         </option>
                       ))}
                     </select>

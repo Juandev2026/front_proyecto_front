@@ -11,7 +11,6 @@ import LazyShow from '../components/LazyShow';
 import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
-import SocialMediaFrames from '../components/SocialMediaFrames';
 import config from '../config/index.json';
 import { anuncioService } from '../services/anuncioService';
 
@@ -165,7 +164,6 @@ const App = () => {
         </>
       </LazyShow>
       <Analytics />
-      <SocialMediaFrames />
       <Footer />
     </div>
   );

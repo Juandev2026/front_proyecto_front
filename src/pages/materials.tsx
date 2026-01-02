@@ -34,8 +34,12 @@ const Materials = () => {
           materialService.getAll(),
           categoriaSimpleService.getAll(),
         ]);
+        // Filter by state "PUBLICADO"
+        const publishedMats = mats.filter(
+          (m) => m.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
         // Sort by ID desc (assuming newer first) since we don't have date
-        setMaterials(mats.sort((a, b) => b.id - a.id));
+        setMaterials(publishedMats.sort((a, b) => b.id - a.id));
         setCategories(cats);
       } catch (err) {
         // console.error('Error loading data:', err);

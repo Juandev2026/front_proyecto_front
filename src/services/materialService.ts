@@ -12,6 +12,8 @@ export interface Material {
   modalidad?: { id: number; nombre: string };
   nivelId: number;
   nivel?: { id: number; nombre: string };
+  estadoId: number;
+  estado?: { id: number; nombre: string; codigo: string; colorHex: string };
   usuarioEdicionId: number;
   precio: number;
   telefono: string;
@@ -66,6 +68,9 @@ export const materialService = {
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
           fd.delete('nivelId');
         }
+        if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
+            fd.delete('estadoId'); 
+        }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
           // optional handling if needed
         }
@@ -76,6 +81,7 @@ export const materialService = {
           ...m,
           modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
           nivelId: m.nivelId ? Number(m.nivelId) : null,
+          estadoId: m.estadoId ? Number(m.estadoId) : null,
           usuarioEdicionId: m.usuarioEdicionId
             ? Number(m.usuarioEdicionId)
             : null,
@@ -121,6 +127,9 @@ export const materialService = {
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
           fd.delete('nivelId');
         }
+        if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
+            fd.delete('estadoId');
+        }
         body = fd;
       } else {
         const m = material as Material;
@@ -129,6 +138,7 @@ export const materialService = {
           id,
           modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
           nivelId: m.nivelId ? Number(m.nivelId) : null,
+          estadoId: m.estadoId ? Number(m.estadoId) : null,
           usuarioEdicionId: m.usuarioEdicionId
             ? Number(m.usuarioEdicionId)
             : null,
