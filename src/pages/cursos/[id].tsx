@@ -70,7 +70,7 @@ const CourseDetail = () => {
       </Head>
 
       <div className="bg-white">
-        <div className="max-w-7xl mx-auto w-full">
+        <div className="w-full">
           <Header />
         </div>
       </div>

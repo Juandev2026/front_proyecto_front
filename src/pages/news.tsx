@@ -23,6 +23,9 @@ const News = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +47,13 @@ const News = () => {
       }
     };
     fetchData();
+    setCurrentPage(1); // Reset page on filter/fetch change
   }, [filterMode, user?.nivelId]);
+
+  // Reset page when category or search changes
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [selectedCategoryId, searchTerm]);
 
   // Helper to strip HTML tags for preview
   const stripHtml = (html: string) => {
@@ -83,6 +92,13 @@ const News = () => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'General';
   };
+  
+  // Pagination Helper Values
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(otherNews.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedItems = otherNews.slice(startIdx, endIdx);
 
   return (
     <div className="bg-white min-h-screen font-sans">
@@ -91,7 +107,7 @@ const News = () => {
       </Head>
 
       <div className="relative bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>
@@ -297,10 +313,10 @@ const News = () => {
               ))}
             </div>
 
-            {/* List for remainder */}
+            {/* List for remainder with PAGINATION */}
             {otherNews.length > 0 && (
-              <div className="space-y-6 pt-8 border-t border-gray-100">
-                {otherNews.map((item) => (
+              <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
+                {paginatedItems.map((item) => (
                   <Link key={item.id} href={`/news/${item.id}`}>
                     <a className="flex gap-4 group items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm">
@@ -324,6 +340,65 @@ const News = () => {
                     </a>
                   </Link>
                 ))}
+
+                {/* Pagination Controls */}
+                {otherNews.length > itemsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 mt-8">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => {
+                         const prev = Math.max(currentPage - 1, 1);
+                         setCurrentPage(prev);
+                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
+                        currentPage === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                      }`}
+                    >
+                      Anterior
+                    </button>
+
+                    {/* Page Numbers */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => {
+                          setCurrentPage(number);
+                          document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                          currentPage === number
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => {
+                         const next = Math.min(currentPage + 1, totalPages);
+                         setCurrentPage(next);
+                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
+                        currentPage === totalPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                      }`}
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                )}
+
+
               </div>
             )}
           </div>

@@ -71,7 +71,7 @@ const Videos = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="w-full">
         <Header />
       </div>
 

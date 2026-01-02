@@ -1,38 +1,19 @@
 import React, { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/router';
 
-import { useAuth } from '../hooks/useAuth';
 import { publicidadService, Publicidad } from '../services/publicidadService';
 
 const AdSidebar = () => {
-  const { user, isAuthenticated } = useAuth();
   const [ads, setAds] = useState<Publicidad[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        let fetchedAds: Publicidad[] | Publicidad = [];
-
-        // Logic based on user request:
-        // - Home (Inicio) -> getAll() (Generic ads) - Although AdSidebar isn't explicitly on Home yet, if it were, this covers it.
-        // - Inside News/Resources/Courses ->
-        //    - If logged in (user.nivelId) -> getById(nivelId)
-        //    - Else -> fallback to getAll() (SIEMPRE DEBE IR PUBLICIDAD)
-
-        const isContentPage = [
-          '/news',
-          '/materials',
-          '/videos',
-          '/cursos',
-        ].some((path) => router.pathname.startsWith(path));
-
-        if (isAuthenticated && user?.nivelId && isContentPage) {
-          fetchedAds = await publicidadService.getById(user.nivelId);
-        } else {
-          fetchedAds = await publicidadService.getAll();
-        }
+        // PER USER REQUEST:
+        // "LA PUBLICIDAD QUE YA NO SEA POR NIVEL CUANDO INICIES SESIÓN SI NO QUE SEA PARA TODOS"
+        // So we ALWAYS fetch generic/all ads, ignoring user level logic.
+        
+        let fetchedAds: Publicidad[] | Publicidad = await publicidadService.getAll();
 
         // Normalize to array
         if (Array.isArray(fetchedAds)) {
@@ -47,7 +28,7 @@ const AdSidebar = () => {
     };
 
     fetchAds();
-  }, [isAuthenticated, user?.nivelId, router.pathname]);
+  }, []); // Removed dependencies acting on user level or route
 
   if (ads.length === 0) {
     return (

@@ -98,7 +98,7 @@ const Materials = () => {
       </Head>
 
       <div className="relative bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>
