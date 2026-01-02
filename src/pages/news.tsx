@@ -38,8 +38,13 @@ const News = () => {
         }
 
         const categoriesData = await categoriaGeneralService.getAll();
+        
+        // Filter by PUBLICADO
+        const publishedNews = newsData.filter(
+          (n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
 
-        setNews(newsData);
+        setNews(publishedNews);
         setCategories(categoriesData);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -55,10 +60,13 @@ const News = () => {
       setCurrentPage(1);
   }, [selectedCategoryId, searchTerm]);
 
-  // Helper to strip HTML tags for preview
+  // Helper to strip HTML tags for preview and handle entities
   const stripHtml = (html: string) => {
     if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
+    if (typeof window === 'undefined') return html; // SSR safety
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   // Filter logic
@@ -263,17 +271,23 @@ const News = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     </div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
-                        {getCategoryName(featuredArticle.categoriaId)}
-                      </span>
-                      <span className="text-gray-500 text-xs font-semibold">
-                        {new Date(featuredArticle.fecha).toLocaleDateString()}
-                      </span>
+                    <div className="flex flex-col gap-1 mb-2">
+                       <div className="flex items-center gap-2">
+                          <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
+                            {getCategoryName(featuredArticle.categoriaId)}
+                          </span>
+                          <span className="text-gray-500 text-xs font-semibold">
+                            {new Date(featuredArticle.fecha).toLocaleDateString()}
+                          </span>
+                       </div>
+                       {featuredArticle.autor && (
+                          <span className="text-gray-500 text-xs font-medium">Por: {featuredArticle.autor}</span>
+                       )}
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors">
-                      {stripHtml(featuredArticle.titulo)}
-                    </h2>
+                    <h2 
+                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
+                      dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
+                    />
                     <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
                       {stripHtml(featuredArticle.descripcion)}
                     </p>
@@ -304,9 +318,13 @@ const News = () => {
                       <span className="text-xs font-bold text-primary uppercase mb-1 block">
                         {getCategoryName(item.categoriaId)}
                       </span>
-                      <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-3">
-                        {stripHtml(item.titulo)}
-                      </h3>
+                      <h3 
+                        className="font-bold text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-3"
+                        dangerouslySetInnerHTML={{ __html: item.titulo }}
+                      />
+                      {item.autor && (
+                        <p className="text-xs text-gray-500 mb-2">Por: {item.autor}</p>
+                      )}
                     </div>
                   </a>
                 </Link>
@@ -330,9 +348,13 @@ const News = () => {
                         />
                       </div>
                       <div className="w-2/3">
-                        <h4 className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2">
-                          {stripHtml(item.titulo)}
-                        </h4>
+                        <h4 
+                          className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: item.titulo }}
+                        />
+                         {item.autor && (
+                            <p className="text-xs text-gray-500 mb-1">Por: {item.autor}</p>
+                         )}
                         <p className="text-sm text-gray-500 line-clamp-2">
                           {stripHtml(item.descripcion)}
                         </p>

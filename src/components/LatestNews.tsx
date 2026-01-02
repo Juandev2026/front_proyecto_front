@@ -26,6 +26,9 @@ const LatestNews = () => {
         } else {
           news = await noticiaService.getAll();
         }
+        
+        // Filter by PUBLICADO
+        news = news.filter((n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO');
         // Sort by ID desc (newest first)
         const sortedNews = news.sort((a, b) => b.id - a.id);
 
@@ -63,10 +66,13 @@ const LatestNews = () => {
     };
   }, []);
 
-  // Helper to strip HTML tags for preview
+  // Helper to strip HTML tags for preview and handle entities
   const stripHtml = (html: string) => {
     if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
+    if (typeof window === 'undefined') return html; // SSR safety
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   // Pagination Logic
@@ -149,11 +155,17 @@ const LatestNews = () => {
                       alt={stripHtml(news.titulo)}
                     />
                   </div>
-                  <div className="w-2/3 p-8 flex flex-col justify-between">
+                  <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                        {stripHtml(news.titulo)}
-                      </h3>
+                      <h3
+                        className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
+                        dangerouslySetInnerHTML={{ __html: news.titulo }}
+                      />
+                      {news.autor && (
+                        <p className="text-xs text-gray-500 font-medium mb-3">
+                          Por: {news.autor}
+                        </p>
+                      )}
                       <div className="w-full border-t border-gray-100 my-4"></div>
                       <p className="text-lg text-gray-600 line-clamp-3">
                         {stripHtml(news.descripcion)}
@@ -187,11 +199,17 @@ const LatestNews = () => {
                             alt={stripHtml(news.titulo)}
                           />
                         </div>
-                        <div className="w-2/3 p-8 flex flex-col justify-between">
+                        <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
                           <div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                              {stripHtml(news.titulo)}
-                            </h3>
+                            <h3
+                              className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
+                              dangerouslySetInnerHTML={{ __html: news.titulo }}
+                            />
+                            {news.autor && (
+                              <p className="text-xs text-gray-500 font-medium mb-3">
+                                Por: {news.autor}
+                              </p>
+                            )}
                             <div className="w-full border-t border-gray-100 my-4"></div>
                             <p className="text-lg text-gray-600 line-clamp-3">
                               {stripHtml(news.descripcion)}

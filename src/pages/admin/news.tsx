@@ -25,6 +25,7 @@ import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import { uploadService } from '../../services/uploadService';
+import { estadoService, Estado } from '../../services/estadoService';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -33,6 +34,7 @@ const AdminNews = () => {
   const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +58,8 @@ const AdminNews = () => {
         ? Number(localStorage.getItem('userId') || 0)
         : 0,
     precio: 0,
+    autor: '',
+    estadoId: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -139,12 +143,22 @@ const AdminNews = () => {
     }
   }, []);
 
+  const fetchEstados = useCallback(async () => {
+    try {
+      const data = await estadoService.getAll();
+      setEstados(data);
+    } catch (error) {
+      // Error ignored
+    }
+  }, []);
+
   useEffect(() => {
     fetchNews();
     fetchCategories();
     fetchModalidades();
     fetchNiveles();
-  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles]);
+    fetchEstados();
+  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles, fetchEstados]);
 
   // Filter levels when modality changes or modal opens with data
   useEffect(() => {
@@ -196,6 +210,8 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: item.precio || 0,
+      autor: item.autor || '',
+      estadoId: item.estadoId || 0,
     });
     setImageFile(null);
     setPreviewUrl(item.imageUrl || null);
@@ -223,6 +239,8 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: 0,
+      autor: '',
+      estadoId: 0,
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -276,6 +294,8 @@ const AdminNews = () => {
         esDestacado: formData.esDestacado || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
         precio: formData.precio || 0,
+        autor: formData.autor || '',
+        estadoId: formData.estadoId || 0,
       };
 
       if (editingId) {
@@ -329,6 +349,12 @@ const AdminNews = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Destacado
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Autor
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -354,6 +380,22 @@ const AdminNews = () => {
                   ) : (
                     <span className="text-gray-400">No</span>
                   )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {item.autor || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <span
+                    className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    style={{
+                      backgroundColor: item.estado?.colorHex
+                        ? item.estado.colorHex + '20'
+                        : '#e5e7eb',
+                      color: item.estado?.colorHex || '#374151',
+                    }}
+                  >
+                    {item.estado?.nombre || 'Sin Estado'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -631,6 +673,46 @@ const AdminNews = () => {
                         })
                       }
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Autor
+                    </label>
+                    <input
+                      type="text"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.autor || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, autor: e.target.value })
+                      }
+                      placeholder="Nombre del autor"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Estado
+                    </label>
+                    <select
+                      required
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.estadoId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estadoId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>Seleccionar Estado...</option>
+                      {estados.map((est) => (
+                        <option key={est.id} value={est.id}>
+                          {est.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

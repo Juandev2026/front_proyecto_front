@@ -17,6 +17,14 @@ export interface Noticia {
   nivel?: { id: number; nombre: string };
   precio?: number;
   comentarios?: any[];
+  estadoId?: number;
+  estado?: {
+    id: number;
+    nombre: string;
+    codigo: string;
+    colorHex: string;
+  };
+  autor?: string;
 }
 
 const API_URL = `${API_BASE_URL}/Noticias`;
@@ -131,6 +139,8 @@ export const noticiaService = {
             : null,
           comentarios: [],
           imageUrl: n.imageUrl || '',
+          autor: n.autor || '',
+          estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
       }
 
@@ -187,6 +197,8 @@ export const noticiaService = {
             ? Number((n as any).usuarioEdicionId)
             : null,
           imageUrl: n.imageUrl || '',
+          autor: n.autor || '',
+          estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
       }
 
