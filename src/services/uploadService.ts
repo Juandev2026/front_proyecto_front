@@ -8,9 +8,15 @@ export const uploadService = {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Using the fixed token as requested by the user to fix upload issues
+    const token = '3231232141346';
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: getAuthHeadersFormData(),
+      headers: headers,
       body: formData,
     });
 
