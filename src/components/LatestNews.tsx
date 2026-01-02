@@ -27,16 +27,8 @@ const LatestNews = () => {
           news = await noticiaService.getAll();
         }
         
-        // console.log('Fetched news (raw):', news);
-        
         // Filter by PUBLICADO
-        const beforeFilterCount = news.length;
-        news = news.filter((n) => {
-             // console.log(`Checking news ${n.id}:`, n.estado); 
-             return n.estado?.nombre?.toUpperCase() === 'PUBLICADO';
-        });
-        // console.log(`Filtered news count: ${news.length} (from ${beforeFilterCount})`);
-
+        news = news.filter((n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO');
         // Sort by ID desc (newest first)
         const sortedNews = news.sort((a, b) => b.id - a.id);
 
@@ -52,7 +44,7 @@ const LatestNews = () => {
         setPaginatedNews(remaining.slice(4));
 
       } catch (error) {
-        console.error('Error loading news:', error);
+        // console.error('Error loading news:', error);
       }
     };
 

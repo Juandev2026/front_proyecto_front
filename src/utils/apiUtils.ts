@@ -18,7 +18,14 @@ export const getAuthHeaders = () => {
 };
 
 export const getAuthHeadersFormData = () => {
-  const token = '3231232141346';
+  let token = null;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('token');
+  }
+  if (!token) {
+    token = '3231232141346';
+  }
+
   const headers: any = {};
   if (token) {
     headers.Authorization = `Bearer ${token}`;
