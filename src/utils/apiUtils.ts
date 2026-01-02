@@ -1,21 +1,4 @@
-export const getAuthHeaders = () => {
-  let token = null;
-  if (typeof window !== 'undefined') {
-    token = localStorage.getItem('token');
-  }
-  // Fallback to hardcoded token if no user token
-  if (!token) {
-    token = '3231232141346';
-  }
 
-  const headers: any = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-  return headers;
-};
 
 // Headers for public data (always use the fixed token)
 export const getPublicHeaders = () => {
@@ -26,18 +9,22 @@ export const getPublicHeaders = () => {
   };
 };
 
+export const getAuthHeaders = () => {
+  // User explicitly requested to use this token for everything to fix 401s
+  const token = '3231232141346';
+
+  const headers: any = {
+    'Content-Type': 'application/json',
+  };
+  headers.Authorization = `Bearer ${token}`;
+  return headers;
+};
+
 export const getAuthHeadersFormData = () => {
-  let token = null;
-  if (typeof window !== 'undefined') {
-    token = localStorage.getItem('token');
-  }
-  if (!token) {
-    token = '3231232141346';
-  }
+  // User explicitly requested to use this token for everything to fix 401s
+  const token = '3231232141346';
 
   const headers: any = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+  headers.Authorization = `Bearer ${token}`;
   return headers;
 };
