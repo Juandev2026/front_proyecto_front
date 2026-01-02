@@ -18,6 +18,7 @@ import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { temaService } from '../../services/temaService';
 import { estadoService, Estado } from '../../services/estadoService';
+import { uploadService } from '../../services/uploadService';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -207,44 +208,28 @@ const AdminVideos = () => {
 
       // Prepare course data (excluding topics for the main update)
       const courseData = { ...currentCourse };
-      // We don't send topics to course service anymore as it ignores them
-      // But we keep them in state to manage them separately
-
-      let dataToSend: Curso | Omit<Curso, 'id'> | FormData = courseData;
+      
+      let finalUrl = courseData.imagenUrl;
 
       if (selectedImage) {
-        const formData = new FormData();
-        if (editingId) {
-          formData.append('id', String(editingId));
-        }
-        formData.append('nombre', courseData.nombre);
-        formData.append('descripcion', courseData.descripcion);
-        formData.append('categoriaId', String(courseData.categoriaId));
-        formData.append('modalidadId', String(courseData.modalidadId || 0));
-        formData.append('nivelId', String(courseData.nivelId || 0));
-        formData.append('estadoId', String(courseData.estadoId || 0));
-        formData.append(
-          'usuarioEdicionId',
-          String(courseData.usuarioEdicionId || 0)
-        );
-        formData.append('duracion', courseData.duracion);
-        formData.append('idioma', courseData.idioma);
-        formData.append('loQueAprenderas', courseData.loQueAprenderas);
-        formData.append('precio', String(courseData.precio));
-        formData.append('precioOferta', String(courseData.precioOferta));
-        formData.append('numero', courseData.numero);
-        formData.append('image', selectedImage);
-        // We don't append topics here anymore
-
-        dataToSend = formData;
-      } else if (editingId) {
-        dataToSend = { ...courseData, id: editingId };
+         try {
+           finalUrl = await uploadService.uploadImage(selectedImage);
+         } catch (error) {
+           // eslint-disable-next-line no-alert
+           alert('Error al subir la imagen del curso.');
+           return;
+         }
       }
+      
+      const dataToSend = {
+          ...courseData,
+          imagenUrl: finalUrl,
+      };
 
       if (editingId) {
-        savedCourse = await cursoService.update(editingId, dataToSend as any);
+        savedCourse = await cursoService.update(editingId, dataToSend as Curso);
       } else {
-        savedCourse = await cursoService.create(dataToSend);
+        savedCourse = await cursoService.create(dataToSend as Omit<Curso, 'id'>);
       }
 
       const courseId = savedCourse.id || editingId;
