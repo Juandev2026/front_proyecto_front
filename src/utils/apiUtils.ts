@@ -1,6 +1,13 @@
 export const getAuthHeaders = () => {
-  // Hardcoded token as requested by user to resolve 401s
-  const token = '3231232141346';
+  let token = null;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('token');
+  }
+  // Fallback to hardcoded token if no user token
+  if (!token) {
+    token = '3231232141346';
+  }
+
   const headers: any = {
     'Content-Type': 'application/json',
   };
