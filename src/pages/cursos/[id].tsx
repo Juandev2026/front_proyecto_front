@@ -124,7 +124,7 @@ const CourseDetail = () => {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-12">
         <div className="lg:grid lg:grid-cols-3 lg:gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">

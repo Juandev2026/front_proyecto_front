@@ -12,7 +12,7 @@ const About = () => {
         </div>
       </div>
 
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+      <main className="flex-grow w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-12">
         <div className="space-y-12">
           {/* Intro Section: Video + Text */}
           <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100">

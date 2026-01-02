@@ -76,7 +76,7 @@ const Videos = () => {
       </div>
 
       <main className="flex-grow pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32">
           <FadeIn>
             <div className="text-center mb-16">
               <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
