@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import { DownloadIcon } from '@heroicons/react/outline';
+import { DownloadIcon, XIcon, EyeIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -26,6 +26,7 @@ const Materials = () => {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewingPdf, setViewingPdf] = useState<Material | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -269,15 +270,13 @@ const Materials = () => {
                               </span>
                             </Link>
                           ) : (
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => setViewingPdf(item)}
                               className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
                             >
-                              <DownloadIcon className="w-4 h-4 mr-1.5" />
-                              Descargar
-                            </a>
+                              <EyeIcon className="w-4 h-4 mr-1.5" />
+                              Ver
+                            </button>
                           )}
                         </div>
                       </div>
@@ -340,6 +339,77 @@ const Materials = () => {
       </main>
 
       <Footer />
+
+      {/* PDF Viewer Modal */}
+      {viewingPdf && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-gray-900 truncate">
+                  {stripHtml(viewingPdf.titulo)}
+                </h3>
+                <p className="text-sm text-gray-500 truncate">
+                  {getCategoryName(viewingPdf.categoriaId)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <a
+                  href={viewingPdf.url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm"
+                >
+                  <DownloadIcon className="w-4 h-4 mr-1.5" />
+                  Descargar
+                </a>
+                <button
+                  onClick={() => setViewingPdf(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <XIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-hidden bg-gray-100">
+              {viewingPdf.url && viewingPdf.url.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`${viewingPdf.url}#toolbar=1&navpanes=0&scrollbar=1`}
+                  className="w-full h-full min-h-[70vh] border-none"
+                  title="Vista del documento"
+                />
+              ) : viewingPdf.url && /\.(jpeg|jpg|gif|png|webp)$/i.test(viewingPdf.url) ? (
+                <div className="w-full h-full flex items-center justify-center p-4">
+                  <img
+                    src={viewingPdf.url}
+                    alt={viewingPdf.titulo}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-4">No se puede previsualizar este archivo.</p>
+                    <a
+                      href={viewingPdf.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors inline-flex items-center"
+                    >
+                      <DownloadIcon className="w-5 h-5 mr-2" />
+                      Descargar archivo
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

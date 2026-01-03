@@ -38,7 +38,8 @@ const Videos = () => {
           (c) => c.estado?.nombre?.toUpperCase() === 'PUBLICADO'
         );
         
-        setCourses(publishedCourses);
+        // Sort by ID descending (newest first)
+        setCourses(publishedCourses.sort((a, b) => b.id - a.id));
         setCategories(categoriesData);
       } catch (error) {
         // console.error('Error fetching data:', error);
