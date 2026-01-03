@@ -57,6 +57,12 @@ const CourseDetail = () => {
     setOpenSection(openSection === index ? null : index);
   };
 
+  // Helper to strip html for meta tags and WhatsApp
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   // Helper to parse learning points if they are stored as a single string
   const learningPoints = course.loQueAprenderas
     ? course.loQueAprenderas.split('\n').filter((point) => point.trim() !== '')
@@ -65,8 +71,8 @@ const CourseDetail = () => {
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
       <Head>
-        <title>{course.nombre} | Academia</title>
-        <meta name="description" content={course.descripcion} />
+        <title>{stripHtml(course.nombre)} | Academia</title>
+        <meta name="description" content={stripHtml(course.descripcion)} />
       </Head>
 
       <div className="bg-white">
@@ -79,12 +85,12 @@ const CourseDetail = () => {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <div className="lg:w-2/3 pr-0 lg:pr-12">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-              {course.nombre}
-            </h1>
-            <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-              {course.descripcion}
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4"
+              dangerouslySetInnerHTML={{ __html: course.nombre }}
+            />
+            <div className="text-lg text-gray-300 mb-6 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: course.descripcion }}
+            />
 
             <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300">
               <div className="flex items-center">
@@ -201,9 +207,9 @@ const CourseDetail = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Descripción
               </h2>
-              <div className="prose max-w-none text-gray-600">
-                <p>{course.descripcion}</p>
-              </div>
+              <div className="prose max-w-none text-gray-600"
+                dangerouslySetInnerHTML={{ __html: course.descripcion }}
+              />
             </div>
           </div>
 
@@ -269,7 +275,7 @@ const CourseDetail = () => {
                     href={`https://wa.me/${
                       course.numero
                     }?text=${encodeURIComponent(
-                      `Hola! estoy interesado en ${course.nombre}`
+                      `Hola! estoy interesado en ${stripHtml(course.nombre)}`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
