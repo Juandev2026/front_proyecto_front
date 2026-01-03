@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { DownloadIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
+import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
 import FadeIn from '../components/FadeIn';
@@ -262,18 +263,11 @@ const Materials = () => {
                           </div>
 
                           {item.precio && item.precio > 0 ? (
-                            <a
-                              href={`https://wa.me/${
-                                item.telefono || ''
-                              }?text=${encodeURIComponent(
-                                `Hola, me interesa: ${item.titulo}`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
-                            >
-                              Comprar
-                            </a>
+                            <Link href={`/materials/${item.id}`}>
+                              <span className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md cursor-pointer">
+                                Comprar
+                              </span>
+                            </Link>
                           ) : (
                             <a
                               href={item.url}

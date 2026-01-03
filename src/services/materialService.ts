@@ -37,6 +37,20 @@ export const materialService = {
     }
   },
 
+  getById: async (id: number): Promise<Material> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        headers: getPublicHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener el material');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
   getByNivel: async (id: number): Promise<Material[]> => {
     try {
       const response = await fetch(`${API_URL}/nivel/${id}`, {
