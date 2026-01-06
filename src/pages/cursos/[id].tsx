@@ -12,10 +12,12 @@ import { useRouter } from 'next/router';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import { cursoService, Curso } from '../../services/cursoService';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const CourseDetail = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { track } = useAnalytics();
   const [course, setCourse] = useState<Curso | null>(null);
   const [loading, setLoading] = useState(true);
   const [openSection, setOpenSection] = useState<number | null>(0);
@@ -27,6 +29,13 @@ const CourseDetail = () => {
         setLoading(true);
         const data = await cursoService.getById(Number(id));
         setCourse(data);
+        
+        // Track course view event
+        track('view_course', {
+          course_id: String(id),
+          course_name: data.nombre,
+          category: data.categoriaId ? String(data.categoriaId) : 'sin_categoria',
+        });
       } catch (error) {
         console.error('Error fetching course:', error);
       } finally {
@@ -35,7 +44,7 @@ const CourseDetail = () => {
     };
 
     fetchCourse();
-  }, [id]);
+  }, [id, track]);
 
   if (loading) {
     return (
@@ -55,6 +64,17 @@ const CourseDetail = () => {
 
   const toggleSection = (index: number) => {
     setOpenSection(openSection === index ? null : index);
+  };
+
+  const handleCTAClick = (ctaType: 'comprar' | 'inscribirse') => {
+    if (course) {
+      track('course_cta_click', {
+        course_id: String(course.id),
+        course_name: course.nombre,
+        cta_type: ctaType,
+        price: course.precio,
+      });
+    }
   };
 
   // Helper to parse learning points if they are stored as a single string
@@ -273,6 +293,7 @@ const CourseDetail = () => {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleCTAClick('comprar')}
                     className="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3 shadow-md block text-center"
                   >
                     Comprar ahora
@@ -282,6 +303,7 @@ const CourseDetail = () => {
                     href={`https://wa.me/${course.numero}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleCTAClick('inscribirse')}
                     className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md"
                   >
                     <svg

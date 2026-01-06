@@ -8,6 +8,7 @@ import AdSidebar from '../components/AdSidebar';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { useAnalytics } from '../hooks/useAnalytics';
 import {
   categoriaSimpleService,
   CategoriaSimple,
@@ -17,6 +18,7 @@ import { materialService, Material } from '../services/materialService';
 const ITEMS_PER_PAGE = 9;
 
 const Materials = () => {
+  const { track } = useAnalytics();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,27 @@ const Materials = () => {
   const stripHtml = (html: string) => {
     if (!html) return '';
     return html.replace(/<[^>]+>/g, '');
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+    
+    // Track search event
+    if (query.trim()) {
+      track('search', {
+        search_term: query.trim(),
+        results_count: filteredItems.length,
+      });
+    }
+  };
+
+  const handleMaterialDownload = (material: Material) => {
+    track('material_download', {
+      material_id: String(material.id),
+      material_name: material.titulo,
+      file_type: getFileFormat(material.url).toLowerCase(),
+    });
   };
 
   const filteredItems = useMemo(() => {
@@ -123,10 +146,7 @@ const Materials = () => {
               type="text"
               placeholder="Buscar recursos..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearch(e.target.value)}
               className="w-full border border-gray-300 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
             />
             <SearchIcon className="h-5 w-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 group-focus-within:text-primary" />
@@ -247,6 +267,7 @@ const Materials = () => {
                               href={item.url}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => handleMaterialDownload(item)}
                               className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
                             >
                               <DownloadIcon className="w-4 h-4 mr-1.5" />
