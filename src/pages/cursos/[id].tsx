@@ -13,7 +13,6 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import { cursoService, Curso } from '../../services/cursoService';
 import { useAnalytics } from '../../hooks/useAnalytics';
-import { name } from 'assert';
 
 const CourseDetail = () => {
   const router = useRouter();
