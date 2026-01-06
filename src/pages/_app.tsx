@@ -22,6 +22,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     };
   }, [router.events]);
 
+  // Check if current path is an admin page
+  const isAdmin = router.pathname.startsWith('/admin');
+
   return (
     <>
       {/* Google Analytics 4 */}
@@ -50,7 +53,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       )}
 
       <Component {...pageProps} />
-      <WhatsAppWidget />
+      {!isAdmin && <WhatsAppWidget />}
     </>
   );
 };

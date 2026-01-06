@@ -14,9 +14,12 @@ const MainHeroImage: React.FC<MainHeroImageProps> = ({
   return (
     <div className="absolute inset-0 w-full h-full z-0">
       <Slider slides={slides} currentIndex={currentIndex} />
+      {/* Gradient overlay for text readability */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
-        style={{ backgroundColor: 'rgba(55, 90, 100, 0.75)' }}
+        style={{
+          background: 'linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 40%, rgba(0, 0, 0, 0) 70%)',
+        }}
       ></div>
     </div>
   );

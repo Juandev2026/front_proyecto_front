@@ -81,7 +81,7 @@ const NewsDetail = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="relative bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>
@@ -112,24 +112,27 @@ const NewsDetail = () => {
                       {categoryName}
                     </span>
                   )}
-                  <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-2">
-                    {newsItem.titulo}
-                  </h1>
-                  <div className="flex items-center text-sm md:text-base text-gray-200">
+                  <h1
+                    className="text-3xl md:text-5xl font-bold leading-tight mb-2"
+                    dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
+                  />
+                  <div className="flex flex-col md:flex-row md:items-center text-sm md:text-base text-gray-200 gap-2 md:gap-4">
                     <span>{new Date(newsItem.fecha).toLocaleDateString()}</span>
+                    {newsItem.autor && (
+                      <>
+                        <span className="hidden md:inline">•</span>
+                        <span>Por: {newsItem.autor}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="p-6 md:p-10">
-                <div className="prose prose-lg max-w-none text-gray-700">
-                  {/* Render description with line breaks if needed, or just as text */}
-                  {newsItem.descripcion.split('\n').map((paragraph, index) => (
-                    <p key={index} className="mb-4">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+                <div
+                  className="prose prose-lg max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
+                />
               </div>
             </article>
 

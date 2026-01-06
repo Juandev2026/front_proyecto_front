@@ -156,7 +156,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-hidden">
       <div className="relative z-50 bg-background w-full">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>

@@ -14,6 +14,7 @@ import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import config from '../config/index.json';
 import { anuncioService } from '../services/anuncioService';
 
+
 const App = () => {
   const { mainHero } = config;
   const [slides, setSlides] = useState<
@@ -24,11 +25,7 @@ const App = () => {
       celular?: string;
       ruta?: string;
     }[]
-  >(
-    mainHero.images
-      ? mainHero.images.map((img: string) => ({ image: img }))
-      : [{ image: mainHero.img }]
-  );
+  >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -67,6 +64,19 @@ const App = () => {
 
     return () => clearInterval(interval);
   }, [slides.length, currentIndex]);
+
+  if (slides.length === 0) {
+    return (
+        <div className="bg-background min-h-screen flex flex-col">
+            <Header />
+            <div className="flex-1 flex items-center justify-center">
+                <div className="animate-pulse flex flex-col space-y-4 w-full max-w-7xl mx-auto px-4">
+                   <div className="h-64 sm:h-96 bg-gray-200 rounded-xl w-full"></div>
+                </div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className={`bg-background grid gap-y-16 overflow-hidden`}>
@@ -154,7 +164,6 @@ const App = () => {
         </>
       </LazyShow>
       <Analytics />
-      {/* <ChannelsFooter /> */}
       <Footer />
     </div>
   );

@@ -12,6 +12,8 @@ import {
   BriefcaseIcon,
   AcademicCapIcon,
   TagIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
@@ -25,6 +27,7 @@ import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import { uploadService } from '../../services/uploadService';
+import { estadoService, Estado } from '../../services/estadoService';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -33,10 +36,15 @@ const AdminNews = () => {
   const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -56,6 +64,8 @@ const AdminNews = () => {
         ? Number(localStorage.getItem('userId') || 0)
         : 0,
     precio: 0,
+    autor: '',
+    estadoId: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -139,12 +149,22 @@ const AdminNews = () => {
     }
   }, []);
 
+  const fetchEstados = useCallback(async () => {
+    try {
+      const data = await estadoService.getAll();
+      setEstados(data);
+    } catch (error) {
+      // Error ignored
+    }
+  }, []);
+
   useEffect(() => {
     fetchNews();
     fetchCategories();
     fetchModalidades();
     fetchNiveles();
-  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles]);
+    fetchEstados();
+  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles, fetchEstados]);
 
   // Filter levels when modality changes or modal opens with data
   useEffect(() => {
@@ -196,6 +216,8 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: item.precio || 0,
+      autor: item.autor || '',
+      estadoId: item.estadoId || 0,
     });
     setImageFile(null);
     setPreviewUrl(item.imageUrl || null);
@@ -223,6 +245,8 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: 0,
+      autor: '',
+      estadoId: 0,
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -276,6 +300,8 @@ const AdminNews = () => {
         esDestacado: formData.esDestacado || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
         precio: formData.precio || 0,
+        autor: formData.autor || '',
+        estadoId: formData.estadoId || 0,
       };
 
       if (editingId) {
@@ -297,6 +323,14 @@ const AdminNews = () => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'Desconocida';
   };
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = news.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(news.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <AdminLayout>
@@ -329,13 +363,19 @@ const AdminNews = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Destacado
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Autor
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {news.map((item) => (
+            {currentItems.map((item) => (
               <tr key={item.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {stripHtml(item.titulo)}
@@ -354,6 +394,22 @@ const AdminNews = () => {
                   ) : (
                     <span className="text-gray-400">No</span>
                   )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {item.autor || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <span
+                    className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    style={{
+                      backgroundColor: item.estado?.colorHex
+                        ? item.estado.colorHex + '20'
+                        : '#e5e7eb',
+                      color: item.estado?.colorHex || '#374151',
+                    }}
+                  >
+                    {item.estado?.nombre || 'Sin Estado'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -397,6 +453,106 @@ const AdminNews = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => paginate(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Siguiente
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
+                <span className="font-medium">
+                  {Math.min(indexOfLastItem, news.length)}
+                </span>{' '}
+                de <span className="font-medium">{news.length}</span> resultados
+              </p>
+            </div>
+            <div>
+              <nav
+                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() => paginate(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <span className="sr-only">Anterior</span>
+                  <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
+                {/* Page Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first, last, current, and adjacent pages
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1
+                    );
+                  })
+                  .map((page, index, array) => {
+                     // Add ellipsis if there are gaps
+                    const prevPage = array[index - 1];
+                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
+                    return (
+                      <React.Fragment key={page}>
+                         {showEllipsis && (
+                          <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                            ...
+                          </span>
+                        )}
+                        <button
+                          onClick={() => paginate(page)}
+                          aria-current={currentPage === page ? 'page' : undefined}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+                <button
+                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <span className="sr-only">Siguiente</span>
+                  <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
@@ -631,6 +787,46 @@ const AdminNews = () => {
                         })
                       }
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Autor
+                    </label>
+                    <input
+                      type="text"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.autor || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, autor: e.target.value })
+                      }
+                      placeholder="Nombre del autor"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Estado
+                    </label>
+                    <select
+                      required
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.estadoId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estadoId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>Seleccionar Estado...</option>
+                      {estados.map((est) => (
+                        <option key={est.id} value={est.id}>
+                          {est.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

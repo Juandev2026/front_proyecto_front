@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Tema {
   id: number;
@@ -22,6 +22,8 @@ export interface Curso {
   numero: string;
   modalidadId?: number;
   nivelId?: number;
+  estadoId?: number;
+  estado?: { id: number; nombre: string; codigo: string; colorHex: string };
   usuarioEdicionId?: number;
   temas: Tema[];
 }
@@ -32,7 +34,7 @@ export const cursoService = {
   getAll: async (): Promise<Curso[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener cursos');
@@ -88,6 +90,9 @@ export const cursoService = {
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
           fd.delete('nivelId');
         }
+        if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
+            fd.delete('estadoId');
+        }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
           // optional handling
         }
@@ -98,6 +103,7 @@ export const cursoService = {
           ...c,
           modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
           nivelId: c.nivelId ? Number(c.nivelId) : null,
+          estadoId: c.estadoId ? Number(c.estadoId) : null,
           usuarioEdicionId: c.usuarioEdicionId
             ? Number(c.usuarioEdicionId)
             : null,
@@ -139,6 +145,9 @@ export const cursoService = {
         if (!fd.has('nivelId') || fd.get('nivelId') === '0') {
           fd.delete('nivelId');
         }
+        if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
+            fd.delete('estadoId');
+        }
         body = fd;
       } else {
         const c = curso as any;
@@ -147,6 +156,7 @@ export const cursoService = {
           id,
           modalidadId: c.modalidadId ? Number(c.modalidadId) : null,
           nivelId: c.nivelId ? Number(c.nivelId) : null,
+          estadoId: c.estadoId ? Number(c.estadoId) : null,
           usuarioEdicionId: c.usuarioEdicionId
             ? Number(c.usuarioEdicionId)
             : null,

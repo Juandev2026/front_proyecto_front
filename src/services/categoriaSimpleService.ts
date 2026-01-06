@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 export interface CategoriaSimple {
   id: number;
@@ -12,7 +12,7 @@ export const categoriaSimpleService = {
   getAll: async (): Promise<CategoriaSimple[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener categorías simples');
@@ -46,7 +46,7 @@ export const categoriaSimpleService = {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(categoria),
+        body: JSON.stringify({ id, ...categoria }),
       });
       if (!response.ok) {
         throw new Error('Error al actualizar categoría simple');

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import { DownloadIcon } from '@heroicons/react/outline';
+import { DownloadIcon, XIcon, EyeIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
+import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
 import FadeIn from '../components/FadeIn';
@@ -27,6 +28,7 @@ const Materials = () => {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewingPdf, setViewingPdf] = useState<Material | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,8 +38,12 @@ const Materials = () => {
           materialService.getAll(),
           categoriaSimpleService.getAll(),
         ]);
+        // Filter by state "PUBLICADO"
+        const publishedMats = mats.filter(
+          (m) => m.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
         // Sort by ID desc (assuming newer first) since we don't have date
-        setMaterials(mats.sort((a, b) => b.id - a.id));
+        setMaterials(publishedMats.sort((a, b) => b.id - a.id));
         setCategories(cats);
       } catch (err) {
         // console.error('Error loading data:', err);
@@ -121,7 +127,7 @@ const Materials = () => {
       </Head>
 
       <div className="relative bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>
@@ -209,28 +215,56 @@ const Materials = () => {
                   <FadeIn key={item.id} direction="up" delay={index * 0.05}>
                     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full relative">
                       {/* Decorative Header - mimicking an image since we don't have one */}
-                      <div className="h-32 bg-gradient-to-br from-blue-50 to-indigo-50 relative p-4 flex items-start justify-between group-hover:from-blue-100 group-hover:to-indigo-100 transition-colors">
-                        <span className="bg-white/80 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
-                          {getCategoryName(item.categoriaId)}
-                        </span>
-                        <span className="bg-gray-900/10 text-gray-600 text-xs px-2 py-1 rounded font-bold uppercase">
-                          {getFileFormat(item.url)}
-                        </span>
-                        {/* Center Icon */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                          <svg
-                            className="w-20 h-20 text-primary"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-                          </svg>
+                      {/* Content Preview Header */}
+                      <div className="h-56 relative bg-gray-100 overflow-hidden group-hover:opacity-90 transition-opacity">
+                        {item.url &&
+                        item.url.toLowerCase().endsWith('.pdf') ? (
+                          <div className="w-full h-full relative">
+                            {/* Overlay to prevent interaction/download from thumbnail */}
+                            <div className="absolute inset-0 z-10 bg-transparent"></div>
+                            <iframe
+                              src={`${item.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                              className="w-full h-full object-cover border-none"
+                              title="Preview"
+                              tabIndex={-1}
+                            />
+                          </div>
+                        ) : item.url &&
+                          /\.(jpeg|jpg|gif|png|webp)$/i.test(item.url) ? (
+                          <img
+                            src={item.url}
+                            alt={item.titulo}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center relative p-4">
+                            {/* Center Icon */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                              <svg
+                                className="w-20 h-20 text-primary"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Badges Overlay */}
+                        <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none z-20">
+                          <span className="bg-white/90 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
+                            {getCategoryName(item.categoriaId)}
+                          </span>
+                          <span className="bg-white/80 backdrop-blur text-gray-700 text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-gray-200">
+                            {getFileFormat(item.url)}
+                          </span>
                         </div>
                       </div>
 
                       <div className="p-6 flex-grow flex flex-col">
                         <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                          {item.titulo}
+                          {stripHtml(item.titulo)}
                         </h3>
                         <p className="text-gray-500 text-sm mb-4 line-clamp-3">
                           {stripHtml(item.descripcion)}
@@ -250,29 +284,24 @@ const Materials = () => {
                           </div>
 
                           {item.precio && item.precio > 0 ? (
-                            <a
-                              href={`https://wa.me/${
-                                item.telefono || ''
-                              }?text=${encodeURIComponent(
-                                `Hola, me interesa: ${item.titulo}`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
-                            >
-                              Comprar
-                            </a>
+                            <Link href={`/materials/${item.id}`}>
+                              <span className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md cursor-pointer">
+                                Comprar
+                              </span>
+                            </Link>
                           ) : (
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => handleMaterialDownload(item)}
+                            <button
+                              onClick={() => {
+                                // Track material view in GA4
+                                handleMaterialDownload(item);
+                                // Open PDF viewer modal
+                                setViewingPdf(item);
+                              }}
                               className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
                             >
-                              <DownloadIcon className="w-4 h-4 mr-1.5" />
-                              Descargar
-                            </a>
+                              <EyeIcon className="w-4 h-4 mr-1.5" />
+                              Ver
+                            </button>
                           )}
                         </div>
                       </div>
@@ -335,6 +364,77 @@ const Materials = () => {
       </main>
 
       <Footer />
+
+      {/* PDF Viewer Modal */}
+      {viewingPdf && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-gray-900 truncate">
+                  {stripHtml(viewingPdf.titulo)}
+                </h3>
+                <p className="text-sm text-gray-500 truncate">
+                  {getCategoryName(viewingPdf.categoriaId)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <a
+                  href={viewingPdf.url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm"
+                >
+                  <DownloadIcon className="w-4 h-4 mr-1.5" />
+                  Descargar
+                </a>
+                <button
+                  onClick={() => setViewingPdf(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <XIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-hidden bg-gray-100">
+              {viewingPdf.url && viewingPdf.url.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`${viewingPdf.url}#toolbar=1&navpanes=0&scrollbar=1`}
+                  className="w-full h-full min-h-[70vh] border-none"
+                  title="Vista del documento"
+                />
+              ) : viewingPdf.url && /\.(jpeg|jpg|gif|png|webp)$/i.test(viewingPdf.url) ? (
+                <div className="w-full h-full flex items-center justify-center p-4">
+                  <img
+                    src={viewingPdf.url}
+                    alt={viewingPdf.titulo}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-4">No se puede previsualizar este archivo.</p>
+                    <a
+                      href={viewingPdf.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors inline-flex items-center"
+                    >
+                      <DownloadIcon className="w-5 h-5 mr-2" />
+                      Descargar archivo
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

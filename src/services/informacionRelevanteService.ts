@@ -1,4 +1,5 @@
-import { API_URL, getAuthHeaders } from '../config/api';
+import { API_URL } from '../config/api';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 export interface InformacionRelevante {
   id: number;
@@ -16,7 +17,7 @@ export const informacionRelevanteService = {
   getAll: async (): Promise<InformacionRelevante[]> => {
     try {
       const response = await fetch(ENDPOINT, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener informacion relevante');

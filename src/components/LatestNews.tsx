@@ -8,9 +8,14 @@ import { noticiaService, Noticia } from '../services/noticiaService';
 
 const LatestNews = () => {
   const { user, isAuthenticated } = useAuth();
-  const [latestNews, setLatestNews] = useState<Noticia[]>([]);
+  const [subFeaturedNews, setSubFeaturedNews] = useState<Noticia[]>([]);
+  const [paginatedNews, setPaginatedNews] = useState<Noticia[]>([]);
   const [featuredNews, setFeaturedNews] = useState<Noticia | null>(null);
   const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -21,6 +26,9 @@ const LatestNews = () => {
         } else {
           news = await noticiaService.getAll();
         }
+        
+        // Filter by PUBLICADO
+        news = news.filter((n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO');
         // Sort by ID desc (newest first)
         const sortedNews = news.sort((a, b) => b.id - a.id);
 
@@ -28,16 +36,20 @@ const LatestNews = () => {
         const featured = sortedNews.find((n) => n.esDestacado) || sortedNews[0];
         setFeaturedNews(featured || null);
 
-        // Remaining for list
-        setLatestNews(
-          sortedNews.filter((n) => n.id !== featured?.id).slice(0, 5)
-        );
+        // Filter out the featured one
+        const remaining = sortedNews.filter((n) => n.id !== featured?.id);
+
+        // Split into Sub-Featured (4 items) and Pagination List (rest)
+        setSubFeaturedNews(remaining.slice(0, 4));
+        setPaginatedNews(remaining.slice(4));
+
       } catch (error) {
         // console.error('Error loading news:', error);
       }
     };
 
     fetchNews();
+    setCurrentPage(1); // Reset to page 1 on filter change
   }, [filterMode, user?.nivelId]);
 
   useEffect(() => {
@@ -54,20 +66,39 @@ const LatestNews = () => {
     };
   }, []);
 
-  // Helper to strip HTML tags for preview
+  // Helper to strip HTML tags for preview and handle entities
   const stripHtml = (html: string) => {
     if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
+    if (typeof window === 'undefined') return html; // SSR safety
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentNews = paginatedNews.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(paginatedNews.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Optional: Scroll to start of paginated section (or top of news)
+    document.getElementById('paginated-news-header')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="py-12 bg-white">
       {/* Changed max-w-7xl to w-full and added px-4 for basic padding */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
+      
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: Latest News (approx 58% -> col-span-7) */}
           <div className="lg:col-span-7 space-y-8">
-            <h2 className="text-3xl font-extrabold text-gray-900 border-b-2 border-primary pb-2 inline-block uppercase tracking-wide">
+            <h2 
+              id="latest-news-header"
+              className="text-3xl font-extrabold text-gray-900 border-b-2 border-primary pb-2 inline-block uppercase tracking-wide"
+            >
               Últimas Noticias
             </h2>
 
@@ -109,8 +140,10 @@ const LatestNews = () => {
                 </Link>
               </div>
             )}
+            
             <div className="space-y-6">
-              {latestNews.map((news) => (
+              {/* Render Sub-Featured News (Top 4) */}
+              {subFeaturedNews.map((news) => (
                 <div
                   key={news.id}
                   className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
@@ -122,11 +155,17 @@ const LatestNews = () => {
                       alt={stripHtml(news.titulo)}
                     />
                   </div>
-                  <div className="w-2/3 p-8 flex flex-col justify-between">
+                  <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                        {stripHtml(news.titulo)}
-                      </h3>
+                      <h3
+                        className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
+                        dangerouslySetInnerHTML={{ __html: news.titulo }}
+                      />
+                      {news.autor && (
+                        <p className="text-xs text-gray-500 font-medium mb-3">
+                          Por: {news.autor}
+                        </p>
+                      )}
                       <div className="w-full border-t border-gray-100 my-4"></div>
                       <p className="text-lg text-gray-600 line-clamp-3">
                         {stripHtml(news.descripcion)}
@@ -142,12 +181,110 @@ const LatestNews = () => {
                   </div>
                 </div>
               ))}
-              {latestNews.length === 0 && (
+
+              {/* Render Paginated News (The Rest) */}
+               {paginatedNews.length > 0 && (
+                <div id="paginated-news-header" className="pt-4">
+                  
+                  <div className="space-y-6">
+                    {currentNews.map((news) => (
+                      <div
+                        key={news.id}
+                        className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
+                      >
+                        <div className="w-1/3 relative overflow-hidden">
+                          <img
+                            className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
+                            src={news.imageUrl || '/assets/images/placeholder.png'}
+                            alt={stripHtml(news.titulo)}
+                          />
+                        </div>
+                        <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
+                          <div>
+                            <h3
+                              className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
+                              dangerouslySetInnerHTML={{ __html: news.titulo }}
+                            />
+                            {news.autor && (
+                              <p className="text-xs text-gray-500 font-medium mb-3">
+                                Por: {news.autor}
+                              </p>
+                            )}
+                            <div className="w-full border-t border-gray-100 my-4"></div>
+                            <p className="text-lg text-gray-600 line-clamp-3">
+                              {stripHtml(news.descripcion)}
+                            </p>
+                          </div>
+                          <div className="mt-6">
+                            <Link href={`/news/${news.id}`}>
+                              <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
+                                Ver más
+                              </a>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+               )}
+
+              {subFeaturedNews.length === 0 && paginatedNews.length === 0 && (
                 <p className="text-gray-500 text-sm">
                   No hay noticias recientes.
                 </p>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {paginatedNews.length > itemsPerPage && (
+              <div className="flex justify-center items-center space-x-2 mt-8">
+                {/* Previous Button */}
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                  <button
+                    key={number}
+                    onClick={() => paginate(number)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      currentPage === number
+                        ? 'bg-primary text-white shadow-md'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    {number}
+                  </button>
+                ))}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* MIDDLE COLUMN: Socials + Featured (approx 25% -> col-span-3) */}

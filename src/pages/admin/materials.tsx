@@ -8,6 +8,8 @@ import {
   PlusIcon,
   DocumentTextIcon,
   PhotographIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 
@@ -18,6 +20,7 @@ import {
 } from '../../services/categoriaSimpleService';
 import { materialService, Material } from '../../services/materialService';
 import { uploadService } from '../../services/uploadService';
+import { estadoService, Estado } from '../../services/estadoService';
 import 'react-quill/dist/quill.snow.css';
 
 // Dynamic import for ReactQuill
@@ -26,6 +29,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 const AdminMaterials = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,11 +40,16 @@ const AdminMaterials = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Material | null>(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
   const [newMaterial, setNewMaterial] = useState({
     titulo: '',
     descripcion: '',
     url: '',
     categoriaId: 0,
+    estadoId: 0,
     usuarioEdicionId:
       typeof window !== 'undefined'
         ? Number(localStorage.getItem('userId') || 0)
@@ -69,16 +78,24 @@ const AdminMaterials = () => {
     return text;
   };
 
+  const getFileFormat = (url: string) => {
+    if (!url) return 'FILE';
+    const extension = url.split('.').pop()?.toUpperCase();
+    return extension && extension.length <= 4 ? extension : 'FILE';
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [materialsData, categoriesData] = await Promise.all([
+      const [materialsData, categoriesData, estadosData] = await Promise.all([
         materialService.getAll(),
         categoriaSimpleService.getAll(),
+        estadoService.getAll(),
       ]);
       // Sort by ID descending (newest first)
       setMaterials(materialsData.sort((a, b) => b.id - a.id));
       setCategories(categoriesData);
+      setEstados(estadosData);
     } catch (err) {
       setError('Error loading data');
       // console.error(err);
@@ -112,6 +129,7 @@ const AdminMaterials = () => {
       descripcion: item.descripcion, // HTML content
       url: item.url,
       categoriaId: item.categoriaId,
+      estadoId: item.estadoId || 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -129,8 +147,7 @@ const AdminMaterials = () => {
     setIsViewModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setIsModalOpen(true);
+  const resetForm = () => {
     setEditingId(null);
     setFile(null);
 
@@ -139,6 +156,7 @@ const AdminMaterials = () => {
       descripcion: '',
       url: '',
       categoriaId: 0,
+      estadoId: 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -146,6 +164,11 @@ const AdminMaterials = () => {
       precio: 0,
       telefono: '',
     });
+  };
+
+  const handleAddNew = () => {
+    setIsModalOpen(true);
+    resetForm();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,6 +210,7 @@ const AdminMaterials = () => {
         id: editingId || 0,
         url: finalUrl,
         categoriaId: Number(newMaterial.categoriaId),
+        estadoId: Number(newMaterial.estadoId),
         // Send 0 or null for removed fields if API requires them, service handles it
         modalidadId: 0,
         nivelId: 0,
@@ -204,7 +228,7 @@ const AdminMaterials = () => {
       }
 
       setIsModalOpen(false);
-      handleAddNew(); // Reset form
+      resetForm(); // Reset form
       fetchData();
     } catch (err) {
       // eslint-disable-next-line no-alert
@@ -230,6 +254,14 @@ const AdminMaterials = () => {
     }),
     []
   );
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = materials.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(materials.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   if (loading)
     return (
@@ -273,10 +305,16 @@ const AdminMaterials = () => {
                 Categoría
               </th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Precio
               </th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Archivo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Tipo
               </th>
               <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Acciones
@@ -284,17 +322,17 @@ const AdminMaterials = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {materials.length === 0 ? (
+            {currentItems.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="px-6 py-12 text-center text-gray-500"
                 >
                   No hay recursos disponibles.
                 </td>
               </tr>
             ) : (
-              materials.map((item) => (
+              currentItems.map((item) => (
                 <tr
                   key={item.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -305,6 +343,11 @@ const AdminMaterials = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                       {stripHtml(getCategoryName(item.categoriaId))}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" style={{ backgroundColor: item.estado?.colorHex ? item.estado.colorHex + '20' : '#e5e7eb', color: item.estado?.colorHex || '#374151' }}>
+                      {item.estado?.nombre || 'Sin Estado'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -328,6 +371,11 @@ const AdminMaterials = () => {
                     ) : (
                       <span className="text-gray-400">Sin archivo</span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded bg-gray-100 text-gray-600 uppercase border border-gray-200">
+                      {getFileFormat(item.url)}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
@@ -359,6 +407,104 @@ const AdminMaterials = () => {
         </table>
       </div>
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => paginate(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Siguiente
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
+                <span className="font-medium">
+                  {Math.min(indexOfLastItem, materials.length)}
+                </span>{' '}
+                de <span className="font-medium">{materials.length}</span> resultados
+              </p>
+            </div>
+            <div>
+              <nav
+                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() => paginate(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <span className="sr-only">Anterior</span>
+                  <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
+                {/* Page Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first, last, current, and adjacent pages
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1
+                    );
+                  })
+                  .map((page, index, array) => {
+                    const prevPage = array[index - 1];
+                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
+                    return (
+                      <React.Fragment key={page}>
+                        {showEllipsis && (
+                          <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                            ...
+                          </span>
+                        )}
+                        <button
+                          onClick={() => paginate(page)}
+                          aria-current={currentPage === page ? 'page' : undefined}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+                <button
+                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <span className="sr-only">Siguiente</span>
+                  <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
@@ -383,14 +529,14 @@ const AdminMaterials = () => {
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Título del Recurso
                     </label>
-                    <div className="mb-4">
+                    <div className="mb-12">
                       <ReactQuill
                         theme="snow"
                         value={newMaterial.titulo}
                         onChange={(value) =>
                           setNewMaterial({ ...newMaterial, titulo: value })
                         }
-                        className="h-16"
+                        className="h-auto bg-white"
                         modules={modules}
                       />
                     </div>
@@ -420,7 +566,33 @@ const AdminMaterials = () => {
                         ))}
                       </select>
                     </div>
-                    <div>
+                      <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Estado
+                      </label>
+                      <select
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newMaterial.estadoId}
+                        onChange={(e) =>
+                          setNewMaterial({
+                            ...newMaterial,
+                            estadoId: Number(e.target.value),
+                          })
+                        }
+                      >
+                        <option value={0}>Seleccionar Estado...</option>
+                        {estados.map((est) => (
+                          <option key={est.id} value={est.id}>
+                            {est.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                   <div>
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Precio (S/)
                       </label>
@@ -508,10 +680,23 @@ const AdminMaterials = () => {
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
                           setFile(e.target.files[0]);
-                          // Optional: setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+                          // Create a preview URL right away (logic moved to button onClick to avoid state)
                         }
                       }}
                     />
+                     {file && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                              const url = URL.createObjectURL(file);
+                              window.open(url, '_blank');
+                          }}
+                          className="mt-3 bg-white text-primary border border-primary hover:bg-blue-50 font-bold py-2 px-4 rounded-lg flex items-center shadow-sm text-sm"
+                        >
+                          <EyeIcon className="w-4 h-4 mr-2" />
+                          Visualizar Archivo Seleccionado
+                        </button>
+                     )}
                     <p className="text-xs text-gray-500 mt-2">
                       * Al subir un archivo, se generará una URL automática que
                       reemplazará la actual.

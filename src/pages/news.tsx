@@ -23,6 +23,9 @@ const News = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,8 +38,13 @@ const News = () => {
         }
 
         const categoriesData = await categoriaGeneralService.getAll();
+        
+        // Filter by PUBLICADO
+        const publishedNews = newsData.filter(
+          (n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
 
-        setNews(newsData);
+        setNews(publishedNews);
         setCategories(categoriesData);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -44,12 +52,21 @@ const News = () => {
       }
     };
     fetchData();
+    setCurrentPage(1); // Reset page on filter/fetch change
   }, [filterMode, user?.nivelId]);
 
-  // Helper to strip HTML tags for preview
+  // Reset page when category or search changes
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [selectedCategoryId, searchTerm]);
+
+  // Helper to strip HTML tags for preview and handle entities
   const stripHtml = (html: string) => {
     if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
+    if (typeof window === 'undefined') return html; // SSR safety
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   // Filter logic
@@ -83,6 +100,13 @@ const News = () => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'General';
   };
+  
+  // Pagination Helper Values
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(otherNews.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedItems = otherNews.slice(startIdx, endIdx);
 
   return (
     <div className="bg-white min-h-screen font-sans">
@@ -91,7 +115,7 @@ const News = () => {
       </Head>
 
       <div className="relative bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <Header />
         </div>
       </div>
@@ -247,17 +271,23 @@ const News = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     </div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
-                        {getCategoryName(featuredArticle.categoriaId)}
-                      </span>
-                      <span className="text-gray-500 text-xs font-semibold">
-                        {new Date(featuredArticle.fecha).toLocaleDateString()}
-                      </span>
+                    <div className="flex flex-col gap-1 mb-2">
+                       <div className="flex items-center gap-2">
+                          <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
+                            {getCategoryName(featuredArticle.categoriaId)}
+                          </span>
+                          <span className="text-gray-500 text-xs font-semibold">
+                            {new Date(featuredArticle.fecha).toLocaleDateString()}
+                          </span>
+                       </div>
+                       {featuredArticle.autor && (
+                          <span className="text-gray-500 text-xs font-medium">Por: {featuredArticle.autor}</span>
+                       )}
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors">
-                      {stripHtml(featuredArticle.titulo)}
-                    </h2>
+                    <h2 
+                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
+                      dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
+                    />
                     <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
                       {stripHtml(featuredArticle.descripcion)}
                     </p>
@@ -288,19 +318,23 @@ const News = () => {
                       <span className="text-xs font-bold text-primary uppercase mb-1 block">
                         {getCategoryName(item.categoriaId)}
                       </span>
-                      <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-3">
-                        {stripHtml(item.titulo)}
-                      </h3>
+                      <h3 
+                        className="font-bold text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-3"
+                        dangerouslySetInnerHTML={{ __html: item.titulo }}
+                      />
+                      {item.autor && (
+                        <p className="text-xs text-gray-500 mb-2">Por: {item.autor}</p>
+                      )}
                     </div>
                   </a>
                 </Link>
               ))}
             </div>
 
-            {/* List for remainder */}
+            {/* List for remainder with PAGINATION */}
             {otherNews.length > 0 && (
-              <div className="space-y-6 pt-8 border-t border-gray-100">
-                {otherNews.map((item) => (
+              <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
+                {paginatedItems.map((item) => (
                   <Link key={item.id} href={`/news/${item.id}`}>
                     <a className="flex gap-4 group items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm">
@@ -314,9 +348,13 @@ const News = () => {
                         />
                       </div>
                       <div className="w-2/3">
-                        <h4 className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2">
-                          {stripHtml(item.titulo)}
-                        </h4>
+                        <h4 
+                          className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: item.titulo }}
+                        />
+                         {item.autor && (
+                            <p className="text-xs text-gray-500 mb-1">Por: {item.autor}</p>
+                         )}
                         <p className="text-sm text-gray-500 line-clamp-2">
                           {stripHtml(item.descripcion)}
                         </p>
@@ -324,6 +362,65 @@ const News = () => {
                     </a>
                   </Link>
                 ))}
+
+                {/* Pagination Controls */}
+                {otherNews.length > itemsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 mt-8">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => {
+                         const prev = Math.max(currentPage - 1, 1);
+                         setCurrentPage(prev);
+                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
+                        currentPage === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                      }`}
+                    >
+                      Anterior
+                    </button>
+
+                    {/* Page Numbers */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => {
+                          setCurrentPage(number);
+                          document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                          currentPage === number
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => {
+                         const next = Math.min(currentPage + 1, totalPages);
+                         setCurrentPage(next);
+                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
+                        currentPage === totalPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                      }`}
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                )}
+
+
               </div>
             )}
           </div>

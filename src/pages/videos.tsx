@@ -32,7 +32,14 @@ const Videos = () => {
         }
 
         const [categoriesData] = await Promise.all([categoriaService.getAll()]);
-        setCourses(coursesData);
+        
+        // Filter by state "PUBLICADO"
+        const publishedCourses = coursesData.filter(
+          (c) => c.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
+        
+        // Sort by ID descending (newest first)
+        setCourses(publishedCourses.sort((a, b) => b.id - a.id));
         setCategories(categoriesData);
       } catch (error) {
         // console.error('Error fetching data:', error);
@@ -69,9 +76,15 @@ const Videos = () => {
     return category ? category.nombre : 'General';
   };
 
+  // Helper to strip HTML tags
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="w-full">
         <Header />
       </div>
 
@@ -165,10 +178,10 @@ const Videos = () => {
 
                           <div className="p-8 flex flex-col flex-grow">
                             <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors duration-300">
-                              {course.nombre}
+                              {stripHtml(course.nombre)}
                             </h3>
                             <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow line-clamp-3">
-                              {course.descripcion}
+                              {stripHtml(course.descripcion)}
                             </p>
 
                             {/* Content Preview */}

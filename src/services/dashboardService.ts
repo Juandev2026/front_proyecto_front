@@ -1,7 +1,8 @@
 import { cursoService } from './cursoService';
 import { materialService } from './materialService';
 import { noticiaService } from './noticiaService';
-import { API_URL, getAuthHeaders } from '../config/api';
+import { API_URL } from '../config/api';
+import { getPublicHeaders } from '../utils/apiUtils';
 
 export interface DashboardTotals {
   totalNoticias: number;
@@ -23,7 +24,7 @@ export const dashboardService = {
   getTotals: async (): Promise<DashboardTotals> => {
     try {
       const response = await fetch(`${ENDPOINT}/Totals`, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener totales del dashboard');

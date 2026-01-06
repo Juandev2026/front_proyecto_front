@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/CategoriasGenerales`;
 
@@ -12,7 +12,7 @@ export const cursoCategoriaService = {
   getAll: async (): Promise<CategoriaGeneral[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener categorías de cursos');

@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Noticia {
   id: number;
@@ -17,6 +17,14 @@ export interface Noticia {
   nivel?: { id: number; nombre: string };
   precio?: number;
   comentarios?: any[];
+  estadoId?: number;
+  estado?: {
+    id: number;
+    nombre: string;
+    codigo: string;
+    colorHex: string;
+  };
+  autor?: string;
 }
 
 const API_URL = `${API_BASE_URL}/Noticias`;
@@ -29,7 +37,7 @@ export const noticiaService = {
         url += `?destacado=${destacado}`;
       }
       const response = await fetch(url, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         console.error(
@@ -131,6 +139,8 @@ export const noticiaService = {
             : null,
           comentarios: [],
           imageUrl: n.imageUrl || '',
+          autor: n.autor || '',
+          estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
       }
 
@@ -187,6 +197,8 @@ export const noticiaService = {
             ? Number((n as any).usuarioEdicionId)
             : null,
           imageUrl: n.imageUrl || '',
+          autor: n.autor || '',
+          estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
       }
 

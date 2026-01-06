@@ -1,45 +1,29 @@
 import React, { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/router';
 
-import { useAuth } from '../hooks/useAuth';
 import { publicidadService, Publicidad } from '../services/publicidadService';
 
 const AdSidebar = () => {
-  const { user, isAuthenticated } = useAuth();
   const [ads, setAds] = useState<Publicidad[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        let fetchedAds: Publicidad[] | Publicidad = [];
-
-        // Logic based on user request:
-        // - Home (Inicio) -> getAll() (Generic ads) - Although AdSidebar isn't explicitly on Home yet, if it were, this covers it.
-        // - Inside News/Resources/Courses ->
-        //    - If logged in (user.nivelId) -> getById(nivelId)
-        //    - Else -> fallback to getAll() (SIEMPRE DEBE IR PUBLICIDAD)
-
-        const isContentPage = [
-          '/news',
-          '/materials',
-          '/videos',
-          '/cursos',
-        ].some((path) => router.pathname.startsWith(path));
-
-        if (isAuthenticated && user?.nivelId && isContentPage) {
-          fetchedAds = await publicidadService.getById(user.nivelId);
-        } else {
-          fetchedAds = await publicidadService.getAll();
-        }
+        // PER USER REQUEST:
+        // "LA PUBLICIDAD QUE YA NO SEA POR NIVEL CUANDO INICIES SESIÓN SI NO QUE SEA PARA TODOS"
+        // So we ALWAYS fetch generic/all ads, ignoring user level logic.
+        
+        let fetchedAds: Publicidad[] | Publicidad = await publicidadService.getAll();
 
         // Normalize to array
-        if (Array.isArray(fetchedAds)) {
-          setAds(fetchedAds);
-        } else {
-          setAds([fetchedAds]);
-        }
+        let adsArray = Array.isArray(fetchedAds) ? fetchedAds : [fetchedAds];
+
+        // Filter valid ads (only PUBLICADO)
+        adsArray = adsArray.filter(
+          (ad) => ad.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
+
+        setAds(adsArray);
       } catch (error) {
         console.error('Error loading ads:', error);
         // Fallback or empty state could be handled here
@@ -47,7 +31,7 @@ const AdSidebar = () => {
     };
 
     fetchAds();
-  }, [isAuthenticated, user?.nivelId, router.pathname]);
+  }, []); // Removed dependencies acting on user level or route
 
   if (ads.length === 0) {
     return (
@@ -68,7 +52,10 @@ const AdSidebar = () => {
   return (
     <div className="space-y-6 sticky top-4">
       {ads.map((ad, index) => {
-        const hasPrice = ad.precio && ad.precio > 0;
+        // Only show price if it's strictly greater than 0
+        const hasPrice = typeof ad.precio === 'number' && ad.precio > 0;
+        
+        // Define link: if it has a price (is for sale), whatsapp. Else, generic link.
         const link =
           hasPrice && ad.telefono
             ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(
@@ -99,9 +86,13 @@ const AdSidebar = () => {
                     {ad.titulo || 'Publicidad'}
                   </div>
                 )}
+                
+                {/* Badge: "VENTA" if price > 0, else "PUBLICIDAD" */}
                 <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
                   {hasPrice ? 'VENTA' : 'PUBLICIDAD'}
                 </div>
+
+                {/* Price Bar: ONLY show if hasPrice is true (price > 0) */}
                 {hasPrice && (
                   <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-xs font-bold py-1 px-2 text-center">
                     Comprar S/ {ad.precio}
@@ -124,6 +115,7 @@ const AdSidebar = () => {
                 <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
                   PUBLICIDAD
                 </div>
+                {/* No price bar here, and no 0 shown */}
               </div>
             )}
           </div>

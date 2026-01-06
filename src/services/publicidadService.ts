@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Publicidad {
   id: number;
@@ -11,6 +11,13 @@ export interface Publicidad {
   nivelId: number;
   precio: number;
   telefono: string;
+  estadoId?: number;
+  estado?: {
+    id: number;
+    nombre: string;
+    codigo: string;
+    colorHex: string;
+  };
 }
 
 const API_URL = `${API_BASE_URL}/Publicidad`;
@@ -19,7 +26,7 @@ export const publicidadService = {
   getAll: async (): Promise<Publicidad[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getAuthHeaders(),
+        headers: getPublicHeaders(),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -61,6 +68,7 @@ export const publicidadService = {
           ...publicidad,
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
+          estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
         }),
       });
 
@@ -88,6 +96,7 @@ export const publicidadService = {
           ...publicidad,
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
+          estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
         }),
       });
 
