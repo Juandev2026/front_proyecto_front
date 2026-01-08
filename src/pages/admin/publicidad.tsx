@@ -144,6 +144,36 @@ const AdminPublicidad = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate: Max 5 publicidades per nivel
+      if (!editingId) {
+        // Only validate on create, not on edit
+        const publicidadesForNivel = publicidades.filter(
+          (p) => p.nivelId === formData.nivelId
+        );
+        if (publicidadesForNivel.length >= 5) {
+          // eslint-disable-next-line no-alert
+          alert(
+            `Ya existen 5 publicidades para este nivel. Solo se permiten 5 publicidades por nivel. Por favor, edite o elimine una existente.`
+          );
+          return;
+        }
+      } else {
+        // On edit, check if changing nivel would exceed limit
+        const currentPublicidad = publicidades.find((p) => p.id === editingId);
+        if (currentPublicidad && currentPublicidad.nivelId !== formData.nivelId) {
+          const publicidadesForNewNivel = publicidades.filter(
+            (p) => p.nivelId === formData.nivelId && p.id !== editingId
+          );
+          if (publicidadesForNewNivel.length >= 5) {
+            // eslint-disable-next-line no-alert
+            alert(
+              `Ya existen 5 publicidades para el nivel seleccionado. Solo se permiten 5 publicidades por nivel.`
+            );
+            return;
+          }
+        }
+      }
+
       let finalUrl = formData.imageUrl;
       if (file) {
         try {
@@ -215,11 +245,6 @@ const AdminPublicidad = () => {
         </h1>
         <button
           onClick={() => {
-            if (publicidades.length >= 4) {
-              // eslint-disable-next-line no-alert
-              alert('Solo se permiten 4 publicidades activas. Edite o elimine una existente.');
-              return;
-            }
             setIsModalOpen(true);
             setEditingId(null);
             setFile(null);
