@@ -54,7 +54,8 @@ const CommentsPage = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -148,6 +149,7 @@ const CommentsPage = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {isViewModalOpen && viewingItem && (

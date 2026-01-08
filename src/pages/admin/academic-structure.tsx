@@ -298,10 +298,6 @@ const AcademicStructure = () => {
         <h1 className="text-2xl font-bold text-gray-900">
           Estructura Académica
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Define y organiza la jerarquía educativa: Modalidades, Niveles y
-          Especialidades.
-        </p>
         <button
           onClick={() => openModal()}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -355,7 +351,8 @@ const AcademicStructure = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -480,6 +477,7 @@ const AcademicStructure = () => {
               ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {isModalOpen && (

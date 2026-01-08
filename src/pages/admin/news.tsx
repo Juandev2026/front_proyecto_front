@@ -348,7 +348,8 @@ const AdminNews = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -452,6 +453,7 @@ const AdminNews = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination Controls */}
@@ -556,8 +558,8 @@ const AdminNews = () => {
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-8 max-w-6xl w-full my-8 mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-8 max-w-6xl w-full max-h-[90vh] overflow-y-auto my-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingId ? 'Editar Noticia' : 'Agregar Nueva Noticia'}
