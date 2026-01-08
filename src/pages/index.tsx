@@ -18,7 +18,7 @@ import { anuncioService } from '../services/anuncioService';
 
 
 const App = () => {
-  const { mainHero } = config;
+  // const { mainHero } = config; // Removed unused variable
   const [slides, setSlides] = useState<
     {
       image: string;
@@ -87,77 +87,80 @@ const App = () => {
         description="Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato. Noticias educativas, recursos y capacitación para docentes del MINEDU."
         keywords="nombramiento docente, ascenso docente, contrato docente, MINEDU, capacitación, cursos para docentes, educación Perú"
       />
-      <div className={`relative bg-background`}>
+      <div className={`relative bg-background overflow-hidden`}>
         <div className="w-full">
           <Header />
         </div>
-        <div className="relative">
-          <div className="w-full mx-auto relative">
-            <MainHeroImage slides={slides} currentIndex={currentIndex} />
-
-            <div
-              className={`relative z-10 pb-8 bg-transparent sm:pb-16 md:pb-20 lg:w-full lg:max-w-none lg:pb-28 xl:pb-32 pointer-events-none`}
-            >
-              <div className="pointer-events-auto max-w-7xl">
-                <FadeIn direction="right" padding={false}>
-                  <MainHero
-                    title={slides[currentIndex]?.title}
-                    description={slides[currentIndex]?.description}
-                    celular={slides[currentIndex]?.celular}
-                    ruta={slides[currentIndex]?.ruta}
-                  />
-                </FadeIn>
-              </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            
+            {/* Text Column (Left) */}
+            <div className="order-2 lg:order-1">
+              <FadeIn direction="right" padding={false}>
+                <MainHero
+                  title={slides[currentIndex]?.title}
+                  description={slides[currentIndex]?.description}
+                  celular={slides[currentIndex]?.celular}
+                  ruta={slides[currentIndex]?.ruta}
+                />
+              </FadeIn>
             </div>
 
-            {slides.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setCurrentIndex((prev) =>
-                      prev === 0 ? slides.length - 1 : prev - 1
-                    )
-                  }
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 transition-all shadow-lg border border-white/20 group hover:scale-110"
-                  aria-label="Anterior"
-                >
-                  <svg
-                    className="w-6 h-6 sm:w-8 sm:h-8"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+            {/* Image Column (Right) */}
+            <div className="order-1 lg:order-2 relative group">
+              <MainHeroImage slides={slides} currentIndex={currentIndex} />
+              
+              {/* Navigation Arrows - Overlaying the image */}
+              {slides.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setCurrentIndex((prev) =>
+                        prev === 0 ? slides.length - 1 : prev - 1
+                      )
+                    }
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
+                    aria-label="Anterior"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentIndex((prev) => (prev + 1) % slides.length)
-                  }
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 transition-all shadow-lg border border-white/20 group hover:scale-110"
-                  aria-label="Siguiente"
-                >
-                  <svg
-                    className="w-6 h-6 sm:w-8 sm:h-8"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCurrentIndex((prev) => (prev + 1) % slides.length)
+                    }
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
+                    aria-label="Siguiente"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
