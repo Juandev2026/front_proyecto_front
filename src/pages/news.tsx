@@ -23,12 +23,14 @@ const News = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         let newsData: Noticia[] = [];
         if (filterMode === 'level' && user?.nivelId) {
@@ -49,6 +51,8 @@ const News = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -259,7 +263,16 @@ const News = () => {
         <div className="grid grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
           <div className="col-span-12 lg:col-span-6 space-y-10">
-            {featuredArticle ? (
+            {isLoading ? (
+              <div className="space-y-6">
+                {/* Loading skeleton */}
+                <div className="animate-pulse">
+                  <div className="bg-gray-200 h-64 rounded-xl mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            ) : featuredArticle ? (
               <div className="group cursor-pointer">
                 <Link href={`/news/${featuredArticle.id}`}>
                   <a>
@@ -271,6 +284,7 @@ const News = () => {
                         }
                         alt={stripHtml(featuredArticle.titulo)}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
                       />
                     </div>
                     <div className="flex flex-col gap-1 mb-2">
@@ -314,6 +328,7 @@ const News = () => {
                         }
                         alt={stripHtml(item.titulo)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
                       />
                     </div>
                     <div className="flex-1">
@@ -347,6 +362,7 @@ const News = () => {
                           }
                           alt=""
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          loading="lazy"
                         />
                       </div>
                       <div className="w-2/3">
