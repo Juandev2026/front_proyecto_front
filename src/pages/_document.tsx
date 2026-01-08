@@ -20,9 +20,9 @@ class MyDocument extends Document {
                 url: 'https://tudominio.com',
                 logo: 'https://tudominio.com/assets/images/logo.png',
                 sameAs: [
-                  'https://www.facebook.com/liderdocenteperu',
-                  'https://www.youtube.com/@JuanCarlosAvend',
-                  'https://www.tiktok.com/@juan_avend',
+                  'https://www.facebook.com/tuacademia',
+                  'https://www.youtube.com/@tuacademia',
+                  'https://www.tiktok.com/@tuacademia',
                 ],
                 contactPoint: {
                   '@type': 'ContactPoint',
