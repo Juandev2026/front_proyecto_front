@@ -111,7 +111,9 @@ const News = () => {
   return (
     <div className="bg-white min-h-screen font-sans">
       <Head>
-        <title>Portal de Noticias</title>
+        <title>Portal de Noticias Educativas - MINEDU, Nombramiento, Ascenso</title>
+        <meta name="description" content="Últimas noticias sobre educación en Perú: nombramiento docente, ascenso, contrato, MINEDU, sindicatos y tecnología educativa. Mantente informado con nuestro portal de noticias." />
+        <meta name="keywords" content="noticias educación, MINEDU noticias, nombramiento docente 2024, ascenso docente, contrato docente, noticias SUTEP" />
       </Head>
 
       <div className="relative bg-background">

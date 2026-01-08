@@ -4,10 +4,16 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import SocialMediaFrames from '../components/SocialMediaFrames';
 import FadeIn from '../components/FadeIn';
+import SEO from '../components/SEO';
 
 const About = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <SEO
+        title="Quiénes Somos - Academia Educativa"
+        description="Conoce nuestra historia, pilares y valores. Somos un espacio creado para acompañar el crecimiento profesional de los docentes con herramientas prácticas y contenido de calidad."
+        keywords="sobre nosotros, academia educativa, formación docente, capacitación profesional"
+      />
       <div className="relative bg-white shadow-sm z-20">
         <div className="w-full">
           <Header />

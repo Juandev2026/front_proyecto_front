@@ -7,7 +7,33 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang={AppConfig.locale}>
-        <Head />
+        <Head>
+          {/* Organization Structured Data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'EducationalOrganization',
+                name: 'Academia',
+                description: 'Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato.',
+                url: 'https://tudominio.com',
+                logo: 'https://tudominio.com/assets/images/logo.png',
+                sameAs: [
+                  'https://www.facebook.com/tuacademia',
+                  'https://www.youtube.com/@tuacademia',
+                  'https://www.tiktok.com/@tuacademia',
+                ],
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  telephone: '+51-976783049',
+                  contactType: 'Customer Service',
+                  availableLanguage: 'Spanish',
+                },
+              }),
+            }}
+          />
+        </Head>
         <body>
           <Main />
           <NextScript />

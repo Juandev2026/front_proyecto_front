@@ -11,8 +11,10 @@ import LazyShow from '../components/LazyShow';
 import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
+import SEO from '../components/SEO';
 import config from '../config/index.json';
 import { anuncioService } from '../services/anuncioService';
+
 
 
 const App = () => {
@@ -80,6 +82,11 @@ const App = () => {
 
   return (
     <div className={`bg-background grid gap-y-16 overflow-hidden`}>
+      <SEO
+        title="Academia - Educación de Calidad para Docentes y Estudiantes"
+        description="Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato. Noticias educativas, recursos y capacitación para docentes del MINEDU."
+        keywords="nombramiento docente, ascenso docente, contrato docente, MINEDU, capacitación, cursos para docentes, educación Perú"
+      />
       <div className={`relative bg-background`}>
         <div className="w-full">
           <Header />

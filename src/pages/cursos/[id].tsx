@@ -93,6 +93,45 @@ const CourseDetail = () => {
       <Head>
         <title>{stripHtml(course.nombre)} | Academia</title>
         <meta name="description" content={stripHtml(course.descripcion)} />
+        <meta name="keywords" content={`${stripHtml(course.nombre)}, curso online, capacitación docente, educación`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={`${stripHtml(course.nombre)} | Academia`} />
+        <meta property="og:description" content={stripHtml(course.descripcion)} />
+        <meta property="og:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
+        <meta property="og:type" content="product" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${stripHtml(course.nombre)} | Academia`} />
+        <meta name="twitter:description" content={stripHtml(course.descripcion)} />
+        <meta name="twitter:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
+        
+        {/* JSON-LD Structured Data for Course */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Course',
+              name: stripHtml(course.nombre),
+              description: stripHtml(course.descripcion),
+              provider: {
+                '@type': 'Organization',
+                name: 'Academia',
+              },
+              image: course.imagenUrl || '/assets/images/product1.jpg',
+              offers: {
+                '@type': 'Offer',
+                price: course.precio,
+                priceCurrency: 'PEN',
+                availability: 'https://schema.org/InStock',
+              },
+              inLanguage: course.idioma || 'es',
+              courseMode: 'online',
+            }),
+          }}
+        />
       </Head>
 
       <div className="bg-white">
