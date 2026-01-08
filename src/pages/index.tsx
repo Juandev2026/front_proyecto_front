@@ -93,10 +93,10 @@ const App = () => {
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
-            {/* Text Column (Left) */}
-            <div className="order-2 lg:order-1">
+            {/* Text Column (Left) - 4 columns (approx 33%) */}
+            <div className="order-2 lg:order-1 lg:col-span-4">
               <FadeIn direction="right" padding={false}>
                 <MainHero
                   title={slides[currentIndex]?.title}
@@ -107,8 +107,8 @@ const App = () => {
               </FadeIn>
             </div>
 
-            {/* Image Column (Right) */}
-            <div className="order-1 lg:order-2 relative group">
+            {/* Image Column (Right) - 8 columns (approx 67%) */}
+            <div className="order-1 lg:order-2 lg:col-span-8 relative group">
               <MainHeroImage slides={slides} currentIndex={currentIndex} />
               
               {/* Navigation Arrows - Overlaying the image */}
