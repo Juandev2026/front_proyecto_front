@@ -1,6 +1,6 @@
 {
   "company": {
-    "name": "React landing page 2021",
+    "name": "Advendocente Perú",
     "logo": "/assets/images/logo_principal.png"
   },
   "navigation": [
@@ -136,20 +136,16 @@
   "about": {
     "sections": [
       {
-        "name": "Features",
-        "href": "#"
+        "name": "Noticias",
+        "href": "/news"
       },
       {
-        "name": "Pricing",
-        "href": "#"
+        "name": "Recursos",
+        "href": "/materials"
       },
       {
-        "name": "Support",
-        "href": "#"
-      },
-      {
-        "name": "About",
-        "href": "#"
+        "name": "Cursos",
+        "href": "/videos"
       }
     ],
     "socialMedia": {
