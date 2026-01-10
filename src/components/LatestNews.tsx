@@ -88,7 +88,7 @@ const LatestNews = () => {
   };
 
   return (
-    <div className="py-12 bg-white">
+    <div className="pb-12 pt-4 bg-white">
       {/* Changed max-w-7xl to w-full and added px-4 for basic padding */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
       

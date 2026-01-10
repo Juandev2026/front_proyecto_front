@@ -5,6 +5,8 @@ import Header from '../components/Header';
 import SocialMediaFrames from '../components/SocialMediaFrames';
 import FadeIn from '../components/FadeIn';
 import SEO from '../components/SEO';
+import CommunitySection from '../components/CommunitySection';
+
 
 const About = () => {
   return (
@@ -195,7 +197,10 @@ const About = () => {
                 </div>
             </div>
             
-             {/* Social Media Frames */}
+            {/* Comunidad */}
+            <CommunitySection />
+            
+            {/* Social Media Frames */}
              <div className="mt-16 -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-20 2xl:-mx-32">
                <SocialMediaFrames />
              </div>

@@ -12,7 +12,6 @@ import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import SEO from '../components/SEO';
-import config from '../config/index.json';
 import { anuncioService } from '../services/anuncioService';
 
 
@@ -92,76 +91,77 @@ const App = () => {
           <Header />
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            
-            {/* Text Column (Left) - 4 columns (approx 33%) */}
-            <div className="order-2 lg:order-1 lg:col-span-4">
-              <FadeIn direction="right" padding={false}>
-                <MainHero
-                  title={slides[currentIndex]?.title}
-                  description={slides[currentIndex]?.description}
-                  celular={slides[currentIndex]?.celular}
-                  ruta={slides[currentIndex]?.ruta}
-                />
-              </FadeIn>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 lg:pb-4">
+          <LazyShow>
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                {/* Image Column (Left) */}
+                <div className="relative h-[400px] lg:h-auto min-h-[400px] group overflow-hidden">
+                  <MainHeroImage slides={slides} currentIndex={currentIndex} />
+                  
+                  {/* Navigation Arrows - Overlaying the image */}
+                  {slides.length > 1 && (
+                    <>
+                      <button
+                        onClick={() =>
+                          setCurrentIndex((prev) =>
+                            prev === 0 ? slides.length - 1 : prev - 1
+                          )
+                        }
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
+                        aria-label="Anterior"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() =>
+                          setCurrentIndex((prev) => (prev + 1) % slides.length)
+                        }
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
+                        aria-label="Siguiente"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
 
-            {/* Image Column (Right) - 8 columns (approx 67%) */}
-            <div className="order-1 lg:order-2 lg:col-span-8 relative group">
-              <MainHeroImage slides={slides} currentIndex={currentIndex} />
-              
-              {/* Navigation Arrows - Overlaying the image */}
-              {slides.length > 1 && (
-                <>
-                  <button
-                    onClick={() =>
-                      setCurrentIndex((prev) =>
-                        prev === 0 ? slides.length - 1 : prev - 1
-                      )
-                    }
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
-                    aria-label="Anterior"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCurrentIndex((prev) => (prev + 1) % slides.length)
-                    }
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
-                    aria-label="Siguiente"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </>
-              )}
+                {/* Text Column (Right) */}
+                <div className="flex flex-col justify-center">
+                  <MainHero
+                    title={slides[currentIndex]?.title}
+                    description={slides[currentIndex]?.description}
+                    celular={slides[currentIndex]?.celular}
+                    ruta={slides[currentIndex]?.ruta}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </LazyShow>
         </div>
       </div>
       <FadeIn direction="up">

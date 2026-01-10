@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
+import CommunitySection from '../../components/CommunitySection';
 
 const NewsDetail = () => {
   const router = useRouter();
@@ -137,6 +138,10 @@ const NewsDetail = () => {
             </article>
 
             {newsItem && <CommentsSection noticiaId={newsItem.id} />}
+            
+            <div className="mt-12">
+              <CommunitySection />
+            </div>
           </div>
 
           {/* Sidebar Column */}
