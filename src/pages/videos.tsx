@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
 import { cursoService, Curso } from '../services/cursoService';
 import CommunitySection from '../components/CommunitySection';
-import CommunitySection from '../components/CommunitySection';
+
 
 const Videos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
