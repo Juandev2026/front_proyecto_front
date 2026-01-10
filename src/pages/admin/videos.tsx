@@ -106,7 +106,7 @@ const AdminVideos = () => {
           nivelService.getAll(),
           estadoService.getAll(),
         ]);
-      setCourses(coursesData);
+      setCourses(coursesData.sort((a, b) => b.id - a.id));
       setCategories(categoriesData);
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
