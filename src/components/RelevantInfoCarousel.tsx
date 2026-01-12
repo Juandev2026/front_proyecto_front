@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-
-import { motion } from 'framer-motion';
-
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline';
 import {
   informacionRelevanteService,
   InformacionRelevante,
@@ -9,129 +7,162 @@ import {
 
 const RelevantInfoCarousel = () => {
   const [items, setItems] = useState<InformacionRelevante[]>([]);
-  const [width, setWidth] = useState(0);
-  const carousel = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await informacionRelevanteService.getAll();
-        if (data.length > 0) {
-          setItems(data);
-        }
+        setItems(data);
       } catch (error) {
         console.error('Error fetching relevant info:', error);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
+  // Auto-scroll logic (Interval based)
   useEffect(() => {
-    if (carousel.current) {
-      setWidth(carousel.current.scrollWidth - carousel.current.offsetWidth);
-    }
-  }, [items]);
+    let intervalId: NodeJS.Timeout;
 
-  if (items.length === 0) return null;
+    if (!isHovered && items.length > 0) {
+      intervalId = setInterval(() => {
+        if (scrollRef.current) {
+           const container = scrollRef.current;
+           const scrollAmount = 532; // Card width (500) + gap/margin (approx 32)
+           
+           // If close to end, reset to 0 (or start) to loop
+           // Simple loop check: if scrollLeft + clientWidth >= scrollWidth - small_buffer
+           // specific check for duplicated list loop:
+           if (container.scrollLeft >= container.scrollWidth / 2) {
+              container.scrollLeft = 0;
+           }
+
+           container.scrollTo({
+              left: container.scrollLeft + scrollAmount,
+              behavior: 'smooth'
+           });
+        }
+      }, 3000); // 3 seconds
+    }
+
+    return () => clearInterval(intervalId);
+  }, [items, isHovered]);
+
+  const scrollManual = (direction: 'left' | 'right') => {
+      if (scrollRef.current) {
+          const container = scrollRef.current;
+          const scrollAmount = 532; 
+          const targetScroll = container.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount);
+          
+          container.scrollTo({
+              left: targetScroll,
+              behavior: 'smooth'
+          });
+      }
+  };
+
+  if (loading || items.length === 0) {
+    return null;
+  }
+
+  // Duplicate items enough times to ensure smooth scrolling
+  // 10 times to be safe for really wide screens
+  const duplicatedItems = [...items, ...items, ...items, ...items, ...items, ...items]; 
 
   return (
-    <div className="pb-0 pt-0 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Información Relevante
-          </h2>
-          <p className="mt-4 text-xl text-gray-500">
-            Descubre las últimas novedades y enlaces de interés
-          </p>
-        </div>
+    <div className="w-full bg-gray-50 py-8 relative group"
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          Información Relevante
+        </h2>
+        
+        <div className="relative">
+            {/* Buttons */}
+            <button 
+                onClick={() => scrollManual('left')}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-3 rounded-full shadow-lg text-gray-800 transition-all opacity-0 group-hover:opacity-100 hover:scale-110 focus:outline-none"
+                aria-label="Anterior"
+            >
+                <ChevronLeftIcon className="w-8 h-8" />
+            </button>
+            
+            <button 
+                onClick={() => scrollManual('right')}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-3 rounded-full shadow-lg text-gray-800 transition-all opacity-0 group-hover:opacity-100 hover:scale-110 focus:outline-none"
+                aria-label="Siguiente"
+            >
+                <ChevronRightIcon className="w-8 h-8" />
+            </button>
 
-        <motion.div
-          ref={carousel}
-          className="cursor-grab overflow-hidden"
-          whileTap={{ cursor: 'grabbing' }}
-        >
-          <motion.div
-            drag="x"
-            dragConstraints={{ right: 0, left: -width }}
-            className="flex space-x-6 pb-8"
-          >
-            {items.map((item) => (
-              <motion.div
-                key={item.id}
-                className="min-w-[300px] w-[300px] md:min-w-[350px] md:w-[350px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex-shrink-0 relative group"
-              >
-                <div className="h-48 overflow-hidden relative">
-                  <img
-                    src={item.urlImagen || '/assets/images/placeholder.jpg'}
+            {/* Carousel Container */}
+            <div 
+                ref={scrollRef}
+                className="flex overflow-x-hidden gap-8 pb-4"
+                style={{ scrollBehavior: 'smooth' }} 
+            >
+            {duplicatedItems.map((item, index) => (
+                <div
+                key={`${item.id}-${index}`}
+                className="flex-shrink-0 w-[500px] group/card bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col snap-start"
+                >
+                <div className="aspect-video w-full overflow-hidden relative">
+                    <img
+                    src={item.urlImagen || 'https://via.placeholder.com/300x169'}
                     alt={item.titulo}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {item.precio > 0 && (
-                    <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
-                      S/ {item.precio}
-                    </div>
-                  )}
+                    className="w-full h-full object-cover transform group-hover/card:scale-110 transition-transform duration-500"
+                    />
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">
+                <div className="p-5 flex flex-col flex-grow">
+                    <h3 className="font-bold text-gray-900 text-lg line-clamp-2 mb-2">
                     {item.titulo}
-                  </h3>
-                  <p className="text-base text-gray-500 mb-4 line-clamp-3 h-[4.5em]">
+                    </h3>
+                    <p className="text-sm text-gray-500 line-clamp-3 mb-4 flex-grow">
                     {item.descripcion}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                    {item.telefono && (
-                      <a
-                        href={`https://wa.me/${item.telefono}?text=${encodeURIComponent(
-                          'Me interesa este anuncio'
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-green-600 font-bold hover:text-green-700 transition-colors group-hover:underline"
-                      >
-                        Contactar
-                        <svg
-                          className="w-4 h-4 ml-2"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                        </svg>
-                      </a>
-                    )}
-                    {item.url && (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-primary font-semibold hover:text-blue-700 transition-colors group-hover:underline"
-                      >
-                        Ver más
-                        <svg
-                          className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 8l4 4m0 0l-4 4m4-4H3"
-                          />
-                        </svg>
-                      </a>
-                    )}
-                  </div>
+                    </p>
+                    
+                    <div className="space-y-3 mt-auto">
+                        {(item.precio > 0 || item.telefono) && (
+                            <div className="flex items-center justify-between text-sm font-semibold">
+                            {item.precio > 0 && <span className="text-green-600 text-lg">S/ {item.precio}</span>}
+                            </div>
+                        )}
+
+                        <div className="flex gap-2">
+                            {item.telefono && (
+                                <a 
+                                    href={`https://wa.me/${item.telefono.replace(/\D/g, '')}?text=Hola, me interesa: ${item.titulo}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                                >
+                                    <span>Comprar</span>
+                                </a>
+                            )}
+                            {item.url && (
+                                <a 
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200"
+                                >
+                                    Ver más
+                                </a>
+                            )}
+                        </div>
+                    </div>
                 </div>
-              </motion.div>
+                </div>
             ))}
-          </motion.div>
-        </motion.div>
+            </div>
+        </div>
       </div>
     </div>
   );

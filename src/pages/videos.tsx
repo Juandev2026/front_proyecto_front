@@ -4,6 +4,8 @@ import Link from 'next/link';
 
 import About from '../components/About';
 import AdSidebar from '../components/AdSidebar';
+import CommunitySection from '../components/CommunitySection';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -322,7 +324,15 @@ const Videos = () => {
           
 
         </div>
+
       </main>
+
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 pb-12">
+        <CommunitySection />
+        <div className="mt-16">
+          <RelevantInfoCarousel />
+        </div>
+      </div>
 
       <About />
       <Footer />

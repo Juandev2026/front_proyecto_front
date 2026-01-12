@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/MainLayout';
 import { normasLegalesService, NormaLegal } from '../services/normasLegalesService';
 import { DocumentTextIcon, SearchIcon, DownloadIcon } from '@heroicons/react/outline';
+import CommunitySection from '../components/CommunitySection';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 
 const NormasLegalesPage = () => {
   const [normas, setNormas] = useState<NormaLegal[]>([]);
@@ -110,7 +112,14 @@ const NormasLegalesPage = () => {
               )}
             </div>
           )}
+
         </div>
+         <div className="mt-16">
+            <CommunitySection />
+            <div className="mt-16">
+              <RelevantInfoCarousel />
+            </div>
+         </div>
       </div>
     </MainLayout>
   );

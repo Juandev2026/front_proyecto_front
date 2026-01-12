@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
 import CommunitySection from '../components/CommunitySection';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useAuth } from '../hooks/useAuth';
@@ -508,6 +509,9 @@ const News = () => {
         
         <div className="mt-16">
           <CommunitySection />
+          <div className="mt-16">
+            <RelevantInfoCarousel />
+          </div>
         </div>
       </main>
 
