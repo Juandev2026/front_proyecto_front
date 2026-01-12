@@ -148,7 +148,7 @@ const AdminPublicidad = () => {
       if (!editingId) {
         // Only validate on create, not on edit
         const publicidadesForNivel = publicidades.filter(
-          (p) => p.nivelId === formData.nivelId
+          (p) => Number(p.nivelId) === Number(formData.nivelId)
         );
         if (publicidadesForNivel.length >= 5) {
           // eslint-disable-next-line no-alert
@@ -159,10 +159,10 @@ const AdminPublicidad = () => {
         }
       } else {
         // On edit, check if changing nivel would exceed limit
-        const currentPublicidad = publicidades.find((p) => p.id === editingId);
-        if (currentPublicidad && currentPublicidad.nivelId !== formData.nivelId) {
+        const currentPublicidad = publicidades.find((p) => Number(p.id) === Number(editingId));
+        if (currentPublicidad && Number(currentPublicidad.nivelId) !== Number(formData.nivelId)) {
           const publicidadesForNewNivel = publicidades.filter(
-            (p) => p.nivelId === formData.nivelId && p.id !== editingId
+            (p) => Number(p.nivelId) === Number(formData.nivelId) && Number(p.id) !== Number(editingId)
           );
           if (publicidadesForNewNivel.length >= 5) {
             // eslint-disable-next-line no-alert

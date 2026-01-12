@@ -14,8 +14,7 @@ const TelegramCommunity = () => {
             Explora nuestra comunidad
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
-            Fomenta la conversación y el intercambio de ideas con otras personas
-            que compartan tus objetivos.
+          Canales informativos donde compartimos novedades, recursos y enlaces a grupos según los distintos procesos del magisterio.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">

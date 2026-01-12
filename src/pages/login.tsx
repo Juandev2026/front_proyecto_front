@@ -53,6 +53,9 @@ const Login = () => {
       if (response.nivelId) {
         localStorage.setItem('nivelId', String(response.nivelId));
       }
+      if (response.role) {
+        localStorage.setItem('role', response.role);
+      }
 
       if (
         response.role?.toUpperCase() === 'ADMIN' ||

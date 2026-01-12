@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 
 import {
   PencilIcon,
@@ -178,9 +179,15 @@ const AdminNews = () => {
     }
   }, [formData.modalidadId, niveles]);
 
+  const { user } = useAuth(); // Get user from hook
+
   const handleDelete = async (item: Noticia) => {
-    // Check again for safety
+    // Check if user is NOT admin to enforce the 7-day rule
+    // Ensure case-insensitive check just in case, though usually roles are uppercase
+    const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+
     if (
+      !isAdmin &&
       new Date().getTime() - new Date(item.fecha).getTime() >
       7 * 24 * 60 * 60 * 1000
     ) {
@@ -430,20 +437,23 @@ const AdminNews = () => {
                   <button
                     onClick={() => handleDelete(item)}
                     className={`mr-4 ${
+                      user?.role?.toUpperCase() !== 'ADMIN' &&
                       new Date().getTime() - new Date(item.fecha).getTime() >
-                      7 * 24 * 60 * 60 * 1000
+                        7 * 24 * 60 * 60 * 1000
                         ? 'text-gray-400 cursor-not-allowed'
                         : 'text-red-600 hover:text-red-900'
                     }`}
                     title={
+                      user?.role?.toUpperCase() !== 'ADMIN' &&
                       new Date().getTime() - new Date(item.fecha).getTime() >
-                      7 * 24 * 60 * 60 * 1000
+                        7 * 24 * 60 * 60 * 1000
                         ? 'No se puede eliminar después de 7 días'
                         : 'Eliminar'
                     }
                     disabled={
+                      user?.role?.toUpperCase() !== 'ADMIN' &&
                       new Date().getTime() - new Date(item.fecha).getTime() >
-                      7 * 24 * 60 * 60 * 1000
+                        7 * 24 * 60 * 60 * 1000
                     }
                   >
                     <TrashIcon className="w-5 h-5" />

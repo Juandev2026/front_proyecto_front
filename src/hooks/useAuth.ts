@@ -6,6 +6,7 @@ export const useAuth = () => {
     name: string;
     id?: number;
     nivelId?: number;
+    role?: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,6 +15,7 @@ export const useAuth = () => {
     let fullName = localStorage.getItem('fullName');
     let userId = localStorage.getItem('userId');
     let nivelId = localStorage.getItem('nivelId');
+    let role = localStorage.getItem('role');
 
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') {
       userId = null;
@@ -23,7 +25,7 @@ export const useAuth = () => {
     }
 
     if (token) {
-      if (!fullName || !userId) {
+      if (!fullName || !userId || !role) {
         try {
           const tokenParts = token.split('.');
           if (tokenParts.length === 3) {
@@ -61,6 +63,18 @@ export const useAuth = () => {
                 localStorage.setItem('userId', userId);
               }
             }
+
+            // Extract Role
+            if (!role) {
+                role = 
+                  payload.role || 
+                  payload.Role || 
+                  payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                
+                if (role) {
+                    localStorage.setItem('role', role);
+                }
+            }
           }
         } catch (e) {
           console.error('Error decoding token:', e);
@@ -75,6 +89,7 @@ export const useAuth = () => {
           name: fullName,
           id: !isNaN(parsedId!) ? parsedId : undefined,
           nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
+          role: role || undefined,
         });
       } else {
         setUser(null); // If token exists but no fullName, user is not fully identified

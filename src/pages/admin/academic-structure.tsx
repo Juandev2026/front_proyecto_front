@@ -240,8 +240,9 @@ const AcademicStructure = () => {
         await especialidadesService.delete(id);
       }
       fetchData();
-    } catch (error) {
-      // Error deleting item
+    } catch (error: any) {
+      // console.error('Error deleting item:', error);
+      alert(error.message || 'Error al eliminar el elemento. Asegúrese de que no tenga dependencias.');
     }
   };
 
