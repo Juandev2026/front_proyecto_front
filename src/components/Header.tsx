@@ -130,20 +130,42 @@ const Menu = () => {
                   </Link>
                 ))}
               </div>
-              <a
-                href={callToAction.href}
-                className={`block w-full px-5 py-3 text-center font-medium text-primary bg-gray-50 hover:bg-gray-100`}
-              >
-                {callToAction.text}
-              </a>
-              <div className="mt-6 px-5">
-                <Link href="/register">
-                  <a className="block w-full px-5 py-3 text-center font-medium text-white bg-primary hover:bg-blue-700 rounded-md">
-                    Registro
+
+              
+              {!isAuthenticated ? (
+                <>
+                  <a
+                    href={callToAction.href}
+                    className={`block w-full px-5 py-3 text-center font-medium text-primary bg-gray-50 hover:bg-gray-100`}
+                  >
+                    {callToAction.text}
                   </a>
-                </Link>
-                <div className="mt-4 text-center"></div>
-              </div>
+                  <div className="mt-6 px-5">
+                    <Link href="/register">
+                      <a className="block w-full px-5 py-3 text-center font-medium text-white bg-primary hover:bg-blue-700 rounded-md">
+                        Registro
+                      </a>
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-6 px-5 space-y-4">
+                  <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
+                    Hola, {user?.name}
+                  </div>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('fullName');
+                      window.location.reload();
+                    }}
+                    className="block w-full px-5 py-3 text-center font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
+              <div className="mt-4 text-center"></div>
             </div>
           </Popover.Panel>
         </Transition>

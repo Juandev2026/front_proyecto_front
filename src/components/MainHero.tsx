@@ -46,28 +46,24 @@ const MainHero = ({
 
         <div className="mt-8 flex gap-4">
           {celular ? (
-            <div className="rounded-full shadow-md">
               <a
                 href={`https://wa.me/${celular}?text=${encodeURIComponent(
                   'Me interesa este anuncio'
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
+                className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
               >
                 WhatsApp
               </a>
-            </div>
           ) : (
             !title && (
-              <div className="rounded-full shadow-md">
                 <a
                   href={mainHero.primaryAction.href}
-                  className={`w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-primary hover:bg-primary-dark md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
+                  className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-primary hover:bg-primary-dark md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
                 >
                   {mainHero.primaryAction.text}
                 </a>
-              </div>
             )
           )}
 

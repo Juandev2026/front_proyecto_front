@@ -102,25 +102,50 @@ const NewsDetail = () => {
           {/* Main Content Column */}
           <div className="lg:col-span-8">
             <article className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-              <div className="w-full relative group cursor-pointer" onClick={() => setIsImageModalOpen(true)}>
-                <img
-                  src={newsItem.imageUrl || ''}
-                  alt={newsItem.titulo}
-                  className="w-full h-auto object-contain max-h-[600px] bg-gray-100"
-                />
-                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="bg-white/80 rounded-full p-3 shadow-lg backdrop-blur-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                        </svg>
+              <div className="w-full relative group">
+                {newsItem.archivoUrl && newsItem.archivoUrl.toLowerCase().endsWith('.pdf') ? (
+                  <div className="w-full h-[800px] bg-gray-100">
+                    <iframe
+                      src={newsItem.archivoUrl}
+                      className="w-full h-full"
+                      title="Visor de Documento"
+                    />
+                     <div className="absolute bottom-4 right-4 z-10">
+                        <a 
+                          href={newsItem.archivoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="bg-primary text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                        >
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                           </svg>
+                           Descargar PDF
+                        </a>
+                     </div>
+                  </div>
+                ) : (
+                  <div className="cursor-pointer" onClick={() => setIsImageModalOpen(true)}>
+                    <img
+                      src={newsItem.archivoUrl || newsItem.imageUrl || ''}
+                      alt={newsItem.titulo}
+                      className="w-full h-auto object-contain max-h-[800px] bg-gray-100"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                        <div className="bg-white/80 rounded-full p-3 shadow-lg backdrop-blur-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                            </svg>
+                        </div>
                     </div>
-                 </div>
-                <div className="absolute top-4 right-4 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                     </svg>
-                     Ver imagen completa
-                </div>
+                    <div className="absolute top-4 right-4 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                        Ver imagen completa
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="p-6 md:p-10 border-b border-gray-100">
@@ -171,7 +196,7 @@ const NewsDetail = () => {
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
              <img 
-               src={newsItem.imageUrl || ''} 
+               src={newsItem.archivoUrl && !newsItem.archivoUrl.toLowerCase().endsWith('.pdf') ? newsItem.archivoUrl : (newsItem.imageUrl || '')} 
                alt={newsItem.titulo} 
                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
                onClick={(e) => e.stopPropagation()} // Prevent close when clicking image
