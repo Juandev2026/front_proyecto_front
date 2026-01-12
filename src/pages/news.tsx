@@ -260,9 +260,14 @@ const News = () => {
           </div>
         )}
 
+        {/* NEW Full Width Ad Section */}
+        <div className="mb-12">
+          <AdSidebar />
+        </div>
+
         <div className="grid grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-12 lg:col-span-6 space-y-10">
+          <div className="col-span-12 lg:col-span-8 space-y-10">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -444,7 +449,7 @@ const News = () => {
           </div>
 
           {/* MIDDLE COLUMN: Destacados (Updated to White/Light Theme) */}
-          <div className="col-span-12 lg:col-span-3 border-l border-gray-100 pl-0 lg:pl-8 space-y-6">
+          <div className="col-span-12 lg:col-span-4 border-l border-gray-100 pl-0 lg:pl-8 space-y-6">
             <h3 className="text-xl font-bold text-gray-900 border-b-2 border-primary pb-2 mb-4 inline-block">
               Destacados
             </h3>
@@ -488,11 +493,6 @@ const News = () => {
                 </Link>
               ))}
             </div>
-          </div>
-
-          {/* RIGHT COLUMN: Banners */}
-          <div className="col-span-12 lg:col-span-3 space-y-8">
-            <AdSidebar />
           </div>
         </div>
       </main>
