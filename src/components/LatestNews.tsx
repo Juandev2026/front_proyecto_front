@@ -164,14 +164,14 @@ const LatestNews = () => {
                   key={news.id}
                   className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
                 >
-                  <div className="w-1/3 relative overflow-hidden">
+                  <div className="w-2/5 relative overflow-hidden">
                     <img
                       className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
                       src={news.imageUrl || '/assets/images/placeholder.png'}
                       alt={stripHtml(news.titulo)}
                     />
                   </div>
-                  <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
+                  <div className="w-3/5 p-4 sm:p-8 flex flex-col justify-between">
                     <div>
                       <h3
                         className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
@@ -183,7 +183,7 @@ const LatestNews = () => {
                         </p>
                       )}
                       <div className="w-full border-t border-gray-100 my-4"></div>
-                      <p className="text-lg text-gray-600 line-clamp-3">
+                      <p className="text-xl text-gray-700 line-clamp-3">
                         {stripHtml(news.descripcion)}
                       </p>
                     </div>
@@ -208,14 +208,14 @@ const LatestNews = () => {
                         key={news.id}
                         className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
                       >
-                        <div className="w-1/3 relative overflow-hidden">
+                        <div className="w-2/5 relative overflow-hidden">
                           <img
                             className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
                             src={news.imageUrl || '/assets/images/placeholder.png'}
                             alt={stripHtml(news.titulo)}
                           />
                         </div>
-                        <div className="w-2/3 p-4 sm:p-8 flex flex-col justify-between">
+                        <div className="w-3/5 p-4 sm:p-8 flex flex-col justify-between">
                           <div>
                             <h3
                               className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
@@ -227,7 +227,7 @@ const LatestNews = () => {
                               </p>
                             )}
                             <div className="w-full border-t border-gray-100 my-4"></div>
-                            <p className="text-lg text-gray-600 line-clamp-3">
+                            <p className="text-xl text-gray-700 line-clamp-3">
                               {stripHtml(news.descripcion)}
                             </p>
                           </div>
