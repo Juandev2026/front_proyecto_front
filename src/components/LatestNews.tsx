@@ -59,9 +59,25 @@ const LatestNews = () => {
     tiktokScript.async = true;
     document.body.appendChild(tiktokScript);
 
+    // Load Facebook SDK
+    const facebookScript = document.createElement('script');
+    facebookScript.src = "https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v18.0";
+    facebookScript.async = true;
+    facebookScript.crossOrigin = "anonymous";
+    facebookScript.defer = true;
+    document.body.appendChild(facebookScript);
+    
+    // Initialize Facebook SDK if already loaded
+    if (window.FB) {
+        window.FB.XFBML.parse();
+    }
+
     return () => {
       if (document.body.contains(tiktokScript)) {
         document.body.removeChild(tiktokScript);
+      }
+      if (document.body.contains(facebookScript)) {
+        document.body.removeChild(facebookScript);
       }
     };
   }, []);
@@ -349,18 +365,7 @@ const LatestNews = () => {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.954 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </div>
-              <div className="p-3 text-center overflow-hidden">
-                <iframe
-                  src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fjuanavendocente%3Frdid%3DzjANupcVQeTnGgXL%23&tabs=timeline&width=500&height=400&small_header=false&adapt_container_width=false&hide_cover=false&show_facepile=false&appId"
-                  width="500"
-                  height="400"
-                  style={{ border: 'none', overflow: 'hidden' }}
-                  scrolling="no"
-                  frameBorder="0"
-                  allowFullScreen={true}
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                ></iframe>
-              </div>
+              <div className="fb-page" data-href="https://www.facebook.com/avendocenteperu" data-tabs="timeline" data-width="600" data-height="600" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">AVEND docente - Perú</a></blockquote></div>
             </div>
 
             {/* TikTok */}

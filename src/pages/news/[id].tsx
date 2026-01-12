@@ -19,6 +19,8 @@ const NewsDetail = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
   useEffect(() => {
     if (id) {
       const fetchNewsItem = async () => {
@@ -100,40 +102,46 @@ const NewsDetail = () => {
           {/* Main Content Column */}
           <div className="lg:col-span-8">
             <article className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-              <div className="relative h-64 md:h-96 w-full">
+              <div className="w-full relative group cursor-pointer" onClick={() => setIsImageModalOpen(true)}>
                 <img
                   src={newsItem.imageUrl || ''}
                   alt={newsItem.titulo}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="w-full h-auto object-contain max-h-[600px] bg-gray-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
-                  {categoryName && (
-                    <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full mb-3">
-                      {categoryName}
-                    </span>
-                  )}
-                  <h1
-                    className="text-3xl md:text-5xl font-bold leading-tight mb-2"
-                    dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
-                  />
-                  <div className="flex flex-col md:flex-row md:items-center text-sm md:text-base text-gray-200 gap-2 md:gap-4">
-                    <span>{new Date(newsItem.fecha).toLocaleDateString()}</span>
-                    {newsItem.autor && (
-                      <>
-                        <span className="hidden md:inline">•</span>
-                        <span>Por: {newsItem.autor}</span>
-                      </>
-                    )}
-                  </div>
+                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="bg-white/80 rounded-full p-3 shadow-lg backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                    </div>
+                 </div>
+                <div className="absolute top-4 right-4 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                     </svg>
+                     Ver imagen completa
                 </div>
               </div>
-
-              <div className="p-6 md:p-10">
-                <div
-                  className="prose prose-lg max-w-none text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
+              
+              <div className="p-6 md:p-10 border-b border-gray-100">
+                {categoryName && (
+                  <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full mb-4">
+                    {categoryName}
+                  </span>
+                )}
+                <h1
+                  className="text-3xl md:text-5xl font-bold leading-tight mb-4 text-gray-900"
+                  dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
                 />
+                <div className="flex flex-col md:flex-row md:items-center text-sm md:text-base text-gray-500 gap-2 md:gap-4 font-medium">
+                  <span>{new Date(newsItem.fecha).toLocaleDateString()}</span>
+                  {newsItem.autor && (
+                    <>
+                      <span className="hidden md:inline">•</span>
+                      <span>Por: {newsItem.autor}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </article>
 
@@ -154,6 +162,31 @@ const NewsDetail = () => {
       </main>
 
       <Footer />
+
+      {/* Image Modal */}
+      {isImageModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 transition-opacity duration-300"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+             <img 
+               src={newsItem.imageUrl || ''} 
+               alt={newsItem.titulo} 
+               className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
+               onClick={(e) => e.stopPropagation()} // Prevent close when clicking image
+             />
+             <button 
+                className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors z-50"
+                onClick={() => setIsImageModalOpen(false)}
+             >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+             </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

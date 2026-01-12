@@ -458,36 +458,39 @@ const News = () => {
               <div className="space-y-4">
                 {displayHighlights.map((item) => (
                   <Link key={item.id} href={`/news/${item.id}`}>
-                    <a className="group block bg-white border border-gray-200 p-4 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-1">
-                      <div className="flex flex-col h-full relative z-10">
-                        <div className="mb-3">
-                          <span className="text-xs font-bold uppercase tracking-wide text-primary mb-2 block">
+                    <a className="group block bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden">
+                      {/* Image at Top */}
+                      <div className="aspect-video w-full relative overflow-hidden">
+                        <img
+                          src={
+                            item.imageUrl || 'https://via.placeholder.com/400x225'
+                          }
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute top-2 left-2">
+                           <span className="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
                             {getCategoryName(item.categoriaId)}
-                          </span>
-                          <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-3">
-                            {stripHtml(item.titulo)}
-                          </h3>
+                           </span>
                         </div>
+                      </div>
 
-                        <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-50">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                            <img
-                              src={
-                                item.imageUrl || 'https://via.placeholder.com/100'
-                              }
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            <p className="font-semibold">
-                              {new Date(item.fecha).toLocaleDateString()}
-                            </p>
-                            <p className="flex items-center gap-1 mt-0.5 text-gray-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                              Popular
-                            </p>
-                          </div>
+                      <div className="p-4 flex flex-col">
+                        <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-3">
+                          {stripHtml(item.titulo)}
+                        </h3>
+
+                        <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                          <p className="font-medium flex items-center">
+                             <svg className="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                             </svg>
+                             {new Date(item.fecha).toLocaleDateString()}
+                          </p>
+                          <p className="flex items-center gap-1 text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            Popular
+                          </p>
                         </div>
                       </div>
                     </a>

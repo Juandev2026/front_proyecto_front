@@ -12,6 +12,7 @@ import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import SEO from '../components/SEO';
+
 import { anuncioService } from '../services/anuncioService';
 
 
@@ -174,7 +175,7 @@ const App = () => {
         </>
       </LazyShow>
       
-
+      
 
       <Analytics />
       <Footer />
