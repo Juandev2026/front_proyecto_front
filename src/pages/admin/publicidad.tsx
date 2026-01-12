@@ -34,6 +34,9 @@ const AdminPublicidad = () => {
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Publicidad | null>(null);
+  
+  // Filter State
+  const [selectedNivelFilter, setSelectedNivelFilter] = useState<number>(0);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -144,34 +147,29 @@ const AdminPublicidad = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Validate: Max 5 publicidades per nivel
-      if (!editingId) {
-        // Only validate on create, not on edit
-        const publicidadesForNivel = publicidades.filter(
-          (p) => Number(p.nivelId) === Number(formData.nivelId)
-        );
-        if (publicidadesForNivel.length >= 5) {
-          // eslint-disable-next-line no-alert
-          alert(
-            `Ya existen 5 publicidades para este nivel. Solo se permiten 5 publicidades por nivel. Por favor, edite o elimine una existente.`
-          );
-          return;
-        }
-      } else {
-        // On edit, check if changing nivel would exceed limit
-        const currentPublicidad = publicidades.find((p) => Number(p.id) === Number(editingId));
-        if (currentPublicidad && Number(currentPublicidad.nivelId) !== Number(formData.nivelId)) {
-          const publicidadesForNewNivel = publicidades.filter(
-            (p) => Number(p.nivelId) === Number(formData.nivelId) && Number(p.id) !== Number(editingId)
-          );
-          if (publicidadesForNewNivel.length >= 5) {
-            // eslint-disable-next-line no-alert
-            alert(
-              `Ya existen 5 publicidades para el nivel seleccionado. Solo se permiten 5 publicidades por nivel.`
-            );
-            return;
+      // Validate: Max 5 publicidades PUBLICADAS per nivel 
+      // Need to find which ID corresponds to 'Publicado' - assuming based on name, or logic
+      // Ideally we'd have a constant, but we'll find it from 'estados'
+      const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+      const publicadoId = estadoPublicado ? estadoPublicado.id : 0; // Fallback or handle error?
+
+      // Only check limit if we are trying to save as "Publicado"
+      if (Number(formData.estadoId) === Number(publicadoId)) {
+          // Count how many ACTIVE (Publicado) ads exist for this level, EXCLUDING the current one if editing
+          const existingPublicadosCount = publicidades.filter(
+            (p) => 
+              Number(p.nivelId) === Number(formData.nivelId) && 
+              Number(p.estadoId) === Number(publicadoId) &&
+              (editingId ? Number(p.id) !== Number(editingId) : true)
+          ).length;
+
+          if (existingPublicadosCount >= 5) {
+             // eslint-disable-next-line no-alert
+             alert(
+               `Ya existen 5 publicidades PUBLICADAS para este nivel. Solo se permiten 5 publicidades activas por nivel. Puede guardar esta publicidad como "Borrador" o eliminar/desactivar otra.`
+             );
+             return;
           }
-        }
       }
 
       let finalUrl = formData.imageUrl;
@@ -217,10 +215,14 @@ const AdminPublicidad = () => {
   };
 
   // Pagination Logic
+  const filteredItems = selectedNivelFilter === 0 
+    ? publicidades 
+    : publicidades.filter(p => p.nivelId === selectedNivelFilter);
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = publicidades.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(publicidades.length / itemsPerPage);
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -248,6 +250,7 @@ const AdminPublicidad = () => {
             setIsModalOpen(true);
             setEditingId(null);
             setFile(null);
+            const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
             setFormData({
               titulo: '',
               imageUrl: '',
@@ -256,14 +259,35 @@ const AdminPublicidad = () => {
               nivelId: 0,
               precio: 0,
               telefono: '',
-              estadoId: 0,
+              estadoId: estadoPublicado ? estadoPublicado.id : 0, // Default to Publicado
             });
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
-          Nueva Publicidad
+          nueva Publicidad
         </button>
+      </div>
+
+      <div className="flex justify-end mb-4">
+         <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700">Filtrar por Nivel:</label>
+            <select
+              className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
+              value={selectedNivelFilter}
+              onChange={(e) => {
+                setSelectedNivelFilter(Number(e.target.value));
+                setCurrentPage(1); // Reset pagination when filter changes
+              }}
+            >
+              <option value={0}>Todos los Niveles</option>
+              {niveles.map((nivel) => (
+                <option key={nivel.id} value={nivel.id}>
+                  {nivel.nombre}
+                </option>
+              ))}
+            </select>
+         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -401,11 +425,11 @@ const AdminPublicidad = () => {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
+                Mostrando <span className="font-medium">{filteredItems.length > 0 ? indexOfFirstItem + 1 : 0}</span> a{' '}
                 <span className="font-medium">
-                  {Math.min(indexOfLastItem, publicidades.length)}
+                  {Math.min(indexOfLastItem, filteredItems.length)}
                 </span>{' '}
-                de <span className="font-medium">{publicidades.length}</span> resultados
+                de <span className="font-medium">{filteredItems.length}</span> resultados
               </p>
             </div>
             <div>
