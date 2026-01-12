@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { publicidadService, Publicidad } from '../services/publicidadService';
 import { useAuth } from '../hooks/useAuth';
+import { error } from 'console';
 
 const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
   const [ads, setAds] = useState<Publicidad[]>([]);
@@ -26,8 +27,31 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
           adsArray = adsArray.filter((ad) => ad.nivelId === user.nivelId);
         }
         
-        // Sort by ID descending (Latest first)
-        adsArray.sort((a, b) => b.id - a.id);
+        
+         // Sort by Orden ASC, then ID DESC
+        // Sort by Orden ASC, then ID DESC
+        // Logic: Valid positive orders (1, 2, 3) come first. 0 or undefined come last.
+        adsArray.sort((a, b) => {
+           const ordenA = Number(a.orden);
+           const ordenB = Number(b.orden);
+           
+           // Check if they have specific positive priority
+           const hasPriorityA = !isNaN(ordenA) && ordenA > 0;
+           const hasPriorityB = !isNaN(ordenB) && ordenB > 0;
+
+           if (hasPriorityA && hasPriorityB) {
+              return ordenA - ordenB; // Both have priority: 1 before 2
+           }
+           if (hasPriorityA && !hasPriorityB) {
+              return -1; // A has priority, B doesn't: A comes first
+           }
+           if (!hasPriorityA && hasPriorityB) {
+              return 1; // B has priority, A doesn't: B comes first
+           }
+
+           // Neither has priority (both 0 or invalid): Tie-breaker Newest First
+           return b.id - a.id; 
+        });
 
         // Limit to 5 ads total
         adsArray = adsArray.slice(0, 5);

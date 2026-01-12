@@ -51,6 +51,7 @@ const AdminPublicidad = () => {
     precio: 0,
     telefono: '',
     estadoId: 0,
+    orden: 0,
   });
 
   const fetchData = async () => {
@@ -139,6 +140,7 @@ const AdminPublicidad = () => {
       precio: item.precio || 0,
       telefono: item.telefono || '',
       estadoId: item.estadoId || 0,
+      orden: item.orden || 0,
     });
     setIsModalOpen(true);
   };
@@ -203,6 +205,7 @@ const AdminPublicidad = () => {
         precio: 0,
         telefono: '',
         estadoId: 0,
+        orden: 0,
       });
       setFile(null);
       setEditingId(null);
@@ -260,6 +263,7 @@ const AdminPublicidad = () => {
               precio: 0,
               telefono: '',
               estadoId: estadoPublicado ? estadoPublicado.id : 0, // Default to Publicado
+              orden: 0,
             });
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -296,6 +300,9 @@ const AdminPublicidad = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Orden
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Posición
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -318,6 +325,9 @@ const AdminPublicidad = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {currentItems.map((item, index) => (
               <tr key={item.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {item.orden || 0}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                   {indexOfFirstItem + index + 1}
                 </td>
@@ -648,6 +658,25 @@ const AdminPublicidad = () => {
                 />
               </div>
 
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Orden de Visualización (Menor va primero)
+                </label>
+                <input
+                  type="number"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.orden}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      orden: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+
+
                <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Estado
@@ -772,6 +801,14 @@ const AdminPublicidad = () => {
                       {viewingItem.precio > 0
                         ? `S/ ${viewingItem.precio}`
                         : 'Gratis'}
+                    </p>
+                  </div>
+                   <div>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Orden
+                    </label>
+                    <p className="text-gray-900">
+                      {viewingItem.orden || 0}
                     </p>
                   </div>
                   <div>

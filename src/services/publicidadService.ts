@@ -12,6 +12,7 @@ export interface Publicidad {
   precio: number;
   telefono: string;
   estadoId?: number;
+  orden?: number;
   estado?: {
     id: number;
     nombre: string;
@@ -69,6 +70,7 @@ export const publicidadService = {
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
           estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
+          orden: publicidad.orden ? Number(publicidad.orden) : 0,
         }),
       });
 
@@ -97,6 +99,7 @@ export const publicidadService = {
           precio: publicidad.precio ? Number(publicidad.precio) : 0,
           telefono: publicidad.telefono || '',
           estadoId: publicidad.estadoId ? Number(publicidad.estadoId) : 0,
+          orden: publicidad.orden ? Number(publicidad.orden) : 0,
         }),
       });
 
