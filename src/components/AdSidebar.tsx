@@ -2,17 +2,15 @@ import React, { useEffect, useState } from 'react';
 
 
 import { publicidadService, Publicidad } from '../services/publicidadService';
+import { useAuth } from '../hooks/useAuth';
 
 const AdSidebar = () => {
   const [ads, setAds] = useState<Publicidad[]>([]);
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        // PER USER REQUEST:
-        // "LA PUBLICIDAD QUE YA NO SEA POR NIVEL CUANDO INICIES SESIÓN SI NO QUE SEA PARA TODOS"
-        // So we ALWAYS fetch generic/all ads, ignoring user level logic.
-        
         let fetchedAds: Publicidad[] | Publicidad = await publicidadService.getAll();
 
         // Normalize to array
@@ -23,6 +21,13 @@ const AdSidebar = () => {
           (ad) => ad.estado?.nombre?.toUpperCase() === 'PUBLICADO'
         );
 
+        // Filter by level if authenticated
+        if (isAuthenticated && user?.nivelId) {
+          adsArray = adsArray.filter((ad) => ad.nivelId === user.nivelId);
+          // Limit to 5 ads per level
+          adsArray = adsArray.slice(0, 5);
+        }
+
         setAds(adsArray);
       } catch (error) {
         console.error('Error loading ads:', error);
@@ -31,7 +36,7 @@ const AdSidebar = () => {
     };
 
     fetchAds();
-  }, []); // Removed dependencies acting on user level or route
+  }, [user?.nivelId, isAuthenticated]);
 
   if (ads.length === 0) {
     return (
