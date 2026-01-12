@@ -81,7 +81,7 @@ export const dashboardService = {
           type: 'video',
           title: c.titulo,
           date: 'Reciente',
-          action: 'Nuevo video subido',
+          action: 'Nuevo curso subido',
         });
       });
 

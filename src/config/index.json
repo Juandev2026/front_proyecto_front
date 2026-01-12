@@ -22,7 +22,7 @@
     },
     {
       "name": "Cursos",
-      "href": "/videos"
+      "href": "/cursos"
     },
     {
       "name": "Normas Legales",
@@ -147,10 +147,10 @@
         "name": "Recursos",
         "href": "/materials"
       },
-      {
-        "name": "Cursos",
-        "href": "/videos"
-      }
+    {
+      "name": "Cursos",
+      "href": "/cursos"
+    }
     ],
     "socialMedia": {
       "github": "https://github.com/issaafalkattan",
@@ -370,7 +370,7 @@
       }
     ]
   },
-  "videosPage": {
+  "cursosPage": {
     "title": "Nuestros Cursos",
     "subtitle": "Aprende con los mejores expertos",
     "categories": ["Clases", "Tutoriales", "Entrevistas"],

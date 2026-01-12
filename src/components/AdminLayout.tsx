@@ -85,8 +85,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       ),
     },
     {
-      name: 'Videos',
-      href: '/admin/videos',
+      name: 'Cursos',
+      href: '/admin/cursos',
       icon: (
         <svg
           className="w-6 h-6"

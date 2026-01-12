@@ -17,11 +17,11 @@ const MainHero = ({
   return (
     <main
       id="main-hero"
-      className="w-full flex flex-col justify-center bg-gradient-to-br from-white to-gray-50 h-full p-8 md:p-12"
+      className="w-full flex flex-col justify-center bg-gradient-to-br from-white to-gray-50 h-full p-6 md:p-12"
     >
       <div className="text-left relative z-10">
         <div>
-          <h1 className="text-4xl font-extrabold text-blue-600 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-600 leading-tight">
             <span className="block xl:inline">{title || mainHero.title}</span>{' '}
             {!title && (
               <span className={`block text-primary xl:inline uppercase`}>

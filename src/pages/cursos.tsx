@@ -15,7 +15,7 @@ import { cursoService, Curso } from '../services/cursoService';
 
 
 
-const Videos = () => {
+const Cursos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -340,4 +340,4 @@ const Videos = () => {
   );
 };
 
-export default Videos;
+export default Cursos;

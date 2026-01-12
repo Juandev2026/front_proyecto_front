@@ -22,7 +22,7 @@ import { uploadService } from '../../services/uploadService';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
-const AdminVideos = () => {
+const AdminCursos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
@@ -886,4 +886,4 @@ const AdminVideos = () => {
   );
 };
 
-export default AdminVideos;
+export default AdminCursos;
