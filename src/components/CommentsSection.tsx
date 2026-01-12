@@ -13,7 +13,7 @@ interface CommentsSectionProps {
 const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   const [comments, setComments] = useState<Comentario[]>([]);
   const [usersList, setUsersList] = useState<User[]>([]);
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -78,7 +78,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
   };
 
   const showMoreComments = () => {
-    setVisibleCount((prev) => prev + 5);
+    setVisibleCount(comments.length);
   };
 
   return (
@@ -139,7 +139,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ noticiaId }) => {
           onClick={showMoreComments}
           className="w-full text-center text-blue-600 hover:text-blue-800 font-medium py-2 mb-6 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
         >
-          Ver más comentarios ({comments.length - visibleCount} restantes)
+          Ver todos los comentarios ({comments.length - visibleCount} restantes)
         </button>
       )}
 

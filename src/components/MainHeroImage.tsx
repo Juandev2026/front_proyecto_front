@@ -12,7 +12,7 @@ const MainHeroImage: React.FC<MainHeroImageProps> = ({
   currentIndex,
 }) => {
   return (
-    <div className="relative w-full h-[400px] lg:h-[500px] z-0 rounded-2xl overflow-hidden shadow-2xl">
+    <div className="relative w-full h-full min-h-[400px] z-0 overflow-hidden">
       <Slider slides={slides} currentIndex={currentIndex} />
     </div>
   );

@@ -10,6 +10,8 @@ import Header from '../components/Header';
 import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
 import { cursoService, Curso } from '../services/cursoService';
+import CommunitySection from '../components/CommunitySection';
+
 
 const Videos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
@@ -316,6 +318,10 @@ const Videos = () => {
             <div className="col-span-12 lg:col-span-3">
               <AdSidebar />
             </div>
+          </div>
+          
+          <div className="mt-20">
+            <CommunitySection />
           </div>
         </div>
       </main>
