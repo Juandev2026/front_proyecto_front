@@ -19,7 +19,7 @@ const MainHero = ({
     >
       <div className="text-left relative z-10">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="text-4xl font-extrabold text-blue-600 leading-tight">
             <span className="block xl:inline">{title || mainHero.title}</span>{' '}
             {!title && (
               <span className={`block text-primary xl:inline uppercase`}>
@@ -27,7 +27,7 @@ const MainHero = ({
               </span>
             )}
           </h1>
-          <p className="mt-4 text-gray-600 text-base leading-relaxed font-medium">
+          <p className="mt-4 text-black text-base leading-relaxed font-bold">
             {description || mainHero.description}
           </p>
         </div>
