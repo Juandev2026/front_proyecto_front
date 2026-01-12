@@ -24,10 +24,12 @@ const Menu = () => {
           >
             <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0">
               <div className="flex items-center justify-between w-full md:w-auto">
-                <a href="#">
-                  <span className="sr-only">{companyName}</span>
-                  <img alt="logo" className="h-16 w-auto sm:h-16" src={logo} />
-                </a>
+                <Link href="/">
+                  <a>
+                    <span className="sr-only">{companyName}</span>
+                    <img alt="logo" className="h-16 w-auto sm:h-16" src={logo} />
+                  </a>
+                </Link>
                 <div className="-mr-2 flex items-center md:hidden">
                   <Popover.Button
                     className={`bg-background rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-secondary`}
@@ -104,7 +106,11 @@ const Menu = () => {
             >
               <div className="px-5 pt-4 flex items-center justify-between">
                 <div>
-                  <img className="h-8 w-auto" src={logo} alt="" />
+                  <Link href="/">
+                    <a>
+                      <img className="h-8 w-auto" src={logo} alt="logo" />
+                    </a>
+                  </Link>
                 </div>
                 <div className="-mr-2">
                   <Popover.Button

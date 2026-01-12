@@ -137,9 +137,11 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
                      </div>
                 )}
                
-                {/* Badge: "VENTA" if price > 0, else "PUBLICIDAD" */}
+
+
+                {/* Badge: Always "PUBLICIDAD" */}
                 <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none">
-                  {hasPrice ? 'VENTA' : 'PUBLICIDAD'}
+                  PUBLICIDAD
                 </div>
             </div>
 

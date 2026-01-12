@@ -281,7 +281,7 @@ const AdminCategories = () => {
         <div className="flex space-x-4">
           <TabButton type="standard" label="Categoría de Cursos" />
           <TabButton type="general" label="Categoría de Noticias" />
-          <TabButton type="simple" label="Categoría de Materiales" />
+          <TabButton type="simple" label="Categoría de Recursos" />
         </div>
       </div>
 
