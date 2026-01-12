@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import About from '../components/About';
 import Analytics from '../components/Analytics';
-// import ChannelsFooter from '../components/ChannelsFooter';
+
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -13,6 +13,7 @@ import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import SEO from '../components/SEO';
 import { anuncioService } from '../services/anuncioService';
+
 
 
 
@@ -173,6 +174,9 @@ const App = () => {
           <About />
         </>
       </LazyShow>
+      
+
+
       <Analytics />
       <Footer />
     </div>

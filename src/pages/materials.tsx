@@ -6,6 +6,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
+import CommunitySection from '../components/CommunitySection';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -362,6 +363,10 @@ const Materials = () => {
           </div>
         </div>
       </main>
+
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 pb-12">
+        <CommunitySection />
+      </div>
 
       <Footer />
 

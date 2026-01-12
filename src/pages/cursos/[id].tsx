@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import CommunitySection from '../../components/CommunitySection';
 import { cursoService, Curso } from '../../services/cursoService';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
@@ -449,6 +450,10 @@ const CourseDetail = () => {
               </div>
             </div>
           </div>
+        </div>
+        
+        <div className="mt-20">
+          <CommunitySection />
         </div>
       </main>
 

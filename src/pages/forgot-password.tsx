@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import CommunitySection from '../components/CommunitySection';
 import { authService } from '../services/authService';
 
 const ForgotPassword = () => {
@@ -127,6 +128,9 @@ const ForgotPassword = () => {
             </form>
           </div>
         </div>
+      </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+        <CommunitySection />
       </div>
       <Footer />
     </div>

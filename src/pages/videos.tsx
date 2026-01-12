@@ -10,7 +10,7 @@ import Header from '../components/Header';
 import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
 import { cursoService, Curso } from '../services/cursoService';
-import CommunitySection from '../components/CommunitySection';
+
 
 
 const Videos = () => {
@@ -320,9 +320,7 @@ const Videos = () => {
             </div>
           </div>
           
-          <div className="mt-20">
-            <CommunitySection />
-          </div>
+
         </div>
       </main>
 

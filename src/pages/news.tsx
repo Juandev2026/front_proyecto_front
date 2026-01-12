@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
+import CommunitySection from '../components/CommunitySection';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useAuth } from '../hooks/useAuth';
@@ -260,10 +261,7 @@ const News = () => {
           </div>
         )}
 
-        {/* NEW Full Width Ad Section */}
-        <div className="mb-12">
-          <AdSidebar />
-        </div>
+
 
         <div className="grid grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
@@ -450,6 +448,10 @@ const News = () => {
 
           {/* MIDDLE COLUMN: Destacados (Updated to White/Light Theme) */}
           <div className="col-span-12 lg:col-span-4 border-l border-gray-100 pl-0 lg:pl-8 space-y-6">
+            <div className="mb-8">
+              <AdSidebar />
+            </div>
+
             <h3 className="text-xl font-bold text-gray-900 border-b-2 border-primary pb-2 mb-4 inline-block">
               Destacados
             </h3>
@@ -494,6 +496,10 @@ const News = () => {
               ))}
             </div>
           </div>
+        </div>
+        
+        <div className="mt-16">
+          <CommunitySection />
         </div>
       </main>
 
