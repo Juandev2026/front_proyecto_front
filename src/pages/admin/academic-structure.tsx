@@ -23,6 +23,10 @@ const AcademicStructure = () => {
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  
+  // Filter State
+  const [selectedModalidadFilter, setSelectedModalidadFilter] = useState<number>(0);
+
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -273,7 +277,10 @@ const AcademicStructure = () => {
 
   const TabButton = ({ type, label }: { type: TabType; label: string }) => (
     <button
-      onClick={() => setActiveTab(type)}
+      onClick={() => {
+        setActiveTab(type);
+        setSelectedModalidadFilter(0); // Reset filter when changing tabs
+      }}
       className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
         activeTab === type
           ? 'border-primary text-primary'
@@ -288,7 +295,11 @@ const AcademicStructure = () => {
   if (activeTab === 'modalidades') {
     currentData = modalidades;
   } else if (activeTab === 'niveles') {
-    currentData = niveles;
+    if (selectedModalidadFilter !== 0) {
+      currentData = niveles.filter(n => n.modalidadId === selectedModalidadFilter);
+    } else {
+      currentData = niveles;
+    }
   } else {
     currentData = especialidades;
   }
@@ -318,6 +329,26 @@ const AcademicStructure = () => {
           <TabButton type="niveles" label="Niveles" />
           <TabButton type="especialidades" label="Especialidades" />
         </div>
+        
+        {activeTab === 'niveles' && (
+          <div className="flex justify-end p-2">
+             <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Filtrar por Modalidad:</label>
+                <select
+                  className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
+                  value={selectedModalidadFilter}
+                  onChange={(e) => setSelectedModalidadFilter(Number(e.target.value))}
+                >
+                  <option value={0}>Todas las Modalidades</option>
+                  {modalidades.map((mod) => (
+                    <option key={mod.id} value={mod.id}>
+                      {mod.nombre}
+                    </option>
+                  ))}
+                </select>
+             </div>
+          </div>
+        )}
       </div>
 
       {/* Contextual Help for Tabs */}
