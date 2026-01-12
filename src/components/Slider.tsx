@@ -6,12 +6,7 @@ interface Slide {
   image: string;
   title?: string;
   description?: string;
-}
-
-interface Slide {
-  image: string;
-  title?: string;
-  description?: string;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 }
 
 interface SliderProps {
@@ -41,7 +36,11 @@ const Slider: React.FC<SliderProps> = ({ slides, currentIndex }) => {
           <img
             src={currentSlide.image}
             alt={currentSlide.title || `Slide ${currentIndex}`}
-            className="w-full h-full object-cover"
+            className={`w-full h-full ${
+              currentSlide.objectFit === 'contain'
+                ? 'object-contain bg-gray-50'
+                : 'object-cover'
+            }`}
           />
         </motion.div>
       </AnimatePresence>

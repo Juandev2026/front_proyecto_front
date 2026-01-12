@@ -69,11 +69,12 @@ const App = () => {
 
   // Determine content to display: if no slides, show fallback.
   const displaySlides = slides.length > 0 ? slides : [{
-    image: '/assets/images/placeholder.png', // Ensure this exists or use a robust fallback
+    image: '/assets/images/no_ads_character.png', // Updated with the new generated character
     title: 'No hay anuncios el día de hoy',
     description: 'Mantente atento a nuestras próximas novedades y comunicados.',
     celular: '',
-    ruta: ''
+    ruta: '',
+    objectFit: 'contain' as const
   }];
 
   // If we are using the fallback, we effectively have 1 slide, so currentIndex 0 is correct.
