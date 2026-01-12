@@ -12,12 +12,14 @@ import {
   informacionRelevanteService,
   InformacionRelevante,
 } from '../../services/informacionRelevanteService';
+import { uploadService } from '../../services/uploadService';
 
 const AdminInformacionRelevante = () => {
   const [data, setData] = useState<InformacionRelevante[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -158,7 +160,23 @@ const AdminInformacionRelevante = () => {
 
   const handleCreate = async () => {
     try {
-      await informacionRelevanteService.create(formData);
+      let finalUrl = formData.urlImagen;
+
+      if (file) {
+        try {
+          finalUrl = await uploadService.uploadImage(file);
+        } catch (uploadError) {
+          alert('Error al subir la imagen');
+          return;
+        }
+      }
+
+      const payload = {
+        ...formData,
+        urlImagen: finalUrl,
+      };
+
+      await informacionRelevanteService.create(payload);
       setIsModalOpen(false);
       setFormData({
         titulo: '',
@@ -168,6 +186,7 @@ const AdminInformacionRelevante = () => {
         precio: 0,
         telefono: '',
       });
+      setFile(null);
       fetchData();
     } catch (error) {
       alert('Error creating item');
@@ -178,7 +197,23 @@ const AdminInformacionRelevante = () => {
   const handleUpdate = async () => {
     if (!editingId) return;
     try {
-      await informacionRelevanteService.update(editingId, formData);
+      let finalUrl = formData.urlImagen;
+
+      if (file) {
+        try {
+          finalUrl = await uploadService.uploadImage(file);
+        } catch (uploadError) {
+          alert('Error al subir la imagen');
+          return;
+        }
+      }
+
+      const payload = {
+        ...formData,
+        urlImagen: finalUrl,
+      };
+
+      await informacionRelevanteService.update(editingId, payload);
       setIsModalOpen(false);
       setEditingId(null);
       setFormData({
@@ -189,6 +224,7 @@ const AdminInformacionRelevante = () => {
         precio: 0,
         telefono: '',
       });
+      setFile(null);
       fetchData();
     } catch (error) {
       alert('Error updating item');
@@ -220,6 +256,7 @@ const AdminInformacionRelevante = () => {
       });
     } else {
       setEditingId(null);
+      setFile(null);
       setFormData({
         titulo: '',
         descripcion: '',
@@ -530,7 +567,20 @@ const AdminInformacionRelevante = () => {
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  URL Imagen
+                  Imagen
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                <label className="block text-xs text-gray-500 mb-1">
+                  O URL de Imagen:
                 </label>
                 <input
                   type="text"
