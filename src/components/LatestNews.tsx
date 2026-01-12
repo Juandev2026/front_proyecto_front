@@ -309,6 +309,53 @@ const LatestNews = () => {
               Síguenos en:
             </h2>
 
+            {/* TikTok */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-black px-4 py-2 text-white font-bold flex items-center justify-between">
+                <span>TikTok</span>
+                <span className="font-bold flex items-center">
+                  <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
+                  TikTok
+                </span>
+              </div>
+              <div className="p-0 text-center">
+                <blockquote
+                  className="tiktok-embed"
+                  cite="https://www.tiktok.com/@juan_avend"
+                  data-unique-id="juan_avend"
+                  data-embed-type="creator"
+                  style={{ maxWidth: '100%', minWidth: '100%' }}
+                >
+                  <section>
+                    <a
+                      target="_blank"
+                      href="https://www.tiktok.com/@juan_avend?refer=creator_embed"
+                      rel="noreferrer"
+                    >
+                      @juan_avend
+                    </a>
+                  </section>
+                </blockquote>
+              </div>
+            </div>
+
+            
+
+            {/* Facebook */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-[#1877F2] px-4 py-2 text-white font-bold flex items-center justify-between">
+                <span>Facebook</span>
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.954 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              </div>
+              <div className="fb-page" data-href="https://www.facebook.com/avendocenteperu" data-tabs="timeline" data-width="600" data-height="600" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">AVEND docente - Perú</a></blockquote></div>
+            </div>
+
             {/* YouTube */}
             <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <div className="bg-red-600 px-4 py-2 text-white font-bold flex items-center justify-between">
@@ -350,51 +397,6 @@ const LatestNews = () => {
                     </div>
                   </a>
                 </div>
-              </div>
-            </div>
-
-            {/* Facebook */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-              <div className="bg-[#1877F2] px-4 py-2 text-white font-bold flex items-center justify-between">
-                <span>Facebook</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.954 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              </div>
-              <div className="fb-page" data-href="https://www.facebook.com/avendocenteperu" data-tabs="timeline" data-width="600" data-height="600" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">AVEND docente - Perú</a></blockquote></div>
-            </div>
-
-            {/* TikTok */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-              <div className="bg-black px-4 py-2 text-white font-bold flex items-center justify-between">
-                <span>TikTok</span>
-                <span className="font-bold flex items-center">
-                  <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
-                  TikTok
-                </span>
-              </div>
-              <div className="p-0 text-center">
-                <blockquote
-                  className="tiktok-embed"
-                  cite="https://www.tiktok.com/@juan_avend"
-                  data-unique-id="juan_avend"
-                  data-embed-type="creator"
-                  style={{ maxWidth: '100%', minWidth: '100%' }}
-                >
-                  <section>
-                    <a
-                      target="_blank"
-                      href="https://www.tiktok.com/@juan_avend?refer=creator_embed"
-                      rel="noreferrer"
-                    >
-                      @juan_avend
-                    </a>
-                  </section>
-                </blockquote>
               </div>
             </div>
 
