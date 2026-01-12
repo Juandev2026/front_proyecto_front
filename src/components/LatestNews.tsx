@@ -437,7 +437,7 @@ const LatestNews = () => {
 
           {/* RIGHT COLUMN: Banners (approx 16% -> col-span-2) */}
           <div className="lg:col-span-2">
-            <AdSidebar />
+            <AdSidebar forceGeneral={true} />
           </div>
         </div>
       </div>

@@ -5,12 +5,14 @@ import {
   comentarioService,
   Comentario,
 } from '../../services/comentarioService';
+import { noticiaService } from '../../services/noticiaService';
 
 const CommentsPage = () => {
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
   const [loading, setLoading] = useState(true);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Comentario | null>(null);
+  const [noticiaTitulo, setNoticiaTitulo] = useState<string>('');
 
   const fetchData = async () => {
     try {
@@ -40,9 +42,22 @@ const CommentsPage = () => {
     }
   };
 
-  const handleView = (item: Comentario) => {
+  const handleView = async (item: Comentario) => {
     setViewingItem(item);
+    setNoticiaTitulo('Cargando...');
     setIsViewModalOpen(true);
+    try {
+      if (item.noticiaId) {
+        const noticia = await noticiaService.getById(item.noticiaId);
+        // Strip HTML tags if present
+        setNoticiaTitulo(noticia.titulo.replace(/<[^>]+>/g, ''));
+      } else {
+        setNoticiaTitulo('N/A');
+      }
+    } catch (error) {
+      console.error('Error fetching noticia title:', error);
+      setNoticiaTitulo(`ID: ${item.noticiaId}`);
+    }
   };
 
   return (
@@ -205,9 +220,9 @@ const CommentsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Noticia ID
+                    Noticia
                   </label>
-                  <p className="mt-1 text-gray-900">{viewingItem.noticiaId}</p>
+                  <p className="mt-1 text-gray-900">{noticiaTitulo}</p>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-500 mb-2">

@@ -265,7 +265,7 @@ const News = () => {
 
         <div className="grid grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-12 lg:col-span-8 space-y-10">
+          <div className="col-span-12 lg:col-span-7 space-y-10">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -446,54 +446,59 @@ const News = () => {
             )}
           </div>
 
-          {/* MIDDLE COLUMN: Destacados (Updated to White/Light Theme) */}
-          <div className="col-span-12 lg:col-span-4 border-l border-gray-100 pl-0 lg:pl-8 space-y-6">
-            <div className="mb-8">
-              <AdSidebar />
+          {/* SIDEBAR: Destacados + Ads (Split into 2 columns on large screens) */}
+          <div className="col-span-12 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
+            
+            {/* Column 1: Destacados */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-gray-900 border-b-2 border-primary pb-2 mb-4 inline-block">
+                Destacados
+              </h3>
+
+              <div className="space-y-4">
+                {displayHighlights.map((item) => (
+                  <Link key={item.id} href={`/news/${item.id}`}>
+                    <a className="group block bg-white border border-gray-200 p-4 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-1">
+                      <div className="flex flex-col h-full relative z-10">
+                        <div className="mb-3">
+                          <span className="text-xs font-bold uppercase tracking-wide text-primary mb-2 block">
+                            {getCategoryName(item.categoriaId)}
+                          </span>
+                          <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-3">
+                            {stripHtml(item.titulo)}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-50">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                            <img
+                              src={
+                                item.imageUrl || 'https://via.placeholder.com/100'
+                              }
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            <p className="font-semibold">
+                              {new Date(item.fecha).toLocaleDateString()}
+                            </p>
+                            <p className="flex items-center gap-1 mt-0.5 text-gray-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                              Popular
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            <h3 className="text-xl font-bold text-gray-900 border-b-2 border-primary pb-2 mb-4 inline-block">
-              Destacados
-            </h3>
-
-            <div className="space-y-4">
-              {displayHighlights.map((item) => (
-                <Link key={item.id} href={`/news/${item.id}`}>
-                  <a className="group block bg-white border border-gray-200 p-4 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-1">
-                    <div className="flex flex-col h-full relative z-10">
-                      <div className="mb-3">
-                        <span className="text-xs font-bold uppercase tracking-wide text-primary mb-2 block">
-                          {getCategoryName(item.categoriaId)}
-                        </span>
-                        <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-3">
-                          {stripHtml(item.titulo)}
-                        </h3>
-                      </div>
-
-                      <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-50">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                          <img
-                            src={
-                              item.imageUrl || 'https://via.placeholder.com/100'
-                            }
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          <p className="font-semibold">
-                            {new Date(item.fecha).toLocaleDateString()}
-                          </p>
-                          <p className="flex items-center gap-1 mt-0.5 text-gray-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                            Popular
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                </Link>
-              ))}
+            {/* Column 2: Ads */}
+            <div className="pt-0">
+              <AdSidebar />
             </div>
           </div>
         </div>

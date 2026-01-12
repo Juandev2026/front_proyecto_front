@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { publicidadService, Publicidad } from '../services/publicidadService';
 import { useAuth } from '../hooks/useAuth';
 
-const AdSidebar = () => {
+const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
   const [ads, setAds] = useState<Publicidad[]>([]);
   const { user, isAuthenticated } = useAuth();
 
@@ -21,8 +21,8 @@ const AdSidebar = () => {
           (ad) => ad.estado?.nombre?.toUpperCase() === 'PUBLICADO'
         );
 
-        // Filter by level if authenticated
-        if (isAuthenticated && user?.nivelId) {
+        // Filter by level if authenticated AND NOT forcing general ads
+        if (!forceGeneral && isAuthenticated && user?.nivelId) {
           adsArray = adsArray.filter((ad) => ad.nivelId === user.nivelId);
           // Limit to 5 ads per level
           adsArray = adsArray.slice(0, 5);
@@ -36,7 +36,7 @@ const AdSidebar = () => {
     };
 
     fetchAds();
-  }, [user?.nivelId, isAuthenticated]);
+  }, [user?.nivelId, isAuthenticated, forceGeneral]);
 
   if (ads.length === 0) {
     return (
