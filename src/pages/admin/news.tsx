@@ -67,9 +67,13 @@ const AdminNews = () => {
     precio: 0,
     autor: '',
     estadoId: 0,
+    archivoUrl: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // Thumbnail
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null); // Thumbnail Preview
+
+  const [archivoFile, setArchivoFile] = useState<File | null>(null); // Content File
+  const [previewArchivoUrl, setPreviewArchivoUrl] = useState<string | null>(null); // Content Preview
 
   const modules = {
     toolbar: [
@@ -225,9 +229,14 @@ const AdminNews = () => {
       precio: item.precio || 0,
       autor: item.autor || '',
       estadoId: item.estadoId || 0,
+      archivoUrl: item.archivoUrl || '',
     });
     setImageFile(null);
     setPreviewUrl(item.imageUrl || null);
+    
+    setArchivoFile(null);
+    setPreviewArchivoUrl(item.archivoUrl || null);
+    
     setIsModalOpen(true);
   };
 
@@ -254,9 +263,14 @@ const AdminNews = () => {
       precio: 0,
       autor: '',
       estadoId: 0,
+      archivoUrl: '',
     });
     setImageFile(null);
     setPreviewUrl(null);
+    
+    setArchivoFile(null);
+    setPreviewArchivoUrl(null);
+    
     setIsModalOpen(true);
   };
 
@@ -283,14 +297,24 @@ const AdminNews = () => {
     }
 
     try {
-      let { imageUrl } = formData;
+      let { imageUrl, archivoUrl } = formData;
 
+      // Upload Thumbnail
       if (imageFile) {
         try {
           imageUrl = await uploadService.uploadImage(imageFile);
         } catch (uploadError) {
-          // eslint-disable-next-line no-alert
-          alert('Error al subir la imagen. Por favor intente nuevamente.');
+          alert('Error al subir la imagen de portada/miniatura.');
+          return;
+        }
+      }
+
+      // Upload Content File
+      if (archivoFile) {
+        try {
+          archivoUrl = await uploadService.uploadImage(archivoFile);
+        } catch (uploadError) {
+          alert('Error al subir el archivo de contenido.');
           return;
         }
       }
@@ -304,6 +328,7 @@ const AdminNews = () => {
         nivelId: formData.nivelId || 0,
         fecha: new Date(formData.fecha || new Date()).toISOString(),
         imageUrl: imageUrl || null,
+        archivoUrl: archivoUrl || null,
         esDestacado: formData.esDestacado || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
         precio: formData.precio || 0,
@@ -723,7 +748,7 @@ const AdminNews = () => {
 
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      URL de Archivo (Imagen/PDF - Opcional)
+                       URL Miniatura (Opcional)
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -733,55 +758,104 @@ const AdminNews = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, imageUrl: e.target.value })
                         }
-                        placeholder="https://ejemplo.com/archivo.pdf"
+                        placeholder="https://ejemplo.com/miniatura.jpg"
                       />
-                      {formData.imageUrl && (
-                        <a
-                          href={formData.imageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-3 rounded inline-flex items-center"
-                          title="Ver archivo"
-                        >
-                          <EyeIcon className="w-5 h-5" />
-                        </a>
-                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                            Subir Miniatura (Imagen)
+                        </label>
+                        <div className="flex gap-2 items-start">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                setImageFile(file);
+                                setPreviewUrl(URL.createObjectURL(file));
+                            }
+                            }}
+                        />
+                        {previewUrl && (
+                            <a
+                            href={previewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center h-[42px] shrink-0"
+                            title="Ver Miniatura"
+                            >
+                            <EyeIcon className="w-5 h-5" />
+                            </a>
+                        )}
+                        </div>
+                    </div>
+
+                     <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                             Subir Contenido (PDF o Imagen) - aparecerá al abrir
+                        </label>
+                        <div className="flex gap-2 items-start">
+                        <input
+                            type="file"
+                            accept="image/*,application/pdf"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                setArchivoFile(file);
+                                setPreviewArchivoUrl(URL.createObjectURL(file));
+                            }
+                            }}
+                        />
+                        {previewArchivoUrl && (
+                            <a
+                            href={previewArchivoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center h-[42px] shrink-0"
+                            title="Ver Contenido"
+                            >
+                            <EyeIcon className="w-5 h-5" />
+                            </a>
+                        )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Archivo URL Manual Input */}
+                 <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Subir archivo (Imagen o PDF)
+                       URL de Archivo Contenido (Opcional - si no se sube archivo)
                     </label>
-                    <div className="flex gap-2 items-start">
+                    <div className="flex gap-2">
                       <input
-                        type="file"
-                        accept="image/*,application/pdf"
+                        type="text"
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            setImageFile(file);
-                            setPreviewUrl(URL.createObjectURL(file));
-                          }
-                        }}
+                        value={formData.archivoUrl || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, archivoUrl: e.target.value })
+                        }
+                        placeholder="https://ejemplo.com/archivo.pdf"
                       />
-                      {previewUrl && (
+                       {formData.archivoUrl && (
                         <a
-                          href={previewUrl}
+                          href={formData.archivoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center h-[42px] shrink-0"
-                          title="Visualizar archivo"
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-3 rounded inline-flex items-center"
+                          title="Ver archivo contenido"
                         >
-                          <EyeIcon className="w-5 h-5 mr-2" />
-                          Visualizar
+                          <EyeIcon className="w-5 h-5" />
                         </a>
                       )}
                     </div>
-                  </div>
+                 </div>
 
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -800,7 +874,6 @@ const AdminNews = () => {
                       }
                     />
                   </div>
-                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>

@@ -9,6 +9,7 @@ export interface Noticia {
   categoria?: string;
   fecha: string;
   imageUrl: string | null;
+  archivoUrl: string | null;
   esDestacado: boolean;
   usuarioEdicionId?: number;
   modalidadId?: number;
@@ -139,6 +140,7 @@ export const noticiaService = {
             : null,
           comentarios: [],
           imageUrl: n.imageUrl || '',
+          archivoUrl: n.archivoUrl || '',
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
@@ -197,6 +199,7 @@ export const noticiaService = {
             ? Number((n as any).usuarioEdicionId)
             : null,
           imageUrl: n.imageUrl || '',
+          archivoUrl: n.archivoUrl || '',
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
         });
