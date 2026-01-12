@@ -5,11 +5,13 @@ const MainHero = ({
   description,
   celular,
   ruta,
+  precio,
 }: {
   title?: string;
   description?: string;
   celular?: string;
   ruta?: string;
+  precio?: number;
 }) => {
   const { mainHero } = config;
   return (
@@ -30,6 +32,16 @@ const MainHero = ({
           <p className="mt-4 text-black text-base leading-relaxed font-bold">
             {description || mainHero.description}
           </p>
+          {precio !== undefined && precio > 0 && (
+             <p className="mt-4 text-2xl font-bold text-green-600">
+               S/ {precio.toFixed(2)}
+             </p>
+          )}
+           {precio !== undefined && precio === 0 && title && (
+             <p className="mt-4 text-2xl font-bold text-green-600">
+               Gratis
+             </p>
+          )}
         </div>
 
         <div className="mt-8 flex gap-4">

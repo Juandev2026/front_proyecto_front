@@ -27,6 +27,7 @@ const App = () => {
       description?: string;
       celular?: string;
       ruta?: string;
+      precio?: number;
     }[]
   >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,6 +45,7 @@ const App = () => {
               description: a.descripcion,
               celular: a.celular,
               ruta: a.ruta,
+              precio: a.precio,
             }));
 
           if (formattedSlides.length > 0) {
@@ -75,6 +77,7 @@ const App = () => {
     description: 'Mantente atento a nuestras próximas novedades y comunicados.',
     celular: '',
     ruta: '',
+    precio: 0,
     objectFit: 'contain' as const
   }];
 
@@ -158,6 +161,7 @@ const App = () => {
                     description={displaySlides[currentIndex]?.description}
                     celular={displaySlides[currentIndex]?.celular}
                     ruta={displaySlides[currentIndex]?.ruta}
+                    precio={displaySlides[currentIndex]?.precio}
                   />
                 </div>
               </div>
