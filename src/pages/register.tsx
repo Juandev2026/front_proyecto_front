@@ -395,7 +395,7 @@ const Register = () => {
                     htmlFor="password"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Contraseña
+                    Contraseña (La contraseña debe tener al menos 6 caracteres)
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <input

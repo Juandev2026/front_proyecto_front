@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -14,6 +16,7 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -188,14 +191,25 @@ const Login = () => {
                     <input
                       id="password"
                       name="password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200 ease-in-out hover:border-gray-400"
+                      className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200 ease-in-out hover:border-gray-400"
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
