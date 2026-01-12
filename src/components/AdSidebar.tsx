@@ -24,9 +24,13 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
         // Filter by level if authenticated AND NOT forcing general ads
         if (!forceGeneral && isAuthenticated && user?.nivelId) {
           adsArray = adsArray.filter((ad) => ad.nivelId === user.nivelId);
-          // Limit to 5 ads per level
-          adsArray = adsArray.slice(0, 5);
         }
+        
+        // Sort by ID descending (Latest first)
+        adsArray.sort((a, b) => b.id - a.id);
+
+        // Limit to 5 ads total
+        adsArray = adsArray.slice(0, 5);
 
         setAds(adsArray);
       } catch (error) {

@@ -265,7 +265,7 @@ const Videos = () => {
                     <div className="mt-12 text-center">
                       <div className="bg-blue-50 rounded-2xl p-8 md:p-12 shadow-lg border border-blue-100">
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                          ¿Quieres acceder a todos los cursos?
+                           ¿Quieres descargar recursos personalizados?
                         </h3>
                         <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
                           Regístrate ahora para ver todos nuestros cursos y

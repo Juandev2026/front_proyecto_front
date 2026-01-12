@@ -145,7 +145,7 @@ const LatestNews = () => {
               <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-sm text-blue-800">
                   <span className="font-bold">
-                    ¿Quieres ver noticias personalizadas?
+                    ¿Quieres descargar recursos personalizados?
                   </span>{' '}
                   Inicia sesión para ver contenido de tu nivel.
                 </p>
