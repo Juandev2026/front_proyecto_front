@@ -32,7 +32,7 @@ const About = () => {
                 <div className="relative h-[400px] md:h-full min-h-[400px] group overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-transparent z-10 pointer-events-none"></div>
                   <img
-                    src="https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" // Education classroom image
+                    src="/assets/images/teacher_about.png"
                     alt="Educación"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
@@ -158,7 +158,7 @@ const About = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Claridad y transparencia */}
                 <FadeIn delay={0.1}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all relative overflow-hidden group h-full">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
                         <div className="absolute top-0 left-0 w-2 h-full bg-blue-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-blue-900 mb-4 relative z-10">
                         Claridad y transparencia
@@ -171,7 +171,7 @@ const About = () => {
 
                 {/* Utilidad práctica */}
                 <FadeIn delay={0.2}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all relative overflow-hidden group h-full">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
                         <div className="absolute top-0 left-0 w-2 h-full bg-orange-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-orange-900 mb-4 relative z-10">
                         Utilidad práctica
@@ -184,7 +184,7 @@ const About = () => {
 
                 {/* Crecimiento profesional */}
                 <FadeIn delay={0.3}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all relative overflow-hidden group h-full">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
                         <div className="absolute top-0 left-0 w-2 h-full bg-green-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-green-900 mb-4 relative z-10">
                         Crecimiento profesional
@@ -198,7 +198,9 @@ const About = () => {
             </div>
             
             {/* Comunidad */}
-            <CommunitySection />
+            <div className="mt-24">
+               <CommunitySection />
+            </div>
             
             {/* Social Media Frames */}
              <div className="mt-16 -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-20 2xl:-mx-32">
