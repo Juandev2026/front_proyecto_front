@@ -1,6 +1,8 @@
 import React from 'react';
 
 import config from '../config/index.json';
+import SEO from '../components/SEO';
+import CommunitySection from '../components/CommunitySection';
 
 const About = () => {
   const { company, about } = config;
@@ -10,9 +12,12 @@ const About = () => {
   return (
     <div
       id="about"
-      className="mx-auto container xl:px-20 lg:px-12 sm:px-6 px-4 py-12"
+      className="mx-auto container xl:px-20 lg:px-12 sm:px-6 px-4 pt-0 pb-12"
     >
       <div className="flex flex-col items-center justify-center">
+        <div className="w-full mb-12">
+          <CommunitySection />
+        </div>
         <div>
           <img src={logo} alt={companyName} className="w-16 h-16" />
         </div>

@@ -129,7 +129,7 @@ const ForgotPassword = () => {
           </div>
         </div>
       </div>
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8 mt-8">
         <CommunitySection />
       </div>
       <Footer />

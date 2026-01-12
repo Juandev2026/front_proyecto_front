@@ -62,9 +62,9 @@ const AdSidebar = () => {
         
         // Define link: if it has a price (is for sale), whatsapp. Else, generic link.
         const link =
-          hasPrice && ad.telefono
+          ad.telefono
             ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(
-                `Hola, estoy interesado en ${ad.titulo || 'su publicidad'}`
+                `Me interesa este anuncio`
               )}`
             : ad.enlace;
 

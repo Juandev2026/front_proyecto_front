@@ -364,7 +364,7 @@ const Materials = () => {
         </div>
       </main>
 
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 pb-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 pb-12 mt-16">
         <CommunitySection />
       </div>
 

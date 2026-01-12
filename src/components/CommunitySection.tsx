@@ -4,7 +4,7 @@ import FadeIn from './FadeIn';
 const CommunitySection = () => {
   return (
     <FadeIn delay={0.4} fullWidth>
-      <div className="mt-16 bg-gradient-to-br from-blue-50 to-white rounded-2xl overflow-hidden shadow-xl border border-blue-100 relative">
+      <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl overflow-hidden shadow-xl border border-blue-100 relative">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-blue-100 rounded-full opacity-50 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-purple-100 rounded-full opacity-50 blur-3xl"></div>

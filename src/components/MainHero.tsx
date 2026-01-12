@@ -21,9 +21,11 @@ const MainHero = ({
         <div>
           <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">
             <span className="block xl:inline">{title || mainHero.title}</span>{' '}
-            <span className={`block text-primary xl:inline uppercase`}>
-              {mainHero.subtitle}
-            </span>
+            {!title && (
+              <span className={`block text-primary xl:inline uppercase`}>
+                {mainHero.subtitle}
+              </span>
+            )}
           </h1>
           <p className="mt-4 text-gray-600 text-base leading-relaxed font-medium">
             {description || mainHero.description}
@@ -34,7 +36,9 @@ const MainHero = ({
           {celular ? (
             <div className="rounded-full shadow-md">
               <a
-                href={`https://wa.me/${celular}`}
+                href={`https://wa.me/${celular}?text=${encodeURIComponent(
+                  'Me interesa este anuncio'
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}

@@ -67,18 +67,16 @@ const App = () => {
     return () => clearInterval(interval);
   }, [slides.length, currentIndex]);
 
-  if (slides.length === 0) {
-    return (
-        <div className="bg-background min-h-screen flex flex-col">
-            <Header />
-            <div className="flex-1 flex items-center justify-center">
-                <div className="animate-pulse flex flex-col space-y-4 w-full max-w-7xl mx-auto px-4">
-                   <div className="h-64 sm:h-96 bg-gray-200 rounded-xl w-full"></div>
-                </div>
-            </div>
-        </div>
-    );
-  }
+  // Determine content to display: if no slides, show fallback.
+  const displaySlides = slides.length > 0 ? slides : [{
+    image: '/assets/images/placeholder.png', // Ensure this exists or use a robust fallback
+    title: 'No hay anuncios el día de hoy',
+    description: 'Mantente atento a nuestras próximas novedades y comunicados.',
+    celular: '',
+    ruta: ''
+  }];
+
+  // If we are using the fallback, we effectively have 1 slide, so currentIndex 0 is correct.
 
   return (
     <div className={`bg-background grid gap-y-16 overflow-hidden`}>
@@ -98,15 +96,15 @@ const App = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 {/* Image Column (Left) */}
                 <div className="relative h-[600px] lg:h-auto min-h-[600px] group overflow-hidden">
-                  <MainHeroImage slides={slides} currentIndex={currentIndex} />
+                  <MainHeroImage slides={displaySlides} currentIndex={currentIndex} />
                   
                   {/* Navigation Arrows - Overlaying the image */}
-                  {slides.length > 1 && (
+                  {displaySlides.length > 1 && (
                     <>
                       <button
                         onClick={() =>
                           setCurrentIndex((prev) =>
-                            prev === 0 ? slides.length - 1 : prev - 1
+                            prev === 0 ? displaySlides.length - 1 : prev - 1
                           )
                         }
                         className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
@@ -128,7 +126,7 @@ const App = () => {
                       </button>
                       <button
                         onClick={() =>
-                          setCurrentIndex((prev) => (prev + 1) % slides.length)
+                          setCurrentIndex((prev) => (prev + 1) % displaySlides.length)
                         }
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
                         aria-label="Siguiente"
@@ -154,10 +152,10 @@ const App = () => {
                 {/* Text Column (Right) */}
                 <div className="flex flex-col justify-center">
                   <MainHero
-                    title={slides[currentIndex]?.title}
-                    description={slides[currentIndex]?.description}
-                    celular={slides[currentIndex]?.celular}
-                    ruta={slides[currentIndex]?.ruta}
+                    title={displaySlides[currentIndex]?.title}
+                    description={displaySlides[currentIndex]?.description}
+                    celular={displaySlides[currentIndex]?.celular}
+                    ruta={displaySlides[currentIndex]?.ruta}
                   />
                 </div>
               </div>
