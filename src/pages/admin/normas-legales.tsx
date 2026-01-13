@@ -183,10 +183,10 @@ const AdminNormasLegales = () => {
             {normas.map((item) => (
               <tr key={item.id}>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  {item.nombre}
+                  <div dangerouslySetInnerHTML={{ __html: item.nombre }} />
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                  {item.descripcion}
+                  <div className="truncate" dangerouslySetInnerHTML={{ __html: item.descripcion }} />
                 </td>
                 <td className="px-6 py-4 text-sm text-blue-600">
                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">

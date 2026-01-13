@@ -98,7 +98,7 @@ const Cursos = () => {
           <FadeIn>
             <div className="text-center mb-16">
               <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-                Nuestros Cursos
+                Nuestros <span className="text-primary">Cursos</span>
               </h1>
               <p className="max-w-2xl mx-auto text-xl text-gray-500">
                 Aprende con los mejores expertos
