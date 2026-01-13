@@ -325,14 +325,20 @@ const MaterialPreview = () => {
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900">Video Explicativo</h2>
                         </div>
-                        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
                             <iframe
-                                src={material.videoUrl}
-                                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                                width="100%"
+                                height="100%"
+                                src={`https://www.youtube.com/embed/${
+                                    material.videoUrl.includes('v=') 
+                                        ? material.videoUrl.split('v=')[1]?.split('&')[0] 
+                                        : material.videoUrl.split('/').pop()
+                                }`}
+                                title="Video del recurso"
+                                frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
-                                title="Video del recurso"
-                            />
+                            ></iframe>
                         </div>
                     </div>
                 </div>

@@ -85,18 +85,18 @@ const Materials = () => {
     
     // Track search event
     if (query.trim()) {
-      track('search', {
-        search_term: query.trim(),
-        results_count: filteredItems.length,
+      track('busqueda', {
+        termino_busqueda: query.trim(),
+        cantidad_resultados: filteredItems.length,
       });
     }
   };
 
   const handleMaterialDownload = (material: Material) => {
-    track('material_download', {
-      material_id: String(material.id),
-      material_name: material.titulo,
-      file_type: getFileFormat(material.url).toLowerCase(),
+    track('descargar_material', {
+      id_material: String(material.id),
+      nombre_material: material.titulo,
+      tipo_archivo: getFileFormat(material.url).toLowerCase(),
     });
   };
 

@@ -32,10 +32,10 @@ const CourseDetail = () => {
         setCourse(data);
         
         // Track course view event
-        track('view_course', {
-          course_id: String(id),
-          course_name: data.nombre,
-          category: data.categoriaId ? String(data.categoriaId) : 'sin_categoria',
+        track('ver_curso', {
+          id_curso: String(id),
+          nombre_curso: data.nombre,
+          categoria: data.categoriaId ? String(data.categoriaId) : 'sin_categoria',
         });
       } catch (error) {
         console.error('Error fetching course:', error);
@@ -69,11 +69,11 @@ const CourseDetail = () => {
 
   const handleCTAClick = (ctaType: 'comprar' | 'inscribirse') => {
     if (course) {
-      track('course_cta_click', {
-        course_id: String(course.id),
-        course_name: course.nombre,
-        cta_type: ctaType,
-        price: course.precio,
+      track('clic_accion_curso', {
+        id_curso: String(course.id),
+        nombre_curso: course.nombre,
+        tipo_accion: ctaType,
+        precio: course.precio,
       });
     }
   };

@@ -5,75 +5,75 @@ export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''
 // Types for custom events
 export type GAEventName =
   // Fase 1: MVP - Cursos y Exámenes
-  | 'view_course'
-  | 'course_cta_click'
-  | 'exam_start'
-  | 'exam_complete'
+  | 'ver_curso'
+  | 'clic_accion_curso'
+  | 'iniciar_examen'
+  | 'completar_examen'
   // Fase 2: Videos y Materiales
-  | 'video_start'
-  | 'video_progress'
-  | 'material_view'
-  | 'material_download'
+  | 'iniciar_video'
+  | 'progreso_video'
+  | 'ver_material'
+  | 'descargar_material'
   // Fase 3: Búsqueda
-  | 'search';
+  | 'busqueda';
 
 export interface GAEventParams {
   // Eventos de Cursos
-  view_course: {
-    course_id: string;
-    course_name: string;
-    category?: string;
+  ver_curso: {
+    id_curso: string;
+    nombre_curso: string;
+    categoria?: string;
   };
-  course_cta_click: {
-    course_id: string;
-    course_name?: string;
-    cta_type: 'inscribirse' | 'comprar' | 'ver_mas';
-    price?: number;
+  clic_accion_curso: {
+    id_curso: string;
+    nombre_curso?: string;
+    tipo_accion: 'inscribirse' | 'comprar' | 'ver_mas';
+    precio?: number;
   };
   
   // Eventos de Exámenes
-  exam_start: {
-    exam_id: string;
-    course_id?: string;
-    question_count?: number;
+  iniciar_examen: {
+    id_examen: string;
+    id_curso?: string;
+    cantidad_preguntas?: number;
   };
-  exam_complete: {
-    exam_id: string;
-    course_id?: string;
-    score?: number;
-    time_taken?: number; // en segundos
+  completar_examen: {
+    id_examen: string;
+    id_curso?: string;
+    puntaje?: number;
+    tiempo_tomado?: number; // en segundos
   };
   
   // Eventos de Videos
-  video_start: {
-    video_id: string;
-    video_title: string;
-    course_id?: string;
+  iniciar_video: {
+    id_video: string;
+    titulo_video: string;
+    id_curso?: string;
   };
-  video_progress: {
-    video_id: string;
-    video_title?: string;
-    progress_percent: 25 | 50 | 75 | 100;
+  progreso_video: {
+    id_video: string;
+    titulo_video?: string;
+    porcentaje_progreso: 25 | 50 | 75 | 100;
   };
   
   // Eventos de Materiales
-  material_view: {
-    material_id: string;
-    material_name: string;
-    course_id?: string;
-    material_type?: string;
+  ver_material: {
+    id_material: string;
+    nombre_material: string;
+    id_curso?: string;
+    tipo_material?: string;
   };
-  material_download: {
-    material_id: string;
-    material_name: string;
-    course_id?: string;
-    file_type?: string;
+  descargar_material: {
+    id_material: string;
+    nombre_material: string;
+    id_curso?: string;
+    tipo_archivo?: string;
   };
   
   // Eventos de Búsqueda
-  search: {
-    search_term: string;
-    results_count?: number;
+  busqueda: {
+    termino_busqueda: string;
+    cantidad_resultados?: number;
   };
 }
 
