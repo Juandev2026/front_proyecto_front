@@ -84,12 +84,14 @@ const NormasLegalesPage = () => {
                          </div>
                     </div>
                    
-                    <h3 className="mt-4 text-lg font-bold text-gray-900 leading-tight">
-                      {norma.nombre}
-                    </h3>
-                    <p className="mt-2 text-gray-500 text-sm line-clamp-3">
-                      {norma.descripcion}
-                    </p>
+                    <h3 
+                      className="mt-4 text-lg font-bold text-gray-900 leading-tight"
+                      dangerouslySetInnerHTML={{ __html: norma.nombre }}
+                    />
+                    <div 
+                      className="mt-2 text-gray-500 text-sm line-clamp-3 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: norma.descripcion }}
+                    />
                   </div>
                   <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
                     <a
