@@ -10,12 +10,16 @@ import Header from '../../components/Header';
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import CommunitySection from '../../components/CommunitySection';
+import { useAuth } from '../../hooks/useAuth';
+import AuthModal from '../../components/AuthModal';
 
 const NewsDetail = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { id } = router.query;
   const [newsItem, setNewsItem] = useState<Noticia | null>(null);
   const [categoryName, setCategoryName] = useState<string>('');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [featuredNews, setFeaturedNews] = useState<Noticia[]>([]);
@@ -204,21 +208,39 @@ const NewsDetail = () => {
                       />
                     </div>
                     <div className="mt-4 flex justify-end">
-                      <a 
-                        href={newsItem.archivoUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="bg-primary text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Descargar Archivo
-                      </a>
+                      {isAuthenticated ? (
+                        <a 
+                          href={newsItem.archivoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="bg-primary text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Descargar Archivo
+                        </a>
+                      ) : (
+                        <button 
+                          onClick={() => setIsAuthModalOpen(true)}
+                          className="bg-gray-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-700 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Descargar Archivo
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
               })()}
+
+            
+            <AuthModal 
+              isOpen={isAuthModalOpen} 
+              onClose={() => setIsAuthModalOpen(false)} 
+            />
 
               {/* YouTube Video Section */}
               {newsItem.videoUrl && (

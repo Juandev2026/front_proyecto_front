@@ -4,8 +4,12 @@ import { normasLegalesService, NormaLegal } from '../services/normasLegalesServi
 import { DocumentTextIcon, SearchIcon, DownloadIcon } from '@heroicons/react/outline';
 import CommunitySection from '../components/CommunitySection';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
+import { useAuth } from '../hooks/useAuth';
+import AuthModal from '../components/AuthModal';
 
 const NormasLegalesPage = () => {
+  const { isAuthenticated } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [normas, setNormas] = useState<NormaLegal[]>([]);
   const [filteredNormas, setFilteredNormas] = useState<NormaLegal[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,15 +98,25 @@ const NormasLegalesPage = () => {
                     />
                   </div>
                   <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
-                    <a
-                      href={norma.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                    >
-                      <DownloadIcon className="h-4 w-4 mr-2" />
-                      Descargar / Ver PDF
-                    </a>
+                    {isAuthenticated ? (
+                      <a
+                        href={norma.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                      >
+                        <DownloadIcon className="h-4 w-4 mr-2" />
+                        Descargar / Ver PDF
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => setIsAuthModalOpen(true)}
+                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                      >
+                        <DownloadIcon className="h-4 w-4 mr-2" />
+                        Ingresa para descargar
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -122,6 +136,11 @@ const NormasLegalesPage = () => {
               <RelevantInfoCarousel />
             </div>
          </div>
+          
+          <AuthModal 
+            isOpen={isAuthModalOpen} 
+            onClose={() => setIsAuthModalOpen(false)} 
+          />
       </div>
     </MainLayout>
   );

@@ -308,9 +308,10 @@ const News = () => {
                       className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
                     />
-                    <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
-                      {stripHtml(featuredArticle.descripcion)}
-                    </p>
+                    <div 
+                      className="text-gray-600 leading-relaxed text-lg line-clamp-3 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: featuredArticle.descripcion }}
+                    />
                   </a>
                 </Link>
               </div>
@@ -343,9 +344,17 @@ const News = () => {
                         className="font-bold text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-3"
                         dangerouslySetInnerHTML={{ __html: item.titulo }}
                       />
-                      {item.autor && (
-                        <p className="text-xs text-gray-500 mb-2">Por: {item.autor}</p>
-                      )}
+                      <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
+                        {item.autor && (
+                           <span>Por: {item.autor}</span>
+                        )}
+                        <span>•</span>
+                        <span>{new Date(item.fecha).toLocaleDateString()}</span>
+                      </div>
+                      <div 
+                        className="text-sm text-gray-600 line-clamp-2 prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: item.descripcion }}
+                      />
                     </div>
                   </a>
                 </Link>
@@ -374,12 +383,18 @@ const News = () => {
                           className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
                           dangerouslySetInnerHTML={{ __html: item.titulo }}
                         />
-                         {item.autor && (
-                            <p className="text-xs text-gray-500 mb-1">Por: {item.autor}</p>
-                         )}
-                        <p className="text-sm text-gray-500 line-clamp-2">
-                          {stripHtml(item.descripcion)}
-                        </p>
+                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                           {item.autor && (
+                              <span className="mr-2">Por: {item.autor}</span>
+                           )}
+                           <span className={item.autor ? "before:content-['•'] before:mr-2" : ""}>
+                             {new Date(item.fecha).toLocaleDateString()}
+                           </span>
+                        </div>
+                        <div 
+                          className="text-sm text-gray-500 line-clamp-2 prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: item.descripcion }}
+                        />
                       </div>
                     </a>
                   </Link>
@@ -477,9 +492,10 @@ const News = () => {
                       </div>
 
                       <div className="p-4 flex flex-col">
-                        <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-3">
-                          {stripHtml(item.titulo)}
-                        </h3>
+                        <h3 
+                          className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-3"
+                          dangerouslySetInnerHTML={{ __html: item.titulo }}
+                        />
 
                         <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
                           <p className="font-medium flex items-center">

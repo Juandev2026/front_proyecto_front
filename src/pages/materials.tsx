@@ -12,6 +12,7 @@ import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useAuth } from '../hooks/useAuth';
 import {
   categoriaSimpleService,
   CategoriaSimple,
@@ -21,8 +22,12 @@ import { materialService, Material } from '../services/materialService';
 
 const ITEMS_PER_PAGE = 9;
 
+import AuthModal from '../components/AuthModal';
+
 const Materials = () => {
   const { track } = useAnalytics();
+  const { isAuthenticated } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,7 +299,7 @@ const Materials = () => {
                                 Comprar
                               </span>
                             </Link>
-                          ) : (
+                          ) : isAuthenticated ? (
                             <Link href={`/materials/${item.id}`}>
                               <button
                                 onClick={() => handleMaterialDownload(item)}
@@ -304,6 +309,14 @@ const Materials = () => {
                                 Ver
                               </button>
                             </Link>
+                          ) : (
+                             <button 
+                               onClick={() => setIsAuthModalOpen(true)}
+                               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
+                             >
+                               <EyeIcon className="w-4 h-4 mr-1.5" />
+                               Ingresa para ver
+                             </button>
                           )}
                         </div>
                       </div>
@@ -312,6 +325,11 @@ const Materials = () => {
                 ))}
               </div>
             )}
+            
+            <AuthModal 
+              isOpen={isAuthModalOpen} 
+              onClose={() => setIsAuthModalOpen(false)} 
+            />
 
             {/* Pagination */}
             {totalPages > 1 && (
