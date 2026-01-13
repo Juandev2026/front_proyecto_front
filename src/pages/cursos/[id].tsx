@@ -13,6 +13,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import CommunitySection from '../../components/CommunitySection';
 import { cursoService, Curso } from '../../services/cursoService';
+import { getIdFromSlug } from '../../utils/urlUtils';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 const CourseDetail = () => {
@@ -25,15 +26,16 @@ const CourseDetail = () => {
 
   useEffect(() => {
     const fetchCourse = async () => {
-      if (!id) return;
+      const courseId = getIdFromSlug(id as string);
+      if (!courseId) return;
       try {
         setLoading(true);
-        const data = await cursoService.getById(Number(id));
+        const data = await cursoService.getById(courseId);
         setCourse(data);
         
         // Track course view event
         track('view_course', {
-          course_id: String(id),
+          course_id: String(courseId),
           course_name: data.nombre,
           category: data.categoriaId ? String(data.categoriaId) : 'sin_categoria',
         });

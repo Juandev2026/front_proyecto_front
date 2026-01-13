@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/router';
 
 import { EyeIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
@@ -17,6 +18,7 @@ import {
   categoriaSimpleService,
   CategoriaSimple,
 } from '../services/categoriaSimpleService';
+import { createSlug } from '../utils/urlUtils';
 import { materialService, Material } from '../services/materialService';
 
 
@@ -25,6 +27,7 @@ const ITEMS_PER_PAGE = 9;
 import AuthModal from '../components/AuthModal';
 
 const Materials = () => {
+  const router = useRouter();
   const { track } = useAnalytics();
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -36,6 +39,14 @@ const Materials = () => {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleCardClick = (material: Material) => {
+    if ((material.precio && material.precio > 0) || isAuthenticated) {
+       router.push(`/materials/${createSlug(material.titulo, material.id)}`);
+    } else {
+       setIsAuthModalOpen(true);
+    }
+  };
   // Removed viewingPdf state as it is no longer needed
 
   useEffect(() => {
@@ -221,7 +232,10 @@ const Materials = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedItems.map((item, index) => (
                   <FadeIn key={item.id} direction="up" delay={index * 0.05}>
-                    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full relative">
+                    <div 
+                      onClick={() => handleCardClick(item)}
+                      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full relative cursor-pointer"
+                    >
                       {/* Decorative Header - mimicking an image since we don't have one */}
                       {/* Content Preview Header - Show imageUrl as thumbnail */}
                       <div className="h-56 relative bg-gray-100 overflow-hidden group-hover:opacity-90 transition-opacity">
@@ -294,24 +308,20 @@ const Materials = () => {
                           </div>
 
                           {item.precio && item.precio > 0 ? (
-                            <Link href={`/materials/${item.id}`}>
                               <span className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md cursor-pointer">
                                 Comprar
                               </span>
-                            </Link>
                           ) : isAuthenticated ? (
-                            <Link href={`/materials/${item.id}`}>
                               <button
-                                onClick={() => handleMaterialDownload(item)}
+                                onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
                                 className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
                               >
                                 <EyeIcon className="w-4 h-4 mr-1.5" />
                                 Ver
                               </button>
-                            </Link>
                           ) : (
                              <button 
-                               onClick={() => setIsAuthModalOpen(true)}
+                               onClick={(e) => { e.stopPropagation(); setIsAuthModalOpen(true); }}
                                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
                              >
                                <EyeIcon className="w-4 h-4 mr-1.5" />

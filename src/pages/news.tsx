@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
 import Link from 'next/link';
+import { createSlug } from '../utils/urlUtils';
 
 import AdSidebar from '../components/AdSidebar';
 import CommunitySection from '../components/CommunitySection';
@@ -278,7 +279,7 @@ const News = () => {
               </div>
             ) : featuredArticle ? (
               <div className="group cursor-pointer">
-                <Link href={`/news/${featuredArticle.id}`}>
+                <Link href={`/news/${createSlug(featuredArticle.titulo, featuredArticle.id)}`}>
                   <a>
                     <div className="relative overflow-hidden rounded-xl mb-4 aspect-video shadow-lg">
                       <img
@@ -324,7 +325,7 @@ const News = () => {
             {/* Subgrid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100">
               {secondaryArticles.map((item) => (
-                <Link key={item.id} href={`/news/${item.id}`}>
+                <Link key={item.id} href={`/news/${createSlug(item.titulo, item.id)}`}>
                   <a className="group flex flex-col h-full">
                     <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm">
                       <img
@@ -365,7 +366,7 @@ const News = () => {
             {otherNews.length > 0 && (
               <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
                 {paginatedItems.map((item) => (
-                  <Link key={item.id} href={`/news/${item.id}`}>
+                  <Link key={item.id} href={`/news/${createSlug(item.titulo, item.id)}`}>
                     <a className="flex gap-4 group items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm">
                         <img
@@ -473,7 +474,7 @@ const News = () => {
 
               <div className="space-y-4">
                 {displayHighlights.map((item) => (
-                  <Link key={item.id} href={`/news/${item.id}`}>
+                  <Link key={item.id} href={`/news/${createSlug(item.titulo, item.id)}`}>
                     <a className="group block bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden">
                       {/* Image at Top */}
                       <div className="aspect-video w-full relative overflow-hidden">

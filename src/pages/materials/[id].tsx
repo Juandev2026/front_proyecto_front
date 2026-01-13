@@ -10,6 +10,7 @@ import Header from '../../components/Header';
 import AdSidebar from '../../components/AdSidebar';
 import CommunitySection from '../../components/CommunitySection';
 import { materialService, Material } from '../../services/materialService';
+import { createSlug, getIdFromSlug } from '../../utils/urlUtils';
 
 const MaterialPreview = () => {
   const router = useRouter();
@@ -20,18 +21,19 @@ const MaterialPreview = () => {
   const [featuredMaterials, setFeaturedMaterials] = useState<Material[]>([]);
 
   useEffect(() => {
-    if (!id) return;
+    const materialId = getIdFromSlug(id as string);
+    if (!materialId) return;
 
     const fetchMaterial = async () => {
       try {
         setLoading(true);
-        const data = await materialService.getById(Number(id));
+        const data = await materialService.getById(materialId);
         setMaterial(data);
 
         // Fetch latest materials for sidebar
         const allMaterials = await materialService.getAll();
         const latest = allMaterials
-          .filter((m) => m.id !== Number(id))
+          .filter((m) => m.id !== materialId)
           .sort((a, b) => b.id - a.id)
           .slice(0, 5);
         setFeaturedMaterials(latest);
@@ -352,7 +354,7 @@ const MaterialPreview = () => {
                 </div>
                 <div className="p-4 space-y-4">
                 {featuredMaterials.map((featured) => (
-                    <Link key={featured.id} href={`/materials/${featured.id}`}>
+                    <Link key={featured.id} href={`/materials/${createSlug(featured.titulo, featured.id)}`}>
                     <a className="block group">
                         <div className="relative overflow-hidden rounded-lg mb-2 bg-gray-100 h-32 flex items-center justify-center">
                          {/* Thumbnail for Sidebar Items */}

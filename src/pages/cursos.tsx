@@ -11,6 +11,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
+import { createSlug } from '../utils/urlUtils';
 import { cursoService, Curso } from '../services/cursoService';
 
 
@@ -163,83 +164,83 @@ const Cursos = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
                     {displayedCourses.map((course, index) => (
                       <FadeIn key={course.id} delay={index * 0.1}>
-                        <div className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full border border-gray-100 overflow-hidden transform hover:-translate-y-2">
-                          <div className="relative h-64 overflow-hidden">
-                            <img
-                              src={
-                                course.imagenUrl ||
-                                '/assets/images/product1.jpg'
-                              }
-                              alt={course.nombre}
-                              className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                            />
-                            <div className="absolute top-4 left-4">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-primary backdrop-blur-sm shadow-sm">
-                                {getCategoryName(course.categoriaId)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="p-8 flex flex-col flex-grow">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors duration-300">
-                              {stripHtml(course.nombre)}
-                            </h3>
-                            <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow line-clamp-3">
-                              {stripHtml(course.descripcion)}
-                            </p>
-
-                            {/* Content Preview */}
-                            {course.temas && course.temas.length > 0 && (
-                              <div className="mb-4">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                  Contenido:
-                                </h4>
-                                <ul className="text-sm text-gray-500 space-y-1">
-                                  {course.temas.slice(0, 3).map((tema) => (
-                                    <li
-                                      key={tema.id}
-                                      className="flex items-center"
-                                    >
-                                      <svg
-                                        className="w-3 h-3 mr-2 text-green-500"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="2"
-                                          d="M5 13l4 4L19 7"
-                                        ></path>
-                                      </svg>
-                                      <span className="truncate">
-                                        {tema.nombre}
-                                      </span>
-                                    </li>
-                                  ))}
-                                  {course.temas.length > 3 && (
-                                    <li className="text-xs text-primary pl-5">
-                                      + {course.temas.length - 3} temas más
-                                    </li>
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-
-                            <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-lg font-bold text-gray-900">
-                                  S/ {course.precio}
+                        <Link href={`/cursos/${createSlug(course.nombre, course.id)}`}>
+                          <a className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full border border-gray-100 overflow-hidden transform hover:-translate-y-2">
+                            <div className="relative h-64 overflow-hidden">
+                              <img
+                                src={
+                                  course.imagenUrl ||
+                                  '/assets/images/product1.jpg'
+                                }
+                                alt={course.nombre}
+                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute top-4 left-4">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-primary backdrop-blur-sm shadow-sm">
+                                  {getCategoryName(course.categoriaId)}
                                 </span>
-                                {course.precioOferta > 0 && (
-                                  <span className="text-sm text-gray-500 line-through">
-                                    S/ {course.precioOferta}
-                                  </span>
-                                )}
                               </div>
-                              <Link href={`/cursos/${course.id}`}>
-                                <a className="inline-flex items-center text-primary font-semibold hover:text-blue-700 transition-colors justify-center">
+                            </div>
+
+                            <div className="p-8 flex flex-col flex-grow">
+                              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors duration-300">
+                                {stripHtml(course.nombre)}
+                              </h3>
+                              <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow line-clamp-3">
+                                {stripHtml(course.descripcion)}
+                              </p>
+
+                              {/* Content Preview */}
+                              {course.temas && course.temas.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                                    Contenido:
+                                  </h4>
+                                  <ul className="text-sm text-gray-500 space-y-1">
+                                    {course.temas.slice(0, 3).map((tema) => (
+                                      <li
+                                        key={tema.id}
+                                        className="flex items-center"
+                                      >
+                                        <svg
+                                          className="w-3 h-3 mr-2 text-green-500"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M5 13l4 4L19 7"
+                                          ></path>
+                                        </svg>
+                                        <span className="truncate">
+                                          {tema.nombre}
+                                        </span>
+                                      </li>
+                                    ))}
+                                    {course.temas.length > 3 && (
+                                      <li className="text-xs text-primary pl-5">
+                                        + {course.temas.length - 3} temas más
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+
+                              <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-lg font-bold text-gray-900">
+                                    S/ {course.precio}
+                                  </span>
+                                  {course.precioOferta > 0 && (
+                                    <span className="text-sm text-gray-500 line-through">
+                                      S/ {course.precioOferta}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="inline-flex items-center text-primary font-semibold hover:text-blue-700 transition-colors justify-center">
                                   Ver Curso
                                   <svg
                                     className="ml-2 w-4 h-4 transform group-hover:translate-x-1 transition-transform"
@@ -254,11 +255,11 @@ const Cursos = () => {
                                       d="M17 8l4 4m0 0l-4 4m4-4H3"
                                     />
                                   </svg>
-                                </a>
-                              </Link>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
+                          </a>
+                        </Link>
                       </FadeIn>
                     ))}
                   </div>

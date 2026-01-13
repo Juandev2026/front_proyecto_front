@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { getIdFromSlug } from '../../utils/urlUtils';
 
 import AdSidebar from '../../components/AdSidebar';
 import CommentsSection from '../../components/CommentsSection';
@@ -12,6 +13,7 @@ import { noticiaService, Noticia } from '../../services/noticiaService';
 import CommunitySection from '../../components/CommunitySection';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../../components/AuthModal';
+import { createSlug } from '../../utils/urlUtils';
 
 const NewsDetail = () => {
   const router = useRouter();
@@ -27,11 +29,12 @@ const NewsDetail = () => {
 
   useEffect(() => {
     const fetchNewsAndFeatured = async () => {
-      if (!id) return;
+      const newsId = getIdFromSlug(id as string);
+      if (!newsId) return;
 
       try {
         setLoading(true);
-        const data = await noticiaService.getById(Number(id));
+        const data = await noticiaService.getById(newsId);
         setNewsItem(data);
 
         // Fetch category name
@@ -280,7 +283,7 @@ const NewsDetail = () => {
               </div>
               <div className="p-4 space-y-4">
                 {featuredNews.slice(0, 5).map((featured) => (
-                  <Link key={featured.id} href={`/news/${featured.id}`}>
+                  <Link key={featured.id} href={`/news/${createSlug(featured.titulo, featured.id)}`}>
                     <a className="block group">
                       <div className="relative overflow-hidden rounded-lg mb-2">
                         <img
