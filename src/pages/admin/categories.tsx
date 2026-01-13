@@ -21,7 +21,7 @@ interface CategoryItem {
 type CategoryType = 'standard' | 'general' | 'simple';
 
 const AdminCategories = () => {
-  const [activeTab, setActiveTab] = useState<CategoryType>('standard');
+  const [activeTab, setActiveTab] = useState<CategoryType>('general');
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -279,9 +279,10 @@ const AdminCategories = () => {
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <div className="flex space-x-4">
-          <TabButton type="standard" label="Categoría de Cursos" />
+// Reorder tabs
           <TabButton type="general" label="Categoría de Noticias" />
           <TabButton type="simple" label="Categoría de Recursos" />
+          <TabButton type="standard" label="Categoría de Cursos" />
         </div>
       </div>
 

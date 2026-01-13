@@ -1,81 +1,28 @@
-import React, { useState, useEffect } from 'react';
-
-import { ArrowLeftIcon, LockClosedIcon, DownloadIcon, DocumentTextIcon, PhotographIcon } from '@heroicons/react/outline';
+import React, { useState } from 'react';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+
+import { ArrowLeftIcon, LockClosedIcon, DownloadIcon, DocumentTextIcon, PhotographIcon } from '@heroicons/react/outline';
 
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import AdSidebar from '../../components/AdSidebar';
 import CommunitySection from '../../components/CommunitySection';
+import ShareButton from '../../components/ShareButton'; // Import ShareButton
 import { materialService, Material } from '../../services/materialService';
 import { createSlug, getIdFromSlug } from '../../utils/urlUtils';
 
-const MaterialPreview = () => {
+interface MaterialDetailProps {
+  material: Material | null;
+  featuredMaterials: Material[];
+  error?: string;
+  url: string;
+}
+
+const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDetailProps) => {
   const router = useRouter();
-  const { id } = router.query;
-  const [material, setMaterial] = useState<Material | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [featuredMaterials, setFeaturedMaterials] = useState<Material[]>([]);
-
-  useEffect(() => {
-    const materialId = getIdFromSlug(id as string);
-    if (!materialId) return;
-
-    const fetchMaterial = async () => {
-      try {
-        setLoading(true);
-        const data = await materialService.getById(materialId);
-        setMaterial(data);
-
-        // Fetch latest materials for sidebar
-        const allMaterials = await materialService.getAll();
-        const latest = allMaterials
-          .filter((m) => m.id !== materialId)
-          .sort((a, b) => b.id - a.id)
-          .slice(0, 5);
-        setFeaturedMaterials(latest);
-
-      } catch (err) {
-        setError('No se pudo cargar el material');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMaterial();
-  }, [id]);
-
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
-  };
-
-  const getWhatsAppUrl = () => {
-    if (!material) return '#';
-    const message = encodeURIComponent(
-      `Hola, me interesa comprar el recurso: "${stripHtml(material.titulo)}" - Precio: S/ ${material.precio?.toFixed(2)}`
-    );
-    return `https://wa.me/${material.telefono || ''}?text=${message}`;
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen font-sans">
-        <div className="relative bg-background">
-          <div className="w-full">
-            <Header />
-          </div>
-        </div>
-        <div className="flex justify-center items-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   if (error || !material) {
     return (
@@ -96,12 +43,45 @@ const MaterialPreview = () => {
     );
   }
 
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
+  const plainDescription = stripHtml(material.descripcion);
   const isPdf = material.url?.toLowerCase().endsWith('.pdf');
+  
+  // Logic to determine display image for OG tags and thumbnail
+  const displayImage = material.imageUrl || 
+                       (material.url && /\.(jpeg|jpg|gif|png|webp)$/i.test(material.url) ? material.url : null);
+
+
+  const getWhatsAppUrl = () => {
+    if (!material) return '#';
+    const message = encodeURIComponent(
+      `Hola, me interesa comprar el recurso: "${stripHtml(material.titulo)}" - Precio: S/ ${material.precio?.toFixed(2)}`
+    );
+    return `https://wa.me/${material.telefono || ''}?text=${message}`;
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
       <Head>
         <title>{stripHtml(material.titulo)} | Centro de Recursos</title>
+        <meta name="description" content={plainDescription.substring(0, 160)} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={`${stripHtml(material.titulo)} | Centro de Recursos`} />
+        <meta property="og:description" content={plainDescription.substring(0, 160)} />
+        {displayImage && <meta property="og:image" content={displayImage} />}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={url} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${stripHtml(material.titulo)} | Centro de Recursos`} />
+        <meta name="twitter:description" content={plainDescription.substring(0, 160)} />
+        {displayImage && <meta name="twitter:image" content={displayImage} />}
       </Head>
 
       <div className="relative bg-background">
@@ -128,13 +108,6 @@ const MaterialPreview = () => {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
                     <div className="relative h-[400px] md:h-[500px]">
                         {(() => {
-                            // Debug: log what we have
-                            console.log('Material data:', { imageUrl: material.imageUrl, url: material.url });
-                            
-                            // Show imageUrl if available, otherwise show url if it's an image
-                            const displayImage = material.imageUrl || 
-                                (material.url && /\.(jpeg|jpg|gif|png|webp)$/i.test(material.url) ? material.url : null);
-                            
                             if (displayImage) {
                                 return (
                                     <img 
@@ -142,7 +115,6 @@ const MaterialPreview = () => {
                                         alt={material.titulo} 
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            console.error('Image failed to load:', displayImage);
                                             e.currentTarget.style.display = 'none';
                                         }}
                                     />
@@ -167,7 +139,12 @@ const MaterialPreview = () => {
                 {/* Title and Description Section - Right after thumbnail */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
                 <div className="p-6 md:p-8 border-b border-gray-100">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4" dangerouslySetInnerHTML={{ __html: stripHtml(material.titulo) }}></h1>
+                    <div className="flex justify-between items-start gap-4 mb-4">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900" dangerouslySetInnerHTML={{ __html: stripHtml(material.titulo) }}></h1>
+                        <div className="flex-shrink-0 pt-1">
+                            <ShareButton title={stripHtml(material.titulo)} url={url} />
+                        </div>
+                    </div>
                     
                     {/* Category Badge */}
                     {material.categoria && (
@@ -407,5 +384,61 @@ const MaterialPreview = () => {
     </div>
   );
 };
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const { id } = context.params as { id: string };
+    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
+    const host = context.req.headers.host;
+    const url = `${protocol}://${host}/materials/${id}`;
+    
+    // Parse ID from slug
+    const materialId = getIdFromSlug(id);
+
+    if (!materialId) {
+        return {
+            props: {
+                material: null,
+                featuredMaterials: [],
+                error: 'Material no encontrado',
+                url
+            }
+        };
+    }
+
+    try {
+        const material = await materialService.getById(materialId);
+        
+        // Fetch featured (latest) materials
+        let featuredMaterials: Material[] = [];
+        try {
+             const allMaterials = await materialService.getAll();
+             featuredMaterials = allMaterials
+                .filter((m) => m.id !== materialId)
+                .sort((a, b) => b.id - a.id)
+                .slice(0, 5);
+        } catch(e) {
+            console.error('Error fetching latest materials:', e);
+        }
+
+        return {
+            props: {
+                material,
+                featuredMaterials,
+                url
+            }
+        };
+
+    } catch (error) {
+        console.error('Error fetching material:', error);
+        return {
+            props: {
+                material: null,
+                featuredMaterials: [],
+                error: 'No se pudo cargar el material',
+                url
+            }
+        };
+    }
+}
 
 export default MaterialPreview;

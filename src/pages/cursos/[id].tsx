@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 
 import {
   CheckIcon,
@@ -6,61 +9,51 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/solid';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
 
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import CommunitySection from '../../components/CommunitySection';
 import { cursoService, Curso } from '../../services/cursoService';
 import { getIdFromSlug } from '../../utils/urlUtils';
-import { useAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics } from '../../hooks/useAnalytics'; // Keep analytics hook
+import ShareButton from '../../components/ShareButton'; // Import ShareButton
 
-const CourseDetail = () => {
-  const router = useRouter();
-  const { id } = router.query;
+interface CourseDetailProps {
+  course: Curso | null;
+  error?: string;
+  url: string;
+}
+
+const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
+  const router = useRouter(); // Keep router if needed for fallback or navigation
   const { track } = useAnalytics();
-  const [course, setCourse] = useState<Curso | null>(null);
-  const [loading, setLoading] = useState(true);
   const [openSection, setOpenSection] = useState<number | null>(0);
 
+  // Analytics tracking on mount
   useEffect(() => {
-    const fetchCourse = async () => {
-      const courseId = getIdFromSlug(id as string);
-      if (!courseId) return;
-      try {
-        setLoading(true);
-        const data = await cursoService.getById(courseId);
-        setCourse(data);
-        
-        // Track course view event
-        track('view_course', {
-          course_id: String(id),
-          course_name: data.nombre,
-          category: data.categoriaId ? String(data.categoriaId) : 'sin_categoria',
-        });
-      } catch (error) {
-        console.error('Error fetching course:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (course) {
+      track('view_course', {
+        course_id: String(course.id),
+        course_name: course.nombre,
+        category: course.categoriaId ? String(course.categoriaId) : 'sin_categoria',
+      });
+    }
+  }, [course, track]);
 
-    fetchCourse();
-  }, [id, track]);
-
-  if (loading) {
+  if (error || !course) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Cargando curso...</p>
-      </div>
-    );
-  }
-
-  if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Curso no encontrado</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <Header />
+        <div className="flex-grow flex flex-col items-center justify-center">
+            <p className="text-xl text-gray-600 mb-4">{error || 'Curso no encontrado'}</p>
+            <button 
+                onClick={() => router.push('/cursos')}
+                className="text-primary font-bold hover:underline"
+            >
+                Volver a Cursos
+            </button>
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -80,13 +73,12 @@ const CourseDetail = () => {
     }
   };
 
-  // Helper to strip html for meta tags and WhatsApp
+  // Helper to strip html for meta tags
   const stripHtml = (html: string) => {
     if (!html) return '';
     return html.replace(/<[^>]+>/g, '');
   };
 
-  // Helper to parse learning points if they are stored as a single string
   const learningPoints = course.loQueAprenderas
     ? course.loQueAprenderas.split('\n').filter((point) => point.trim() !== '')
     : [];
@@ -95,19 +87,20 @@ const CourseDetail = () => {
     <div className="bg-gray-50 min-h-screen font-sans">
       <Head>
         <title>{stripHtml(course.nombre)} | Academia</title>
-        <meta name="description" content={stripHtml(course.descripcion)} />
+        <meta name="description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta name="keywords" content={`${stripHtml(course.nombre)}, curso online, capacitación docente, educación`} />
         
         {/* Open Graph */}
         <meta property="og:title" content={`${stripHtml(course.nombre)} | Academia`} />
-        <meta property="og:description" content={stripHtml(course.descripcion)} />
+        <meta property="og:description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta property="og:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
         <meta property="og:type" content="product" />
+        <meta property="og:url" content={url} />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${stripHtml(course.nombre)} | Academia`} />
-        <meta name="twitter:description" content={stripHtml(course.descripcion)} />
+        <meta name="twitter:description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta name="twitter:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
         
         {/* JSON-LD Structured Data for Course */}
@@ -156,40 +149,26 @@ const CourseDetail = () => {
                 dangerouslySetInnerHTML={{ __html: course.descripcion }}
               />
 
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300 mb-6">
                 <div className="flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Duración: {course.duracion}
                 </div>
                 <div className="flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                    />
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                   </svg>
                   {course.idioma}
                 </div>
               </div>
+              
+               {/* Share Button in Hero for visibility */}
+               <div className="mt-4">
+                  <ShareButton title={course.nombre} url={url} className="text-black" />
+               </div>
+
             </div>
 
             {/* Right side - Course Image */}
@@ -236,16 +215,8 @@ const CourseDetail = () => {
                 </div>
 
                 <div className="text-red-600 text-sm font-medium mb-4 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                      clipRule="evenodd"
-                    />
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                   </svg>
                   ¡Esta oferta termina pronto!
                 </div>
@@ -267,17 +238,18 @@ const CourseDetail = () => {
                   href={`https://wa.me/${course.numero}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md"
+                  className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md mb-3"
                 >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
                   </svg>
                   Chatea con nosotros
                 </a>
+
+                {/* Mobile share */}
+                <div className="flex justify-center">
+                    <ShareButton title={course.nombre} url={url} />
+                </div>
               </div>
             </div>
 
@@ -304,8 +276,6 @@ const CourseDetail = () => {
                 Contenido del curso
               </h2>
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                {/* Since the API returns a flat list of topics (temas), we'll display them directly. 
-                    If the API supported sections, we would map them here. For now, we treat it as one section. */}
                 <div className="border-b border-gray-100 last:border-0">
                   <button
                     onClick={() => toggleSection(0)}
@@ -365,7 +335,6 @@ const CourseDetail = () => {
             <div className="sticky top-24">
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                 {/* Video Preview */}
-                {/* Video Preview */}
                 {course.videoUrl ? (
                   <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                     <iframe
@@ -388,7 +357,6 @@ const CourseDetail = () => {
                       alt={course.nombre}
                       className="w-full h-full object-cover opacity-80"
                     />
-                    {/* Optional: Remove play button if no video, currently kept for consistency but without hover effect */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg opacity-50">
                         <PlayIcon className="w-8 h-8 text-black ml-1" />
@@ -423,16 +391,8 @@ const CourseDetail = () => {
                   </div>
 
                   <div className="text-red-600 text-sm font-medium mb-6 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                        clipRule="evenodd"
-                      />
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
                     ¡Esta oferta termina pronto!
                   </div>
@@ -456,17 +416,18 @@ const CourseDetail = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => handleCTAClick('inscribirse')}
-                    className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md"
+                    className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md mb-4"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
                     </svg>
                     Chatea con nosotros
                   </a>
+
+                  {/* Sidebar share */}
+                  <div className="flex justify-center">
+                    <ShareButton title={course.nombre} url={url} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -481,6 +442,44 @@ const CourseDetail = () => {
       <Footer />
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params as { id: string };
+  const protocol = context.req.headers['x-forwarded-proto'] || 'http';
+  const host = context.req.headers.host;
+  const url = `${protocol}://${host}/cursos/${id}`;
+  
+  const courseId = getIdFromSlug(id);
+  
+  if (!courseId) {
+     return {
+         props: {
+             course: null,
+             error: 'Curso no encontrado',
+             url
+         }
+     };
+  }
+
+  try {
+     const course = await cursoService.getById(courseId);
+     return {
+      props: {
+        course,
+        url,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    return {
+      props: {
+        course: null,
+        error: 'No se pudo cargar el curso',
+        url,
+      },
+    };
+  }
 };
 
 export default CourseDetail;

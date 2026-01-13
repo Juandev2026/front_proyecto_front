@@ -1,108 +1,41 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useState } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-
+import { GetServerSideProps } from 'next';
 
 import AdSidebar from '../../components/AdSidebar';
 import CommentsSection from '../../components/CommentsSection';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-import { categoriaService } from '../../services/categoriaService';
-import { noticiaService, Noticia } from '../../services/noticiaService';
 import CommunitySection from '../../components/CommunitySection';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../../components/AuthModal';
+import ShareButton from '../../components/ShareButton';
+
+import { categoriaService } from '../../services/categoriaService';
+import { noticiaService, Noticia } from '../../services/noticiaService';
 import { createSlug, getIdFromSlug, cleanSlug } from '../../utils/urlUtils';
 
-const NewsDetail = () => {
-  const router = useRouter();
+interface NewsDetailProps {
+  newsItem: Noticia | null;
+  categoryName: string;
+  featuredNews: Noticia[];
+  error?: string;
+  url: string;
+}
+
+const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDetailProps) => {
   const { isAuthenticated } = useAuth();
-  const { id } = router.query;
-  const [newsItem, setNewsItem] = useState<Noticia | null>(null);
-  const [categoryName, setCategoryName] = useState<string>('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [featuredNews, setFeaturedNews] = useState<Noticia[]>([]);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchNewsAndFeatured = async () => {
-      if (!id) return;
-      const slug = id as string;
-      const newsId = getIdFromSlug(slug);
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        let data: Noticia | null = null;
-
-        // 1. Try fetching by ID if it exists (legacy URLs)
-        if (newsId) {
-          try {
-            data = await noticiaService.getById(newsId);
-          } catch (err) {
-            console.warn('Could not fetch by ID, falling back to slug match');
-          }
-        }
-
-        // 2. If no data based on ID (or no ID), try finding by slug match
-        if (!data) {
-          const allNews = await noticiaService.getAll();
-          data = allNews.find((n) => cleanSlug(n.titulo) === slug) || null;
-        }
-
-        if (!data) {
-          setError('Noticia no encontrada.');
-          setLoading(false);
-          return;
-        }
-
-        setNewsItem(data);
-
-        // Fetch category name
-        if (data.categoriaId) {
-          const categories = await categoriaService.getAll();
-          const category = categories.find((c) => c.id === data.categoriaId);
-          if (category) {
-            setCategoryName(category.nombre);
-          }
-        }
-
-        // Fetch latest news (excluding current article)
-        const allNews = await noticiaService.getAll();
-        const latest = allNews
-          .filter((news) => news.id !== data!.id)
-          .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-          .slice(0, 5);
-        setFeaturedNews(latest);
-      } catch (err) {
-        setError('No se pudo cargar la noticia.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNewsAndFeatured();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   if (error || !newsItem) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
+          <Head>
+            <title>Noticia no encontrada</title>
+          </Head>
         <Header />
         <div className="flex-grow flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">¡Ups!</h1>
@@ -120,8 +53,29 @@ const NewsDetail = () => {
     );
   }
 
+  const plainDescription = newsItem.descripcion ? newsItem.descripcion.replace(/<[^>]+>/g, '') : '';
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Head>
+        <title>{newsItem.titulo}</title>
+        <meta name="description" content={plainDescription.substring(0, 160)} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={url} />
+        <meta property="og:title" content={newsItem.titulo} />
+        <meta property="og:description" content={plainDescription.substring(0, 160)} />
+        {newsItem.imageUrl && <meta property="og:image" content={newsItem.imageUrl} />}
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={url} />
+        <meta property="twitter:title" content={newsItem.titulo} />
+        <meta property="twitter:description" content={plainDescription.substring(0, 160)} />
+        {newsItem.imageUrl && <meta property="twitter:image" content={newsItem.imageUrl} />}
+      </Head>
+
       <div className="relative bg-background">
         <div className="w-full">
           <Header />
@@ -138,7 +92,7 @@ const NewsDetail = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Main Content (8/12) - MUCH LARGER */}
+          {/* Left Column: Main Content (8/12) */}
           <div className="lg:col-span-8">
             <article className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
               {/* Thumbnail Image at Top */}
@@ -167,10 +121,19 @@ const NewsDetail = () => {
               
               {/* Title and Description */}
               <div className="p-6 md:p-8 border-b border-gray-100">
-                <h1
-                  className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight"
-                  dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
-                />
+                <div className="flex justify-between items-start gap-4 mb-4">
+                    <h1
+                    className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight"
+                    dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
+                    />
+                    <div className="flex-shrink-0 pt-1">
+                        <ShareButton 
+                          title={newsItem.titulo} 
+                          url={url} 
+                        />
+                    </div>
+                </div>
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {categoryName || 'General'}
@@ -263,7 +226,6 @@ const NewsDetail = () => {
                   </div>
                 );
               })()}
-
             
             <AuthModal 
               isOpen={isAuthModalOpen} 
@@ -300,7 +262,7 @@ const NewsDetail = () => {
             </div>
           </div>
 
-          {/* Middle Column: Últimas Noticias (2/12) - SMALLER - STATIC */}
+          {/* Middle Column: Últimas Noticias (2/12) */}
           <aside className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
@@ -334,7 +296,7 @@ const NewsDetail = () => {
             </div>
           </aside>
 
-          {/* Right Column: Ads (2/12) - SMALLER */}
+          {/* Right Column: Ads (2/12) */}
           <aside className="lg:col-span-2">
             <div className="sticky top-8">
               <AdSidebar />
@@ -367,7 +329,7 @@ const NewsDetail = () => {
                } 
                alt={newsItem.titulo} 
                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
-               onClick={(e) => e.stopPropagation()} // Prevent close when clicking image
+               onClick={(e) => e.stopPropagation()} 
              />
              <button 
                 className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors z-50"
@@ -382,6 +344,89 @@ const NewsDetail = () => {
       )}
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params as { id: string };
+  const protocol = context.req.headers['x-forwarded-proto'] || 'http';
+  const host = context.req.headers.host;
+  const url = `${protocol}://${host}/news/${id}`;
+
+  try {
+    const slug = id;
+    const newsId = getIdFromSlug(slug);
+    let data: Noticia | null = null;
+    let categoryName = 'General';
+
+    // 1. Try fetching by ID
+    if (newsId) {
+      try {
+        data = await noticiaService.getById(newsId);
+      } catch (err) {
+        // Fallback
+      }
+    }
+
+    // 2. Fallback to matching by slug in all news
+    if (!data) {
+      const allNews = await noticiaService.getAll();
+      data = allNews.find((n) => cleanSlug(n.titulo) === slug) || null;
+    }
+
+    if (!data) {
+      return {
+        props: {
+          newsItem: null,
+          categoryName: '',
+          featuredNews: [],
+          error: 'Noticia no encontrada.',
+          url,
+        },
+      };
+    }
+
+    // Fetch Category Name
+    if (data.categoriaId) {
+        try {
+            const categories = await categoriaService.getAll();
+            const category = categories.find((c) => c.id === data!.categoriaId);
+            if (category) categoryName = category.nombre;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Fetch Featured News (Latest 5, excluding current)
+    let featuredNews: Noticia[] = [];
+    try {
+        const allNews = await noticiaService.getAll();
+        featuredNews = allNews
+          .filter((news) => news.id !== data!.id)
+          .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+          .slice(0, 5);
+    } catch (e) {
+        console.error(e);
+    }
+
+    return {
+      props: {
+        newsItem: data,
+        categoryName,
+        featuredNews,
+        url,
+      },
+    };
+
+  } catch (error) {
+    console.error('SSR Error:', error);
+    return {
+      props: {
+        newsItem: null,
+        error: 'Ocurrió un error al cargar la noticia.',
+        url,
+      },
+    };
+  }
 };
 
 export default NewsDetail;

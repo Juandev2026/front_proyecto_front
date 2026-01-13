@@ -20,6 +20,7 @@ const Cursos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'level'>('all');
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -61,13 +62,29 @@ const Cursos = () => {
   }, [categories]);
 
   const filteredCourses = useMemo(() => {
-    if (selectedCategory === 'Todos') {
-      return courses;
+    let result = courses;
+
+    // Filter by Category
+    if (selectedCategory !== 'Todos') {
+      const category = categories.find((c) => c.nombre === selectedCategory);
+      if (category) {
+        result = result.filter((course) => course.categoriaId === category.id);
+      } else {
+        result = []; // Category selected but not found (edge case)
+      }
     }
-    const category = categories.find((c) => c.nombre === selectedCategory);
-    if (!category) return [];
-    return courses.filter((course) => course.categoriaId === category.id);
-  }, [selectedCategory, courses, categories]);
+
+    // Filter by Search Query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((course) => 
+        course.nombre.toLowerCase().includes(query) || 
+        (course.descripcion && course.descripcion.toLowerCase().includes(query))
+      );
+    }
+
+    return result;
+  }, [selectedCategory, courses, categories, searchQuery]);
 
   const displayedCourses = useMemo(() => {
     if (!isAuthenticated) {
@@ -108,6 +125,35 @@ const Cursos = () => {
 
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-9">
+
+              {/* Search Bar */}
+              <FadeIn>
+                <div className="mb-8 relative max-w-lg mx-auto">
+                    <input
+                      type="text"
+                      placeholder="Buscar cursos..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm text-gray-700 placeholder-gray-400 transition-shadow"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                </div>
+              </FadeIn>
+
               {isAuthenticated && user?.nivelId && (
                 <FadeIn>
                   <div className="flex justify-center space-x-4 mb-8">

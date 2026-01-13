@@ -8,6 +8,7 @@ import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import { useAuth } from '../hooks/useAuth';
 import AuthModal from '../components/AuthModal';
 import AdSidebar from '../components/AdSidebar';
+import ShareButton from '../components/ShareButton';
 
 const NormasLegalesPage = () => {
   const { isAuthenticated } = useAuth();
@@ -112,17 +113,24 @@ const NormasLegalesPage = () => {
                            />
                         </div>
                       </div>
-                      <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 mt-auto">
+                      <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 mt-auto flex items-center justify-between gap-2">
                         {isAuthenticated ? (
-                          <a
-                            href={norma.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                          >
-                            <DocumentTextIcon className="h-4 w-4 mr-2" />
-                            Ver Información
-                          </a>
+                          <div className="flex-1 flex gap-2">
+                              <a
+                                href={`/normas-legales/${norma.id}`}
+                                className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                              >
+                                <DocumentTextIcon className="h-4 w-4 mr-2" />
+                                Ver Información
+                              </a>
+                              <div className="flex-shrink-0">
+                                <ShareButton
+                                    title={norma.nombre}
+                                    url={`${typeof window !== 'undefined' ? window.location.origin : ''}/normas-legales/${norma.id}`}
+                                    className="!p-2"
+                                />
+                              </div>
+                          </div>
                         ) : (
                           <button
                             onClick={() => setIsAuthModalOpen(true)}
