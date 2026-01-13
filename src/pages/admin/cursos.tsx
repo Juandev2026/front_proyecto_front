@@ -57,6 +57,7 @@ const AdminCursos = () => {
     precio: 0,
     precioOferta: 0,
     imagenUrl: '',
+    videoUrl: '',
     numero: '',
     temas: [],
   };
@@ -166,6 +167,7 @@ const AdminCursos = () => {
       precio: course.precio,
       precioOferta: course.precioOferta,
       imagenUrl: course.imagenUrl,
+      videoUrl: course.videoUrl || '',
       numero: course.numero || '',
       temas: course.temas || [],
     });
@@ -721,6 +723,23 @@ const AdminCursos = () => {
                         })
                       }
                       placeholder="Ej: 51987654321"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Video URL (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={currentCourse.videoUrl || ''}
+                      onChange={(e) =>
+                        setCurrentCourse({
+                          ...currentCourse,
+                          videoUrl: e.target.value,
+                        })
+                      }
+                      placeholder="https://youtube.com/..."
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">

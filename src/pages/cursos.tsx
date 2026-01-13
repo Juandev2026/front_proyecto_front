@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 
 import Link from 'next/link';
 
-import About from '../components/About';
+
 import AdSidebar from '../components/AdSidebar';
 import CommunitySection from '../components/CommunitySection';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
@@ -334,7 +334,7 @@ const Cursos = () => {
         </div>
       </div>
 
-      <About />
+
       <Footer />
     </div>
   );
