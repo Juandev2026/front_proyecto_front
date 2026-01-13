@@ -158,8 +158,8 @@ const About = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Claridad y transparencia */}
                 <FadeIn delay={0.1}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
-                        <div className="absolute top-0 left-0 w-2 h-full bg-blue-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 active:scale-95 active:shadow-inner relative overflow-hidden group h-full cursor-pointer">
+                        <div className="absolute top-0 left-0 w-2 h-full bg-blue-500 group-hover:w-full group-active:bg-purple-500 transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-blue-900 mb-4 relative z-10">
                         Claridad y transparencia
                         </h3>
@@ -171,8 +171,8 @@ const About = () => {
 
                 {/* Utilidad práctica */}
                 <FadeIn delay={0.2}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
-                        <div className="absolute top-0 left-0 w-2 h-full bg-orange-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 active:scale-95 active:shadow-inner relative overflow-hidden group h-full cursor-pointer">
+                        <div className="absolute top-0 left-0 w-2 h-full bg-orange-500 group-hover:w-full group-active:bg-purple-500 transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-orange-900 mb-4 relative z-10">
                         Utilidad práctica
                         </h3>
@@ -184,8 +184,8 @@ const About = () => {
 
                 {/* Crecimiento profesional */}
                 <FadeIn delay={0.3}>
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group h-full">
-                        <div className="absolute top-0 left-0 w-2 h-full bg-green-500 group-hover:w-full transition-all duration-500 opacity-10"></div>
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 active:scale-95 active:shadow-inner relative overflow-hidden group h-full cursor-pointer">
+                        <div className="absolute top-0 left-0 w-2 h-full bg-green-500 group-hover:w-full group-active:bg-purple-500 transition-all duration-500 opacity-10"></div>
                         <h3 className="font-bold text-xl text-green-900 mb-4 relative z-10">
                         Crecimiento profesional
                         </h3>

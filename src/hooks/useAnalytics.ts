@@ -46,10 +46,10 @@ export const useVideoTracking = (videoId: string, videoTitle: string, courseId?:
   const trackedMilestones = useRef<Set<number>>(new Set());
 
   const trackVideoStart = useCallback(() => {
-    trackEvent('video_start', {
-      video_id: videoId,
-      video_title: videoTitle,
-      course_id: courseId,
+    trackEvent('iniciar_video', {
+      id_video: videoId,
+      titulo_video: videoTitle,
+      id_curso: courseId,
     });
     trackedMilestones.current.clear();
   }, [videoId, videoTitle, courseId]);
@@ -63,10 +63,10 @@ export const useVideoTracking = (videoId: string, videoTitle: string, courseId?:
         progressPercent >= milestone &&
         !trackedMilestones.current.has(milestone)
       ) {
-        trackEvent('video_progress', {
-          video_id: videoId,
-          video_title: videoTitle,
-          progress_percent: milestone as 25 | 50 | 75 | 100,
+        trackEvent('progreso_video', {
+          id_video: videoId,
+          titulo_video: videoTitle,
+          porcentaje_progreso: milestone as 25 | 50 | 75 | 100,
         });
         trackedMilestones.current.add(milestone);
       }

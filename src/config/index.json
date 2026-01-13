@@ -1,6 +1,6 @@
 {
   "company": {
-    "name": "Advendocente",
+    "name": "Avend Docente Perú",
     "logo": "/assets/images/logo_principal.png"
   },
   "navigation": [
@@ -17,16 +17,16 @@
       "href": "/news"
     },
     {
+      "name": "Normas Legales",
+      "href": "/normas-legales"
+    },
+    {
       "name": "Recursos",
       "href": "/materials"
     },
     {
       "name": "Cursos",
       "href": "/cursos"
-    },
-    {
-      "name": "Normas Legales",
-      "href": "/normas-legales"
     },
     {
       "name": "IA (Próximamente)",
@@ -150,6 +150,10 @@
     {
       "name": "Cursos",
       "href": "/cursos"
+    },
+    {
+      "name": "Normas Legales",
+      "href": "/normas-legales"
     }
     ],
     "socialMedia": {

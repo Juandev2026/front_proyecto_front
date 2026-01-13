@@ -145,9 +145,8 @@ const LatestNews = () => {
               <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-sm text-blue-800">
                   <span className="font-bold">
-                    ¿Quieres descargar recursos personalizados?
-                  </span>{' '}
-                  Inicia sesión para ver contenido de tu nivel.
+                    Inicia sesión para descargar recursos gratuitos y acceder a todo el contenido web disponible.
+                  </span>
                 </p>
                 <Link href="/login">
                   <a className="whitespace-nowrap px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors">
@@ -162,16 +161,16 @@ const LatestNews = () => {
               {subFeaturedNews.map((news) => (
                 <div
                   key={news.id}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
+                  className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
                 >
-                  <div className="w-2/5 relative overflow-hidden">
+                  <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                     <img
-                      className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                       src={news.imageUrl || '/assets/images/placeholder.png'}
                       alt={stripHtml(news.titulo)}
                     />
                   </div>
-                  <div className="w-3/5 p-4 sm:p-8 flex flex-col justify-between">
+                  <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
                     <div>
                       <h3
                         className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
@@ -206,16 +205,16 @@ const LatestNews = () => {
                     {currentNews.map((news) => (
                       <div
                         key={news.id}
-                        className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
+                        className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
                       >
-                        <div className="w-2/5 relative overflow-hidden">
+                        <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                           <img
-                            className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-500"
+                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                             src={news.imageUrl || '/assets/images/placeholder.png'}
                             alt={stripHtml(news.titulo)}
                           />
                         </div>
-                        <div className="w-3/5 p-4 sm:p-8 flex flex-col justify-between">
+                        <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
                           <div>
                             <h3
                               className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
