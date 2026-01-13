@@ -13,6 +13,7 @@ export interface Curso {
   nombre: string;
   descripcion: string;
   categoriaId: number;
+  categoria?: { id: number; nombre: string; cursos?: string[] };
   duracion: string;
   idioma: string;
   loQueAprenderas: string;
@@ -20,11 +21,21 @@ export interface Curso {
   precioOferta: number;
   imagenUrl: string;
   numero: string;
+  videoUrl?: string;
   modalidadId?: number;
+  modalidad?: { id: number; nombre: string };
   nivelId?: number;
+  nivel?: {
+    id: number;
+    nombre: string;
+    imageUrl?: string;
+    modalidadId?: number;
+    modalidad?: { id: number; nombre: string };
+  };
   estadoId?: number;
   estado?: { id: number; nombre: string; codigo: string; colorHex: string };
   usuarioEdicionId?: number;
+  fechaEdicion?: string;
   temas: Tema[];
 }
 
