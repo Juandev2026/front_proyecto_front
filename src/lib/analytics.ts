@@ -15,7 +15,8 @@ export type GAEventName =
   | 'ver_material'
   | 'descargar_material'
   // Fase 3: Búsqueda
-  | 'busqueda';
+  | 'busqueda'
+  | 'view_course';
 
 export interface GAEventParams {
   // Eventos de Cursos
@@ -74,6 +75,12 @@ export interface GAEventParams {
   busqueda: {
     termino_busqueda: string;
     cantidad_resultados?: number;
+  };
+
+  view_course: {
+    course_id: string;
+    course_name: string;
+    category?: string;
   };
 }
 

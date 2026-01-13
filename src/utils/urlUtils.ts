@@ -1,10 +1,14 @@
-export const createSlug = (name: string, id: number): string => {
+export const cleanSlug = (name: string): string => {
   const cleanName = name.replace(/<[^>]+>/g, '').trim();
-  const slug = cleanName
+  return cleanName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
-  return `${slug}-${id}`;
+};
+
+export const createSlug = (name: string, id?: number | null): string => {
+  const slug = cleanSlug(name);
+  return id ? `${slug}-${id}` : slug;
 };
 
 export const getIdFromSlug = (slug: string | string[] | undefined): number | null => {

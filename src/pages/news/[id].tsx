@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { getIdFromSlug } from '../../utils/urlUtils';
+
 
 import AdSidebar from '../../components/AdSidebar';
 import CommentsSection from '../../components/CommentsSection';
@@ -13,7 +13,7 @@ import { noticiaService, Noticia } from '../../services/noticiaService';
 import CommunitySection from '../../components/CommunitySection';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../../components/AuthModal';
-import { createSlug } from '../../utils/urlUtils';
+import { createSlug, getIdFromSlug, cleanSlug } from '../../utils/urlUtils';
 
 const NewsDetail = () => {
   const router = useRouter();
@@ -29,12 +29,37 @@ const NewsDetail = () => {
 
   useEffect(() => {
     const fetchNewsAndFeatured = async () => {
-      const newsId = getIdFromSlug(id as string);
-      if (!newsId) return;
+      if (!id) return;
+      const slug = id as string;
+      const newsId = getIdFromSlug(slug);
+
+      setLoading(true);
+      setError(null);
 
       try {
-        setLoading(true);
-        const data = await noticiaService.getById(newsId);
+        let data: Noticia | null = null;
+
+        // 1. Try fetching by ID if it exists (legacy URLs)
+        if (newsId) {
+          try {
+            data = await noticiaService.getById(newsId);
+          } catch (err) {
+            console.warn('Could not fetch by ID, falling back to slug match');
+          }
+        }
+
+        // 2. If no data based on ID (or no ID), try finding by slug match
+        if (!data) {
+          const allNews = await noticiaService.getAll();
+          data = allNews.find((n) => cleanSlug(n.titulo) === slug) || null;
+        }
+
+        if (!data) {
+          setError('Noticia no encontrada.');
+          setLoading(false);
+          return;
+        }
+
         setNewsItem(data);
 
         // Fetch category name
@@ -49,7 +74,7 @@ const NewsDetail = () => {
         // Fetch latest news (excluding current article)
         const allNews = await noticiaService.getAll();
         const latest = allNews
-          .filter((news) => news.id !== Number(id))
+          .filter((news) => news.id !== data!.id)
           .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
           .slice(0, 5);
         setFeaturedNews(latest);
@@ -283,7 +308,7 @@ const NewsDetail = () => {
               </div>
               <div className="p-4 space-y-4">
                 {featuredNews.slice(0, 5).map((featured) => (
-                  <Link key={featured.id} href={`/news/${createSlug(featured.titulo, featured.id)}`}>
+                  <Link key={featured.id} href={`/news/${createSlug(featured.titulo)}`}>
                     <a className="block group">
                       <div className="relative overflow-hidden rounded-lg mb-2">
                         <img
