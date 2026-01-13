@@ -365,26 +365,20 @@ const CourseDetail = () => {
                 {/* Video Preview */}
                 {/* Video Preview */}
                 {course.videoUrl ? (
-                  <a
-                    href={course.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block relative h-48 bg-black group cursor-pointer"
-                  >
-                    <img
-                      src={course.imagenUrl || '/assets/images/product1.jpg'}
-                      alt={course.nombre}
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity"
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      className="absolute inset-0 w-full h-full"
+                      src={`https://www.youtube.com/embed/${
+                        course.videoUrl.includes('v=') 
+                          ? course.videoUrl.split('v=')[1]?.split('&')[0] 
+                          : course.videoUrl.split('/').pop()
+                      }`}
+                      title={course.nombre}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <PlayIcon className="w-8 h-8 text-black ml-1" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-4 left-0 right-0 text-center text-white font-semibold text-sm">
-                      Vista previa del curso
-                    </div>
-                  </a>
+                  </div>
                 ) : (
                   <div className="relative h-48 bg-black group cursor-default">
                     <img

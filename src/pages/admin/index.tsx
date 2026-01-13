@@ -174,9 +174,10 @@ const AdminDashboard = () => {
                       <div>
                         <p className="text-sm text-gray-500">
                           {activity.action}{' '}
-                          <span className="font-medium text-gray-900">
-                            {activity.title}
-                          </span>
+                          <span 
+                            className="font-medium text-gray-900"
+                            dangerouslySetInnerHTML={{ __html: activity.title }}
+                          />
                         </p>
                       </div>
                       <div className="text-right text-sm whitespace-nowrap text-gray-500">
