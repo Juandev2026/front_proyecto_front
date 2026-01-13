@@ -620,7 +620,7 @@ const AdminInformacionRelevante = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      precio: parseFloat(e.target.value),
+                      precio: isNaN(parseFloat(e.target.value)) ? 0 : parseFloat(e.target.value),
                     })
                   }
                 />

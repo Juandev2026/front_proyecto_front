@@ -21,11 +21,13 @@ const AdminNormasLegales = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
     url: '',
+    imagenUrl: '',
   });
 
   const fetchData = async () => {
@@ -61,8 +63,10 @@ const AdminNormasLegales = () => {
       nombre: item.nombre,
       descripcion: item.descripcion,
       url: item.url,
+      imagenUrl: item.imagenUrl || '',
     });
     setFile(null); // Reset file input when editing
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -80,6 +84,16 @@ const AdminNormasLegales = () => {
         }
       }
 
+      let finalImageUrl = formData.imagenUrl;
+      if (imageFile) {
+        try {
+          finalImageUrl = await uploadService.uploadImage(imageFile);
+        } catch (uploadError) {
+          alert('Error al subir la imagen');
+          return;
+        }
+      }
+
       if (!finalUrl) {
          alert('Por favor, suba un PDF o ingrese una URL.');
          return;
@@ -88,6 +102,7 @@ const AdminNormasLegales = () => {
       const payload = {
         ...formData,
         url: finalUrl,
+        imagenUrl: finalImageUrl,
       };
 
       if (editingId) {
@@ -100,8 +115,10 @@ const AdminNormasLegales = () => {
         nombre: '',
         descripcion: '',
         url: '',
+        imagenUrl: '',
       });
       setFile(null);
+      setImageFile(null);
       setEditingId(null);
       fetchData();
     } catch (err) {
@@ -133,8 +150,9 @@ const AdminNormasLegales = () => {
           onClick={() => {
             setIsModalOpen(true);
             setEditingId(null);
-            setFormData({ nombre: '', descripcion: '', url: '' });
+            setFormData({ nombre: '', descripcion: '', url: '', imagenUrl: '' });
             setFile(null);
+            setImageFile(null);
           }}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
         >
@@ -236,6 +254,32 @@ const AdminNormasLegales = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, descripcion: e.target.value })
                   }
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                   Imagen de Portada
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                <div className="text-xs text-gray-500 mb-1">O ingrese URL de imagen:</div>
+                <input
+                  type="text"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.imagenUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, imagenUrl: e.target.value })
+                  }
+                  placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
 

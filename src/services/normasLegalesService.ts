@@ -6,6 +6,7 @@ export interface NormaLegal {
   nombre: string;
   descripcion: string;
   url: string;
+  imagenUrl: string;
   fechaCreacion?: string;
 }
 

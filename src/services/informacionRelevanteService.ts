@@ -56,7 +56,7 @@ export const informacionRelevanteService = {
       const response = await fetch(`${ENDPOINT}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, id }),
       });
       if (!response.ok) {
         throw new Error('Error al actualizar informacion relevante');

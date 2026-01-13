@@ -8,6 +8,7 @@ export interface DashboardTotals {
   totalNoticias: number;
   totalMateriales: number;
   totalVideos: number;
+  totalCursos: number;
 }
 
 export interface RecentActivityItem {
