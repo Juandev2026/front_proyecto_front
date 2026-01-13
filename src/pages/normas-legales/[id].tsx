@@ -6,7 +6,6 @@ import { DocumentTextIcon } from '@heroicons/react/outline';
 import MainLayout from '../../components/MainLayout';
 import ShareButton from '../../components/ShareButton';
 import { NormaLegal, normasLegalesService } from '../../services/normasLegalesService';
-import { API_BASE_URL } from '../../config/api';
 
 interface NormaLegalDetailProps {
   norma: NormaLegal | null;

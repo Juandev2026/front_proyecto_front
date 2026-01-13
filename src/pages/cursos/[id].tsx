@@ -166,7 +166,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
               
                {/* Share Button in Hero for visibility */}
                <div className="mt-4">
-                  <ShareButton title={course.nombre} url={url} className="text-black" />
+                  <ShareButton title={stripHtml(course.nombre)} url={url} className="text-black" />
                </div>
 
             </div>
@@ -248,7 +248,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
 
                 {/* Mobile share */}
                 <div className="flex justify-center">
-                    <ShareButton title={course.nombre} url={url} />
+                    <ShareButton title={stripHtml(course.nombre)} url={url} />
                 </div>
               </div>
             </div>
@@ -426,7 +426,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
 
                   {/* Sidebar share */}
                   <div className="flex justify-center">
-                    <ShareButton title={course.nombre} url={url} />
+                    <ShareButton title={stripHtml(course.nombre)} url={url} />
                   </div>
                 </div>
               </div>

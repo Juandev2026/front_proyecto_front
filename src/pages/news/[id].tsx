@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
 
 import AdSidebar from '../../components/AdSidebar';
@@ -53,25 +52,30 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
     );
   }
 
-  const plainDescription = newsItem.descripcion ? newsItem.descripcion.replace(/<[^>]+>/g, '') : '';
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
+  const plainDescription = newsItem.descripcion ? stripHtml(newsItem.descripcion) : '';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Head>
-        <title>{newsItem.titulo}</title>
+        <title>{stripHtml(newsItem.titulo)}</title>
         <meta name="description" content={plainDescription.substring(0, 160)} />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="article" />
         <meta property="og:url" content={url} />
-        <meta property="og:title" content={newsItem.titulo} />
+        <meta property="og:title" content={stripHtml(newsItem.titulo)} />
         <meta property="og:description" content={plainDescription.substring(0, 160)} />
         {newsItem.imageUrl && <meta property="og:image" content={newsItem.imageUrl} />}
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={url} />
-        <meta property="twitter:title" content={newsItem.titulo} />
+        <meta property="twitter:title" content={stripHtml(newsItem.titulo)} />
         <meta property="twitter:description" content={plainDescription.substring(0, 160)} />
         {newsItem.imageUrl && <meta property="twitter:image" content={newsItem.imageUrl} />}
       </Head>
@@ -128,7 +132,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
                     />
                     <div className="flex-shrink-0 pt-1">
                         <ShareButton 
-                          title={newsItem.titulo} 
+                          title={stripHtml(newsItem.titulo)} 
                           url={url} 
                         />
                     </div>
