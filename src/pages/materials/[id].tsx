@@ -162,58 +162,95 @@ const MaterialPreview = () => {
                 </div>
                 </div>
 
-                {/* PDF Viewer Section - Below Thumbnail */}
+                {/* Title and Description Section - Right after thumbnail */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-                  {isPdf ? (
-                    <div className="relative h-[800px] bg-gray-100">
-                      <iframe
-                        src={`${material.url}#toolbar=${
-                          material.precio && material.precio > 0 ? '0' : '1'
-                        }&navpanes=0&scrollbar=${
-                          material.precio && material.precio > 0 ? '0' : '1'
-                        }&view=FitH${
-                          material.precio && material.precio > 0 ? '&page=1' : ''
-                        }`}
-                        className="w-full h-full border-none"
-                        title="Vista previa del documento"
-                      />
-                      {/* Premium Overlay for PDF */}
-                      {material.precio && material.precio > 0 && (
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent z-10 flex flex-col items-center justify-center p-8 text-center">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-md shadow-2xl">
-                                <LockClosedIcon className="w-16 h-16 text-white mx-auto mb-4 opacity-80" />
-                                <h3 className="text-2xl font-bold text-white mb-2">Vista Previa Limitada</h3>
-                                <p className="text-white/80 mb-6">
-                                    Adquiere este material para visualizar el contenido completo y descargar los archivos adjuntos.
-                                </p>
-                                <a
-                                    href={getWhatsAppUrl()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 rounded-full transition-transform transform hover:scale-105"
-                                >
-                                    Comprar ahora
-                                </a>
-                            </div>
+                <div className="p-6 md:p-8 border-b border-gray-100">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4" dangerouslySetInnerHTML={{ __html: stripHtml(material.titulo) }}></h1>
+                    
+                    {/* Category Badge */}
+                    {material.categoria && (
+                        <div className="mb-4">
+                            <span className="inline-block bg-primary/10 text-primary text-sm font-semibold px-4 py-1 rounded-full">
+                                {material.categoria.nombre}
+                            </span>
                         </div>
-                      )}
+                    )}
+                    
+                    <div className="text-gray-600 text-base md:text-lg leading-relaxed prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: material.descripcion }}></div>
+                    
+                    {/* Price and Action Button */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pt-6 border-t border-gray-100">
+                        <div className="bg-primary/10 rounded-lg px-4 py-2">
+                            <span className="text-2xl font-bold text-primary">
+                                {material.precio && material.precio > 0 ? `S/ ${material.precio.toFixed(2)}` : 'Gratis'}
+                            </span>
+                        </div>
+                        {material.precio && material.precio > 0 ? (
+                            <a
+                                href={getWhatsAppUrl()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                </svg>
+                                Comprar por WhatsApp
+                            </a>
+                        ) : (
+                            <a
+                                href={material.url}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center bg-primary hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
+                            >
+                                <DownloadIcon className="w-5 h-5 mr-2" />
+                                Descargar
+                            </a>
+                        )}
                     </div>
-                  ) : material.url ? (
-                       // If url is not pdf (e.g. external link or image used as main content), just show a button or generic preview if needed. 
-                       // But per requirement, we wanted PDF below thumbnail. If the main URL IS the thumbnail, we might have duplication.
-                       // Use logic: If imageUrl exists, it was shown above. If url is PDF, show here. 
-                       // If url is Image, and distinct from imageUrl, show here? 
-                       // Simplification: Always show 'url' content here if it's embeddable or link if not.
-                       <div className="p-8 text-center bg-gray-50 border-t border-gray-100">
-                           <a href={material.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                               Abrir recurso original
-                           </a>
-                       </div>
-                  ) : null}
+                </div>
                 </div>
 
+                {/* PDF Viewer Section - After Description */}
+                {isPdf && (
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+                        <div className="p-6 md:p-8">
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Documento Adjunto</h2>
+                            <div className="relative h-[600px] bg-gray-100 rounded-lg overflow-hidden">
+                                <iframe
+                                    src={`${material.url}#toolbar=${material.precio && material.precio > 0 ? '0' : '1'}&navpanes=0&scrollbar=${material.precio && material.precio > 0 ? '0' : '1'}&view=FitH${material.precio && material.precio > 0 ? '&page=1' : ''}`}
+                                    className="w-full h-full border-none"
+                                    title="Vista previa del documento"
+                                />
+                                {/* Premium Overlay for PDF */}
+                                {material.precio && material.precio > 0 && (
+                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent z-10 flex flex-col items-center justify-center p-8 text-center">
+                                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-md shadow-2xl">
+                                            <LockClosedIcon className="w-16 h-16 text-white mx-auto mb-4 opacity-80" />
+                                            <h3 className="text-2xl font-bold text-white mb-2">Vista Previa Limitada</h3>
+                                            <p className="text-white/80 mb-6">
+                                                Adquiere este material para visualizar el contenido completo y descargar los archivos adjuntos.
+                                            </p>
+                                            <a
+                                                href={getWhatsAppUrl()}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 rounded-full transition-transform transform hover:scale-105"
+                                            >
+                                                Comprar ahora
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Attachments Section (Anexos) */}
-                {(material.archivoUrl || (material.precio && material.precio <= 0 && isPdf)) && (
+                {(material.archivoUrl || (isPdf && (!material.precio || material.precio === 0))) && (
                     <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 p-6 md:p-8">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="bg-blue-100 p-2 rounded-lg">
@@ -223,7 +260,6 @@ const MaterialPreview = () => {
                         </div>
                         
                         <div className="space-y-4">
-                            {/* Main File Download (if free and PDF) or Explicit File URL */}
                             {material.archivoUrl && (
                                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-colors group">
                                     <div className="flex items-center gap-4">
@@ -249,10 +285,7 @@ const MaterialPreview = () => {
                                 </div>
                             )}
 
-                             {/* If separate archivoUrl is NOT set, but main URL is a PDF and it's FREE, offer it as download here too or assume it's covered by the main button? 
-                                 Let's allow downloading the main URL if it is free and no separate attachment is provided.
-                             */}
-                             {!material.archivoUrl && isPdf && (!material.precio || material.precio === 0) && (
+                            {!material.archivoUrl && isPdf && (!material.precio || material.precio === 0) && (
                                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-colors group">
                                     <div className="flex items-center gap-4">
                                         <div className="bg-red-50 p-2 rounded-lg group-hover:bg-red-100 transition-colors">
@@ -275,70 +308,10 @@ const MaterialPreview = () => {
                                         Ver Archivo
                                     </a>
                                 </div>
-                             )}
+                            )}
                         </div>
                     </div>
                 )}
-
-
-                {/* Material Info */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-                <div className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    <div className="flex-1">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3" dangerouslySetInnerHTML={{ __html: stripHtml(material.titulo) }}></h1>
-                    <div className="text-gray-600 text-base md:text-lg leading-relaxed" dangerouslySetInnerHTML={{ __html: material.descripcion }}></div>
-                    </div>
-
-                    <div className="flex flex-col items-start md:items-end gap-3 md:ml-8">
-                    <div className="bg-primary/10 rounded-lg px-4 py-2">
-                        <span className="text-3xl font-bold text-primary">
-                        {material.precio && material.precio > 0
-                            ? `S/ ${material.precio.toFixed(2)}`
-                            : 'Gratis'}
-                        </span>
-                    </div>
-                    {material.precio && material.precio > 0 ? (
-                        <a
-                        href={getWhatsAppUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
-                        >
-                        <svg
-                            className="w-5 h-5 mr-2"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                        </svg>
-                        Comprar ahora
-                        </a>
-                    ) : (
-                        <a
-                        href={material.url}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center bg-primary hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
-                        >
-                        <DownloadIcon className="w-5 h-5 mr-2" />
-                        Descargar
-                        </a>
-                    )}
-                    </div>
-                </div>
-
-                {/* Category Badge */}
-                {material.categoria && (
-                    <div className="mt-6 pt-6 border-t border-gray-100">
-                    <span className="inline-block bg-primary/10 text-primary text-sm font-semibold px-4 py-1 rounded-full">
-                        {material.categoria.nombre}
-                    </span>
-                    </div>
-                )}
-                </div>
-            </div>
 
             {/* Video Section - If videoUrl exists */}
             {material.videoUrl && (
