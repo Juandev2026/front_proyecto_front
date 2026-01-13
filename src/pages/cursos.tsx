@@ -270,10 +270,7 @@ const Cursos = () => {
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
                            ¿Quieres descargar recursos personalizados?
                         </h3>
-                        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                          Regístrate ahora para ver todos nuestros cursos y
-                          tutoriales exclusivos.
-                        </p>
+                       
                         <Link href="/register">
                           <a className="inline-block bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-secondary transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             Regístrate Gratis
