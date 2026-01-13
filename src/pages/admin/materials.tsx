@@ -23,6 +23,7 @@ import { uploadService } from '../../services/uploadService';
 import { estadoService, Estado } from '../../services/estadoService';
 import 'react-quill/dist/quill.snow.css';
 
+
 // Dynamic import for ReactQuill
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -61,6 +62,7 @@ const AdminMaterials = () => {
     telefono: '',
   });
   const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // New state for thumbnail
 
   // strip html for table view
   const stripHtml = (html: string) => {
@@ -144,6 +146,7 @@ const AdminMaterials = () => {
       telefono: item.telefono || '',
     });
     setFile(null);
+    setImageFile(null);
 
     setIsModalOpen(true);
   };
@@ -156,6 +159,7 @@ const AdminMaterials = () => {
   const resetForm = () => {
     setEditingId(null);
     setFile(null);
+    setImageFile(null);
 
     setNewMaterial({
       titulo: '',
@@ -214,10 +218,22 @@ const AdminMaterials = () => {
         }
       }
 
+      let finalImageUrl = newMaterial.imageUrl;
+
+      if (imageFile) {
+        try {
+            finalImageUrl = await uploadService.uploadImage(imageFile);
+        } catch (uploadError) {
+             alert('Error al subir la imagen de portada.');
+             return;
+        }
+      }
+
       const materialData = {
         ...newMaterial,
         id: editingId || 0,
         url: finalUrl,
+        imageUrl: finalImageUrl,
         categoriaId: Number(newMaterial.categoriaId),
         estadoId: Number(newMaterial.estadoId),
         // Send 0 or null for removed fields if API requires them, service handles it
@@ -579,6 +595,33 @@ const AdminMaterials = () => {
                         />
                       </div>
                     )}
+                    
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="mt-2 w-full text-sm text-gray-500
+                                file:mr-4 file:py-2.5 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-bold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100
+                            "
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          setImageFile(file);
+                          // Optional: Preview immediately via object URL if desired, 
+                          // but for now we rely on the URL field which will be updated on save? 
+                          // Or we can set a temp preview.
+                          // Let's just set the URL field to a temp object URL for preview purposes
+                          const tempUrl = URL.createObjectURL(file);
+                          setNewMaterial({ ...newMaterial, imageUrl: tempUrl });
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                        O selecciona un archivo para subir (reemplazará la URL al guardar).
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
