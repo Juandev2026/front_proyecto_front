@@ -48,6 +48,9 @@ const AdminMaterials = () => {
     titulo: '',
     descripcion: '',
     url: '',
+    imageUrl: '',
+    archivoUrl: '',
+    videoUrl: '',
     categoriaId: 0,
     estadoId: 0,
     usuarioEdicionId:
@@ -128,6 +131,9 @@ const AdminMaterials = () => {
       titulo: item.titulo,
       descripcion: item.descripcion, // HTML content
       url: item.url,
+      imageUrl: item.imageUrl || '',
+      archivoUrl: item.archivoUrl || '',
+      videoUrl: item.videoUrl || '',
       categoriaId: item.categoriaId,
       estadoId: item.estadoId || 0,
       usuarioEdicionId:
@@ -155,6 +161,9 @@ const AdminMaterials = () => {
       titulo: '',
       descripcion: '',
       url: '',
+      imageUrl: '',
+      archivoUrl: '',
+      videoUrl: '',
       categoriaId: 0,
       estadoId: 0,
       usuarioEdicionId:
@@ -531,7 +540,7 @@ const AdminMaterials = () => {
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Título del Recurso
                     </label>
-                    <div className="mb-12">
+                    <div className="mb-6">
                       <ReactQuill
                         theme="snow"
                         value={newMaterial.titulo}
@@ -542,6 +551,34 @@ const AdminMaterials = () => {
                         modules={modules}
                       />
                     </div>
+                  </div>
+
+                  {/* Image URL */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Imagen de Portada (URL) (Dimensiones recomendadas: 3:2, ej. 1200x800px)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={newMaterial.imageUrl}
+                      onChange={(e) =>
+                        setNewMaterial({
+                          ...newMaterial,
+                          imageUrl: e.target.value,
+                        })
+                      }
+                      placeholder="https://..."
+                    />
+                    {newMaterial.imageUrl && (
+                      <div className="mt-2">
+                        <img
+                          src={newMaterial.imageUrl}
+                          alt="Vista previa"
+                          className="h-32 rounded-lg object-cover border border-gray-200"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -636,7 +673,7 @@ const AdminMaterials = () => {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      URL del Archivo (Existente o Externo)
+                      URL Principal (Link de acceso)
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -663,6 +700,42 @@ const AdminMaterials = () => {
                         </a>
                       )}
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Archivo URL (Opcional - Link directo al archivo)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={newMaterial.archivoUrl}
+                      onChange={(e) =>
+                        setNewMaterial({
+                          ...newMaterial,
+                          archivoUrl: e.target.value,
+                        })
+                      }
+                      placeholder="https://... (Ej. PDF, Doc)"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Video URL (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={newMaterial.videoUrl}
+                      onChange={(e) =>
+                        setNewMaterial({
+                          ...newMaterial,
+                          videoUrl: e.target.value,
+                        })
+                      }
+                      placeholder="https://youtube.com/..."
+                    />
                   </div>
 
                   <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">

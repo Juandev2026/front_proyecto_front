@@ -6,15 +6,29 @@ export interface Material {
   titulo: string;
   descripcion: string;
   url: string;
+  imageUrl?: string;
+  archivoUrl?: string;
+  videoUrl?: string;
   categoriaId: number;
-  categoria?: { id: number; nombre: string };
+  categoria?: { 
+    id: number; 
+    nombre: string;
+    materiales?: string[];
+  };
   modalidadId: number;
   modalidad?: { id: number; nombre: string };
   nivelId: number;
-  nivel?: { id: number; nombre: string };
+  nivel?: { 
+    id: number; 
+    nombre: string;
+    imageUrl?: string;
+    modalidadId?: number;
+    modalidad?: { id: number; nombre: string };
+  };
   estadoId: number;
   estado?: { id: number; nombre: string; codigo: string; colorHex: string };
   usuarioEdicionId: number;
+  fechaEdicion?: string;
   precio: number;
   telefono: string;
 }

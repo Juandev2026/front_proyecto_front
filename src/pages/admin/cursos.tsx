@@ -664,7 +664,7 @@ const AdminCursos = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Imagen del Curso
+                      Imagen del Curso (Dimensiones recomendadas: 3:2, ej. 1200x800px)
                     </label>
                     <input
                       type="file"
