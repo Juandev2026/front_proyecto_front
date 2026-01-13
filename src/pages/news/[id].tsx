@@ -115,7 +115,7 @@ const NewsDetail = () => {
                   <img
                     src={newsItem.imageUrl}
                     alt={newsItem.titulo}
-                    className="w-full h-auto object-cover max-h-[400px]"
+                    className="w-full h-auto"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
                     <div className="bg-white/80 rounded-full p-3 shadow-lg backdrop-blur-sm">
@@ -157,34 +157,87 @@ const NewsDetail = () => {
                   )}
                 </div>
                 <div
-                  className="prose prose-2xl max-w-none text-gray-700 leading-relaxed text-lg"
+                  className="prose prose-xl md:prose-2xl max-w-none text-gray-700 leading-relaxed text-xl md:text-2xl"
                   dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
                 />
               </div>
 
-              {/* PDF Viewer at Bottom (if archivoUrl is PDF) */}
-              {newsItem.archivoUrl && newsItem.archivoUrl.toLowerCase().endsWith('.pdf') && (
-                <div className="p-6 md:p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Documento Adjunto</h2>
-                  <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
-                    <iframe
-                      src={newsItem.archivoUrl}
-                      className="w-full h-full"
-                      title="Visor de Documento PDF"
-                    />
+              {/* Document Viewer at Bottom (PDF or Office) */}
+              {(() => {
+                if (!newsItem.archivoUrl) return null;
+                
+                const url = newsItem.archivoUrl;
+                const lowerUrl = url.toLowerCase();
+                let viewerUrl = null;
+                let isOffice = false;
+
+                if (lowerUrl.endsWith('.pdf')) {
+                  viewerUrl = url;
+                } else if (
+                  lowerUrl.endsWith('.doc') ||
+                  lowerUrl.endsWith('.docx') ||
+                  lowerUrl.endsWith('.xls') ||
+                  lowerUrl.endsWith('.xlsx') ||
+                  lowerUrl.endsWith('.ppt') ||
+                  lowerUrl.endsWith('.pptx')
+                ) {
+                  viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+                  isOffice = true;
+                }
+
+                if (!viewerUrl) return null;
+
+                return (
+                  <div className="p-6 md:p-8">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Documento Adjunto</h2>
+                    <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden relative">
+                      {isOffice && (
+                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                           <div className="animate-pulse text-gray-400">Cargando visor...</div>
+                         </div>
+                      )}
+                      <iframe
+                        src={viewerUrl}
+                        className="w-full h-full relative z-10"
+                        title="Visor de Documento"
+                        frameBorder="0"
+                      />
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <a 
+                        href={newsItem.archivoUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-primary text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Descargar Archivo
+                      </a>
+                    </div>
                   </div>
-                  <div className="mt-4 flex justify-end">
-                    <a 
-                      href={newsItem.archivoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="bg-primary text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      Descargar PDF
-                    </a>
+                );
+              })()}
+
+              {/* YouTube Video Section */}
+              {newsItem.videoUrl && (
+                <div className="p-6 md:p-8 border-t border-gray-100">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Video Destacado</h2>
+                  <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${
+                        newsItem.videoUrl.includes('v=') 
+                          ? newsItem.videoUrl.split('v=')[1]?.split('&')[0] 
+                          : newsItem.videoUrl.split('/').pop()
+                      }`}
+                      title="YouTube video player"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
                   </div>
                 </div>
               )}
@@ -250,7 +303,18 @@ const NewsDetail = () => {
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
              <img 
-               src={newsItem.archivoUrl && !newsItem.archivoUrl.toLowerCase().endsWith('.pdf') ? newsItem.archivoUrl : (newsItem.imageUrl || '')} 
+               src={
+                 newsItem.archivoUrl && 
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.pdf') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.doc') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.docx') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.xls') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.xlsx') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.ppt') &&
+                 !newsItem.archivoUrl.toLowerCase().endsWith('.pptx')
+                   ? newsItem.archivoUrl 
+                   : (newsItem.imageUrl || '')
+               } 
                alt={newsItem.titulo} 
                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
                onClick={(e) => e.stopPropagation()} // Prevent close when clicking image

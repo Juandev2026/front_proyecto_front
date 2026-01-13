@@ -59,7 +59,10 @@ const AdminNews = () => {
     nivelId: 0,
     fecha: new Date().toISOString(),
     imageUrl: '',
+    archivoUrl: '',
+    videoUrl: '',
     esDestacado: false,
+    esNormaLegal: false,
     usuarioEdicionId:
       typeof window !== 'undefined'
         ? Number(localStorage.getItem('userId') || 0)
@@ -69,7 +72,9 @@ const AdminNews = () => {
     estadoId: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [archivoFile, setArchivoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewArchivoUrl, setPreviewArchivoUrl] = useState<string | null>(null);
 
   const modules = {
     toolbar: [
@@ -217,7 +222,10 @@ const AdminNews = () => {
       nivelId: item.nivelId || 0,
       fecha: item.fecha,
       imageUrl: item.imageUrl,
+      archivoUrl: item.archivoUrl,
+      videoUrl: item.videoUrl,
       esDestacado: item.esDestacado,
+      esNormaLegal: item.esNormaLegal || false,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -227,7 +235,9 @@ const AdminNews = () => {
       estadoId: item.estadoId || 0,
     });
     setImageFile(null);
+    setArchivoFile(null);
     setPreviewUrl(item.imageUrl || null);
+    setPreviewArchivoUrl(item.archivoUrl || null);
     setIsModalOpen(true);
   };
 
@@ -246,7 +256,10 @@ const AdminNews = () => {
       nivelId: 0,
       fecha: new Date().toISOString(),
       imageUrl: '',
+      archivoUrl: '',
+      videoUrl: '',
       esDestacado: false,
+      esNormaLegal: false,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)
@@ -256,7 +269,9 @@ const AdminNews = () => {
       estadoId: 0,
     });
     setImageFile(null);
+    setArchivoFile(null);
     setPreviewUrl(null);
+    setPreviewArchivoUrl(null);
     setIsModalOpen(true);
   };
 
@@ -283,7 +298,7 @@ const AdminNews = () => {
     }
 
     try {
-      let { imageUrl } = formData;
+      let { imageUrl, archivoUrl } = formData;
 
       if (imageFile) {
         try {
@@ -291,6 +306,16 @@ const AdminNews = () => {
         } catch (uploadError) {
           // eslint-disable-next-line no-alert
           alert('Error al subir la imagen. Por favor intente nuevamente.');
+          return;
+        }
+      }
+
+      if (archivoFile) {
+        try {
+          archivoUrl = await uploadService.uploadImage(archivoFile);
+        } catch (uploadError) {
+          // eslint-disable-next-line no-alert
+          alert('Error al subir el archivo. Por favor intente nuevamente.');
           return;
         }
       }
@@ -304,7 +329,10 @@ const AdminNews = () => {
         nivelId: formData.nivelId || 0,
         fecha: new Date(formData.fecha || new Date()).toISOString(),
         imageUrl: imageUrl || null,
+        archivoUrl: archivoUrl || null,
+        videoUrl: formData.videoUrl || null,
         esDestacado: formData.esDestacado || false,
+        esNormaLegal: formData.esNormaLegal || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
         precio: formData.precio || 0,
         autor: formData.autor || '',
@@ -722,6 +750,41 @@ const AdminNews = () => {
                   </div>
 
                   <div>
+                     <label className="block text-gray-700 text-sm font-bold mb-2">
+                       Precio (S/ - deje en 0 si es gratis)
+                     </label>
+                     <input
+                       type="number"
+                       step="0.01"
+                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       value={formData.precio || 0}
+                       onChange={(e) =>
+                         setFormData({
+                           ...formData,
+                           precio: parseFloat(e.target.value),
+                         })
+                       }
+                     />
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                       URL de Video (YouTube - Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.videoUrl || ''}
+                       onChange={(e) =>
+                        setFormData({ ...formData, videoUrl: e.target.value })
+                      }
+                       placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       URL de Archivo (Imagen/PDF - Opcional)
                     </label>
@@ -753,12 +816,12 @@ const AdminNews = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Subir archivo (Imagen o PDF)
+                      Subir Imagen Principal
                     </label>
                     <div className="flex gap-2 items-start">
                       <input
                         type="file"
-                        accept="image/*,application/pdf"
+                        accept="image/*"
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
@@ -774,10 +837,10 @@ const AdminNews = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center h-[42px] shrink-0"
-                          title="Visualizar archivo"
+                          title="Visualizar imagen"
                         >
                           <EyeIcon className="w-5 h-5 mr-2" />
-                          Visualizar
+                          Ver
                         </a>
                       )}
                     </div>
@@ -785,22 +848,39 @@ const AdminNews = () => {
 
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Precio (S/ - deje en 0 si es gratis)
+                      Subir Archivo Adjunto (PDF, Word, Excel, etc.)
                     </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={formData.precio || 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          precio: parseFloat(e.target.value),
-                        })
-                      }
-                    />
+                    <div className="flex gap-2 items-start">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0];
+                            setArchivoFile(file);
+                            setPreviewArchivoUrl(URL.createObjectURL(file));
+                          }
+                        }}
+                      />
+                      {(previewArchivoUrl || formData.archivoUrl) && (
+                        <a
+                          href={previewArchivoUrl || formData.archivoUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center h-[42px] shrink-0"
+                          title="Visualizar archivo"
+                        >
+                          <EyeIcon className="w-5 h-5 mr-2" />
+                          Ver
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
@@ -842,25 +922,48 @@ const AdminNews = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="esDestacado"
-                    className="mr-2 leading-tight"
-                    checked={formData.esDestacado}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        esDestacado: e.target.checked,
-                      })
-                    }
-                  />
-                  <label
-                    className="block text-gray-700 text-sm font-bold"
-                    htmlFor="esDestacado"
-                  >
-                    ¿Es Destacado?
-                  </label>
+                <div className="flex flex-wrap items-center gap-6 mt-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="esDestacado"
+                      className="mr-2 leading-tight"
+                      checked={formData.esDestacado}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          esDestacado: e.target.checked,
+                        })
+                      }
+                    />
+                    <label
+                      className="block text-gray-700 text-sm font-bold"
+                      htmlFor="esDestacado"
+                    >
+                      ¿Es Destacado?
+                    </label>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="esNormaLegal"
+                      className="mr-2 leading-tight"
+                      checked={formData.esNormaLegal}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          esNormaLegal: e.target.checked,
+                        })
+                      }
+                    />
+                    <label
+                      className="block text-gray-700 text-sm font-bold"
+                      htmlFor="esNormaLegal"
+                    >
+                      ¿Es Norma Legal?
+                    </label>
+                  </div>
                 </div>
               </div>
 

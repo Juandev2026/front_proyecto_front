@@ -10,6 +10,7 @@ export interface Noticia {
   fecha: string;
   imageUrl: string | null;
   archivoUrl: string | null;
+  videoUrl: string | null;
   esDestacado: boolean;
   usuarioEdicionId?: number;
   modalidadId?: number;
@@ -26,6 +27,7 @@ export interface Noticia {
     colorHex: string;
   };
   autor?: string;
+  esNormaLegal?: boolean;
 }
 
 const API_URL = `${API_BASE_URL}/Noticias`;
@@ -143,6 +145,7 @@ export const noticiaService = {
           archivoUrl: n.archivoUrl || '',
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
+          esNormaLegal: n.esNormaLegal || false,
         });
       }
 
@@ -202,6 +205,7 @@ export const noticiaService = {
           archivoUrl: n.archivoUrl || '',
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
+          esNormaLegal: n.esNormaLegal || false,
         });
       }
 
