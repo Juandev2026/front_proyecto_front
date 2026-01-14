@@ -137,8 +137,7 @@ const NormasLegalesPage = () => {
                             className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                           >
                             <DocumentTextIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                            <span className="hidden sm:inline">Ingresa para ver</span>
-                            <span className="sm:hidden">Ingresar</span>
+                            <span className="whitespace-nowrap">Descargar documento</span>
                           </button>
                         )}
                       </div>
