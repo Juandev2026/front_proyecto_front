@@ -154,32 +154,7 @@ const Cursos = () => {
                 </div>
               </FadeIn>
 
-              {isAuthenticated && user?.nivelId && (
-                <FadeIn>
-                  <div className="flex justify-center space-x-4 mb-8">
-                    <button
-                      onClick={() => setFilterMode('all')}
-                      className={`px-6 py-2 rounded-full text-sm font-bold transition-colors ${
-                        filterMode === 'all'
-                          ? 'bg-gray-800 text-white'
-                          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      Ver todos
-                    </button>
-                    <button
-                      onClick={() => setFilterMode('level')}
-                      className={`px-6 py-2 rounded-full text-sm font-bold transition-colors ${
-                        filterMode === 'level'
-                          ? 'bg-primary text-white'
-                          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      Ver cursos por mi nivel
-                    </button>
-                  </div>
-                </FadeIn>
-              )}
+
 
               {/* Category Tabs */}
               <FadeIn delay={0.2}>

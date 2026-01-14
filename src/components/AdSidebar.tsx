@@ -146,7 +146,7 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
             </div>
 
             {/* Content & Buttons Area */}
-            <div className="p-3 bg-white">
+            <div className="p-3 bg-white relative pb-12">
                 {ad.titulo && <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1">{ad.titulo}</h4>}
                 
                 <div className="flex flex-col gap-2">
@@ -165,18 +165,15 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
                         </a>
                     )}
 
-                    {/* Secondary Action (Web Link) */}
+                    {/* Secondary Action (Web Link) - Bottom Right Corner */}
                     {webLink && (
                          <a 
                             href={webLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`w-full text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-2 transition-colors border ${whatsappLink ? 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' : 'bg-primary text-white border-transparent hover:bg-blue-700'}`}
+                            className="absolute bottom-3 right-3 bg-primary hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
                         >
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            {whatsappLink ? 'Ver más información' : 'Ver enlace'}
+                            VER MÁS
                         </a>
                     )}
                 </div>

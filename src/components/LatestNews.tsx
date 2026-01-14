@@ -118,31 +118,8 @@ const LatestNews = () => {
               Últimas Noticias
             </h2>
 
-            {isAuthenticated && user?.nivelId ? (
-              <div className="flex space-x-4 mt-2 mb-4">
-                <button
-                  onClick={() => setFilterMode('all')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                    filterMode === 'all'
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                >
-                  Ver todas
-                </button>
-                <button
-                  onClick={() => setFilterMode('level')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                    filterMode === 'level'
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                >
-                  Ver noticias por mi nivel
-                </button>
-              </div>
-            ) : (
-              <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+
+            <div className="mt-2 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-sm text-blue-800">
                   <span className="font-bold">
                     Inicia sesión para descargar recursos gratuitos y acceder a todo el contenido web disponible.
@@ -154,7 +131,6 @@ const LatestNews = () => {
                   </a>
                 </Link>
               </div>
-            )}
             
             <div className="space-y-6">
               {/* Render Sub-Featured News (Top 4) */}

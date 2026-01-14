@@ -140,31 +140,8 @@ const News = () => {
           </p>
         </div>
 
-        {isAuthenticated && user?.nivelId ? (
-          <div className="flex justify-center space-x-4 mt-2 mb-8">
-            <button
-              onClick={() => setFilterMode('all')}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
-                filterMode === 'all'
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-              }`}
-            >
-              Ver todas
-            </button>
-            <button
-              onClick={() => setFilterMode('level')}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
-                filterMode === 'level'
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-              }`}
-            >
-              Ver noticias por mi nivel
-            </button>
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+
+        <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="bg-blue-100 p-2 rounded-full text-primary">
                 <svg
@@ -194,7 +171,6 @@ const News = () => {
               </a>
             </Link>
           </div>
-        )}
 
         {/* Search Bar */}
         <div className="mb-10 max-w-3xl mx-auto">

@@ -146,16 +146,26 @@ const AdminCategories = () => {
   }, [fetchCategories]);
 
   const handleCreate = async () => {
+    // Check for duplicate category name (case-insensitive)
+    const duplicateExists = categories.some(
+      (cat) => cat.nombre.trim().toLowerCase() === formData.nombre.trim().toLowerCase()
+    );
+
+    if (duplicateExists) {
+      alert('Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.');
+      return;
+    }
+
     try {
       switch (activeTab) {
         case 'standard':
-          await categoriaService.create({ nombre: formData.nombre });
+          await categoriaService.create({ nombre: formData.nombre.trim() });
           break;
         case 'general':
-          await categoriaGeneralService.create({ nombre: formData.nombre });
+          await categoriaGeneralService.create({ nombre: formData.nombre.trim() });
           break;
         case 'simple':
-          await categoriaSimpleService.create({ nombre: formData.nombre });
+          await categoriaSimpleService.create({ nombre: formData.nombre.trim() });
           break;
         default:
           break;
@@ -171,28 +181,34 @@ const AdminCategories = () => {
 
   const handleUpdate = async () => {
     if (!editingId) return;
+    
+    // Check for duplicate category name (case-insensitive), excluding the current item being edited
+    const duplicateExists = categories.some(
+      (cat) => 
+        cat.id !== editingId && 
+        cat.nombre.trim().toLowerCase() === formData.nombre.trim().toLowerCase()
+    );
+
+    if (duplicateExists) {
+      alert('Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.');
+      return;
+    }
+
     try {
       switch (activeTab) {
         case 'standard':
           await categoriaService.update(editingId, {
-            nombre: formData.nombre,
+            nombre: formData.nombre.trim(),
           });
           break;
         case 'general':
           await categoriaGeneralService.update(editingId, {
-            // Some APIs might expect ID in body, passing it to be safe as per previous code
-            // but the service interface I wrote takes { nombre } for update payload usually?
-            // Previous code passed ID. I'll adhere to service signature or previous pattern.
-            // My new service signature for update is (id, {nombre}).
-            // Previous cursoCategoriaService.update took {id, nombre}.
-            // My new services strictly take {nombre} in the body for update but URL has ID.
-            // Let's pass {nombre} only as my new service expects that.
-            nombre: formData.nombre,
+            nombre: formData.nombre.trim(),
           });
           break;
         case 'simple':
           await categoriaSimpleService.update(editingId, {
-            nombre: formData.nombre,
+            nombre: formData.nombre.trim(),
           });
           break;
         default:
