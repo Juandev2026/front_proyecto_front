@@ -13,7 +13,7 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = 'Academia - Educación de Calidad',
+  title = 'COMUNIDAD de docentes del Perú',
   description = 'Plataforma educativa con cursos, noticias y recursos para docentes, auxiliares y estudiantes. Preparación para nombramiento, ascenso y contrato.',
   image = '/assets/images/og-image.jpg',
   article = false,
@@ -42,7 +42,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImageUrl} />
-      <meta property="og:site_name" content="Academia" />
+      <meta property="og:site_name" content="COMUNIDAD de docentes del Perú" />
       <meta property="og:locale" content="es_ES" />
 
       {article && publishedTime && (
@@ -64,7 +64,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="robots" content="index, follow" />
       <meta name="language" content="Spanish" />
       <meta name="revisit-after" content="7 days" />
-      <meta name="author" content="Academia" />
+      <meta name="author" content="AVEND DOCENTE" />
 
       {/* Favicon */}
       <link rel="icon" href="/favicon.ico" />

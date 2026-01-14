@@ -12,7 +12,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <SEO
-        title="Quiénes Somos - Academia Educativa"
+        title="Quiénes Somos - COMUNIDAD de docentes del Perú"
         description="Conoce nuestra historia, pilares y valores. Somos un espacio creado para acompañar el crecimiento profesional de los docentes con herramientas prácticas y contenido de calidad."
         keywords="sobre nosotros, academia educativa, formación docente, capacitación profesional"
       />

@@ -71,7 +71,7 @@ const SocialMediaFrames = () => {
           </div>
 
           {/* Facebook Frame */}
-          <div className="fb-page" data-href="https://www.facebook.com/avendocenteperu" data-tabs="timeline" data-width="600" data-height="" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">AVEND docente - Perú</a></blockquote></div>
+          <div className="fb-page" data-href="https://www.facebook.com/avendocenteperu" data-tabs="timeline" data-width="600" data-height="" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">AVEND DOCENTE</a></blockquote></div>
 
           {/* TikTok Frame */}
           <div className="flex justify-center h-[500px] overflow-hidden">

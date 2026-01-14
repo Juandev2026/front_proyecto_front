@@ -232,7 +232,7 @@ const AdminNews = () => {
           : 0,
       precio: item.precio || 0,
       autor: item.autor || '',
-      estadoId: item.estadoId || 0,
+      estadoId: item.estadoId ?? 0,
     });
     setImageFile(null);
     setArchivoFile(null);
@@ -904,7 +904,7 @@ const AdminNews = () => {
                     <select
                       required
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={formData.estadoId}
+                      value={formData.estadoId ?? 0}
                       onChange={(e) =>
                         setFormData({
                           ...formData,

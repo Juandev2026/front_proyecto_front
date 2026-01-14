@@ -15,7 +15,7 @@ class MyDocument extends Document {
               __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'EducationalOrganization',
-                name: 'Academia',
+                name: 'AVEND DOCENTE',
                 description: 'Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato.',
                 url: 'https://tudominio.com',
                 logo: 'https://tudominio.com/assets/images/logo.png',

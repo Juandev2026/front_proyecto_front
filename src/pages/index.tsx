@@ -86,7 +86,7 @@ const App = () => {
   return (
     <div className={`bg-background grid gap-y-16 overflow-hidden`}>
       <SEO
-        title="Academia - Educación de Calidad para Docentes y Estudiantes"
+        title="COMUNIDAD de docentes del Perú"
         description="Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato. Noticias educativas, recursos y capacitación para docentes del MINEDU."
         keywords="nombramiento docente, ascenso docente, contrato docente, MINEDU, capacitación, cursos para docentes, educación Perú"
       />
