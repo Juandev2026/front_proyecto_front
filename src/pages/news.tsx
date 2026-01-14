@@ -183,10 +183,9 @@ const News = () => {
               </div>
               <p className="text-sm text-blue-900">
                 <span className="font-bold block text-base">
-                  ¿Buscas contenido personalizado?
+                  ¿Quieres descargar contenido gratuito?
                 </span>
-                Inicia sesión para ver noticias exclusivas para tu nivel
-                educativo.
+                Inicia Sesión
               </p>
             </div>
             <Link href="/login">
@@ -281,14 +280,14 @@ const News = () => {
               <div className="group cursor-pointer">
                 <Link href={`/news/${createSlug(featuredArticle.titulo)}`}>
                   <a>
-                    <div className="relative overflow-hidden rounded-xl mb-4 aspect-video shadow-lg">
+                    <div className="relative overflow-hidden rounded-xl mb-4 aspect-video shadow-lg w-full mx-auto">
                       <img
                         src={
                           featuredArticle.imageUrl ||
                           'https://via.placeholder.com/800x450'
                         }
                         alt={stripHtml(featuredArticle.titulo)}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                         loading="lazy"
                       />
                     </div>
@@ -327,13 +326,13 @@ const News = () => {
               {secondaryArticles.map((item) => (
                 <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
                   <a className="group flex flex-col h-full">
-                    <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm">
+                    <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm w-full">
                       <img
                         src={
                           item.imageUrl || 'https://via.placeholder.com/400x300'
                         }
                         alt={stripHtml(item.titulo)}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
                     </div>
@@ -368,14 +367,14 @@ const News = () => {
                 {paginatedItems.map((item) => (
                   <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
                     <a className="flex gap-4 group items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm">
+                      <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm flex-shrink-0">
                         <img
                           src={
                             item.imageUrl ||
                             'https://via.placeholder.com/200x112'
                           }
                           alt=""
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
                           loading="lazy"
                         />
                       </div>
@@ -483,7 +482,7 @@ const News = () => {
                             item.imageUrl || 'https://via.placeholder.com/400x225'
                           }
                           alt=""
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute top-2 left-2">
                            <span className="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
