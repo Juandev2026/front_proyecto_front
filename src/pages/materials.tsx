@@ -322,10 +322,11 @@ const Materials = () => {
                           ) : (
                              <button 
                                onClick={(e) => { e.stopPropagation(); setIsAuthModalOpen(true); }}
-                               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
+                               className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-colors flex items-center shadow-sm hover:shadow-md whitespace-nowrap"
                              >
-                               <EyeIcon className="w-4 h-4 mr-1.5" />
-                               Ingresa para ver
+                               <EyeIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+                               <span className="hidden sm:inline">Ingresa para ver</span>
+                               <span className="sm:hidden">Ingresar</span>
                              </button>
                           )}
                         </div>
