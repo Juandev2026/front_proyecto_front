@@ -184,6 +184,14 @@ const AdminNews = () => {
     }
   }, [formData.modalidadId, niveles]);
 
+  // Cleanup blob URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewArchivoUrl) URL.revokeObjectURL(previewArchivoUrl);
+    };
+  }, [previewUrl, previewArchivoUrl]);
+
   const { user } = useAuth(); // Get user from hook
 
   const handleDelete = async (item: Noticia) => {
@@ -244,6 +252,39 @@ const AdminNews = () => {
   const handleView = (item: Noticia) => {
     setViewingItem(item);
     setIsViewModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    // Revoke blob URLs to prevent memory leak
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewArchivoUrl) URL.revokeObjectURL(previewArchivoUrl);
+    
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData({
+      titulo: '',
+      descripcion: '',
+      categoriaId: 0,
+      modalidadId: 0,
+      nivelId: 0,
+      fecha: new Date().toISOString(),
+      imageUrl: '',
+      archivoUrl: '',
+      videoUrl: '',
+      esDestacado: false,
+      esNormaLegal: false,
+      usuarioEdicionId:
+        typeof window !== 'undefined'
+          ? Number(localStorage.getItem('userId') || 0)
+          : 0,
+      precio: 0,
+      autor: '',
+      estadoId: 0,
+    });
+    setImageFile(null);
+    setArchivoFile(null);
+    setPreviewUrl(null);
+    setPreviewArchivoUrl(null);
   };
 
   const handleAddNew = () => {
@@ -328,9 +369,9 @@ const AdminNews = () => {
         modalidadId: formData.modalidadId || 0,
         nivelId: formData.nivelId || 0,
         fecha: new Date(formData.fecha || new Date()).toISOString(),
-        imageUrl: imageUrl || null,
-        archivoUrl: archivoUrl || null,
-        videoUrl: formData.videoUrl || null,
+        imageUrl: imageUrl || '',
+        archivoUrl: archivoUrl || '',
+        videoUrl: formData.videoUrl || '',
         esDestacado: formData.esDestacado || false,
         esNormaLegal: formData.esNormaLegal || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
@@ -347,7 +388,7 @@ const AdminNews = () => {
         await noticiaService.create(createData);
       }
 
-      setIsModalOpen(false);
+      handleCloseModal();
       fetchNews();
     } catch (error) {
       // console.error('Error saving news:', error);
@@ -603,7 +644,7 @@ const AdminNews = () => {
                 {editingId ? 'Editar Noticia' : 'Agregar Nueva Noticia'}
               </h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XIcon className="w-6 h-6" />
@@ -617,6 +658,7 @@ const AdminNews = () => {
                   </label>
                   <div className="mb-4">
                     <ReactQuill
+                      key={`titulo-${editingId || 'new'}`}
                       theme="snow"
                       value={formData.titulo || ''}
                       onChange={(content) =>
@@ -635,6 +677,7 @@ const AdminNews = () => {
                   </label>
                   <div className="h-56 mb-8">
                     <ReactQuill
+                      key={`descripcion-${editingId || 'new'}`}
                       theme="snow"
                       value={formData.descripcion || ''}
                       onChange={(content) =>
@@ -826,6 +869,8 @@ const AdminNews = () => {
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             const file = e.target.files[0];
+                            // Revoke old URL to prevent memory leak
+                            if (previewUrl) URL.revokeObjectURL(previewUrl);
                             setImageFile(file);
                             setPreviewUrl(URL.createObjectURL(file));
                           }
@@ -858,6 +903,8 @@ const AdminNews = () => {
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             const file = e.target.files[0];
+                            // Revoke old URL to prevent memory leak
+                            if (previewArchivoUrl) URL.revokeObjectURL(previewArchivoUrl);
                             setArchivoFile(file);
                             setPreviewArchivoUrl(URL.createObjectURL(file));
                           }
@@ -970,7 +1017,7 @@ const AdminNews = () => {
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="mr-4 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
                 >
                   Cancelar
