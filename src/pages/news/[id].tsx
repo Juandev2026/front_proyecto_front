@@ -14,7 +14,7 @@ import ShareButton from '../../components/ShareButton';
 
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
-import { createSlug, getIdFromSlug, cleanSlug } from '../../utils/urlUtils';
+import { createSlug, getIdFromSlug, cleanSlug, stripHtml } from '../../utils/urlUtils';
 
 interface NewsDetailProps {
   newsItem: Noticia | null;
@@ -52,10 +52,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
     );
   }
 
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
-  };
+
 
   const plainDescription = newsItem.descripcion ? stripHtml(newsItem.descripcion) : '';
 

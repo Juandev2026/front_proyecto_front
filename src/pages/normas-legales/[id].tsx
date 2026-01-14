@@ -6,6 +6,7 @@ import { DocumentTextIcon } from '@heroicons/react/outline';
 import MainLayout from '../../components/MainLayout';
 import ShareButton from '../../components/ShareButton';
 import { NormaLegal, normasLegalesService } from '../../services/normasLegalesService';
+import { stripHtml } from '../../utils/urlUtils';
 
 interface NormaLegalDetailProps {
   norma: NormaLegal | null;
@@ -30,10 +31,7 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
     );
   }
 
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
-  };
+
 
   const plainDescription = stripHtml(norma.descripcion);
   // Ensure image URL is absolute for OG tags if possible, or use a default

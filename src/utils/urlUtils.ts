@@ -1,5 +1,21 @@
+export const stripHtml = (html: string): string => {
+  if (!html) return '';
+  // 1. Decode entities
+  let text = html
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&#39;/g, "'");
+  
+  // 2. Remove tags
+  return text.replace(/<[^>]+>/g, '').trim();
+};
+
 export const cleanSlug = (name: string): string => {
-  const cleanName = name.replace(/<[^>]+>/g, '').trim();
+  const cleanName = stripHtml(name);
   return cleanName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

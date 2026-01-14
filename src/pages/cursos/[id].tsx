@@ -14,7 +14,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import CommunitySection from '../../components/CommunitySection';
 import { cursoService, Curso } from '../../services/cursoService';
-import { getIdFromSlug } from '../../utils/urlUtils';
+import { getIdFromSlug, stripHtml } from '../../utils/urlUtils';
 import { useAnalytics } from '../../hooks/useAnalytics'; // Keep analytics hook
 import ShareButton from '../../components/ShareButton'; // Import ShareButton
 
@@ -74,10 +74,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
   };
 
   // Helper to strip html for meta tags
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]+>/g, '');
-  };
+
 
   const learningPoints = course.loQueAprenderas
     ? course.loQueAprenderas.split('\n').filter((point) => point.trim() !== '')
