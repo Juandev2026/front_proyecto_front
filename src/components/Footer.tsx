@@ -4,7 +4,7 @@ import config from '../config/index.json';
 
 const Footer = () => {
   const { company } = config;
-  const { logo, name: companyName } = company;
+  const { logo } = company;
 
   return (
     <div className="bg-white border-t border-gray-200">
@@ -86,8 +86,7 @@ const Footer = () => {
           <div className="flex items-center justify-center md:justify-start">
             <img className="h-10 w-auto sm:h-10 mr-3" src={logo} alt="logo" />
             <p className="text-center text-base text-gray-400">
-              &copy; {new Date().getFullYear()} {companyName}. Todos los
-              derechos reservados.
+              &copy; 2026 AVENDOCENTE PERÚ. Todos los derechos reservados.
             </p>
           </div>
         </div>

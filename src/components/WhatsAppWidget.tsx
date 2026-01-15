@@ -50,7 +50,7 @@ const WhatsAppWidget = () => {
           {/* Body */}
           <div className="bg-gray-50 p-6">
             <p className="text-xs text-gray-500 mb-4 text-center">
-              El equipo suele responder en unos minutos.
+              Únete a nuestro canal de WhatsApp y Telegram para novedades y actualizaciones.
             </p>
 
             {/* WhatsApp Channel */}

@@ -228,7 +228,7 @@ const News = () => {
             Todas
           </button>
           
-          {categories.slice(0, 2).map((cat) => (
+          {categories.slice(0, 5).map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategoryId(cat.id)}
@@ -243,15 +243,15 @@ const News = () => {
           ))}
 
           {/* Dropdown for the rest */}
-          {categories.length > 2 && (
+          {categories.length > 5 && (
             <div className="relative">
               <select
                 className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
-                   categories.slice(2).some(c => c.id === selectedCategoryId)
+                   categories.slice(5).some(c => c.id === selectedCategoryId)
                     ? 'bg-primary text-white border-primary shadow-md'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
                 }`}
-                value={categories.slice(2).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
+                value={categories.slice(5).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
                 onChange={(e) => {
                    if (e.target.value) {
                      setSelectedCategoryId(Number(e.target.value));
@@ -259,11 +259,11 @@ const News = () => {
                 }}
               >
                 <option value="" disabled className="text-gray-500 bg-white">
-                  {categories.slice(2).some(c => c.id === selectedCategoryId) 
+                  {categories.slice(5).some(c => c.id === selectedCategoryId) 
                     ? categories.find(c => c.id === selectedCategoryId)?.nombre 
                     : 'Más...'}
                 </option>
-                {categories.slice(2).map((cat) => (
+                {categories.slice(5).map((cat) => (
                   <option key={cat.id} value={cat.id} className="text-gray-900 bg-white">
                     {cat.nombre}
                   </option>
@@ -271,7 +271,7 @@ const News = () => {
               </select>
                {/* Custom Chevron for select styling if needed, or rely on browser default/remove appearance-none for standard arrow */}
                <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
-                  categories.slice(2).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
+                  categories.slice(5).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
                }`}>
                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
