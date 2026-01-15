@@ -139,7 +139,8 @@ const Cursos = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+          {/* Categories (Desktop) */}
+          <div className="hidden md:flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
             {categoryNames.map((category) => (
               <button
                 key={category}
@@ -153,6 +154,60 @@ const Cursos = () => {
                 {category}
               </button>
             ))}
+          </div>
+
+          {/* Categories (Mobile) */}
+          <div className="flex md:hidden flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+            {categoryNames.slice(0, 3).map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                  selectedCategory === category
+                    ? 'bg-primary text-white border-primary shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+
+             {/* Dropdown for the rest */}
+             {categoryNames.length > 3 && (
+                <div className="relative">
+                  <select
+                    className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
+                      categoryNames.slice(3).includes(selectedCategory)
+                        ? 'bg-primary text-white border-primary shadow-md'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                    value={categoryNames.slice(3).includes(selectedCategory) ? selectedCategory : ''}
+                    onChange={(e) => {
+                       if (e.target.value) {
+                         setSelectedCategory(e.target.value);
+                       }
+                    }}
+                  >
+                    <option value="" disabled className="text-gray-500 bg-white">
+                      {categoryNames.slice(3).includes(selectedCategory) 
+                        ? selectedCategory 
+                        : 'Más...'}
+                    </option>
+                    {categoryNames.slice(3).map((cat) => (
+                      <option key={cat} value={cat} className="text-gray-900 bg-white">
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                   <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                      categoryNames.slice(3).includes(selectedCategory) ? 'text-white' : 'text-gray-600'
+                   }`}>
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                      </svg>
+                    </div>
+                </div>
+             )}
           </div>
 
           <div className="grid grid-cols-12 gap-8">

@@ -187,7 +187,8 @@ const News = () => {
         </div>
 
         {/* Categories (Pills) */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+        {/* Categories (Desktop) */}
+        <div className="hidden md:flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
           <button
             onClick={() => setSelectedCategoryId(null)}
             className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
@@ -211,6 +212,73 @@ const News = () => {
               {cat.nombre}
             </button>
           ))}
+        </div>
+
+        {/* Categories (Mobile) */}
+        <div className="flex md:hidden flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+          {/* First 3 Items (including 'Todas') */}
+          <button
+            onClick={() => setSelectedCategoryId(null)}
+            className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+              selectedCategoryId === null
+                ? 'bg-primary text-white border-primary shadow-md'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+            }`}
+          >
+            Todas
+          </button>
+          
+          {categories.slice(0, 2).map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategoryId(cat.id)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                selectedCategoryId === cat.id
+                  ? 'bg-primary text-white border-primary shadow-md'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              {cat.nombre}
+            </button>
+          ))}
+
+          {/* Dropdown for the rest */}
+          {categories.length > 2 && (
+            <div className="relative">
+              <select
+                className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
+                   categories.slice(2).some(c => c.id === selectedCategoryId)
+                    ? 'bg-primary text-white border-primary shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                }`}
+                value={categories.slice(2).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
+                onChange={(e) => {
+                   if (e.target.value) {
+                     setSelectedCategoryId(Number(e.target.value));
+                   }
+                }}
+              >
+                <option value="" disabled className="text-gray-500 bg-white">
+                  {categories.slice(2).some(c => c.id === selectedCategoryId) 
+                    ? categories.find(c => c.id === selectedCategoryId)?.nombre 
+                    : 'Más...'}
+                </option>
+                {categories.slice(2).map((cat) => (
+                  <option key={cat.id} value={cat.id} className="text-gray-900 bg-white">
+                    {cat.nombre}
+                  </option>
+                ))}
+              </select>
+               {/* Custom Chevron for select styling if needed, or rely on browser default/remove appearance-none for standard arrow */}
+               <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                  categories.slice(2).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
+               }`}>
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+            </div>
+          )}
         </div>
 
         {/* Categories Fallback Visual (Hardcoded tags) only if no categories fetched approx */}
@@ -240,9 +308,9 @@ const News = () => {
 
 
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-12 lg:col-span-7 space-y-10">
+          <div className="col-span-1 lg:col-span-7 space-y-10">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -267,7 +335,7 @@ const News = () => {
                         loading="lazy"
                       />
                     </div>
-                    <div className="flex flex-col gap-1 mb-2">
+                    <div className="flex flex-col gap-1 mb-2 text-center items-center md:text-left md:items-start">
                        <div className="flex items-center gap-2">
                           <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
                             {getCategoryName(featuredArticle.categoriaId)}
@@ -281,13 +349,14 @@ const News = () => {
                        )}
                     </div>
                     <h2 
-                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
+                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors text-center md:text-left"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
                     />
                     <div 
-                      className="text-gray-600 leading-relaxed text-lg line-clamp-3 prose prose-sm max-w-none"
+                      className="text-gray-600 leading-relaxed text-lg line-clamp-3 prose prose-sm max-w-none text-center md:text-left"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.descripcion }}
                     />
+
                   </a>
                 </Link>
               </div>
@@ -301,7 +370,7 @@ const News = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100">
               {secondaryArticles.map((item) => (
                 <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
-                  <a className="group flex flex-col h-full">
+                  <a className="group flex flex-col h-full items-center md:items-start">
                     <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm w-full">
                       <img
                         src={
@@ -312,7 +381,7 @@ const News = () => {
                         loading="lazy"
                       />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-col items-center text-center md:items-start md:text-left">
                       <span className="text-xs font-bold text-primary uppercase mb-1 block">
                         {getCategoryName(item.categoriaId)}
                       </span>
@@ -342,8 +411,8 @@ const News = () => {
               <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
                 {paginatedItems.map((item) => (
                   <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
-                    <a className="flex gap-4 group items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className="w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm flex-shrink-0">
+                    <a className="flex flex-col md:flex-row gap-4 group items-center md:items-start p-3 hover:bg-gray-50 rounded-lg transition-colors text-center md:text-left">
+                      <div className="w-full md:w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm flex-shrink-0">
                         <img
                           src={
                             item.imageUrl ||
@@ -354,12 +423,12 @@ const News = () => {
                           loading="lazy"
                         />
                       </div>
-                      <div className="w-2/3">
+                      <div className="w-full md:w-2/3 flex flex-col items-center md:items-start">
                         <h4 
                           className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
                           dangerouslySetInnerHTML={{ __html: item.titulo }}
                         />
-                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                        <div className="flex items-center justify-center md:justify-start text-xs text-gray-500 mb-2">
                            {item.autor && (
                               <span className="mr-2">Por: {item.autor}</span>
                            )}
@@ -439,7 +508,7 @@ const News = () => {
           </div>
 
           {/* SIDEBAR: Destacados + Ads (Split into 2 columns on large screens) */}
-          <div className="col-span-12 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
+          <div className="col-span-1 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
             
             {/* Column 1: Destacados */}
             <div className="space-y-6">

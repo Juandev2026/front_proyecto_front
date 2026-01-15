@@ -179,7 +179,8 @@ const Materials = () => {
         </div>
 
         {/* Categories */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+        {/* Categories (Desktop) */}
+        <div className="hidden md:flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
           <button
             onClick={() => {
               setSelectedCategoryId(null);
@@ -209,6 +210,79 @@ const Materials = () => {
               {cat.nombre}
             </button>
           ))}
+        </div>
+
+        {/* Categories (Mobile) */}
+        <div className="flex md:hidden flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+          {/* First 3 Items (including 'Todos') */}
+          <button
+            onClick={() => {
+              setSelectedCategoryId(null);
+              setCurrentPage(1);
+            }}
+            className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+              selectedCategoryId === null
+                ? 'bg-primary text-white border-primary shadow-md'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+            }`}
+          >
+            Todos
+          </button>
+          
+          {categories.slice(0, 2).map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setSelectedCategoryId(cat.id);
+                setCurrentPage(1);
+              }}
+              className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                selectedCategoryId === cat.id
+                  ? 'bg-primary text-white border-primary shadow-md'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              {cat.nombre}
+            </button>
+          ))}
+
+          {/* Dropdown for the rest */}
+          {categories.length > 2 && (
+            <div className="relative">
+              <select
+                className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
+                   categories.slice(2).some(c => c.id === selectedCategoryId)
+                    ? 'bg-primary text-white border-primary shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                }`}
+                value={categories.slice(2).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
+                onChange={(e) => {
+                   if (e.target.value) {
+                     setSelectedCategoryId(Number(e.target.value));
+                     setCurrentPage(1);
+                   }
+                }}
+              >
+                <option value="" disabled className="text-gray-500 bg-white">
+                  {categories.slice(2).some(c => c.id === selectedCategoryId) 
+                    ? categories.find(c => c.id === selectedCategoryId)?.nombre 
+                    : 'Más...'}
+                </option>
+                {categories.slice(2).map((cat) => (
+                  <option key={cat.id} value={cat.id} className="text-gray-900 bg-white">
+                    {cat.nombre}
+                  </option>
+                ))}
+              </select>
+               <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                  categories.slice(2).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
+               }`}>
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-12 gap-8">
