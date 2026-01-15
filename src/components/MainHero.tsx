@@ -47,11 +47,11 @@ const MainHero = ({
           <p
             ref={textRef}
             className={`mt-4 text-black text-xl leading-relaxed font-bold whitespace-pre-wrap transition-all duration-300 ${
-              !isExpanded ? 'line-clamp-[10]' : ''
+              !isExpanded ? 'line-clamp-[5]' : ''
             }`}
              style={{
                 display: '-webkit-box',
-                WebkitLineClamp: !isExpanded ? 10 : 'unset',
+                WebkitLineClamp: !isExpanded ? 5 : 'unset',
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden'
             }}

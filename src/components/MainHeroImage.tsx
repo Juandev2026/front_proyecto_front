@@ -3,7 +3,12 @@ import React from 'react';
 import Slider from './Slider';
 
 interface MainHeroImageProps {
-  slides: { image: string; title?: string; description?: string }[];
+  slides: {
+    image: string;
+    title?: string;
+    description?: string;
+    objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  }[];
   currentIndex: number;
 }
 
