@@ -29,7 +29,7 @@ const MainHero = ({
               </span>
             )}
           </h1>
-          <p className="mt-4 text-black text-base leading-relaxed font-bold">
+          <p className="mt-4 text-black text-xl leading-relaxed font-bold whitespace-pre-wrap">
             {description || mainHero.description}
           </p>
           {precio !== undefined && precio > 0 && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 import Link from 'next/link';
+import { SearchIcon } from '@heroicons/react/solid';
 
 
 import AdSidebar from '../components/AdSidebar';
@@ -110,10 +111,10 @@ const Cursos = () => {
         <Header />
       </div>
 
-      <main className="flex-grow pt-24 pb-20">
+      <main className="flex-grow py-12">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32">
           <FadeIn>
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
                 Nuestros <span className="text-primary">Cursos</span>
               </h1>
@@ -123,57 +124,39 @@ const Cursos = () => {
             </div>
           </FadeIn>
 
+          {/* Search Bar */}
+          <div className="mb-10 max-w-3xl mx-auto">
+            <div className="relative group">
+              <input
+                type="text"
+                placeholder="Buscar cursos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border border-gray-300 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
+              />
+              <SearchIcon className="h-5 w-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 group-focus-within:text-primary" />
+            </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap justify-center gap-2 mb-10 border-b pb-8">
+            {categoryNames.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                  selectedCategory === category
+                    ? 'bg-primary text-white border-primary shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-9">
-
-              {/* Search Bar */}
-              <FadeIn>
-                <div className="mb-8 relative max-w-lg mx-auto">
-                    <input
-                      type="text"
-                      placeholder="Buscar cursos..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm text-gray-700 placeholder-gray-400 transition-shadow"
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg
-                        className="h-5 w-5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    </div>
-                </div>
-              </FadeIn>
-
-
-
-              {/* Category Tabs */}
-              <FadeIn delay={0.2}>
-                <div className="flex flex-wrap justify-center gap-3 mb-16">
-                  {categoryNames.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 transform hover:-translate-y-1 ${
-                        selectedCategory === category
-                          ? 'bg-primary text-white shadow-lg ring-2 ring-primary ring-offset-2'
-                          : 'bg-white text-gray-600 hover:bg-gray-50 hover:shadow-md border border-gray-200'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </FadeIn>
 
               {loading ? (
                 <div className="text-center py-20">

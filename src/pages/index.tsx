@@ -100,7 +100,7 @@ const App = () => {
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 {/* Image Column (Left) */}
-                <div className="relative h-[600px] lg:h-auto min-h-[600px] group overflow-hidden">
+                <div className="relative h-[380px] sm:h-[400px] lg:h-auto min-h-[380px] sm:min-h-[400px] lg:min-h-[600px] group overflow-hidden">
                   <MainHeroImage slides={displaySlides} currentIndex={currentIndex} />
                   
                   {/* Navigation Arrows - Overlaying the image */}
