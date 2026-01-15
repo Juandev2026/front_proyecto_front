@@ -1,3 +1,4 @@
+import React, { useState, useRef, useEffect } from 'react';
 import config from '../config/index.json';
 
 const MainHero = ({
@@ -14,6 +15,20 @@ const MainHero = ({
   precio?: number;
 }) => {
   const { mainHero } = config;
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (textRef.current) {
+      // Check if the scrollHeight is greater than the clientHeight
+      // This indicates that the text is strictly clamped
+      const isOverflowing = textRef.current.scrollHeight > textRef.current.clientHeight;
+      setShowButton(isOverflowing);
+    }
+  }, [title, description, mainHero.description]);
+
   return (
     <main
       id="main-hero"
@@ -29,9 +44,28 @@ const MainHero = ({
               </span>
             )}
           </h1>
-          <p className="mt-4 text-black text-xl leading-relaxed font-bold whitespace-pre-wrap">
+          <p
+            ref={textRef}
+            className={`mt-4 text-black text-xl leading-relaxed font-bold whitespace-pre-wrap transition-all duration-300 ${
+              !isExpanded ? 'line-clamp-[10]' : ''
+            }`}
+             style={{
+                display: '-webkit-box',
+                WebkitLineClamp: !isExpanded ? 10 : 'unset',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+            }}
+          >
             {description || mainHero.description}
           </p>
+          {showButton && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-primary font-bold hover:underline focus:outline-none"
+            >
+              {isExpanded ? 'Ver menos' : 'Ver todo'}
+            </button>
+          )}
           {precio !== undefined && precio > 0 && (
              <p className="mt-4 text-2xl font-bold text-green-600">
                S/ {precio.toFixed(2)}
