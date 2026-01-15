@@ -91,7 +91,7 @@ const App = () => {
   // If we are using the fallback, we effectively have 1 slide, so currentIndex 0 is correct.
 
   return (
-    <div className={`bg-background grid gap-y-16 overflow-hidden`}>
+    <div className={`bg-background grid gap-y-4 md:gap-y-16 overflow-hidden`}>
       <SEO
         title="COMUNIDAD de docentes del Perú"
         description="Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato. Noticias educativas, recursos y capacitación para docentes del MINEDU."
@@ -102,7 +102,7 @@ const App = () => {
           <Header />
         </div>
         
-        <div className="w-full px-4 md:px-8">
+        <div className="w-full px-4 md:px-8 -mt-6">
           <LazyShow>
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
               {isLoading ? (
@@ -119,7 +119,7 @@ const App = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   {/* Image Column (Left) */}
-                  <div className="relative h-[380px] sm:h-[400px] lg:h-auto min-h-[380px] sm:min-h-[400px] lg:min-h-[600px] group overflow-hidden">
+                  <div className="relative h-auto group overflow-hidden">
                     <MainHeroImage slides={displaySlides} currentIndex={currentIndex} />
                     
                     {/* Navigation Arrows - Using actual slides length, not fallback if possible, but fallback is length 1 anyway */}

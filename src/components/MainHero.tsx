@@ -32,7 +32,7 @@ const MainHero = ({
   return (
     <main
       id="main-hero"
-      className="w-full flex flex-col justify-center bg-gradient-to-br from-white to-gray-50 h-full p-6 md:p-12"
+      className="w-full flex flex-col justify-center bg-gradient-to-br from-white to-gray-50 h-full p-2 md:p-12"
     >
       <div className="text-left relative z-10">
         <div>
