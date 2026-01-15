@@ -323,7 +323,7 @@ const Materials = () => {
                               <img
                                 src={thumbnailImage}
                                 alt={item.titulo}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain bg-gray-50"
                                 onError={(e) => {
                                   // If image fails to load, hide it
                                   e.currentTarget.style.display = 'none';
@@ -364,9 +364,10 @@ const Materials = () => {
                         <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
                           {stripHtml(item.titulo)}
                         </h3>
-                        <p className="text-gray-500 text-sm mb-4 line-clamp-3">
-                          {stripHtml(item.descripcion)}
-                        </p>
+                        <div 
+                          className="text-gray-500 text-sm mb-4 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar"
+                          dangerouslySetInnerHTML={{ __html: item.descripcion }}
+                        />
 
                         <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
                           <div className="flex flex-col">
