@@ -46,6 +46,7 @@ const App = () => {
               celular: a.celular,
               ruta: a.ruta,
               precio: a.precio,
+              objectFit: 'contain' as const,
             }));
 
           if (formattedSlides.length > 0) {

@@ -92,18 +92,7 @@ const RelevantInfoCarousel = () => {
           {/* Buttons / Actions */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-6 w-full">
               <div className="flex gap-2 flex-1">
-                {currentItem.url && (
-                    <a 
-                    href={currentItem.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
-                    >
-                    Ver más
-                    </a>
-                )}
-                
-                {/* WhatsApp / Buy Button */}
+                {/* WhatsApp / Buy Button - Moved First */}
                 {currentItem.telefono && (
                     <a 
                     href={`https://wa.me/${currentItem.telefono.replace(/\s+/g, '')}?text=Hola, estoy interesado en ${encodeURIComponent(currentItem.titulo)}`}
@@ -112,6 +101,18 @@ const RelevantInfoCarousel = () => {
                     className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
                       <span>Comprar</span>
+                    </a>
+                )}
+
+                {/* Ver más - Moved Second (Right) */}
+                {currentItem.url && (
+                    <a 
+                    href={currentItem.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
+                    >
+                    Ver más
                     </a>
                 )}
               </div>

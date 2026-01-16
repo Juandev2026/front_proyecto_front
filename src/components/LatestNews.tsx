@@ -162,7 +162,7 @@ const LatestNews = () => {
                         {stripHtml(news.descripcion)}
                       </p>
                     </div>
-                    <div className="mt-6">
+                    <div className="mt-6 flex justify-end sm:justify-start">
                       <Link href={`/news/${news.id}`}>
                         <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
                           Ver más
@@ -206,7 +206,7 @@ const LatestNews = () => {
                               {stripHtml(news.descripcion)}
                             </p>
                           </div>
-                          <div className="mt-6">
+                          <div className="mt-6 flex justify-end sm:justify-start">
                             <Link href={`/news/${news.id}`}>
                               <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
                                 Ver más

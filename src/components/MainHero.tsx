@@ -44,7 +44,7 @@ const MainHero = ({
           )}
         </div>
 
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex gap-4 justify-end sm:justify-start">
           {celular ? (
               <a
                 href={`https://wa.me/${celular}?text=${encodeURIComponent(
@@ -73,7 +73,7 @@ const MainHero = ({
                 href={ruta}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-full flex items-center justify-center px-6 py-3 border-2 border-primary text-base font-bold rounded-full text-primary bg-transparent hover:bg-primary/10 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider`}
+                className={`w-auto flex items-center justify-center px-6 py-3 border-2 border-primary text-base font-bold rounded-full text-primary bg-transparent hover:bg-primary/10 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider`}
               >
                 Ver más
               </a>
@@ -83,7 +83,7 @@ const MainHero = ({
               <div className="">
                 <a
                   href={mainHero.secondaryAction.href}
-                  className={`w-full flex items-center justify-center px-6 py-3 border-2 border-primary text-base font-bold rounded-full text-primary bg-transparent hover:bg-primary/10 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider`}
+                  className={`w-auto flex items-center justify-center px-6 py-3 border-2 border-primary text-base font-bold rounded-full text-primary bg-transparent hover:bg-primary/10 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider`}
                 >
                   {mainHero.secondaryAction.text}
                 </a>
