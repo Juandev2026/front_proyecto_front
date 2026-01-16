@@ -121,7 +121,7 @@ const App = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   {/* Image Column (Left) */}
-                  <div className="relative h-auto group overflow-hidden">
+                  <div className="relative h-auto min-h-0 lg:h-auto lg:min-h-[600px] group overflow-hidden">
                     <MainHeroImage slides={displaySlides} currentIndex={currentIndex} />
                     
                     {/* Navigation Arrows - Using actual slides length, not fallback if possible, but fallback is length 1 anyway */}

@@ -44,8 +44,8 @@ const Slider: React.FC<SliderProps> = ({ slides, currentIndex }) => {
             alt={currentSlide.title || `Slide ${currentIndex}`}
             className={`w-full h-full ${
               currentSlide.objectFit === 'contain'
-                ? 'object-contain bg-gray-50'
-                : 'object-cover'
+                ? 'object-contain object-top bg-gray-50'
+                : 'object-cover object-top'
             }`}
           />
         </motion.div>
