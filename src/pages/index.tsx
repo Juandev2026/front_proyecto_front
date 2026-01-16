@@ -102,7 +102,7 @@ const App = () => {
           <Header />
         </div>
         
-        <div className="w-full px-4 md:px-8 -mt-6">
+        <div className="w-full px-4 md:px-8 mt-4">
           <LazyShow>
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
               {isLoading ? (
