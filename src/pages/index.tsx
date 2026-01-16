@@ -108,7 +108,9 @@ const App = () => {
               {isLoading ? (
                  /* Skeleton Loader matching Hero dimensions */
                  <div className="grid grid-cols-1 lg:grid-cols-2 animate-pulse">
-                    <div className="h-[380px] sm:h-[400px] lg:h-[600px] bg-gray-200"></div>
+                    <div className="relative h-auto min-h-0 lg:h-auto lg:min-h-[600px] group overflow-hidden">
+                        <div className="h-[380px] sm:h-[400px] lg:h-[600px] bg-gray-200"></div>
+                    </div>
                     <div className="flex flex-col justify-center p-8 space-y-4">
                        <div className="h-8 bg-gray-200 rounded w-3/4"></div>
                        <div className="h-4 bg-gray-200 rounded w-full"></div>
