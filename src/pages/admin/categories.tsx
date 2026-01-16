@@ -295,7 +295,7 @@ const AdminCategories = () => {
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <div className="flex space-x-4">
-// Reorder tabs
+
           <TabButton type="general" label="Categoría de Noticias" />
           <TabButton type="simple" label="Categoría de Recursos" />
           <TabButton type="standard" label="Categoría de Cursos" />

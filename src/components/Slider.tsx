@@ -23,7 +23,13 @@ const Slider: React.FC<SliderProps> = ({ slides, currentIndex }) => {
   if (!currentSlide) return null;
 
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg shadow-xl group">
+    <div className="relative w-full overflow-hidden rounded-lg shadow-xl group">
+      {/* Invisible image to set height based on aspect ratio */}
+      <img
+        src={currentSlide.image}
+        alt="spacer"
+        className="w-full opacity-0 relative z-0"
+      />
       <AnimatePresence initial={false}>
         <motion.div
           key={currentIndex}
