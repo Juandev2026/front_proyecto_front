@@ -95,7 +95,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Main Content (8/12) */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 mx-auto w-full max-w-4xl lg:max-w-none lg:mx-0">
             <article className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
               {/* Thumbnail Image at Top */}
               {newsItem.imageUrl && (

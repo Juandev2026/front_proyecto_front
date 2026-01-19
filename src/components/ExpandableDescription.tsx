@@ -17,21 +17,23 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  // Determine the line-clamp class based on maxLines
-  const getLineClampClass = () => {
-    const clampMap: { [key: number]: string } = {
-      3: 'line-clamp-3',
-      4: 'line-clamp-4',
-      5: 'line-clamp-5',
-      6: 'line-clamp-6',
+  // Calculate max height based on line-height
+  // Assuming average line-height of 1.75rem (28px) for prose content
+  const getMaxHeight = () => {
+    const lineHeightMap: { [key: number]: string } = {
+      3: '5.25rem',  // 3 * 1.75rem
+      4: '7rem',     // 4 * 1.75rem
+      5: '8.75rem',  // 5 * 1.75rem
+      6: '10.5rem',  // 6 * 1.75rem
     };
-    return clampMap[maxLines] || 'line-clamp-5';
+    return lineHeightMap[maxLines] || '8.75rem';
   };
 
   return (
     <div>
       <div
-        className={`${className} ${!isExpanded ? getLineClampClass() : ''}`}
+        className={`${className} ${!isExpanded ? 'overflow-hidden' : ''}`}
+        style={!isExpanded ? { maxHeight: getMaxHeight() } : undefined}
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
       <button
