@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import MainLayout from '../components/MainLayout';
 import { normasLegalesService, NormaLegal } from '../services/normasLegalesService';
 import { DocumentTextIcon, SearchIcon } from '@heroicons/react/outline';
@@ -11,6 +12,7 @@ import AdSidebar from '../components/AdSidebar';
 import ShareButton from '../components/ShareButton';
 
 const NormasLegalesPage = () => {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [normas, setNormas] = useState<NormaLegal[]>([]);
@@ -43,6 +45,14 @@ const NormasLegalesPage = () => {
     );
     setFilteredNormas(results);
   }, [searchTerm, normas]);
+
+  const handleCardClick = (normaId: number) => {
+    if (isAuthenticated) {
+      router.push(`/normas-legales/${normaId}`);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   return (
     <MainLayout>
@@ -87,7 +97,10 @@ const NormasLegalesPage = () => {
                       key={norma.id}
                       className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
                     >
-                      <div className="flex-1">
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onClick={() => handleCardClick(norma.id)}
+                      >
                         {norma.imagenUrl ? (
                           <div className="h-48 w-full relative">
                             <img 

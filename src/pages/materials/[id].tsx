@@ -107,14 +107,14 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
             <div className="lg:col-span-8 mx-auto w-full max-w-4xl lg:max-w-none lg:mx-0">
                 {/* Thumbnail Section - Always Visible */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-                    <div className="relative h-[400px] md:h-[500px]">
+                    <div className="relative h-auto min-h-[400px]">
                         {(() => {
                             if (displayImage) {
                                 return (
                                     <img 
                                         src={displayImage} 
                                         alt={material.titulo} 
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-auto object-contain"
                                         onError={(e) => {
                                             e.currentTarget.style.display = 'none';
                                         }}
