@@ -352,10 +352,9 @@ const News = () => {
                       className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors text-center md:text-left"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
                     />
-                    <div 
-                      className="text-gray-600 leading-relaxed text-lg line-clamp-3 prose prose-sm max-w-none text-center md:text-left"
-                      dangerouslySetInnerHTML={{ __html: featuredArticle.descripcion }}
-                    />
+                    <p className="text-gray-600 leading-relaxed text-lg line-clamp-3 text-center md:text-left">
+                      {stripHtml(featuredArticle.descripcion).substring(0, 800)}
+                    </p>
 
                   </a>
                 </Link>
@@ -396,10 +395,9 @@ const News = () => {
                         <span>•</span>
                         <span>{new Date(item.fecha).toLocaleDateString()}</span>
                       </div>
-                      <div 
-                        className="text-sm text-gray-600 line-clamp-2 prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: item.descripcion }}
-                      />
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {stripHtml(item.descripcion).substring(0, 800)}
+                      </p>
                     </div>
                   </a>
                 </Link>
@@ -436,10 +434,9 @@ const News = () => {
                              {new Date(item.fecha).toLocaleDateString()}
                            </span>
                         </div>
-                        <div 
-                          className="text-sm text-gray-500 line-clamp-2 prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: item.descripcion }}
-                        />
+                        <p className="text-sm text-gray-500 line-clamp-2">
+                          {stripHtml(item.descripcion).substring(0, 800)}
+                        </p>
                       </div>
                     </a>
                   </Link>
@@ -577,6 +574,26 @@ const News = () => {
       </main>
 
       <Footer />
+      <style jsx global>{`
+        .line-clamp-1 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+        }
+        .line-clamp-2 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+        .line-clamp-3 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+        }
+      `}</style>
     </div>
   );
 };
