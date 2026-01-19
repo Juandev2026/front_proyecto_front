@@ -147,7 +147,15 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
 
             {/* Content & Buttons Area */}
             <div className="p-3 bg-white relative pb-12">
-                {ad.titulo && <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1">{ad.titulo}</h4>}
+                {ad.titulo && (
+                  imageClickLink ? (
+                    <a href={imageClickLink} target="_blank" rel="noopener noreferrer">
+                      <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1 hover:text-primary transition-colors cursor-pointer">{ad.titulo}</h4>
+                    </a>
+                  ) : (
+                    <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1">{ad.titulo}</h4>
+                  )
+                )}
                 
                 <div className="flex flex-col gap-2">
                     {/* Primary Action (WhatsApp/Buy) */}

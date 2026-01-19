@@ -107,7 +107,7 @@ const MainHero = ({
                 href={ruta}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-auto flex items-center justify-center px-6 py-3 border-2 border-primary text-base font-bold rounded-full text-primary bg-transparent hover:bg-primary/10 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider`}
+                className={`w-auto flex items-center justify-center px-6 py-3 text-base font-bold rounded-full text-white bg-primary hover:bg-blue-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider shadow-md`}
               >
                 Ver más
               </a>

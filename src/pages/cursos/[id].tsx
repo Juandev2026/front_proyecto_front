@@ -12,6 +12,7 @@ import {
 
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import ExpandableDescription from '../../components/ExpandableDescription';
 import CommunitySection from '../../components/CommunitySection';
 import { cursoService, Curso } from '../../services/cursoService';
 import { getIdFromSlug, stripHtml } from '../../utils/urlUtils';
@@ -142,8 +143,10 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4"
                 dangerouslySetInnerHTML={{ __html: course.nombre }}
               />
-              <div className="text-lg text-gray-300 mb-6 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: course.descripcion }}
+              <ExpandableDescription
+                htmlContent={course.descripcion}
+                className="text-lg text-gray-300 mb-6 leading-relaxed"
+                maxLines={5}
               />
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300 mb-6">
@@ -321,8 +324,10 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Descripción
               </h2>
-              <div className="prose max-w-none text-gray-600"
-                dangerouslySetInnerHTML={{ __html: course.descripcion }}
+              <ExpandableDescription
+                htmlContent={course.descripcion}
+                className="prose max-w-none text-gray-600"
+                maxLines={5}
               />
             </div>
           </div>

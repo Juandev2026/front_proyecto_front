@@ -32,8 +32,8 @@ const About = () => {
                 <div className="relative h-[400px] md:h-full min-h-[400px] group overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-transparent z-10 pointer-events-none"></div>
                   <img
-                    src="/assets/images/teacher_about.png"
-                    alt="Educación"
+                    src="/assets/images/team_professionals.png"
+                    alt="Equipo de docentes profesionales"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>

@@ -9,6 +9,7 @@ import { ArrowLeftIcon, LockClosedIcon, DownloadIcon, DocumentTextIcon, Photogra
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import AdSidebar from '../../components/AdSidebar';
+import ExpandableDescription from '../../components/ExpandableDescription';
 import CommunitySection from '../../components/CommunitySection';
 import ShareButton from '../../components/ShareButton'; // Import ShareButton
 import { materialService, Material } from '../../services/materialService';
@@ -155,7 +156,11 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
                         </div>
                     )}
                     
-                    <div className="text-gray-600 text-base md:text-lg leading-relaxed prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: material.descripcion }}></div>
+                    <ExpandableDescription
+                      htmlContent={material.descripcion}
+                      className="text-gray-600 text-base md:text-lg leading-relaxed prose prose-lg max-w-none"
+                      maxLines={5}
+                    />
                     
                     {/* Price and Action Button */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pt-6 border-t border-gray-100">

@@ -135,42 +135,39 @@ const LatestNews = () => {
             <div className="space-y-6">
               {/* Render Sub-Featured News (Top 4) */}
               {subFeaturedNews.map((news) => (
-                <div
-                  key={news.id}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
-                >
-                  <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
-                    <img
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                      src={news.imageUrl || '/assets/images/placeholder.png'}
-                      alt={stripHtml(news.titulo)}
-                    />
-                  </div>
-                  <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
-                    <div>
-                      <h3
-                        className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
-                        dangerouslySetInnerHTML={{ __html: news.titulo }}
+                <Link key={news.id} href={`/news/${news.id}`}>
+                  <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
+                    <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
+                      <img
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                        src={news.imageUrl || '/assets/images/placeholder.png'}
+                        alt={stripHtml(news.titulo)}
                       />
-                      {news.autor && (
-                        <p className="text-xs text-gray-500 font-medium mb-3">
-                          Por: {news.autor}
+                    </div>
+                    <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
+                      <div>
+                        <h3
+                          className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors"
+                          dangerouslySetInnerHTML={{ __html: news.titulo }}
+                        />
+                        {news.autor && (
+                          <p className="text-xs text-gray-500 font-medium mb-3">
+                            Por: {news.autor}
+                          </p>
+                        )}
+                        <div className="w-full border-t border-gray-100 my-4"></div>
+                        <p className="text-xl text-gray-700 line-clamp-3">
+                          {stripHtml(news.descripcion)}
                         </p>
-                      )}
-                      <div className="w-full border-t border-gray-100 my-4"></div>
-                      <p className="text-xl text-gray-700 line-clamp-3">
-                        {stripHtml(news.descripcion)}
-                      </p>
-                    </div>
-                    <div className="mt-6 flex justify-end sm:justify-start">
-                      <Link href={`/news/${news.id}`}>
-                        <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
+                      </div>
+                      <div className="mt-6 flex justify-end sm:justify-start">
+                        <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                           Ver más
-                        </a>
-                      </Link>
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </a>
+                </Link>
               ))}
 
               {/* Render Paginated News (The Rest) */}
@@ -179,42 +176,39 @@ const LatestNews = () => {
                   
                   <div className="space-y-6">
                     {currentNews.map((news) => (
-                      <div
-                        key={news.id}
-                        className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group"
-                      >
-                        <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
-                          <img
-                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                            src={news.imageUrl || '/assets/images/placeholder.png'}
-                            alt={stripHtml(news.titulo)}
-                          />
-                        </div>
-                        <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
-                          <div>
-                            <h3
-                              className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight"
-                              dangerouslySetInnerHTML={{ __html: news.titulo }}
+                      <Link key={news.id} href={`/news/${news.id}`}>
+                        <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
+                          <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
+                            <img
+                              className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                              src={news.imageUrl || '/assets/images/placeholder.png'}
+                              alt={stripHtml(news.titulo)}
                             />
-                            {news.autor && (
-                              <p className="text-xs text-gray-500 font-medium mb-3">
-                                Por: {news.autor}
+                          </div>
+                          <div className="sm:w-3/5 p-4 sm:p-8 flex flex-col justify-between">
+                            <div>
+                              <h3
+                                className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors"
+                                dangerouslySetInnerHTML={{ __html: news.titulo }}
+                              />
+                              {news.autor && (
+                                <p className="text-xs text-gray-500 font-medium mb-3">
+                                  Por: {news.autor}
+                                </p>
+                              )}
+                              <div className="w-full border-t border-gray-100 my-4"></div>
+                              <p className="text-xl text-gray-700 line-clamp-3">
+                                {stripHtml(news.descripcion)}
                               </p>
-                            )}
-                            <div className="w-full border-t border-gray-100 my-4"></div>
-                            <p className="text-xl text-gray-700 line-clamp-3">
-                              {stripHtml(news.descripcion)}
-                            </p>
-                          </div>
-                          <div className="mt-6 flex justify-end sm:justify-start">
-                            <Link href={`/news/${news.id}`}>
-                              <a className="inline-block px-7 py-2.5 border border-gray-300 rounded-full text-base font-semibold text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition-colors uppercase">
+                            </div>
+                            <div className="mt-6 flex justify-end sm:justify-start">
+                              <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                                 Ver más
-                              </a>
-                            </Link>
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -381,34 +375,34 @@ const LatestNews = () => {
                 Noticia Destacada
               </h2>
               {featuredNews ? (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer relative">
-                  <div className="aspect-video relative">
-                    <img
-                      src={
-                        featuredNews.imageUrl ||
-                        '/assets/images/placeholder.png'
-                      }
-                      className="w-full h-full object-cover"
-                      alt="Featured"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">
-                        {stripHtml(featuredNews.titulo)}
-                      </h3>
+                <Link href={`/news/${featuredNews.id}`}>
+                  <a className="bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer relative block">
+                    <div className="aspect-video relative">
+                      <img
+                        src={
+                          featuredNews.imageUrl ||
+                          '/assets/images/placeholder.png'
+                        }
+                        className="w-full h-full object-cover"
+                        alt="Featured"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                          {stripHtml(featuredNews.titulo)}
+                        </h3>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4 bg-gray-900">
-                    <p className="text-xs text-gray-300 line-clamp-3 mb-3">
-                      {stripHtml(featuredNews.descripcion)}
-                    </p>
-                    <Link href={`/news/${featuredNews.id}`}>
-                      <a className="text-primary text-sm font-semibold hover:underline">
+                    <div className="p-4 bg-gray-900">
+                      <p className="text-xs text-gray-300 line-clamp-3 mb-3">
+                        {stripHtml(featuredNews.descripcion)}
+                      </p>
+                      <span className="text-primary text-sm font-semibold hover:underline">
                         Leer artículo completo &rarr;
-                      </a>
-                    </Link>
-                  </div>
-                </div>
+                      </span>
+                    </div>
+                  </a>
+                </Link>
               ) : (
                 <div className="bg-gray-100 p-8 text-center rounded text-gray-500 text-sm">
                   No hay noticia destacada

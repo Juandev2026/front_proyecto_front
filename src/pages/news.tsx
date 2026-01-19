@@ -310,7 +310,7 @@ const News = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-1 lg:col-span-7 space-y-10">
+          <div className="col-span-1 lg:col-span-7 space-y-10 mx-auto w-full max-w-4xl lg:max-w-none lg:mx-0">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -336,7 +336,7 @@ const News = () => {
                       />
                     </div>
                     <div className="flex flex-col gap-1 mb-2 text-center items-center md:text-left md:items-start">
-                       <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2 justify-center md:justify-start">
                           <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
                             {getCategoryName(featuredArticle.categoriaId)}
                           </span>
@@ -367,10 +367,10 @@ const News = () => {
             )}
 
             {/* Subgrid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100 justify-items-center sm:justify-items-start">
               {secondaryArticles.map((item) => (
                 <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
-                  <a className="group flex flex-col h-full items-center md:items-start">
+                  <a className="group flex flex-col h-full items-center md:items-start w-full max-w-sm sm:max-w-none">
                     <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm w-full">
                       <img
                         src={
