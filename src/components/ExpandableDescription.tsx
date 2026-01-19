@@ -17,28 +17,29 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  // Calculate max height based on line-height
-  // Assuming average line-height of 1.75rem (28px) for prose content
-  const getMaxHeight = () => {
-    const lineHeightMap: { [key: number]: string } = {
-      3: '5.25rem',  // 3 * 1.75rem
-      4: '7rem',     // 4 * 1.75rem
-      5: '8.75rem',  // 5 * 1.75rem
-      6: '10.5rem',  // 6 * 1.75rem
-    };
-    return lineHeightMap[maxLines] || '8.75rem';
-  };
-
   return (
-    <div>
+    <div className="relative">
       <div
-        className={`${className} ${!isExpanded ? 'overflow-hidden' : ''}`}
-        style={!isExpanded ? { maxHeight: getMaxHeight() } : undefined}
+        className={`${className} ${!isExpanded ? 'relative' : ''}`}
+        style={
+          !isExpanded
+            ? {
+                display: '-webkit-box',
+                WebkitLineClamp: maxLines,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }
+            : undefined
+        }
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
+      {!isExpanded && (
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+      )}
       <button
         onClick={toggleExpanded}
-        className="mt-3 text-primary hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors"
+        className="mt-3 text-primary hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors relative z-10"
       >
         {isExpanded ? (
           <>
