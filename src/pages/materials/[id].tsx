@@ -104,7 +104,7 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: Main Content (8/12) */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 mx-auto w-full max-w-4xl lg:max-w-none lg:mx-0">
                 {/* Thumbnail Section - Always Visible */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
                     <div className="relative h-[400px] md:h-[500px]">
