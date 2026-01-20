@@ -318,18 +318,6 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                 </div>
               </div>
             </div>
-
-            {/* Description */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Descripción
-              </h2>
-              <ExpandableDescription
-                htmlContent={course.descripcion}
-                className="prose max-w-none text-gray-600"
-                maxLines={5}
-              />
-            </div>
           </div>
 
           {/* Sidebar */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface ExpandableDescriptionProps {
   htmlContent: string;
@@ -12,6 +12,8 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
   maxLines = 5,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -29,55 +31,79 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
     return lineHeightMap[maxLines] || '8.75rem';
   };
 
+  // Check if content is truncated
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (contentRef.current) {
+        const element = contentRef.current;
+        // Compare scrollHeight (full content height) with clientHeight (visible height)
+        const isTruncatedNow = element.scrollHeight > element.clientHeight;
+        setIsTruncated(isTruncatedNow);
+      }
+    };
+
+    // Check on mount and when content changes
+    checkTruncation();
+
+    // Also check after a small delay to ensure content is fully rendered
+    const timer = setTimeout(checkTruncation, 100);
+
+    return () => clearTimeout(timer);
+  }, [htmlContent, maxLines]);
+
   return (
     <div>
       <div
+        ref={contentRef}
         className={`${className} ${!isExpanded ? 'overflow-hidden' : ''}`}
         style={!isExpanded ? { maxHeight: getMaxHeight() } : undefined}
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
-      <button
-        onClick={toggleExpanded}
-        className="mt-3 text-primary hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors"
-      >
-        {isExpanded ? (
-          <>
-            Ver menos
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          </>
-        ) : (
-          <>
-            Ver más
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </>
-        )}
-      </button>
+      {isTruncated && (
+        <button
+          onClick={toggleExpanded}
+          className="mt-3 text-primary hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors"
+        >
+          {isExpanded ? (
+            <>
+              Ver menos
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 15l7-7 7 7"
+                />
+              </svg>
+            </>
+          ) : (
+            <>
+              Ver más
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 };
 
 export default ExpandableDescription;
+

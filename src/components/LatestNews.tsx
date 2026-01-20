@@ -163,7 +163,7 @@ const LatestNews = () => {
                           {stripHtml(news.descripcion)}
                         </p>
                       </div>
-                      <div className="mt-6 flex justify-end sm:justify-start">
+                      <div className="mt-6 flex justify-end">
                         <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                           Ver más
                         </span>
@@ -205,7 +205,7 @@ const LatestNews = () => {
                                 {stripHtml(news.descripcion)}
                               </p>
                             </div>
-                            <div className="mt-6 flex justify-end sm:justify-start">
+                            <div className="mt-6 flex justify-end">
                               <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                                 Ver más
                               </span>

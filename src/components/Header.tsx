@@ -58,7 +58,12 @@ const Menu = () => {
                         </Link>
                      </>
                    )}
-                   {/* If authenticated, maybe show user avatar or nothing special here, user menu in hamburger */}
+                   {/* If authenticated, show greeting */}
+                   {isAuthenticated && (
+                     <span className="text-gray-700 font-medium text-sm whitespace-nowrap">
+                       Hola, {user?.name?.split(' ')[0]}
+                     </span>
+                   )}
                 </div>
               </div>
             </div>
@@ -79,7 +84,7 @@ const Menu = () => {
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-700 font-medium">
-                    Hola, {user?.name}
+                    Hola, {user?.name?.split(' ')[0]}
                   </span>
                   <button
                     onClick={() => {
@@ -157,7 +162,7 @@ const Menu = () => {
               {!isAuthenticated ? null : (
                 <div className="mt-6 px-5 space-y-4">
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
-                    Hola, {user?.name}
+                    Hola, {user?.name?.split(' ')[0]}
                   </div>
                   <button
                     onClick={() => {

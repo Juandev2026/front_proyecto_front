@@ -7,7 +7,6 @@ import AdSidebar from '../../components/AdSidebar';
 import CommentsSection from '../../components/CommentsSection';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-import ExpandableDescription from '../../components/ExpandableDescription';
 import CommunitySection from '../../components/CommunitySection';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../../components/AuthModal';
@@ -153,10 +152,9 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
                     </span>
                   )}
                 </div>
-                <ExpandableDescription
-                  htmlContent={newsItem.descripcion}
+                <div 
+                  dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
                   className="prose prose-xl md:prose-2xl max-w-none text-gray-700 leading-relaxed text-xl md:text-2xl"
-                  maxLines={5}
                 />
               </div>
 

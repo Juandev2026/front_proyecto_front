@@ -289,6 +289,7 @@ const AdminNews = () => {
 
   const handleAddNew = () => {
     setEditingId(null);
+    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
     setFormData({
       titulo: '',
       descripcion: '',
@@ -307,7 +308,7 @@ const AdminNews = () => {
           : 0,
       precio: 0,
       autor: '',
-      estadoId: 0,
+      estadoId: estadoPublicado ? estadoPublicado.id : 0,
     });
     setImageFile(null);
     setArchivoFile(null);

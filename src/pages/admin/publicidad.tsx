@@ -148,6 +148,20 @@ const AdminPublicidad = () => {
   // ... rest of handle submit ...
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate Modalidad and Nivel are selected
+    if (!formData.modalidadId || formData.modalidadId === 0) {
+      // eslint-disable-next-line no-alert
+      alert('Por favor seleccione una Modalidad');
+      return;
+    }
+    
+    if (!formData.nivelId || formData.nivelId === 0) {
+      // eslint-disable-next-line no-alert
+      alert('Por favor seleccione un Nivel');
+      return;
+    }
+    
     try {
       // Validate: Max 5 publicidades PUBLICADAS per nivel 
       // Need to find which ID corresponds to 'Publicado' - assuming based on name, or logic
@@ -509,7 +523,7 @@ const AdminPublicidad = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-4xl w-full">
+          <div className="bg-white rounded-lg p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingId ? 'Editar Publicidad' : 'Nueva Publicidad'}
@@ -536,111 +550,119 @@ const AdminPublicidad = () => {
                   }
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Imagen
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setFile(e.target.files[0]);
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    URL de Imagen
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.imageUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
                     }
-                  }}
-                />
-                <label className="block text-xs text-gray-500 mb-1">
-                  O URL de Imagen:
-                </label>
-                <input
-                  type="text"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formData.imageUrl}
-                  onChange={(e) =>
-                    setFormData({ ...formData, imageUrl: e.target.value })
-                  }
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Enlace (Destino)
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formData.enlace}
-                  onChange={(e) =>
-                    setFormData({ ...formData, enlace: e.target.value })
-                  }
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Modalidad
-                </label>
-                <select
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formData.modalidadId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      modalidadId: Number(e.target.value),
-                    })
-                  }
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {modalidades.map((mod) => (
-                    <option key={mod.id} value={mod.id}>
-                      {mod.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Nivel
-                </label>
-                <select
-                  required
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formData.nivelId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      nivelId: Number(e.target.value),
-                    })
-                  }
-                  disabled={!formData.modalidadId}
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {filteredNiveles.map((nivel) => (
-                    <option key={nivel.id} value={nivel.id}>
-                      {nivel.nombre}
-                    </option>
-                  ))}
-                </select>
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Elegir Archivo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </div>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Precio (S/ - deje en 0 si es gratis)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formData.precio || 0}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      precio: parseFloat(e.target.value),
-                    })
-                  }
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Enlace (Destino)
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.enlace}
+                    onChange={(e) =>
+                      setFormData({ ...formData, enlace: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Modalidad
+                  </label>
+                  <select
+                    required
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.modalidadId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        modalidadId: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={0}>Seleccionar...</option>
+                    {modalidades.map((mod) => (
+                      <option key={mod.id} value={mod.id}>
+                        {mod.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Precio (S/ - deje en 0 si es gratis)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.precio || 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        precio: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Nivel
+                  </label>
+                  <select
+                    required
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.nivelId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        nivelId: Number(e.target.value),
+                      })
+                    }
+                    disabled={!formData.modalidadId}
+                  >
+                    <option value={0}>Seleccionar...</option>
+                    {filteredNiveles.map((nivel) => (
+                      <option key={nivel.id} value={nivel.id}>
+                        {nivel.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="mb-4">
