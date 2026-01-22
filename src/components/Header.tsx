@@ -11,8 +11,8 @@ import { useAuth } from '../hooks/useAuth';
 const Menu = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { navigation, company, callToAction } = config;
-  const { name: companyName, logo } = company;
+  const { navigation, company } = config;
+  const { name: companyName } = company;
 
   return (
     <>
@@ -68,19 +68,76 @@ const Menu = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              {navigation.map((item) => (
-                <Link key={item.name} href={item.href}>
-                  <a
-                    className={`text-base font-medium transition-colors hover:text-primary ${
-                      router.pathname === item.href
-                        ? 'text-primary'
-                        : 'text-gray-500'
-                    }`}
-                  >
-                    {item.name}
-                  </a>
-                </Link>
-              ))}
+              {navigation.map((item) => {
+                // Check if item has dropdown
+                if (item.dropdown && item.dropdown.length > 0) {
+                  return (
+                    <Popover key={item.name} className="relative">
+                      {({ open }) => (
+                        <>
+                          <Popover.Button
+                            className={`text-base font-medium transition-colors hover:text-primary focus:outline-none ${
+                              router.pathname === item.href || router.pathname.startsWith(item.href)
+                                ? 'text-primary'
+                                : 'text-gray-500'
+                            }`}
+                          >
+                            <span className="flex items-center gap-1">
+                              {item.name}
+                              <svg
+                                className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </span>
+                          </Popover.Button>
+                          <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-200"
+                            enterFrom="opacity-0 translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                            leave="transition ease-in duration-150"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 translate-y-1"
+                          >
+                            <Popover.Panel className="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
+                              <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                                <div className="relative bg-white py-2">
+                                  {item.dropdown.map((subItem) => (
+                                    <Link key={subItem.name} href={subItem.href}>
+                                      <a className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
+                                        {subItem.name}
+                                      </a>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            </Popover.Panel>
+                          </Transition>
+                        </>
+                      )}
+                    </Popover>
+                  );
+                }
+                
+                // Regular navigation item without dropdown
+                return (
+                  <Link key={item.name} href={item.href}>
+                    <a
+                      className={`text-base font-medium transition-colors hover:text-primary ${
+                        router.pathname === item.href
+                          ? 'text-primary'
+                          : 'text-gray-500'
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  </Link>
+                );
+              })}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-700 font-medium">
@@ -149,13 +206,38 @@ const Menu = () => {
                 </div>
               </div>
               <div className="px-2 pt-2 pb-3 space-y-1">
-                {navigation.map((item) => (
-                  <Link key={item.name} href={item.href}>
-                    <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                      {item.name}
-                    </a>
-                  </Link>
-                ))}
+                {navigation.map((item) => {
+                  // Check if item has dropdown
+                  if (item.dropdown && item.dropdown.length > 0) {
+                    return (
+                      <div key={item.name}>
+                        <Link href={item.href}>
+                          <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                            {item.name}
+                          </a>
+                        </Link>
+                        <div className="pl-4 space-y-1">
+                          {item.dropdown.map((subItem) => (
+                            <Link key={subItem.name} href={subItem.href}>
+                              <a className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                                → {subItem.name}
+                              </a>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Regular navigation item without dropdown
+                  return (
+                    <Link key={item.name} href={item.href}>
+                      <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        {item.name}
+                      </a>
+                    </Link>
+                  );
+                })}
               </div>
 
               

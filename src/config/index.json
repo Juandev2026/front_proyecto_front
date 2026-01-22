@@ -29,6 +29,10 @@
       "href": "/cursos"
     },
     {
+      "name": "Planes",
+      "href": "/planes"
+    },
+    {
       "name": "IA (Próximamente)",
       "href": "#"
     }
