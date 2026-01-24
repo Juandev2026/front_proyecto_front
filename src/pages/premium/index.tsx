@@ -36,26 +36,20 @@ const PremiumPage = () => {
   }
 
   return (
-    <PremiumLayout>
+    <PremiumLayout title="Banco de preguntas" breadcrumb="Pages / Banco de preguntas">
       <Head>
         <title>Aula Virtual - AVENDOCENTE</title>
       </Head>
 
       <div className="space-y-6">
-        {/* Banner */}
-        <div className="bg-[#0a192f] rounded-lg shadow-lg p-6 text-white text-center">
-           <h1 className="text-2xl md:text-3xl font-bold mb-2">Banco de preguntas MINEDU</h1>
-           <p className="text-blue-200 font-medium text-lg">Directivos Docente</p>
-        </div>
-
         {/* Filters / Preferences Header */}
-        <div className="text-center py-4">
-           <h2 className="text-xl font-bold text-gray-800">Selecciona tus preferencias</h2>
-           <p className="text-gray-500 text-sm">Selecciona el/los exámenes que deseas resolver ahora</p>
+        <div className="text-center py-8">
+           <h2 className="text-3xl md:text-4xl font-extrabold text-[#2B3674] mb-3">Selecciona tus preferencias</h2>
+           <p className="text-[#A3AED0] text-lg font-medium">Selecciona el/los exámenes que deseas resolver ahora</p>
         </div>
 
         {/* Accordion List */}
-        <div className="space-y-4 max-w-4xl mx-auto">
+        <div className="space-y-4 w-full">
           {exams.map((exam) => (
             <Disclosure key={exam.id} as="div" className="border border-blue-200 rounded-lg bg-white shadow-sm overflow-hidden">
               {({ open }) => (

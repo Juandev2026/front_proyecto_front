@@ -14,9 +14,11 @@ import { useAuth } from '../hooks/useAuth';
 
 interface PremiumLayoutProps {
   children: React.ReactNode;
+  title?: string;
+  breadcrumb?: string;
 }
 
-const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children }) => {
+const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashboard', breadcrumb = 'Pages / Dashboard' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
@@ -38,7 +40,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans">
+    <div className="min-h-screen bg-[#F4F7FE] flex font-sans">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
@@ -49,101 +51,105 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-[#0a192f] text-white transition-transform duration-300 ease-in-out transform 
+        fixed inset-y-0 left-0 z-50 w-72 bg-white text-gray-700 transition-transform duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
       `}>
         {/* Logo Area */}
-        <div className="flex items-center justify-between h-16 px-4 bg-[#0a192f] border-b border-gray-700">
-           <div className="flex items-center gap-2">
-              <AcademicCapIcon className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold tracking-wider">AVENDOCENTE</span>
-           </div>
+        <div className="flex items-center justify-center h-24 px-6 border-b border-gray-50 mb-4">
+           <Link href="/">
+             <a className="flex items-center gap-2 group">
+                <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight">AVENDOCENTE</span>
+             </a>
+           </Link>
            <button 
-             className="md:hidden text-gray-300 hover:text-white"
+             className="md:hidden ml-auto text-gray-400 hover:text-gray-600"
              onClick={() => setSidebarOpen(false)}
            >
              <XIcon className="h-6 w-6" />
            </button>
         </div>
 
-        {/* User Info (Mini) */}
-        <div className="px-4 py-4 border-b border-gray-700 bg-[#0d213a]">
-          <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold">
-               {user?.name?.charAt(0).toUpperCase() || 'U'}
-             </div>
-             <div>
-                <p className="text-sm font-medium text-white truncate w-40">{user?.name || 'Usuario'}</p>
-                <p className="text-xs text-blue-300">Premium</p>
-             </div>
-          </div>
-        </div>
-
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => (
-            <Link key={item.name} href={item.href}>
-              <a 
-                className={`
-                  group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors
-                  ${router.pathname === item.href 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:bg-[#112240] hover:text-white'}
-                `}
-              >
-                <item.icon 
+        <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto">
+          {menuItems.map((item) => {
+             const isActive = router.pathname === item.href;
+             return (
+              <Link key={item.name} href={item.href}>
+                <a 
                   className={`
-                    mr-3 h-5 w-5 flex-shrink-0 
-                    ${router.pathname === item.href ? 'text-white' : 'text-gray-400 group-hover:text-white'}
-                  `} 
-                />
-                {item.name}
-              </a>
-            </Link>
-          ))}
+                    group flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
+                      : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
+                  `}
+                >
+                  <item.icon 
+                    className={`
+                      mr-4 h-5 w-5 flex-shrink-0 transition-colors
+                      ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
+                    `} 
+                  />
+                  {item.name}
+                </a>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-gray-700 space-y-2">
+        <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
            <Link href="/">
-             <a className="group flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-[#112240] hover:text-white transition-colors">
-               <HomeIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-white" />
+             <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
+               <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
                Volver a Inicio
              </a>
            </Link>
            <button 
              onClick={handleLogout}
-             className="w-full group flex items-center px-3 py-2 text-sm font-medium text-red-400 rounded-md hover:bg-red-900/20 hover:text-red-300 transition-colors"
+             className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
            >
-             <LogoutIcon className="mr-3 h-5 w-5 text-red-400 group-hover:text-red-300" />
+             <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
              Cerrar Sesión
            </button>
         </div>
       </div>
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F4F7FE]">
         
-        {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between bg-[#0a192f] text-white p-4 shadow-md">
-           <button 
-             onClick={() => setSidebarOpen(true)}
-             className="text-gray-300 hover:text-white focus:outline-none"
-           >
-              <MenuIcon className="h-6 w-6" />
-           </button>
-           <span className="font-bold text-lg">AVENDOCENTE</span>
-           <div className="w-6" /> {/* Spacer for centering */}
-        </div>
+        {/* Top Header (Desktop & Mobile) */}
+        <header className="bg-white/50 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6 py-4 shadow-sm md:shadow-none md:bg-transparent">
+           <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                  <MenuIcon className="h-6 w-6" />
+              </button>
+              
+              {/* Breadcrumb / Page Title Placeholder */}
+              <div className="hidden md:block">
+                 <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
+                 <h1 className="text-2xl font-bold text-[#2B3674] mt-1">{title}</h1>
+              </div>
+           </div>
+
+           {/* Right Side: Profile & Actions */}
+           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
+              <div className="hidden md:flex flex-col items-end mr-2">
+                 <span className="text-sm font-bold text-[#2B3674] leading-tight">{user?.name || 'Usuario'}</span>
+                 <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-blue-700 transition-colors">
+                 {(user?.name || 'U').charAt(0).toUpperCase()}
+              </div>
+           </div>
+        </header>
 
         {/* Main Scrollable Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 focus:outline-none">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-               {children}
-            </div>
-          </div>
+        <main className="flex-1 overflow-y-auto focus:outline-none p-4 md:p-8">
+            {children}
         </main>
       </div>
     </div>
