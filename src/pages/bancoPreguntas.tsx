@@ -198,7 +198,9 @@ const BancoPreguntasPage = () => {
                  <XIcon className="h-4 w-4" />
                  Limpiar
               </button>
-              <button className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md">
+              <button 
+                 onClick={() => router.push('/examen')}
+                 className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md">
                  Confirmar selección
               </button>
            </div>

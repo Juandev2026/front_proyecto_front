@@ -22,8 +22,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     };
   }, [router.events]);
 
-  // Check if current path is an admin page
-  const isAdmin = router.pathname.startsWith('/admin');
+  // Check if current path is an admin page or banco preguntas area
+  const showWhatsApp = !router.pathname.startsWith('/admin') && !router.pathname.startsWith('/bancoPreguntas');
 
   return (
     <>
@@ -53,7 +53,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       )}
 
       <Component {...pageProps} />
-      {!isAdmin && <WhatsAppWidget />}
+      {showWhatsApp && <WhatsAppWidget />}
     </>
   );
 };
