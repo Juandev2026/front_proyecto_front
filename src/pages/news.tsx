@@ -141,7 +141,8 @@ const News = () => {
         </div>
 
 
-        <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        {!isAuthenticated && (
+          <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="bg-blue-100 p-2 rounded-full text-primary">
                 <svg
@@ -171,6 +172,7 @@ const News = () => {
               </a>
             </Link>
           </div>
+        )}
 
         {/* Search Bar */}
         <div className="mb-10 max-w-3xl mx-auto">
