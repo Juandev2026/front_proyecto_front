@@ -73,7 +73,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       children: [
         { name: 'Banco de Preguntas', href: '/bancoPreguntas', icon: CollectionIcon },
         { name: 'Simulacro de Examen', href: '/simulacroExamen', icon: ClipboardListIcon },
-        { name: 'Respuestas Erróneas', href: '#', icon: ExclamationCircleIcon },
+        { name: 'Respuestas Erróneas', href: '/respuestasErroneas', icon: ExclamationCircleIcon },
       ]
     },
     { 
@@ -82,10 +82,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       icon: ChartBarIcon, 
       current: false,
       children: [
-        { name: 'Banco de Preguntas', href: '#', icon: CollectionIcon },
-        { name: 'Simulacro de Examen', href: '#', icon: ClipboardListIcon },
-        { name: 'Respuestas Erroneas', href: '#', icon: ExclamationCircleIcon },
-        { name: 'Recursos', href: '#', icon: ArchiveIcon },
+        { name: 'Banco de Preguntas', href: '/bancoPreguntasAscenso', icon: CollectionIcon },
+        { name: 'Simulacro de Examen', href: '/simulacroExamenAscenso', icon: ClipboardListIcon },
+        { name: 'Respuestas Erróneas', href: '/respuestasErroneasAscenso', icon: ExclamationCircleIcon },
+        { name: 'Recursos', href: '/recursosAscenso', icon: ArchiveIcon },
       ]
     },
     { 
@@ -94,7 +94,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       icon: UserGroupIcon, 
       current: false,
       children: [
-        { name: 'EXÁMENES MINEDU Y SIMULACROS', href: '#', icon: FolderIcon }
+        { name: 'Exámenes MINEDU y Simulacros', href: '/examenesDirectivos', icon: FolderIcon }
       ]
     },
     { 
