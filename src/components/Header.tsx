@@ -140,6 +140,11 @@ const Menu = () => {
               })}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
+                  <Link href="/premium">
+                    <a className="text-sm font-bold bg-primary text-white px-3 py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md">
+                      Aula Virtual
+                    </a>
+                  </Link>
                   <span className="text-gray-700 font-medium">
                     Hola, {user?.name?.split(' ')[0]}
                   </span>
