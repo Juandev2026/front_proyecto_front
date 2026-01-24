@@ -16,6 +16,15 @@ import { useAuth } from '../hooks/useAuth';
 const ExamenPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [loading, isAuthenticated, router]);
+
+
+
   // Timer State
   const [seconds, setSeconds] = useState(0);
 
@@ -102,6 +111,14 @@ const ExamenPage = () => {
       setIsReading(true);
     }
   };
+
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
+      </div>
+    );
+  }
 
   return (
     <PremiumLayout title="Examen" breadcrumb="Pages / Examen">
