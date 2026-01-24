@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { 
@@ -8,7 +8,18 @@ import {
   ChartBarIcon, 
   MenuIcon, 
   XIcon, 
-  LogoutIcon 
+  LogoutIcon,
+  ClipboardListIcon,
+  ExclamationCircleIcon,
+  CollectionIcon,
+  ArchiveIcon,
+  FolderIcon,
+  LockClosedIcon,
+  ChipIcon,
+  ViewBoardsIcon,
+  UserIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon
 } from '@heroicons/react/outline';
 import { useAuth } from '../hooks/useAuth';
 
@@ -22,6 +33,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+  
+  // State for sidebar collapse
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -32,12 +46,71 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
     window.location.href = '/login';
   };
 
+  // State for expanded menu items
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+
+  const toggleSubMenu = (name: string) => {
+    setExpandedMenu(expandedMenu === name ? null : name);
+  };
+  
+  // Auto-expand menu based on active route
+  useEffect(() => {
+    menuItems.forEach(item => {
+      if (item.children) {
+        const hasActiveChild = item.children.some((child: any) => child.href === router.pathname);
+        if (hasActiveChild) {
+          setExpandedMenu(item.name);
+        }
+      }
+    });
+  }, [router.pathname]);
+
   const menuItems = [
-    { name: 'Nombramiento', href: '/premium', icon: AcademicCapIcon },
-    { name: 'Ascenso', href: '#', icon: ChartBarIcon, current: false },
-    { name: 'Directivos', href: '#', icon: UserGroupIcon, current: false },
-    { name: 'Próximamente', href: '#', icon:  HomeIcon, current: false }, // Placeholder icon
+    { 
+      name: 'Nombramiento', 
+      href: '/premium', 
+      icon: AcademicCapIcon,
+      children: [
+        { name: 'Banco de Preguntas', href: '/bancoPreguntas', icon: CollectionIcon },
+        { name: 'Simulacro de Examen', href: '/simulacroExamen', icon: ClipboardListIcon },
+        { name: 'Respuestas Erróneas', href: '#', icon: ExclamationCircleIcon },
+      ]
+    },
+    { 
+      name: 'Ascenso', 
+      href: '#', 
+      icon: ChartBarIcon, 
+      current: false,
+      children: [
+        { name: 'Banco de Preguntas', href: '#', icon: CollectionIcon },
+        { name: 'Simulacro de Examen', href: '#', icon: ClipboardListIcon },
+        { name: 'Respuestas Erroneas', href: '#', icon: ExclamationCircleIcon },
+        { name: 'Recursos', href: '#', icon: ArchiveIcon },
+      ]
+    },
+    { 
+      name: 'Directivos', 
+      href: '#', 
+      icon: UserGroupIcon, 
+      current: false,
+      children: [
+        { name: 'EXÁMENES MINEDU Y SIMULACROS', href: '#', icon: FolderIcon }
+      ]
+    },
+    { 
+      name: 'Próximamente', 
+      href: '#', 
+      icon: HomeIcon, 
+      current: false,
+      children: [
+        { name: 'IA para maestros', href: '#', icon: ChipIcon, locked: true },
+        { name: 'Generador de prompt', href: '#', icon: ViewBoardsIcon, locked: true },
+        { name: 'Comunidad VIP', href: '#', icon: UserIcon, locked: true },
+      ]
+    }, 
   ];
+
+
 
   return (
     <div className="min-h-screen bg-[#F4F7FE] flex font-sans">
@@ -51,19 +124,28 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-white text-gray-700 transition-transform duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
+        fixed inset-y-0 left-0 z-50 bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        ${isCollapsed ? 'w-20' : 'w-72'}
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
       `}>
         {/* Logo Area */}
-        <div className="flex items-center justify-center h-24 px-6 border-b border-gray-50 mb-4">
-           <Link href="/">
-             <a className="flex items-center gap-2 group">
-                <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight">AVENDOCENTE</span>
-             </a>
-           </Link>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-24 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}>
+           {!isCollapsed && (
+             <Link href="/">
+               <a className="flex items-center gap-2 group">
+                  <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight whitespace-nowrap">AVENDOCENTE</span>
+               </a>
+             </Link>
+           )}
            <button 
-             className="md:hidden ml-auto text-gray-400 hover:text-gray-600"
+             onClick={() => setIsCollapsed(!isCollapsed)}
+             className="hidden md:block text-gray-400 hover:text-[#2B3674] transition-colors focus:outline-none"
+           >
+             {isCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6" /> : <ChevronDoubleLeftIcon className="h-6 w-6" />}
+           </button>
+           <button 
+             className="md:hidden text-gray-400 hover:text-gray-600"
              onClick={() => setSidebarOpen(false)}
            >
              <XIcon className="h-6 w-6" />
@@ -71,47 +153,134 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto overflow-x-hidden">
           {menuItems.map((item) => {
              const isActive = router.pathname === item.href;
+             const hasChildren = item.children && item.children.length > 0;
+             const isExpanded = expandedMenu === item.name;
+
              return (
-              <Link key={item.name} href={item.href}>
-                <a 
-                  className={`
-                    group flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
-                      : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
-                  `}
-                >
-                  <item.icon 
+              <div key={item.name}>
+                {hasChildren ? (
+                  <button
+                    onClick={() => {
+                        if(isCollapsed) setIsCollapsed(false);
+                        toggleSubMenu(item.name)
+                    }}
                     className={`
-                      mr-4 h-5 w-5 flex-shrink-0 transition-colors
-                      ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
-                    `} 
-                  />
-                  {item.name}
-                </a>
-              </Link>
+                      w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+                      ${isExpanded
+                        ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
+                        : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
+                    `}
+                    title={isCollapsed ? item.name : ''}
+                  >
+                    <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
+                      <item.icon 
+                        className={`
+                          h-6 w-6 flex-shrink-0 transition-colors
+                          ${isExpanded ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
+                          ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
+                        `} 
+                      />
+                      {!isCollapsed && <span>{item.name}</span>}
+                    </div>
+                    {/* Arrow Icon */}
+                    {!isCollapsed && (
+                      <svg 
+                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </button>
+                ) : (
+                  <Link href={item.href}>
+                    <a 
+                      className={`
+                        group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+                        ${isActive 
+                          ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
+                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
+                         ${isCollapsed ? 'justify-center' : ''} 
+                      `}
+                      title={isCollapsed ? item.name : ''}
+                    >
+                      <item.icon 
+                        className={`
+                           flex-shrink-0 transition-colors
+                          ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
+                          ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
+                        `} 
+                      />
+                      {!isCollapsed && item.name}
+                    </a>
+                  </Link>
+                )}
+
+                {/* Sub-menu Items */}
+                {hasChildren && isExpanded && !isCollapsed && (
+                  <div className="mt-2 space-y-1 pl-4 pr-2">
+                    {item.children.map((child: any) => (
+                      <Link key={child.name} href={child.href}>
+                         <a className={`
+                            flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                            ${child.locked 
+                              ? 'text-gray-400 cursor-not-allowed opacity-75' 
+                              : 'text-[#A3AED0] hover:text-[#2B3674] hover:bg-gray-50'}
+                         `}>
+                           <div className="flex items-center">
+                             {child.icon && (
+                               <child.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                             )}
+                             {child.name}
+                           </div>
+                           {child.locked && (
+                              <LockClosedIcon className="h-4 w-4 ml-2" />
+                           )}
+                         </a>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
         {/* Footer Actions */}
         <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
-           <Link href="/">
-             <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
-               <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
-               Volver a Inicio
-             </a>
-           </Link>
-           <button 
-             onClick={handleLogout}
-             className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
-           >
-             <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
-             Cerrar Sesión
-           </button>
+           {!isCollapsed ? (
+             <>
+               <Link href="/">
+                 <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
+                   <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
+                   Volver a Inicio
+                 </a>
+               </Link>
+               <button 
+                 onClick={handleLogout}
+                 className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
+               >
+                 <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
+                 Cerrar Sesión
+               </button>
+             </>
+           ) : (
+              <div className="flex flex-col gap-2 items-center">
+                 <Link href="/">
+                    <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]" title="Volver a Inicio">
+                       <HomeIcon className="h-6 w-6" />
+                    </a>
+                 </Link>
+                 <button onClick={handleLogout} className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600" title="Cerrar Sesión">
+                    <LogoutIcon className="h-6 w-6" />
+                 </button>
+              </div>
+           )}
         </div>
       </div>
 

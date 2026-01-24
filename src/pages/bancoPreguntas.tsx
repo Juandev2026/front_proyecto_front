@@ -7,11 +7,10 @@ import {
   XIcon,
 } from '@heroicons/react/outline';
 
+import PremiumLayout from '../layouts/PremiumLayout';
+import { useAuth } from '../hooks/useAuth';
 
-import PremiumLayout from '../../layouts/PremiumLayout';
-import { useAuth } from '../../hooks/useAuth';
-
-const PremiumPage = () => {
+const BancoPreguntasPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -61,9 +60,9 @@ const PremiumPage = () => {
       <div className="w-full space-y-6">
         
         {/* Title and subtitle */}
-        <div className="text-center py-6">
-           <h3 className="text-4xl md:text-5xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
-           <p className="text-[#A3AED0] text-lg mt-2 font-medium">Puedes seleccionar el año de su preferencia</p>
+        <div className="text-center py-4">
+           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
+           <p className="text-[#A3AED0] text-base mt-1 font-medium">Puedes seleccionar el año de su preferencia</p>
         </div>
 
         {/* Form Container */}
@@ -210,4 +209,4 @@ const PremiumPage = () => {
   );
 };
 
-export default PremiumPage;
+export default BancoPreguntasPage;
