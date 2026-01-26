@@ -28,6 +28,8 @@ export interface Noticia {
   };
   autor?: string;
   esNormaLegal?: boolean;
+  textoBotonDescarga?: string;
+  linkDescarga?: string;
 }
 
 const API_URL = `${API_BASE_URL}/Noticias`;
@@ -146,6 +148,8 @@ export const noticiaService = {
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
           esNormaLegal: n.esNormaLegal || false,
+          textoBotonDescarga: n.textoBotonDescarga || '',
+          linkDescarga: n.linkDescarga || '',
         });
       }
 
@@ -206,6 +210,8 @@ export const noticiaService = {
           autor: n.autor || '',
           estadoId: n.estadoId ? Number(n.estadoId) : 0,
           esNormaLegal: n.esNormaLegal || false,
+          textoBotonDescarga: n.textoBotonDescarga || '',
+          linkDescarga: n.linkDescarga || '',
         });
       }
 

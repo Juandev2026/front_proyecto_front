@@ -161,6 +161,7 @@ const AdminMaterials = () => {
     setFile(null);
     setImageFile(null);
 
+    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
     setNewMaterial({
       titulo: '',
       descripcion: '',
@@ -169,7 +170,7 @@ const AdminMaterials = () => {
       archivoUrl: '',
       videoUrl: '',
       categoriaId: 0,
-      estadoId: 0,
+      estadoId: estadoPublicado ? estadoPublicado.id : 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
           ? Number(localStorage.getItem('userId') || 0)

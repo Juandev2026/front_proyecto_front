@@ -177,7 +177,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                 <img
                   src={course.imagenUrl || '/assets/images/product1.jpg'}
                   alt={stripHtml(course.nombre)}
-                  className="w-full h-64 lg:h-80 object-cover"
+                  className="w-full h-auto object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
@@ -318,18 +318,6 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                 </div>
               </div>
             </div>
-
-            {/* Description */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Descripción
-              </h2>
-              <ExpandableDescription
-                htmlContent={course.descripcion}
-                className="prose max-w-none text-gray-600"
-                maxLines={5}
-              />
-            </div>
           </div>
 
           {/* Sidebar */}
@@ -353,11 +341,11 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                     />
                   </div>
                 ) : (
-                  <div className="relative h-48 bg-black group cursor-default">
+                  <div className="relative h-auto bg-black group cursor-default">
                     <img
                       src={course.imagenUrl || '/assets/images/product1.jpg'}
                       alt={course.nombre}
-                      className="w-full h-full object-cover opacity-80"
+                      className="w-full h-auto object-contain opacity-80"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg opacity-50">

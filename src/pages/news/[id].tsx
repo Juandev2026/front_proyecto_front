@@ -7,7 +7,6 @@ import AdSidebar from '../../components/AdSidebar';
 import CommentsSection from '../../components/CommentsSection';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-import ExpandableDescription from '../../components/ExpandableDescription';
 import CommunitySection from '../../components/CommunitySection';
 import { useAuth } from '../../hooks/useAuth';
 import AuthModal from '../../components/AuthModal';
@@ -123,12 +122,12 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
               
               {/* Title and Description */}
               <div className="p-6 md:p-8 border-b border-gray-100">
-                <div className="flex justify-between items-start gap-4 mb-4">
+                <div className="flex flex-col gap-4 mb-4">
                     <h1
-                    className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight"
+                    className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight w-full"
                     dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
                     />
-                    <div className="flex-shrink-0 pt-1">
+                    <div className="flex-shrink-0">
                         <ShareButton 
                           title={stripHtml(newsItem.titulo)} 
                           url={url} 
@@ -153,10 +152,9 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
                     </span>
                   )}
                 </div>
-                <ExpandableDescription
-                  htmlContent={newsItem.descripcion}
+                <div 
+                  dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
                   className="prose prose-xl md:prose-2xl max-w-none text-gray-700 leading-relaxed text-xl md:text-2xl"
-                  maxLines={5}
                 />
               </div>
 

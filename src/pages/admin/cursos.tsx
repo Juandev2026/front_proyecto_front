@@ -178,7 +178,12 @@ const AdminCursos = () => {
   };
 
   const resetForm = () => {
-    setCurrentCourse(initialCourseState);
+    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+    const updatedInitialState = {
+      ...initialCourseState,
+      estadoId: estadoPublicado ? estadoPublicado.id : 0,
+    };
+    setCurrentCourse(updatedInitialState);
     setEditingId(null);
     setSelectedImage(null);
     setPreviewUrl('');

@@ -39,6 +39,12 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    special: false,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,6 +121,17 @@ const Register = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.nivelId]);
 
+  const validatePassword = (password: string) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
+    };
+    setPasswordRequirements(requirements);
+    return Object.values(requirements).every(req => req);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -123,6 +140,11 @@ const Register = () => {
       ...prev,
       [name]: value,
     }));
+    
+    // Validate password in real-time
+    if (name === 'password') {
+      validatePassword(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,8 +153,9 @@ const Register = () => {
     setLoading(true);
     setError('');
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+    // Validate password complexity
+    if (!validatePassword(formData.password)) {
+      setError('La contraseña no cumple con todos los requisitos de seguridad.');
       setLoading(false);
       return;
     }
@@ -337,20 +360,18 @@ const Register = () => {
                     htmlFor="nivelId"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nivel{' '}
-                    <span className="text-gray-400 font-normal">
-                      (Opcional)
-                    </span>
+                    Nivel
                   </label>
                   <select
                     id="nivelId"
                     name="nivelId"
+                    required
                     disabled={!formData.modalidadId}
                     value={formData.nivelId}
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
                   >
-                    <option value={0}>Seleccione un nivel (Opcional)</option>
+                    <option value={0}>Seleccione un nivel</option>
                     {filteredNiveles.map((nivel) => (
                       <option key={nivel.id} value={nivel.id}>
                         {nivel.nombre}
@@ -395,7 +416,7 @@ const Register = () => {
                     htmlFor="password"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Contraseña (La contraseña debe tener al menos 6 caracteres)
+                    Contraseña
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <input
@@ -404,7 +425,7 @@ const Register = () => {
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                       required
-                      minLength={6}
+                      minLength={8}
                       value={formData.password}
                       onChange={handleChange}
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm pr-10"
@@ -421,6 +442,69 @@ const Register = () => {
                         <EyeIcon className="h-5 w-5" aria-hidden="true" />
                       )}
                     </button>
+                  </div>
+                  
+                  {/* Password Requirements */}
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-700">La contraseña debe contener:</p>
+                    <div className="space-y-1">
+                      <div className="flex items-center text-xs">
+                        {passwordRequirements.length ? (
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        <span className={passwordRequirements.length ? 'text-green-700' : 'text-gray-600'}>
+                          Mínimo 8 caracteres
+                        </span>
+                      </div>
+                      <div className="flex items-center text-xs">
+                        {passwordRequirements.uppercase ? (
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        <span className={passwordRequirements.uppercase ? 'text-green-700' : 'text-gray-600'}>
+                          Al menos una letra mayúscula (A-Z)
+                        </span>
+                      </div>
+                      <div className="flex items-center text-xs">
+                        {passwordRequirements.number ? (
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        <span className={passwordRequirements.number ? 'text-green-700' : 'text-gray-600'}>
+                          Al menos un número (0-9)
+                        </span>
+                      </div>
+                      <div className="flex items-center text-xs">
+                        {passwordRequirements.special ? (
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        <span className={passwordRequirements.special ? 'text-green-700' : 'text-gray-600'}>
+                          Al menos un símbolo (!@#$%^&*)
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

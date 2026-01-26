@@ -454,17 +454,6 @@ const Materials = () => {
           {/* Sidebar (3 cols) */}
           <div className="col-span-12 lg:col-span-3 space-y-8">
             <AdSidebar />
-
-            {/* CTA Box (Optional, similar to News login prompt if we want, or just generic info) */}
-            <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 text-center">
-              <h3 className="text-lg font-bold text-primary mb-2">
-                ¿Buscas algo más?
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Explora nuestras otras secciones o contáctanos si necesitas
-                material específico.
-              </p>
-            </div>
           </div>
         </div>
       </main>

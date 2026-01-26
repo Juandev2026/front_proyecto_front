@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
+import { createSlug } from '../utils/urlUtils';
+
 import AdSidebar from './AdSidebar';
 import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
@@ -135,7 +137,8 @@ const LatestNews = () => {
             <div className="space-y-6">
               {/* Render Sub-Featured News (Top 4) */}
               {subFeaturedNews.map((news) => (
-                <Link key={news.id} href={`/news/${news.id}`}>
+
+                <Link key={news.id} href={`/news/${createSlug(news.titulo, news.id)}`}>
                   <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                     <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                       <img
@@ -160,7 +163,7 @@ const LatestNews = () => {
                           {stripHtml(news.descripcion)}
                         </p>
                       </div>
-                      <div className="mt-6 flex justify-end sm:justify-start">
+                      <div className="mt-6 flex justify-end">
                         <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                           Ver más
                         </span>
@@ -176,7 +179,8 @@ const LatestNews = () => {
                   
                   <div className="space-y-6">
                     {currentNews.map((news) => (
-                      <Link key={news.id} href={`/news/${news.id}`}>
+
+                      <Link key={news.id} href={`/news/${createSlug(news.titulo, news.id)}`}>
                         <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                           <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                             <img
@@ -201,7 +205,7 @@ const LatestNews = () => {
                                 {stripHtml(news.descripcion)}
                               </p>
                             </div>
-                            <div className="mt-6 flex justify-end sm:justify-start">
+                            <div className="mt-6 flex justify-end">
                               <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
                                 Ver más
                               </span>
@@ -375,7 +379,8 @@ const LatestNews = () => {
                 Noticia Destacada
               </h2>
               {featuredNews ? (
-                <Link href={`/news/${featuredNews.id}`}>
+
+                <Link href={`/news/${createSlug(featuredNews.titulo, featuredNews.id)}`}>
                   <a className="bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer relative block">
                     <div className="aspect-video relative">
                       <img
