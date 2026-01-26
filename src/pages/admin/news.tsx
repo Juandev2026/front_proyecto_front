@@ -68,8 +68,10 @@ const AdminNews = () => {
         ? Number(localStorage.getItem('userId') || 0)
         : 0,
     precio: 0,
-    autor: '',
+    autor: 'AVEND',
     estadoId: 0,
+    textoBotonDescarga: 'CLICK AQUÍ',
+    linkDescarga: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [archivoFile, setArchivoFile] = useState<File | null>(null);
@@ -239,8 +241,10 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: item.precio || 0,
-      autor: item.autor || '',
+      autor: item.autor || 'AVEND',
       estadoId: item.estadoId ?? 0,
+      textoBotonDescarga: item.textoBotonDescarga || 'CLICK AQUÍ',
+      linkDescarga: item.linkDescarga || '',
     });
     setImageFile(null);
     setArchivoFile(null);
@@ -278,8 +282,10 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: 0,
-      autor: '',
+      autor: 'AVEND',
       estadoId: 0,
+      textoBotonDescarga: 'CLICK AQUÍ',
+      linkDescarga: '',
     });
     setImageFile(null);
     setArchivoFile(null);
@@ -307,8 +313,10 @@ const AdminNews = () => {
           ? Number(localStorage.getItem('userId') || 0)
           : 0,
       precio: 0,
-      autor: '',
+      autor: 'AVEND',
       estadoId: estadoPublicado ? estadoPublicado.id : 0,
+      textoBotonDescarga: 'CLICK AQUÍ',
+      linkDescarga: '',
     });
     setImageFile(null);
     setArchivoFile(null);
@@ -384,8 +392,10 @@ const AdminNews = () => {
         esNormaLegal: formData.esNormaLegal || false,
         usuarioEdicionId: formData.usuarioEdicionId || 0,
         precio: formData.precio || 0,
-        autor: formData.autor || '',
+        autor: formData.autor || 'AVEND',
         estadoId: formData.estadoId || 0,
+        textoBotonDescarga: formData.textoBotonDescarga || 'CLICK AQUÍ',
+        linkDescarga: formData.linkDescarga || '',
       };
 
       if (editingId) {
@@ -945,8 +955,44 @@ const AdminNews = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Texto del Botón de Descarga
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={50}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.textoBotonDescarga || 'CLICK AQUÍ'}
+                      onChange={(e) =>
+                        setFormData({ ...formData, textoBotonDescarga: e.target.value })
+                      }
+                      placeholder="CLICK AQUÍ"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Texto que aparecerá en el botón de descarga (máx. 50 caracteres)
+                    </p>
+                  </div>
 
-
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Link de Descarga (Opcional)
+                    </label>
+                    <input
+                      type="url"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.linkDescarga || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, linkDescarga: e.target.value })
+                      }
+                      placeholder="https://drive.google.com/..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enlace externo para descargar el contenido (ej: Google Drive)
+                    </p>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
@@ -1199,6 +1245,23 @@ const AdminNews = () => {
                 </div>
               </div>
             </div>
+
+            {/* Download Button Section */}
+            {viewingItem.linkDescarga && (
+              <div className="mt-6 flex justify-center">
+                <a
+                  href={viewingItem.linkDescarga}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center gap-2 shadow-lg hover:shadow-xl"
+                >
+                  {viewingItem.textoBotonDescarga || 'CLICK AQUÍ'}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            )}
 
             <div className="mt-8 flex justify-end">
               <button

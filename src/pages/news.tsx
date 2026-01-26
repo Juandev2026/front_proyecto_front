@@ -310,9 +310,9 @@ const News = () => {
 
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-12 gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-1 lg:col-span-7 space-y-10 mx-auto w-full max-w-4xl lg:max-w-none lg:mx-0">
+          <div className="col-span-12 lg:col-span-7 space-y-10">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -326,7 +326,7 @@ const News = () => {
               <div className="group cursor-pointer">
                 <Link href={`/news/${createSlug(featuredArticle.titulo)}`}>
                   <a>
-                    <div className="relative overflow-hidden rounded-xl mb-4 aspect-video shadow-lg w-full mx-auto">
+                    <div className="relative overflow-hidden rounded-xl mb-4 aspect-video shadow-lg w-full">
                       <img
                         src={
                           featuredArticle.imageUrl ||
@@ -337,8 +337,8 @@ const News = () => {
                         loading="lazy"
                       />
                     </div>
-                    <div className="flex flex-col gap-1 mb-2 text-center items-center md:text-left md:items-start">
-                       <div className="flex items-center gap-2 justify-center md:justify-start">
+                    <div className="flex flex-col gap-1 mb-2">
+                       <div className="flex items-center gap-2">
                           <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
                             {getCategoryName(featuredArticle.categoriaId)}
                           </span>
@@ -351,10 +351,10 @@ const News = () => {
                        )}
                     </div>
                     <h2 
-                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors text-center md:text-left"
+                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
                     />
-                    <p className="text-gray-600 leading-relaxed text-lg line-clamp-3 text-center md:text-left">
+                    <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
                       {stripHtml(featuredArticle.descripcion).substring(0, 800)}
                     </p>
 
@@ -368,10 +368,10 @@ const News = () => {
             )}
 
             {/* Subgrid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100 justify-items-center sm:justify-items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100">
               {secondaryArticles.map((item) => (
                 <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
-                  <a className="group flex flex-col h-full items-center md:items-start w-full max-w-sm sm:max-w-none">
+                  <a className="group flex flex-col h-full w-full">
                     <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm w-full">
                       <img
                         src={
@@ -382,7 +382,7 @@ const News = () => {
                         loading="lazy"
                       />
                     </div>
-                    <div className="flex-1 flex flex-col items-center text-center md:items-start md:text-left">
+                    <div className="flex-1 flex flex-col">
                       <span className="text-xs font-bold text-primary uppercase mb-1 block">
                         {getCategoryName(item.categoriaId)}
                       </span>
@@ -411,7 +411,7 @@ const News = () => {
               <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
                 {paginatedItems.map((item) => (
                   <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
-                    <a className="flex flex-col md:flex-row gap-4 group items-center md:items-start p-3 hover:bg-gray-50 rounded-lg transition-colors text-center md:text-left">
+                    <a className="flex flex-col md:flex-row gap-4 group p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="w-full md:w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm flex-shrink-0">
                         <img
                           src={
@@ -423,12 +423,12 @@ const News = () => {
                           loading="lazy"
                         />
                       </div>
-                      <div className="w-full md:w-2/3 flex flex-col items-center md:items-start">
+                      <div className="w-full md:w-2/3 flex flex-col">
                         <h4 
                           className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
                           dangerouslySetInnerHTML={{ __html: item.titulo }}
                         />
-                        <div className="flex items-center justify-center md:justify-start text-xs text-gray-500 mb-2">
+                        <div className="flex items-center text-xs text-gray-500 mb-2">
                            {item.autor && (
                               <span className="mr-2">Por: {item.autor}</span>
                            )}
@@ -507,7 +507,7 @@ const News = () => {
           </div>
 
           {/* SIDEBAR: Destacados + Ads (Split into 2 columns on large screens) */}
-          <div className="col-span-1 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
+          <div className="col-span-12 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
             
             {/* Column 1: Destacados */}
             <div className="space-y-6">

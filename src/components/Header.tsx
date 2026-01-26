@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import config from '../config/index.json';
 import { useAuth } from '../hooks/useAuth';
 
+
 const Menu = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
@@ -68,7 +69,7 @@ const Menu = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              {navigation.map((item) => {
+              {navigation.map((item: any) => {
                 // Check if item has dropdown
                 if (item.dropdown && item.dropdown.length > 0) {
                   return (
@@ -106,7 +107,7 @@ const Menu = () => {
                             <Popover.Panel className="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
                               <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
                                 <div className="relative bg-white py-2">
-                                  {item.dropdown.map((subItem) => (
+                                  {item.dropdown.map((subItem: any) => (
                                     <Link key={subItem.name} href={subItem.href}>
                                       <a className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
                                         {subItem.name}
@@ -141,7 +142,7 @@ const Menu = () => {
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <Link href="/premium">
-                    <a className="text-sm font-bold bg-primary text-white px-3 py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md">
+                    <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
                       Aula Virtual
                     </a>
                   </Link>
@@ -211,7 +212,7 @@ const Menu = () => {
                 </div>
               </div>
               <div className="px-2 pt-2 pb-3 space-y-1">
-                {navigation.map((item) => {
+                {navigation.map((item: any) => {
                   // Check if item has dropdown
                   if (item.dropdown && item.dropdown.length > 0) {
                     return (
@@ -222,7 +223,7 @@ const Menu = () => {
                           </a>
                         </Link>
                         <div className="pl-4 space-y-1">
-                          {item.dropdown.map((subItem) => (
+                          {item.dropdown.map((subItem: any) => (
                             <Link key={subItem.name} href={subItem.href}>
                               <a className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
                                 → {subItem.name}
@@ -251,6 +252,11 @@ const Menu = () => {
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
                     Hola, {user?.name?.split(' ')[0]}
                   </div>
+                  <Link href="/premium">
+                    <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
+                      Aula Virtual
+                    </a>
+                  </Link>
                   <button
                     onClick={() => {
                       localStorage.removeItem('token');
