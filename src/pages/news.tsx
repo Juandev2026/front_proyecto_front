@@ -129,13 +129,13 @@ const News = () => {
         </div>
       </div>
 
-      <main className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-8">
+      <main className="w-full px-3 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-6 sm:py-8">
         {/* Restored Original Title Section */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+        <div className="text-center mb-6 sm:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">
             Portal de <span className="text-primary">Noticias</span>
           </h1>
-          <p className="mt-4 text-xl text-gray-500">
+          <p className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500">
             Entérate de lo último en educación y tecnología.
           </p>
         </div>
@@ -174,17 +174,16 @@ const News = () => {
           </div>
         )}
 
-        {/* Search Bar */}
-        <div className="mb-10 max-w-3xl mx-auto">
+        <div className="mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto">
           <div className="relative group">
             <input
               type="text"
               placeholder="Buscar noticias..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full border border-gray-300 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
+              className="w-full border border-gray-300 rounded-full py-2 sm:py-3 pl-10 sm:pl-12 pr-3 sm:pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm text-sm sm:text-base"
             />
-            <SearchIcon className="h-5 w-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 group-focus-within:text-primary" />
+            <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 group-focus-within:text-primary" />
           </div>
         </div>
 
@@ -310,9 +309,9 @@ const News = () => {
 
 
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* LEFT COLUMN: Main Content */}
-          <div className="col-span-12 lg:col-span-7 space-y-10">
+          <div className="col-span-12 lg:col-span-7 space-y-6 sm:space-y-8 lg:space-y-10">
             {isLoading ? (
               <div className="space-y-6">
                 {/* Loading skeleton */}
@@ -351,10 +350,10 @@ const News = () => {
                        )}
                     </div>
                     <h2 
-                      className="text-3xl font-bold text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors"
+                      className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-2 sm:mb-3 group-hover:text-primary transition-colors"
                       dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
                     />
-                    <p className="text-gray-600 leading-relaxed text-lg line-clamp-3">
+                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base md:text-lg line-clamp-3">
                       {stripHtml(featuredArticle.descripcion).substring(0, 800)}
                     </p>
 
@@ -368,7 +367,7 @@ const News = () => {
             )}
 
             {/* Subgrid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 sm:gap-y-8 pt-6 sm:pt-8 border-t border-gray-100">
               {secondaryArticles.map((item) => (
                 <Link key={item.id} href={`/news/${createSlug(item.titulo)}`}>
                   <a className="group flex flex-col h-full w-full">
