@@ -44,7 +44,7 @@ export const linkifyHtml = (html: string): string => {
     if (!parts[i].startsWith('<')) {
        parts[i] = parts[i].replace(
          /(https?:\/\/[^\s"<>]+)/g, 
-         '<a href="$1" target="_blank" rel="noopener noreferrer" class="inline-block px-8 py-3 bg-primary text-white font-bold text-sm leading-tight uppercase rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out break-words my-3">CLICK AQUÍ</a>'
+         '<div class="w-full text-center my-6"><a href="$1" target="_blank" rel="noopener noreferrer" class="inline-block px-12 py-4 bg-primary text-white font-bold text-xl leading-tight uppercase rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out break-words">CLICK AQUÍ</a></div>'
        );
     }
   }
