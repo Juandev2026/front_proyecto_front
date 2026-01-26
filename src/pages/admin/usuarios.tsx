@@ -187,23 +187,47 @@ const UsersPage = () => {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredUsers = users.filter((user) => 
+    user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <AdminLayout>
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Usuarios</h1>
           <p className="text-gray-600">Gestión de usuarios del sistema</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingUser(null);
-            resetForm();
-            setIsModalOpen(true);
-          }}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
-        >
-          Crear Usuario
-        </button>
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar usuarios..."
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary block w-full sm:text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => {
+              setEditingUser(null);
+              resetForm();
+              setIsModalOpen(true);
+            }}
+            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors whitespace-nowrap"
+          >
+            Crear Usuario
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -238,14 +262,14 @@ const UsersPage = () => {
                   Cargando...
                 </td>
               </tr>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center">
-                  No hay usuarios registrados
+                  No hay usuarios encontrados
                 </td>
               </tr>
             ) : (
-              users.map((user) => {
+              filteredUsers.map((user) => {
                 const regionName = user.region?.nombre || user.regionId?.toString() || '-';
                 return (
                   <tr key={user.id}>

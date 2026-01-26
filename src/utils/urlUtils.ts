@@ -32,3 +32,22 @@ export const getIdFromSlug = (slug: string | string[] | undefined): number | nul
   const match = slug.match(/-(\d+)$/);
   return match ? parseInt(match[1], 10) : null;
 };
+
+export const linkifyHtml = (html: string): string => {
+  if (!html) return '';
+  // Split by tags to only target text content
+  const regex = /(<[^>]+>)/g;
+  const parts = html.split(regex);
+  
+  for (let i = 0; i < parts.length; i++) {
+    // If NOT a tag, linkify
+    if (!parts[i].startsWith('<')) {
+       parts[i] = parts[i].replace(
+         /(https?:\/\/[^\s"<>]+)/g, 
+         '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-words">$1</a>'
+       );
+    }
+  }
+  return parts.join('');
+};
+

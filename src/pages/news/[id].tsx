@@ -14,7 +14,7 @@ import ShareButton from '../../components/ShareButton';
 
 import { categoriaService } from '../../services/categoriaService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
-import { createSlug, getIdFromSlug, cleanSlug, stripHtml } from '../../utils/urlUtils';
+import { createSlug, getIdFromSlug, cleanSlug, stripHtml, linkifyHtml } from '../../utils/urlUtils';
 
 interface NewsDetailProps {
   newsItem: Noticia | null;
@@ -153,7 +153,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
                   )}
                 </div>
                 <div 
-                  dangerouslySetInnerHTML={{ __html: newsItem.descripcion }}
+                  dangerouslySetInnerHTML={{ __html: linkifyHtml(newsItem.descripcion) }}
                   className="prose prose-xl md:prose-2xl max-w-none text-gray-700 leading-relaxed text-xl md:text-2xl"
                 />
               </div>
