@@ -29,6 +29,7 @@ import { nivelService, Nivel } from '../../services/nivelService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import { uploadService } from '../../services/uploadService';
 import { estadoService, Estado } from '../../services/estadoService';
+import { stripHtml } from '../../utils/urlUtils';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -955,43 +956,22 @@ const AdminNews = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Texto del Botón de Descarga
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={50}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={formData.textoBotonDescarga || 'CLICK AQUÍ'}
-                      onChange={(e) =>
-                        setFormData({ ...formData, textoBotonDescarga: e.target.value })
-                      }
-                      placeholder="CLICK AQUÍ"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Texto que aparecerá en el botón de descarga (máx. 50 caracteres)
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Link de Descarga (Opcional)
-                    </label>
-                    <input
-                      type="url"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={formData.linkDescarga || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, linkDescarga: e.target.value })
-                      }
-                      placeholder="https://drive.google.com/..."
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Enlace externo para descargar el contenido (ej: Google Drive)
-                    </p>
-                  </div>
+                <div className="mt-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Link de Descarga (Opcional)
+                  </label>
+                  <input
+                    type="url"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={formData.linkDescarga || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, linkDescarga: e.target.value })
+                    }
+                    placeholder="https://drive.google.com/..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enlace externo para descargar el contenido (ej: Google Drive)
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
