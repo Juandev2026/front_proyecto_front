@@ -209,7 +209,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                           course.precio) *
                           100
                       )}
-                      % OFF
+                      % DSCTO
                     </span>
                   )}
                 </div>
@@ -375,7 +375,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                             course.precio) *
                             100
                         )}
-                        % OFF
+                        % DSCTO
                       </span>
                     )}
                   </div>
