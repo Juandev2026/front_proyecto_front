@@ -35,7 +35,7 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
         </div>
         <div className="flex flex-col justify-center items-center h-96 text-center px-4">
           <p className="text-xl text-gray-500 mb-4">{error || 'Material no encontrado'}</p>
-          <Link href="/materials">
+          <Link href="/recursos">
             <span className="text-primary hover:underline cursor-pointer">← Volver a Recursos</span>
           </Link>
         </div>
@@ -94,7 +94,7 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
       <main className="w-full px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <div className="mb-6">
-            <Link href="/materials">
+            <Link href="/recursos">
             <span className="inline-flex items-center text-gray-600 hover:text-primary transition-colors group cursor-pointer">
                 <ArrowLeftIcon className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
                 Volver a Recursos
@@ -351,7 +351,7 @@ const MaterialPreview = ({ material, featuredMaterials, error, url }: MaterialDe
                 </div>
                 <div className="p-4 space-y-4">
                 {featuredMaterials.map((featured) => (
-                    <Link key={featured.id} href={`/materials/${createSlug(featured.titulo, featured.id)}`}>
+                    <Link key={featured.id} href={`/recursos/${createSlug(featured.titulo, featured.id)}`}>
                     <a className="block group">
                         <div className="relative overflow-hidden rounded-lg mb-2 bg-gray-100 h-32 flex items-center justify-center">
                          {/* Thumbnail for Sidebar Items */}
@@ -403,7 +403,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const { id } = context.params as { id: string };
     const protocol = context.req.headers['x-forwarded-proto'] || 'http';
     const host = context.req.headers.host;
-    const url = `${protocol}://${host}/materials/${id}`;
+    const url = `${protocol}://${host}/recursos/${id}`;
     
     // Parse ID from slug
     const materialId = getIdFromSlug(id);

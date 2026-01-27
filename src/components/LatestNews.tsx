@@ -138,7 +138,7 @@ const LatestNews = () => {
               {/* Render Sub-Featured News (Top 4) */}
               {subFeaturedNews.map((news) => (
 
-                <Link key={news.id} href={`/news/${createSlug(news.titulo, news.id)}`}>
+                <Link key={news.id} href={`/noticias/${createSlug(news.titulo, news.id)}`}>
                   <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                     <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                       <img
@@ -154,9 +154,12 @@ const LatestNews = () => {
                           dangerouslySetInnerHTML={{ __html: news.titulo }}
                         />
                         {news.autor && (
-                          <p className="text-xs text-gray-500 font-medium mb-3">
-                            Por: {news.autor}
-                          </p>
+                          <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
+                            <p>Por: {news.autor}</p>
+                            {news.fecha && (
+                              <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                            )}
+                          </div>
                         )}
                         <div className="w-full border-t border-gray-100 my-4"></div>
                         <p className="text-xl text-gray-700 line-clamp-3">
@@ -180,7 +183,7 @@ const LatestNews = () => {
                   <div className="space-y-6">
                     {currentNews.map((news) => (
 
-                      <Link key={news.id} href={`/news/${createSlug(news.titulo, news.id)}`}>
+                      <Link key={news.id} href={`/noticias/${createSlug(news.titulo, news.id)}`}>
                         <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                           <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                             <img
@@ -196,9 +199,12 @@ const LatestNews = () => {
                                 dangerouslySetInnerHTML={{ __html: news.titulo }}
                               />
                               {news.autor && (
-                                <p className="text-xs text-gray-500 font-medium mb-3">
-                                  Por: {news.autor}
-                                </p>
+                                <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
+                                  <p>Por: {news.autor}</p>
+                                  {news.fecha && (
+                                    <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                                  )}
+                                </div>
                               )}
                               <div className="w-full border-t border-gray-100 my-4"></div>
                               <p className="text-xl text-gray-700 line-clamp-3">
@@ -380,7 +386,7 @@ const LatestNews = () => {
               </h2>
               {featuredNews ? (
 
-                <Link href={`/news/${createSlug(featuredNews.titulo, featuredNews.id)}`}>
+                <Link href={`/noticias/${createSlug(featuredNews.titulo, featuredNews.id)}`}>
                   <a className="bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer relative block">
                     <div className="aspect-video relative">
                       <img

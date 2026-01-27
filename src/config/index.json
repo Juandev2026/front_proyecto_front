@@ -10,11 +10,11 @@
     },
     {
       "name": "Quiénes Somos",
-      "href": "/about"
+      "href": "/quienes-somos"
     },
     {
       "name": "Noticias",
-      "href": "/news"
+      "href": "/noticias"
     },
     {
       "name": "Normas Legales",
@@ -22,7 +22,7 @@
     },
     {
       "name": "Recursos",
-      "href": "/materials"
+      "href": "/recursos"
     },
     {
       "name": "Cursos",
@@ -145,11 +145,11 @@
     "sections": [
       {
         "name": "Noticias",
-        "href": "/news"
+        "href": "/noticias"
       },
       {
         "name": "Recursos",
-        "href": "/materials"
+        "href": "/recursos"
       },
     {
       "name": "Cursos",

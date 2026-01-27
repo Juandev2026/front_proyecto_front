@@ -41,7 +41,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
           <p className="text-xl text-gray-600 mb-8">
             {error || 'Noticia no encontrada'}
           </p>
-          <Link href="/news">
+          <Link href="/noticias">
             <a className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-secondary transition-colors">
               Volver a Noticias
             </a>
@@ -85,7 +85,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
 
       <main className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <Link href="/news">
+          <Link href="/noticias">
             <a className="text-primary hover:underline flex items-center gap-2 font-medium">
               ← Volver a Noticias
             </a>
@@ -271,7 +271,7 @@ const NewsDetail = ({ newsItem, categoryName, featuredNews, error, url }: NewsDe
               </div>
               <div className="p-4 space-y-4">
                 {featuredNews.slice(0, 5).map((featured) => (
-                  <Link key={featured.id} href={`/news/${createSlug(featured.titulo)}`}>
+                  <Link key={featured.id} href={`/noticias/${createSlug(featured.titulo)}`}>
                     <a className="block group">
                       <div className="relative overflow-hidden rounded-lg mb-2">
                         <img
@@ -351,7 +351,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params as { id: string };
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
   const host = context.req.headers.host;
-  const url = `${protocol}://${host}/news/${id}`;
+  const url = `${protocol}://${host}/noticias/${id}`;
 
   try {
     const slug = id;

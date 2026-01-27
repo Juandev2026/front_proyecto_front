@@ -42,7 +42,7 @@ const Materials = () => {
 
   const handleCardClick = (material: Material) => {
     if ((material.precio && material.precio > 0) || isAuthenticated) {
-       router.push(`/materials/${createSlug(material.titulo, material.id)}`);
+       router.push(`/recursos/${createSlug(material.titulo, material.id)}`);
     } else {
        setIsAuthModalOpen(true);
     }
@@ -79,9 +79,9 @@ const Materials = () => {
   };
 
   const getFileFormat = (url: string) => {
-    if (!url) return 'FILE';
+    if (!url) return 'ARCHIVO';
     const extension = url.split('.').pop()?.toUpperCase();
-    return extension && extension.length <= 4 ? extension : 'FILE';
+    return extension && extension.length <= 4 ? extension : 'ARCHIVO';
   };
 
   // Helper to strip HTML tags for preview
@@ -354,9 +354,7 @@ const Materials = () => {
                           <span className="bg-white/90 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
                             {getCategoryName(item.categoriaId)}
                           </span>
-                          <span className="bg-white/80 backdrop-blur text-gray-700 text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-gray-200">
-                            {getFileFormat(item.url)}
-                          </span>
+
                         </div>
                       </div>
 

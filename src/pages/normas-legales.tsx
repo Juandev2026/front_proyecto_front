@@ -120,6 +120,11 @@ const NormasLegalesPage = () => {
                              className="text-lg font-bold text-gray-900 leading-tight mb-2"
                              dangerouslySetInnerHTML={{ __html: norma.nombre }}
                            />
+                           {norma.fechaCreacion && (
+                             <p className="text-xs text-gray-500 mb-2">
+                               Publicado el: {new Date(norma.fechaCreacion).toLocaleDateString('es-PE')}
+                             </p>
+                           )}
                            <div 
                              className="text-gray-500 text-sm line-clamp-3 prose prose-sm max-w-none"
                              dangerouslySetInnerHTML={{ __html: norma.descripcion }}
