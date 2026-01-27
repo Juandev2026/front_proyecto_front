@@ -195,11 +195,11 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
               <div className="p-6">
                 <div className="flex items-end mb-4">
                   <span className="text-3xl font-bold text-gray-900">
-                    S/ {course.precio}.00
+                    S/ {course.precioOferta > 0 ? course.precioOferta.toFixed(2) : course.precio.toFixed(2)}
                   </span>
                   {course.precioOferta > 0 && (
                     <span className="ml-3 text-gray-500 line-through mb-1">
-                      S/ {course.precioOferta}.00
+                      S/ {course.precio.toFixed(2)}
                     </span>
                   )}
                   {course.precioOferta > 0 && (
@@ -361,11 +361,11 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
                 <div className="p-6">
                   <div className="flex items-end mb-4">
                     <span className="text-3xl font-bold text-gray-900">
-                      S/ {course.precio}.00
+                      S/ {course.precioOferta > 0 ? course.precioOferta.toFixed(2) : course.precio.toFixed(2)}
                     </span>
                     {course.precioOferta > 0 && (
                       <span className="ml-3 text-gray-500 line-through mb-1">
-                        S/ {course.precioOferta}.00
+                        S/ {course.precio.toFixed(2)}
                       </span>
                     )}
                     {course.precioOferta > 0 && (

@@ -291,11 +291,11 @@ const Cursos = () => {
                               <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-lg font-bold text-gray-900">
-                                    S/ {course.precio}
+                                    S/ {course.precioOferta > 0 ? course.precioOferta : course.precio}
                                   </span>
                                   {course.precioOferta > 0 && (
                                     <span className="text-sm text-gray-500 line-through">
-                                      S/ {course.precioOferta}
+                                      S/ {course.precio}
                                     </span>
                                   )}
                                 </div>
