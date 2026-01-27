@@ -153,14 +153,12 @@ const LatestNews = () => {
                           className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors"
                           dangerouslySetInnerHTML={{ __html: news.titulo }}
                         />
-                        {news.autor && (
-                          <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
-                            <p>Por: {news.autor}</p>
-                            {news.fecha && (
-                              <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
-                            )}
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
+                          {news.autor ? <p>Por: {news.autor}</p> : <span></span>}
+                          {news.fecha && (
+                            <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                          )}
+                        </div>
                         <div className="w-full border-t border-gray-100 my-4"></div>
                         <p className="text-xl text-gray-700 line-clamp-3">
                           {stripHtml(news.descripcion)}
@@ -198,14 +196,12 @@ const LatestNews = () => {
                                 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors"
                                 dangerouslySetInnerHTML={{ __html: news.titulo }}
                               />
-                              {news.autor && (
-                                <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
-                                  <p>Por: {news.autor}</p>
-                                  {news.fecha && (
-                                    <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
-                                  )}
-                                </div>
-                              )}
+                              <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
+                                {news.autor ? <p>Por: {news.autor}</p> : <span></span>}
+                                {news.fecha && (
+                                  <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                                )}
+                              </div>
                               <div className="w-full border-t border-gray-100 my-4"></div>
                               <p className="text-xl text-gray-700 line-clamp-3">
                                 {stripHtml(news.descripcion)}

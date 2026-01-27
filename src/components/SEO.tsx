@@ -15,7 +15,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
   title = 'COMUNIDAD de docentes del Perú',
   description = 'Plataforma educativa con cursos, noticias y recursos para docentes, auxiliares y estudiantes. Preparación para nombramiento, ascenso y contrato.',
-  image = '/assets/images/og-image.jpg',
+  image = '/apple-touch-icon.png',
   article = false,
   publishedTime,
   modifiedTime,
