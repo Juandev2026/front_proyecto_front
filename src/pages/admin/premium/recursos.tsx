@@ -1,873 +1,286 @@
-import React, { useState, useEffect, useMemo } from 'react';
-
-import {
-  PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  XIcon,
-  PlusIcon,
-  DocumentTextIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/outline';
-import dynamic from 'next/dynamic';
-
+import React, { useState } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
-import { premiumService, PremiumContent } from '../../../services/premiumService';
-import { uploadService } from '../../../services/uploadService';
-import { estadoService, Estado } from '../../../services/estadoService';
-import 'react-quill/dist/quill.snow.css';
+import { 
+  PlusIcon,
+  DocumentTextIcon, 
+  TrashIcon, 
+  PencilIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  MenuIcon,
+  DownloadIcon,
+  EyeIcon,
+  UploadIcon
+} from '@heroicons/react/outline';
 
-// Dynamic import for ReactQuill
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+// --- TYPES ---
+interface Resource {
+  id: number;
+  title: string;
+  filename: string;
+  size: string;
+  type: 'PDF' | 'VIDEO' | 'LINK';
+  url: string;
+}
 
-const AdminPremium = () => {
-  const [items, setItems] = useState<PremiumContent[]>([]);
-  const [estados, setEstados] = useState<Estado[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface Subsection {
+  id: number;
+  title: string;
+  resources: Resource[];
+}
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+interface Section {
+  id: number;
+  title: string;
+  subsections: Subsection[];
+}
 
-  // View Modal State
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<PremiumContent | null>(null);
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
-
-  const [newItem, setNewItem] = useState({
-    titulo: '',
-    descripcion: '',
-    url: '',
-    imageUrl: '',
-    archivoUrl: '',
-    videoUrl: '',
-    estadoId: 0,
-    usuarioEdicionId:
-      typeof window !== 'undefined'
-        ? Number(localStorage.getItem('userId') || 0)
-        : 0,
-    precio: 0,
-    telefono: '',
-  });
-  const [file, setFile] = useState<File | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
-  // strip html for table view
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    if (typeof window === 'undefined') return html;
-
-    const tmp = document.createElement('DIV');
-    tmp.innerHTML = html;
-    let text = tmp.textContent || tmp.innerText || '';
-
-    if (text.trim().startsWith('<') && text.includes('>')) {
-      const tmp2 = document.createElement('DIV');
-      tmp2.innerHTML = text;
-      text = tmp2.textContent || tmp2.innerText || '';
-    }
-    return text;
-  };
-
-  const getFileFormat = (url: string) => {
-    if (!url) return 'FILE';
-    const extension = url.split('.').pop()?.toUpperCase();
-    return extension && extension.length <= 4 ? extension : 'FILE';
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [premiumData, estadosData] = await Promise.all([
-        premiumService.getAll(),
-        estadoService.getAll(),
-      ]);
-      setItems(premiumData.sort((a, b) => b.id - a.id));
-      setEstados(estadosData);
-    } catch (err) {
-      setError('Error al cargar datos');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de eliminar este contenido?')) {
-      try {
-        await premiumService.delete(id);
-        fetchData();
-      } catch (err) {
-        alert('Error eliminando contenido');
+// --- MOCK DATA ---
+const initialSections: Section[] = [
+  {
+    id: 1,
+    title: 'TEMARIO INICIAL',
+    subsections: [
+      {
+        id: 101,
+        title: 'INICIAL',
+        resources: [
+            { id: 1001, title: 'Temario_EBR_Inicial_A25.pdf', filename: 'Temario_EBR_Inicial_A25_AF_LCCG_HG.pdf', size: '274.7 KB', type: 'PDF', url: '#' }
+        ]
       }
-    }
-  };
-
-  const handleEdit = (item: PremiumContent) => {
-    setEditingId(item.id);
-    setNewItem({
-      titulo: item.titulo,
-      descripcion: item.descripcion,
-      url: item.url,
-      imageUrl: item.imageUrl || '',
-      archivoUrl: item.archivoUrl || '',
-      videoUrl: item.videoUrl || '',
-      estadoId: item.estadoId || 0,
-      usuarioEdicionId:
-        typeof window !== 'undefined'
-          ? Number(localStorage.getItem('userId') || 0)
-          : 0,
-      precio: item.precio || 0,
-      telefono: item.telefono || '',
-    });
-    setFile(null);
-    setImageFile(null);
-
-    setIsModalOpen(true);
-  };
-
-  const handleView = (item: PremiumContent) => {
-    setViewingItem(item);
-    setIsViewModalOpen(true);
-  };
-
-  const resetForm = () => {
-    setEditingId(null);
-    setFile(null);
-    setImageFile(null);
-
-    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
-    setNewItem({
-      titulo: '',
-      descripcion: '',
-      url: '',
-      imageUrl: '',
-      archivoUrl: '',
-      videoUrl: '',
-      estadoId: estadoPublicado ? estadoPublicado.id : 0,
-      usuarioEdicionId:
-        typeof window !== 'undefined'
-          ? Number(localStorage.getItem('userId') || 0)
-          : 0,
-      precio: 0,
-      telefono: '',
-    });
-  };
-
-  const handleAddNew = () => {
-    setIsModalOpen(true);
-    resetForm();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !newItem.usuarioEdicionId ||
-      Number(newItem.usuarioEdicionId) <= 0
-    ) {
-      const storedId =
-        typeof window !== 'undefined'
-          ? Number(localStorage.getItem('userId') || 0)
-          : 0;
-      if (storedId <= 0) {
-        alert(
-          'Error: No se ha identificado al usuario editor. Por favor, cierre sesión e inicie sesión nuevamente.'
-        );
-        return;
+    ]
+  },
+  {
+    id: 2,
+    title: 'MODIFICATORIA DE CRONOGRAMA',
+    subsections: [
+         {
+        id: 201,
+        title: 'Normativa General',
+        resources: []
       }
-      newItem.usuarioEdicionId = storedId;
-    }
+    ]
+  },
+  {
+    id: 3,
+    title: 'NORMATIVIDAD - PROCESOS',
+    subsections: []
+  },
+    {
+    id: 4,
+    title: 'NUEVOS PROTOCOLOS DE ATENCIÓN SISEVE',
+    subsections: []
+  },
+];
 
-    try {
-      let finalUrl = newItem.url;
+const Recursos = () => {
+  const [sections, setSections] = useState<Section[]>(initialSections);
+  const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Default first open
+  const [expandedSubsections, setExpandedSubsections] = useState<number[]>([101]);
 
-      if (file) {
-        try {
-          finalUrl = await uploadService.uploadImage(file);
-        } catch (uploadError) {
-          alert('Error al subir el archivo. Por favor intente nuevamente.');
-          return;
-        }
-      }
-
-      let finalImageUrl = newItem.imageUrl;
-
-      if (imageFile) {
-        try {
-            finalImageUrl = await uploadService.uploadImage(imageFile);
-        } catch (uploadError) {
-             alert('Error al subir la imagen de portada.');
-             return;
-        }
-      }
-
-      const itemData = {
-        ...newItem,
-        id: editingId || 0,
-        url: finalUrl,
-        imageUrl: finalImageUrl,
-        estadoId: Number(newItem.estadoId),
-        usuarioEdicionId: Number(newItem.usuarioEdicionId),
-        precio: Number(newItem.precio),
-      };
-
-      if (editingId) {
-        await premiumService.update(
-          editingId,
-          itemData as unknown as PremiumContent
-        );
-      } else {
-        await premiumService.create(itemData as unknown as PremiumContent);
-      }
-
-      setIsModalOpen(false);
-      resetForm();
-      fetchData();
-    } catch (err) {
-      alert('Error guardando contenido premium');
-    }
-  };
-
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'clean'],
-      ],
-    }),
-    []
-  );
-
-  // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(items.length / itemsPerPage);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  if (loading)
-    return (
-      <AdminLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </AdminLayout>
+  const toggleSection = (id: number) => {
+    setExpandedSections(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+  };
 
-  if (error)
-    return (
-      <AdminLayout>
-        <div className="text-red-500">Error: {error}</div>
-      </AdminLayout>
+  const toggleSubsection = (id: number) => {
+    setExpandedSubsections(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+  };
+
+  // Stats
+  const totalSections = sections.length;
+  const totalSubsections = sections.reduce((acc, s) => acc + s.subsections.length, 0);
+  const totalFiles = sections.reduce((acc, s) => acc + s.subsections.reduce((acc2, sub) => acc2 + sub.resources.length, 0), 0);
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Gestión de Contenido Premium
-        </h1>
-        <button
-          onClick={handleAddNew}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center shadow-md"
-        >
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Nuevo Premium
+      {/* --- HEADER --- */}
+      <div className="bg-primary text-white p-6 rounded-t-lg mb-6 flex justify-center items-center shadow-lg">
+        <h1 className="text-2xl font-bold">Repositorio de Contenidos Multimedia</h1>
+      </div>
+
+      {/* --- INFO BOX --- */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start">
+        <span className="text-yellow-500 mr-2 text-lg">💡</span>
+        <p className="text-blue-800 text-sm">
+          <span className="font-bold">Consejo:</span> Puedes reordenar las secciones y subsecciones arrastrándolas con el ícono de líneas paralelas.
+        </p>
+      </div>
+
+       {/* --- ACTIONS HEADER --- */}
+      <div className="flex gap-4 mb-8">
+        <button className="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center shadow-md transition-colors">
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Nueva sección
+        </button>
+         <button className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded-lg border border-gray-300 flex items-center shadow-sm transition-colors">
+            <DocumentTextIcon className="w-5 h-5 mr-2" />
+            Contenido intro
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Título
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Precio
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Archivo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Tipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-12 text-center text-gray-500"
-                  >
-                    No hay contenido premium disponible.
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {stripHtml(item.titulo)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" style={{ backgroundColor: item.estado?.colorHex ? item.estado.colorHex + '20' : '#e5e7eb', color: item.estado?.colorHex || '#374151' }}>
-                        {item.estado?.nombre || 'Sin Estado'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.precio > 0 ? (
-                        `S/ ${item.precio}`
-                      ) : (
-                        <span className="text-green-600 font-bold">Gratis</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.url ? (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline flex items-center"
-                        >
-                          <DocumentTextIcon className="w-4 h-4 mr-1" />
-                          Ver
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">Sin archivo</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded bg-gray-100 text-gray-600 uppercase border border-gray-200">
-                        {getFileFormat(item.url)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleView(item)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                        title="Ver Detalles"
-                      >
-                        <EyeIcon className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                        title="Editar"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Eliminar"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {/* --- STATS CARDS --- */}
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+            <span className="text-4xl font-bold text-gray-800 mb-1">{totalSections}</span>
+            <span className="text-gray-500 font-medium">Secciones</span>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+             <span className="text-4xl font-bold text-gray-800 mb-1">{totalSubsections}</span>
+            <span className="text-gray-500 font-medium">Subsecciones</span>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+             <span className="text-4xl font-bold text-gray-800 mb-1">{totalFiles}</span>
+            <span className="text-gray-500 font-medium">Archivos PDF</span>
         </div>
       </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button
-              onClick={() => paginate(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              Anterior
+      {/* --- INTRO CARD --- */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 relative overflow-hidden">
+        <div className="absolute top-4 right-4">
+             <button className="text-red-400 hover:text-red-600 p-1"><TrashIcon className="w-5 h-5"/></button>
+        </div>
+        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full mb-3 inline-block">Contenido Intro</span>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">¿CÓMO NAVEGAR EN ESCALA DOCENTE?</h2>
+        <p className="text-gray-600 text-sm mb-6 max-w-2xl">
+            Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO. PRONTO: GENERADORES DE PROMPT PARA SESIONES Y COMUNIDAD VIP.
+        </p>
+        <div className="flex gap-3">
+             <button className="flex-1 max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors">
+                <EyeIcon className="w-4 h-4 mr-2" /> Ver
             </button>
-            <button
-              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              Siguiente
+             <button className="flex-1 max-w-xs bg-primary text-white hover:bg-blue-600 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors">
+                <DownloadIcon className="w-4 h-4 mr-2" /> Descargar
             </button>
-          </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
-                <span className="font-medium">
-                  {Math.min(indexOfLastItem, items.length)}
-                </span>{' '}
-                de <span className="font-medium">{items.length}</span> resultados
-              </p>
-            </div>
-            <div>
-              <nav
-                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                aria-label="Pagination"
-              >
-                <button
-                  onClick={() => paginate(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <span className="sr-only">Anterior</span>
-                  <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                </button>
-                {/* Page Numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((page) => {
-                    return (
-                      page === 1 ||
-                      page === totalPages ||
-                      Math.abs(page - currentPage) <= 1
-                    );
-                  })
-                  .map((page, index, array) => {
-                    const prevPage = array[index - 1];
-                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
-                    return (
-                      <React.Fragment key={page}>
-                        {showEllipsis && (
-                          <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
-                            ...
-                          </span>
-                        )}
-                        <button
-                          onClick={() => paginate(page)}
-                          aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                          }`}
+        </div>
+      </div>
+
+      {/* --- SECTIONS LIST --- */}
+      <div className="space-y-4">
+        {sections.map(section => (
+            <div key={section.id} className="bg-white rounded-lg border border-primary/30 shadow-sm overflow-hidden">
+                {/* Section Header */}
+                <div className="p-4 flex items-center justify-between bg-white">
+                    <div className="flex items-center flex-1">
+                        <MenuIcon className="w-5 h-5 text-gray-400 mr-4 cursor-move" />
+                        <button 
+                            onClick={() => toggleSection(section.id)}
+                            className="mr-3 text-gray-500 hover:text-primary transition-colors focus:outline-none"
                         >
-                          {page}
+                            {expandedSections.includes(section.id) ? (
+                                <ChevronDownIcon className="w-5 h-5" />
+                            ) : (
+                                <ChevronRightIcon className="w-5 h-5" />
+                            )}
                         </button>
-                      </React.Fragment>
-                    );
-                  })}
-                <button
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <span className="sr-only">Siguiente</span>
-                  <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create/Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {editingId ? 'Editar Contenido Premium' : 'Nuevo Contenido Premium'}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <XIcon className="w-8 h-8" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Col */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Título
-                    </label>
-                    <div className="mb-6">
-                      <ReactQuill
-                        theme="snow"
-                        value={newItem.titulo}
-                        onChange={(value) =>
-                          setNewItem({ ...newItem, titulo: value })
-                        }
-                        className="h-auto bg-white"
-                        modules={modules}
-                      />
+                        <div>
+                             <h3 className="text-lg font-bold text-gray-800 uppercase">{section.title}</h3>
+                             <p className="text-xs text-gray-500 mt-0.5">{section.subsections.length} subsecciones • {section.subsections.reduce((a,s) => a + s.resources.length, 0)} recursos</p>
+                        </div>
                     </div>
-                  </div>
-
-                  {/* Image URL */}
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Imagen de Portada (URL) (Dimensiones recomendadas: 3:2, ej. 1200x800px)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.imageUrl}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          imageUrl: e.target.value,
-                        })
-                      }
-                      placeholder="https://..."
-                    />
-                    {newItem.imageUrl && (
-                      <div className="mt-2">
-                        <img
-                          src={newItem.imageUrl}
-                          alt="Vista previa"
-                          className="h-32 rounded-lg object-cover border border-gray-200"
-                        />
-                      </div>
-                    )}
-                    
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="mt-2 w-full text-sm text-gray-500
-                                file:mr-4 file:py-2.5 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-bold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100
-                            "
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const file = e.target.files[0];
-                          setImageFile(file);
-                          const tempUrl = URL.createObjectURL(file);
-                          setNewItem({ ...newItem, imageUrl: tempUrl });
-                        }
-                      }}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                        O selecciona un archivo para subir (reemplazará la URL al guardar).
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                      <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Estado
-                      </label>
-                      <select
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                        value={newItem.estadoId}
-                        onChange={(e) =>
-                          setNewItem({
-                            ...newItem,
-                            estadoId: Number(e.target.value),
-                          })
-                        }
-                      >
-                        <option value={0}>Seleccionar Estado...</option>
-                        {estados.map((est) => (
-                          <option key={est.id} value={est.id}>
-                            {est.nombre}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex items-center gap-2">
+                        <button className="bg-primary hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors">
+                            <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
+                        </button>
+                         <button className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors">
+                            <PencilIcon className="w-4 h-4" />
+                        </button>
+                         <button className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors">
+                            <TrashIcon className="w-4 h-4" />
+                        </button>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Precio (S/)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                        value={newItem.precio}
-                        onChange={(e) =>
-                          setNewItem({
-                            ...newItem,
-                            precio: parseFloat(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Teléfono de Contacto (Opcional)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.telefono}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          telefono: e.target.value,
-                        })
-                      }
-                      placeholder="Ej. 51999999999"
-                    />
-                  </div>
                 </div>
 
-                {/* Right Col */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      URL Principal (Link de acceso)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                        value={newItem.url}
-                        onChange={(e) =>
-                          setNewItem({
-                            ...newItem,
-                            url: e.target.value,
-                          })
-                        }
-                        placeholder="https://..."
-                      />
-                      {newItem.url && (
-                        <a
-                          href={newItem.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-lg flex items-center transition-colors"
-                          title="Visualizar en nueva pestaña"
-                        >
-                          <EyeIcon className="w-5 h-5" />
-                        </a>
-                      )}
+                {/* Subsections */}
+                {expandedSections.includes(section.id) && (
+                    <div className="bg-gray-50/50 p-4 border-t border-gray-100 space-y-4">
+                        {section.subsections.length === 0 ? (
+                            <div className="text-center py-4 text-gray-400 text-sm italic">
+                                No hay subsecciones todavía. ¡Crea una!
+                            </div>
+                        ) : (
+                            section.subsections.map(sub => (
+                                <div key={sub.id} className="border border-gray-200 rounded-lg bg-white ml-0 md:ml-8">
+                                     {/* Subsection Header */}
+                                     <div className="p-3 flex items-center justify-between border-b border-gray-100">
+                                         <div className="flex items-center">
+                                            <MenuIcon className="w-4 h-4 text-gray-300 mr-3 cursor-move" />
+                                            <button 
+                                                onClick={() => toggleSubsection(sub.id)}
+                                                className="mr-2 text-gray-400 hover:text-primary transition-colors focus:outline-none"
+                                            >
+                                                {expandedSubsections.includes(sub.id) ? (
+                                                    <ChevronDownIcon className="w-4 h-4" />
+                                                ) : (
+                                                    <ChevronRightIcon className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                            <span className="font-bold text-gray-700">{sub.title}</span>
+                                            <span className="ml-2 text-xs text-gray-400">{sub.resources.length} documentos disponibles</span>
+                                         </div>
+                                         <div className="flex items-center gap-2">
+                                            <button className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors">
+                                                <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF libre
+                                            </button>
+                                            <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors">
+                                                <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF premium
+                                            </button>
+                                             <button className="text-gray-500 hover:text-blue-600 p-1.5 border border-gray-200 rounded bg-white transition-colors">
+                                                <PencilIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                             <button className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors">
+                                                <TrashIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                         </div>
+                                     </div>
+
+                                     {/* Resources List */}
+                                     {expandedSubsections.includes(sub.id) && (
+                                         <div className="p-4 bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                             {sub.resources.map(res => (
+                                                <div key={res.id} className="bg-white rounded-lg border border-green-200 shadow-sm p-4 relative">
+                                                    <div className="absolute top-2 right-2 flex gap-1">
+                                                        <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-500"><PencilIcon className="w-3 h-3"/></button>
+                                                        <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-red-500"><TrashIcon className="w-3 h-3"/></button>
+                                                    </div>
+                                                    <div className="flex flex-col h-full">
+                                                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded w-max mb-3">PDF</span>
+                                                        <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2">{res.title}</h4>
+                                                        <p className="text-gray-500 text-xs mb-4 line-clamp-1">{res.filename}</p>
+                                                        <span className="text-gray-400 text-xs mb-4 block">{res.size}</span>
+                                                        
+                                                        <div className="mt-auto flex gap-2">
+                                                            <button className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 rounded flex items-center justify-center transition-colors">
+                                                                <EyeIcon className="w-3 h-3 mr-1" /> Ver
+                                                            </button>
+                                                            <button className="flex-1 bg-primary hover:bg-blue-600 text-white text-xs font-bold py-1.5 rounded flex items-center justify-center transition-colors">
+                                                                <DownloadIcon className="w-3 h-3 mr-1" /> Descargar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                             ))}
+                                             {sub.resources.length === 0 && (
+                                                 <div className="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-400 text-sm">
+                                                     No hay recursos en esta subsección. Sube un PDF.
+                                                 </div>
+                                             )}
+                                         </div>
+                                     )}
+                                </div>
+                            ))
+                        )}
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Archivo URL (Opcional - Link directo al archivo)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.archivoUrl}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          archivoUrl: e.target.value,
-                        })
-                      }
-                      placeholder="https://... (Ej. PDF, Doc)"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Video URL (Opcional)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.videoUrl}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          videoUrl: e.target.value,
-                        })
-                      }
-                      placeholder="https://youtube.com/..."
-                    />
-                  </div>
-
-                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <label className="block text-gray-700 text-sm font-bold mb-4">
-                      O subir nuevo archivo (PDF / Imagen)
-                    </label>
-                    <input
-                      type="file"
-                      accept=".pdf,image/*"
-                      className="w-full text-sm text-gray-500
-                                file:mr-4 file:py-2.5 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-bold
-                                file:bg-primary file:text-white
-                                hover:file:bg-blue-700
-                            "
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          setFile(e.target.files[0]);
-                          // Auto fill file url field to indicate selection, though not real url yet
-                          setNewItem({ ...newItem, archivoUrl: 'Archivo seleccionado para subir' });
-                        }
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Descripción Detallada
-                    </label>
-                    <div className="h-64 mb-12">
-                      <ReactQuill
-                        theme="snow"
-                        value={newItem.descripcion}
-                        onChange={(value) =>
-                          setNewItem({
-                            ...newItem,
-                            descripcion: value,
-                          })
-                        }
-                        className="h-full bg-white"
-                        modules={modules}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-gray-100 flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-lg bg-primary text-white hover:bg-blue-700 font-medium transition-colors shadow-lg shadow-blue-500/30"
-                >
-                  {editingId ? 'Guardar Cambios' : 'Crear Contenido'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Modal */}
-      {isViewModalOpen && viewingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-900">
-                Detalles del Contenido
-              </h3>
-              <button
-                onClick={() => setIsViewModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XIcon className="w-6 h-6" />
-              </button>
+                )}
             </div>
-            <div className="p-6 space-y-4">
-              {viewingItem.imageUrl && (
-                <div className="w-full h-48 rounded-lg overflow-hidden mb-4">
-                  <img
-                    src={viewingItem.imageUrl}
-                    alt={viewingItem.titulo}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div>
-                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                  Título
-                </h4>
-                <div
-                  className="mt-1 text-lg text-gray-900"
-                  dangerouslySetInnerHTML={{ __html: viewingItem.titulo }}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                    Precio
-                  </h4>
-                  <p className="mt-1 text-gray-900">
-                    {viewingItem.precio > 0
-                      ? `S/ ${viewingItem.precio}`
-                      : 'Gratis'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                    Estado
-                  </h4>
-                  <span className="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{ backgroundColor: viewingItem.estado?.colorHex ? viewingItem.estado.colorHex + '20' : '#e5e7eb', color: viewingItem.estado?.colorHex || '#374151' }}>
-                    {viewingItem.estado?.nombre || 'Sin Estado'}
-                  </span>
-                </div>
-              </div>
-              
-               <div>
-                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                  URLs
-                </h4>
-                <div className="mt-1 space-y-1">
-                   {viewingItem.url && <p className="text-sm"><span className="font-semibold">Principal:</span> <a href={viewingItem.url} target="_blank" className="text-blue-600 hover:underline">{viewingItem.url}</a></p>}
-                   {viewingItem.archivoUrl && <p className="text-sm"><span className="font-semibold">Archivo:</span> <a href={viewingItem.archivoUrl} target="_blank" className="text-blue-600 hover:underline">{viewingItem.archivoUrl}</a></p>}
-                   {viewingItem.videoUrl && <p className="text-sm"><span className="font-semibold">Video:</span> <a href={viewingItem.videoUrl} target="_blank" className="text-blue-600 hover:underline">{viewingItem.videoUrl}</a></p>}
-                </div>
-              </div>
+        ))}
+      </div>
 
-              <div>
-                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                  Descripción
-                </h4>
-                <div
-                  className="mt-2 text-gray-600 prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: viewingItem.descripcion }}
-                />
-              </div>
-            </div>
-            <div className="bg-gray-50 px-6 py-4 flex justify-end">
-              <button
-                onClick={() => setIsViewModalOpen(false)}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </AdminLayout>
   );
 };
 
-export default AdminPremium;
+export default Recursos;
