@@ -12,6 +12,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     Premium: true
   });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   React.useEffect(() => {
     const token = localStorage.getItem('token');
@@ -286,7 +287,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     },
     {
       name: 'Premium',
-      href: '#', // Parent item doesn't navigate if it has children, usually
+      href: '#',
       icon: (
         <svg
           className="w-6 h-6"
@@ -298,7 +299,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" // Different icon to distinguish?
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
           ></path>
         </svg>
       ),
@@ -312,6 +313,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const toggleMenu = (name: string) => {
+    if (isCollapsed) return; // Disable sub-menu toggling when collapsed
     setExpandedMenus(prev => ({
       ...prev,
       [name]: !prev[name]
@@ -322,14 +324,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:relative md:translate-x-0`}
+        } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
-        <div className="flex items-center justify-center h-16 border-b border-gray-200 flex-shrink-0">
-          <span className="text-2xl font-bold text-primary">AdminPanel</span>
+        <div className={`flex items-center h-16 border-b border-gray-200 flex-shrink-0 transition-all ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
+          {!isCollapsed && <span className="text-2xl font-bold text-primary">AdminPanel</span>}
+          
+          {/* Toggle Button for Desktop */}
+          <button 
+             onClick={() => setIsCollapsed(!isCollapsed)}
+             className="hidden md:flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none"
+             title={isCollapsed ? "Expandir" : "Contraer"}
+          >
+             {isCollapsed ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+             ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+             )}
+          </button>
         </div>
-        <nav className="mt-6 px-4 space-y-2 overflow-y-auto flex-1 pb-4">
+        
+        <nav className="mt-6 px-2 space-y-2 overflow-y-auto flex-1 pb-4">
           {navigation.map((item) => (
             <div key={item.name}>
               {!item.children ? (
@@ -339,46 +359,49 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                       router.pathname === item.href
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    } ${isCollapsed ? 'justify-center' : ''}`}
+                    title={isCollapsed ? item.name : ''}
                   >
-                    <span className="mr-3">{item.icon}</span>
-                    {item.name}
+                    <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
+                    {!isCollapsed && item.name}
                   </a>
                 </Link>
               ) : (
                 <>
                   <button
                     onClick={() => toggleMenu(item.name)}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       expandedMenus[item.name]
                         ? 'bg-blue-50 text-blue-900'
                         : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+                    title={isCollapsed ? item.name : ''}
                   >
                     <div className="flex items-center">
-                      <span className="mr-3">{item.icon}</span>
-                      {item.name}
+                      <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
+                      {!isCollapsed && item.name}
                     </div>
-                    <svg
-                      className={`w-4 h-4 transform transition-transform duration-200 ${
-                        expandedMenus[item.name] ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                    {!isCollapsed && (
+                      <svg
+                        className={`w-4 h-4 transform transition-transform duration-200 ${
+                          expandedMenus[item.name] ? 'rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
                   </button>
-                  {expandedMenus[item.name] && (
+                  {expandedMenus[item.name] && !isCollapsed && (
                     <div className="bg-gray-50 rounded-b-lg mb-2 space-y-1 pb-2">
                       {item.children.map((subItem) => (
-                         // Skip items with href '#' which might be labels/placeholders
                          subItem.href === '#' ? null : (
                         <Link key={subItem.name} href={subItem.href}>
                           <a
@@ -388,7 +411,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                             }`}
                           >
-                             {/* Optional sub-icon handling if needed */}
                             {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
                             {subItem.name}
                           </a>
@@ -404,9 +426,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="pt-4 mt-4 border-t border-gray-200">
             <button
               onClick={() => setIsLogoutModalOpen(true)}
-              className="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none"
+              className={`w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none ${isCollapsed ? 'justify-center' : ''}`}
+              title={isCollapsed ? "Cerrar Sesión" : ""}
             >
-              <span className="mr-3">
+              <span className={`${isCollapsed ? '' : 'mr-3'}`}>
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -421,7 +444,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   ></path>
                 </svg>
               </span>
-              Cerrar Sesión
+              {!isCollapsed && "Cerrar Sesión"}
             </button>
           </div>
         </nav>
