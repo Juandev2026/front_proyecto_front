@@ -9,6 +9,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [fullName, setFullName] = useState('');
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    Premium: true
+  });
 
   React.useEffect(() => {
     const token = localStorage.getItem('token');
@@ -300,27 +303,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </svg>
       ),
       children: [
-        {
-           name: 'Administración', // Keeping consistent with user image "Administración" as header or just "Premium" as header?
-           // User image shows:
-           // "Administración" (Dropdown)
-           // - Gestión Docentes
-           // - Banco de Preguntas
-           // - Recursos
-           // - Gestión Secciones
-           
-           // I will name the top level "Administración Premium" or just "Premium" as requested.
-           // Let's use "Premium" as the top level, and the children as requested.
-           href: '#',
-           // Wait, the user image shows "Administración" as the *active* dropdown which contains "Gestión Docentes" etc.
-           // But previously "Administración" was the whole panel.
-           // The user request said: "en el apartado de administrador, quiero una nueva seccion llamada "premium" .. ahora dentro de ahi (premium) has un panel con estos apartados"
-           // So "Premium" is the section. Inside it:
-           // - Gestión Docentes
-           // - Banco de Preguntas
-           // - Recursos
-           // - Gestión Secciones
-        },
         { name: 'Gestión Docentes', href: '/admin/premium/docentes', icon: null },
         { name: 'Banco de Preguntas', href: '/admin/premium/banco-preguntas', icon: null },
         { name: 'Recursos', href: '/admin/premium/recursos', icon: null },
@@ -328,11 +310,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       ]
     },
   ];
-
-  // State for expanded menus
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    'Premium': true // Default open for visibility
-  });
 
   const toggleMenu = (name: string) => {
     setExpandedMenus(prev => ({
