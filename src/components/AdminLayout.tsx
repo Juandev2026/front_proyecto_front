@@ -26,7 +26,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     return null; // Or a loading spinner
   }
 
-  const navigation = [
+  interface NavigationItem {
+    name: string;
+    href: string;
+    icon: JSX.Element | null;
+    children?: NavigationItem[];
+  }
+
+  const navigation: NavigationItem[] = [
     {
       name: 'Dashboard',
       href: '/admin',
@@ -276,7 +283,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     },
     {
       name: 'Premium',
-      href: '/admin/premium',
+      href: '#', // Parent item doesn't navigate if it has children, usually
       icon: (
         <svg
           className="w-6 h-6"
@@ -288,12 +295,51 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" // Different icon to distinguish?
           ></path>
         </svg>
       ),
+      children: [
+        {
+           name: 'Administración', // Keeping consistent with user image "Administración" as header or just "Premium" as header?
+           // User image shows:
+           // "Administración" (Dropdown)
+           // - Gestión Docentes
+           // - Banco de Preguntas
+           // - Recursos
+           // - Gestión Secciones
+           
+           // I will name the top level "Administración Premium" or just "Premium" as requested.
+           // Let's use "Premium" as the top level, and the children as requested.
+           href: '#',
+           // Wait, the user image shows "Administración" as the *active* dropdown which contains "Gestión Docentes" etc.
+           // But previously "Administración" was the whole panel.
+           // The user request said: "en el apartado de administrador, quiero una nueva seccion llamada "premium" .. ahora dentro de ahi (premium) has un panel con estos apartados"
+           // So "Premium" is the section. Inside it:
+           // - Gestión Docentes
+           // - Banco de Preguntas
+           // - Recursos
+           // - Gestión Secciones
+        },
+        { name: 'Gestión Docentes', href: '/admin/premium/docentes', icon: null },
+        { name: 'Banco de Preguntas', href: '/admin/premium/banco-preguntas', icon: null },
+        { name: 'Recursos', href: '/admin/premium/recursos', icon: null },
+        { name: 'Gestión Secciones', href: '/admin/premium/secciones', icon: null },
+      ]
     },
   ];
+
+  // State for expanded menus
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    'Premium': true // Default open for visibility
+  });
+
+  const toggleMenu = (name: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -308,18 +354,75 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
         <nav className="mt-6 px-4 space-y-2 overflow-y-auto flex-1 pb-4">
           {navigation.map((item) => (
-            <Link key={item.name} href={item.href}>
-              <a
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                  router.pathname === item.href
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3">{item.icon}</span>
-                {item.name}
-              </a>
-            </Link>
+            <div key={item.name}>
+              {!item.children ? (
+                <Link href={item.href}>
+                  <a
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      router.pathname === item.href
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    {item.name}
+                  </a>
+                </Link>
+              ) : (
+                <>
+                  <button
+                    onClick={() => toggleMenu(item.name)}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      expandedMenus[item.name]
+                        ? 'bg-blue-50 text-blue-900'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-3">{item.icon}</span>
+                      {item.name}
+                    </div>
+                    <svg
+                      className={`w-4 h-4 transform transition-transform duration-200 ${
+                        expandedMenus[item.name] ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {expandedMenus[item.name] && (
+                    <div className="bg-gray-50 rounded-b-lg mb-2 space-y-1 pb-2">
+                      {item.children.map((subItem) => (
+                         // Skip items with href '#' which might be labels/placeholders
+                         subItem.href === '#' ? null : (
+                        <Link key={subItem.name} href={subItem.href}>
+                          <a
+                            className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                              router.pathname === subItem.href
+                                ? 'text-primary bg-blue-100'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                            }`}
+                          >
+                             {/* Optional sub-icon handling if needed */}
+                            {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
+                            {subItem.name}
+                          </a>
+                        </Link>
+                         )
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           ))}
           <div className="pt-4 mt-4 border-t border-gray-200">
             <button

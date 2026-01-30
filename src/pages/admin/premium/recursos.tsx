@@ -12,10 +12,10 @@ import {
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 
-import AdminLayout from '../../components/AdminLayout';
-import { premiumService, PremiumContent } from '../../services/premiumService';
-import { uploadService } from '../../services/uploadService';
-import { estadoService, Estado } from '../../services/estadoService';
+import AdminLayout from '../../../components/AdminLayout';
+import { premiumService, PremiumContent } from '../../../services/premiumService';
+import { uploadService } from '../../../services/uploadService';
+import { estadoService, Estado } from '../../../services/estadoService';
 import 'react-quill/dist/quill.snow.css';
 
 // Dynamic import for ReactQuill
