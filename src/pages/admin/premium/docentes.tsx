@@ -24,60 +24,19 @@ interface Docente {
   avatarUrl?: string;
 }
 
-// Mock data
-const mockDocentes: Docente[] = [
-  {
-    id: 1,
-    nombre: 'Juan Pérez',
-    email: 'juan.perez@example.com',
-    telefono: '999-888-777',
-    modalidad: 'Virtual',
-    nivel: 'Avanzado',
-    estado: 'Activo',
-    fechaExpiracion: '2026-12-31',
-  },
-  {
-    id: 2,
-    nombre: 'Maria Garcia',
-    email: 'maria.garcia@example.com',
-    telefono: '999-111-222',
-    modalidad: 'Presencial',
-    nivel: 'Básico',
-    estado: 'Por vencer',
-    fechaExpiracion: '2026-02-15',
-  },
-  {
-    id: 3,
-    nombre: 'Carlos Rodriguez',
-    email: 'carlos.r@example.com',
-    telefono: '988-777-666',
-    modalidad: 'Híbrido',
-    nivel: 'Intermedio',
-    estado: 'Expirado',
-    fechaExpiracion: '2025-12-01',
-  },
-    {
-    id: 4,
-    nombre: 'Ana Martinez',
-    email: 'ana.mtz@example.com',
-    telefono: '955-444-333',
-    modalidad: 'Virtual',
-    nivel: 'Avanzado',
-    estado: 'Activo',
-    fechaExpiracion: '2026-10-20',
-  },
-];
+
 
 const AdminPremiumDocentes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOption, setFilterOption] = useState('');
+  const [docentes, setDocentes] = useState<Docente[]>([]);
   
-  // Status stats mock
+  // Status stats - Calculated from actual state
   const stats = {
-    total: mockDocentes.length,
-    activos: mockDocentes.filter(d => d.estado === 'Activo').length,
-    porVencer: mockDocentes.filter(d => d.estado === 'Por vencer').length,
-    expirados: mockDocentes.filter(d => d.estado === 'Expirado').length,
+    total: docentes.length,
+    activos: docentes.filter(d => d.estado === 'Activo').length,
+    porVencer: docentes.filter(d => d.estado === 'Por vencer').length,
+    expirados: docentes.filter(d => d.estado === 'Expirado').length,
   };
 
   const getStatusColor = (status: string) => {
@@ -92,7 +51,7 @@ const AdminPremiumDocentes = () => {
   return (
     <AdminLayout>
       {/* Header Banner */}
-      <div className="bg-[#0f172a] text-white p-6 rounded-t-lg mb-6 flex justify-center items-center">
+      <div className="bg-[#002060] text-white p-6 rounded-t-lg mb-6 flex justify-center items-center">
         <h1 className="text-2xl font-bold">Administrar docentes</h1>
       </div>
 
@@ -140,7 +99,7 @@ const AdminPremiumDocentes = () => {
 
                  {/* Add Button */}
                 <button
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0f172a] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#002060] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                     Agregar docente
@@ -198,7 +157,14 @@ const AdminPremiumDocentes = () => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {mockDocentes.map((docente) => (
+                    {docentes.length === 0 ? (
+                         <tr>
+                            <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                                No hay docentes registrados.
+                            </td>
+                        </tr>
+                    ) : (
+                        docentes.map((docente) => (
                         <tr key={docente.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
@@ -210,7 +176,8 @@ const AdminPremiumDocentes = () => {
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            {/* ... remaining columns same ... */}
+                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-900">{docente.email}</div>
                                 <div className="text-sm text-gray-500">{docente.telefono}</div>
                             </td>
@@ -237,7 +204,7 @@ const AdminPremiumDocentes = () => {
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                    )))}
                 </tbody>
             </table>
         </div>
