@@ -51,7 +51,7 @@ const AdminPremiumDocentes = () => {
   return (
     <AdminLayout>
       {/* Header Banner */}
-      <div className="bg-[#002060] text-white p-6 rounded-t-lg mb-6 flex justify-center items-center">
+      <div className="bg-primary text-white p-6 rounded-t-lg mb-6 flex justify-center items-center">
         <h1 className="text-2xl font-bold">Administrar docentes</h1>
       </div>
 
@@ -99,7 +99,7 @@ const AdminPremiumDocentes = () => {
 
                  {/* Add Button */}
                 <button
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#002060] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                     Agregar docente

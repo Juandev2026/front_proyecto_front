@@ -228,7 +228,7 @@ const Recursos = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#002060]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     </AdminLayout>
   );
@@ -236,25 +236,26 @@ const Recursos = () => {
   return (
     <AdminLayout>
       {/* --- SECCIÓN 1: HEADER AZUL (Diseño visual solicitado) --- */}
-      <div className="w-full bg-[#002060] py-4 px-6 rounded-t-lg shadow-sm mb-4">
+      <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm mb-4">
         <h1 className="text-xl font-bold text-white text-center">
           Gestión de banco de preguntas / Recursos
         </h1>
       </div>
 
+
       <div className="space-y-6">
         
         {/* --- SECCIÓN 2: TARJETA DE FILTROS Y ACCIONES --- */}
-        <div className="bg-white rounded-lg shadow-sm border border-[#002060] p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
           <div className="grid grid-cols-1 gap-6 mb-6">
             
             {/* Campo 1: Tipo Examen */}
             <div>
-              <label className="block text-sm font-semibold text-[#002060] mb-2">
+              <label className="block text-sm font-semibold text-primary mb-2">
                 Tipo Exámen <span className="text-red-500">*</span>
               </label>
               <select 
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#002060]"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                 value={filtroTipoExamen}
                 onChange={(e) => setFiltroTipoExamen(e.target.value)}
               >
@@ -267,11 +268,11 @@ const Recursos = () => {
 
             {/* Campo 2: Sección Fuente */}
             <div>
-              <label className="block text-sm font-semibold text-[#002060] mb-2">
+              <label className="block text-sm font-semibold text-primary mb-2">
                 Sección Fuente <span className="text-red-500">*</span>
               </label>
               <select 
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#002060]"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                 value={filtroSeccionFuente}
                 onChange={(e) => setFiltroSeccionFuente(e.target.value)}
               >
@@ -286,7 +287,7 @@ const Recursos = () => {
           <div className="flex flex-wrap justify-end gap-3 mt-4">
             <button 
               onClick={handleAddNew}
-              className="bg-[#002060] text-white px-4 py-2 rounded flex items-center hover:bg-blue-900 transition-colors text-sm font-medium"
+              className="bg-primary text-white px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               Añadir preguntas
@@ -294,7 +295,7 @@ const Recursos = () => {
 
             <button 
               onClick={() => alert('Funcionalidad IA en desarrollo')}
-              className="bg-[#002060] text-white px-4 py-2 rounded flex items-center hover:bg-blue-900 transition-colors text-sm font-medium"
+              className="bg-primary text-white px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
               Añadir preguntas con IA
@@ -302,7 +303,7 @@ const Recursos = () => {
 
             <button 
               onClick={() => alert('Funcionalidad IA en desarrollo')}
-              className="bg-[#002060] text-white px-4 py-2 rounded flex items-center hover:bg-blue-900 transition-colors text-sm font-medium"
+              className="bg-primary text-white px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
               Añadir respuestas con IA
@@ -310,7 +311,7 @@ const Recursos = () => {
 
             <button 
               onClick={() => document.getElementById('tabla-resultados')?.scrollIntoView({behavior: 'smooth'})}
-              className="bg-white border border-blue-400 text-[#002060] px-4 py-2 rounded flex items-center hover:bg-blue-50 transition-colors text-sm font-medium"
+              className="bg-white border border-blue-400 text-primary px-4 py-2 rounded flex items-center hover:bg-blue-50 transition-colors text-sm font-medium"
             >
               <EyeIcon className="w-4 h-4 mr-2" />
               Visualizar preguntas
@@ -320,7 +321,7 @@ const Recursos = () => {
 
         {/* --- SECCIÓN 3: TARJETA DE INSTRUCCIONES --- */}
         <div className="bg-white rounded-lg shadow-sm border border-cyan-300 p-6 relative">
-          <h3 className="text-[#002060] font-bold text-lg mb-4">Instrucciones</h3>
+          <h3 className="text-primary font-bold text-lg mb-4">Instrucciones</h3>
           <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
             <li>
               <strong>Paso 1:</strong> Selecciona primero el tipo de examen (Ascenso, Nombramiento o Directivos)
@@ -399,7 +400,7 @@ const Recursos = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.url ? (
-                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[#002060] hover:underline flex items-center">
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
                             <DocumentTextIcon className="w-4 h-4 mr-1" /> Ver
                           </a>
                         ) : <span className="text-gray-400">Sin archivo</span>}
@@ -445,7 +446,7 @@ const Recursos = () => {
                        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
                      </button>
                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                       <button key={page} onClick={() => paginate(page)} aria-current={currentPage === page ? 'page' : undefined} className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page ? 'bg-[#002060] text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}`}>
+                       <button key={page} onClick={() => paginate(page)} aria-current={currentPage === page ? 'page' : undefined} className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page ? 'bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}`}>
                          {page}
                        </button>
                      ))}
@@ -487,20 +488,20 @@ const Recursos = () => {
                    {/* ... Resto de inputs ... */}
                    <div>
                      <label className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
-                     <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002060] outline-none" value={newItem.estadoId} onChange={(e) => setNewItem({...newItem, estadoId: Number(e.target.value)})}>
+                     <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none" value={newItem.estadoId} onChange={(e) => setNewItem({...newItem, estadoId: Number(e.target.value)})}>
                        <option value={0}>Seleccionar Estado...</option>
                        {estados.map((est) => (<option key={est.id} value={est.id}>{est.nombre}</option>))}
                      </select>
                    </div>
                    <div>
                      <label className="block text-gray-700 text-sm font-bold mb-2">Precio (S/)</label>
-                     <input type="number" step="0.01" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002060] outline-none" value={newItem.precio} onChange={(e) => setNewItem({...newItem, precio: parseFloat(e.target.value)})} />
+                     <input type="number" step="0.01" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none" value={newItem.precio} onChange={(e) => setNewItem({...newItem, precio: parseFloat(e.target.value)})} />
                    </div>
                 </div>
                 <div className="space-y-6">
                    <div>
                      <label className="block text-gray-700 text-sm font-bold mb-2">URL Principal</label>
-                     <input type="url" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#002060] outline-none" value={newItem.url} onChange={(e) => setNewItem({...newItem, url: e.target.value})} placeholder="https://..." />
+                     <input type="url" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none" value={newItem.url} onChange={(e) => setNewItem({...newItem, url: e.target.value})} placeholder="https://..." />
                    </div>
                    <div>
                      <label className="block text-gray-700 text-sm font-bold mb-2">Descripción</label>
@@ -511,7 +512,7 @@ const Recursos = () => {
                
               <div className="pt-6 border-t border-gray-100 flex justify-end space-x-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors">Cancelar</button>
-                <button type="submit" className="px-6 py-3 rounded-lg bg-[#002060] text-white hover:bg-blue-800 font-medium transition-colors shadow-lg">
+                <button type="submit" className="px-6 py-3 rounded-lg bg-primary text-white hover:bg-blue-800 font-medium transition-colors shadow-lg">
                   {editingId ? 'Guardar Cambios' : 'Crear Recurso'}
                 </button>
               </div>
