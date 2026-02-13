@@ -20,18 +20,19 @@ import {
   ExamenGrouped
 } from '../../../services/examenService';
 import {
-  premiumService,
-  PremiumContent,
-} from '../../../services/premiumService';
+  preguntaService,
+  Pregunta,
+} from '../../../services/preguntaService';
 import { uploadService } from '../../../services/uploadService';
 import 'react-quill/dist/quill.snow.css';
+import { premiumService, PremiumContent } from '../../../services/premiumService';
 
 // Dynamic import for ReactQuill
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const Recursos = () => {
   // --- ESTADOS LOGICOS (CRUD) ---
-  const [items, setItems] = useState<PremiumContent[]>([]);
+  const [items, setItems] = useState<Pregunta[]>([]);
   const [estados, setEstados] = useState<Estado[]>([]);
   const [groupedData, setGroupedData] = useState<ExamenGrouped[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,7 @@ const Recursos = () => {
 
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<PremiumContent | null>(null);
+  const [viewingItem, setViewingItem] = useState<Pregunta | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,19 +60,17 @@ const Recursos = () => {
 
   // Form State
   const [newItem, setNewItem] = useState({
-    titulo: '',
-    descripcion: '',
-    url: '',
-    imageUrl: '',
-    archivoUrl: '',
-    videoUrl: '',
-    estadoId: 0,
-    usuarioEdicionId:
-      typeof window !== 'undefined'
-        ? Number(localStorage.getItem('userId') || 0)
-        : 0,
-    precio: 0,
-    telefono: '',
+    enunciado: '',
+    alternativaA: '',
+    alternativaB: '',
+    alternativaC: '',
+    alternativaD: '',
+    respuesta: '',
+    sustento: '',
+    examenId: 0,
+    clasificacionId: 0,
+    imagen: '',
+    tipoPreguntaId: 0
   });
   const [file, setFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -118,12 +117,12 @@ const Recursos = () => {
         console.error('Estado Service Error:', err);
       }
 
-      // 3. Load Premium Content (Table)
+      // 3. Load Preguntas (Table)
       try {
-        const data = await premiumService.getAll();
+        const data = await preguntaService.getAll();
         setItems(data.sort((a, b) => b.id - a.id));
       } catch (err: any) {
-        console.error('Premium Service Error:', err);
+        console.error('Preguntas Service Error:', err);
         setItems([]);
       }
 
@@ -142,9 +141,14 @@ const Recursos = () => {
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       // Filtramos solo si hay una sección seleccionada
-      const matchesSeccion =
-        !selectedFuente || item.id === Number(selectedFuente);
-      return matchesSeccion;
+      // Adjusted logic: Filter by examenId if selected, or other properties if available
+      // For now, if no filters map directly to 'Pregunta' properties intuitively without more backend context, 
+      // we might just list them all or filter by 'examenId' if 'selectedFuente' represents it.
+      // Assuming 'selectedFuente' might map to 'examenId' in previous logic or similar.
+      // Let's keep it simple: Show all if no filter, or filter if we can identify the field.
+      // The original code was `item.id === Number(selectedFuente)` which suggests 'Fuente' was the parent ID? 
+      // Let's return all items for now to ensure data visibility, then refine.
+      return true; 
     });
   }, [items, selectedFuente]);
 
@@ -194,11 +198,11 @@ const Recursos = () => {
 
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
-    // CORRECCIÓN 3: Deshabilitar regla no-alert para window.confirm
     // eslint-disable-next-line no-alert
-    if (window.confirm('¿Estás seguro de eliminar este recurso?')) {
+    if (window.confirm('¿Estás seguro de eliminar esta pregunta?')) {
       try {
-        await premiumService.delete(id);
+        // await preguntaService.delete(id);
+        alert("Eliminar no implementado aún");
         fetchData();
       } catch (err) {
         alert('Error eliminando contenido');
@@ -206,26 +210,27 @@ const Recursos = () => {
     }
   };
 
-  const handleEdit = (item: PremiumContent) => {
+  const handleEdit = (item: Pregunta) => {
     setEditingId(item.id);
     setNewItem({
-      titulo: item.titulo,
-      descripcion: item.descripcion,
-      url: item.url,
-      imageUrl: item.imageUrl || '',
-      archivoUrl: item.archivoUrl || '',
-      videoUrl: item.videoUrl || '',
-      estadoId: item.estadoId || 0,
-      usuarioEdicionId: Number(localStorage.getItem('userId') || 0),
-      precio: item.precio || 0,
-      telefono: item.telefono || '',
+      enunciado: item.enunciado,
+      alternativaA: item.alternativaA,
+      alternativaB: item.alternativaB,
+      alternativaC: item.alternativaC,
+      alternativaD: item.alternativaD,
+      respuesta: item.respuesta,
+      sustento: item.sustento,
+      examenId: item.examenId,
+      clasificacionId: item.clasificacionId,
+      imagen: item.imagen,
+      tipoPreguntaId: item.tipoPreguntaId
     });
     setFile(null);
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const handleView = (item: PremiumContent) => {
+  const handleView = (item: Pregunta) => {
     setViewingItem(item);
     setIsViewModalOpen(true);
   };
@@ -234,20 +239,18 @@ const Recursos = () => {
     setEditingId(null);
     setFile(null);
     setImageFile(null);
-    const estadoPublicado = estados.find(
-      (e) => e.nombre.toLowerCase() === 'publicado'
-    );
     setNewItem({
-      titulo: '',
-      descripcion: '',
-      url: '',
-      imageUrl: '',
-      archivoUrl: '',
-      videoUrl: '',
-      estadoId: estadoPublicado ? estadoPublicado.id : 0,
-      usuarioEdicionId: Number(localStorage.getItem('userId') || 0),
-      precio: 0,
-      telefono: '',
+      enunciado: '',
+      alternativaA: '',
+      alternativaB: '',
+      alternativaC: '',
+      alternativaD: '',
+      respuesta: '',
+      sustento: '',
+      examenId: 0,
+      clasificacionId: 0,
+      imagen: '',
+      tipoPreguntaId: 0
     });
   };
 
@@ -259,61 +262,39 @@ const Recursos = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newItem.titulo.trim()) {
+    if (!newItem.enunciado.trim()) {
       // eslint-disable-next-line no-alert
-      alert('El título es obligatorio');
+      alert('El enunciado es obligatorio');
       return;
-    }
-    if (newItem.estadoId === 0) {
-      // eslint-disable-next-line no-alert
-      alert('Debe seleccionar un estado');
-      return;
-    }
-
-    if (!newItem.usuarioEdicionId || Number(newItem.usuarioEdicionId) <= 0) {
-      const storedId = Number(localStorage.getItem('userId') || 0);
-      if (storedId <= 0) {
-        // eslint-disable-next-line no-alert
-        alert('Error de sesión. Vuelva a ingresar.');
-        return;
-      }
-      newItem.usuarioEdicionId = storedId;
     }
 
     try {
-      let finalUrl = newItem.url;
-      if (file) {
-        finalUrl = await uploadService.uploadImage(file);
-      }
-      let finalImageUrl = newItem.imageUrl;
+      /*
+      // TODO: Implement Create/Update in preguntaService
+      let finalUrl = newItem.imagen;
       if (imageFile) {
-        finalImageUrl = await uploadService.uploadImage(imageFile);
+        finalUrl = await uploadService.uploadImage(imageFile);
       }
 
       const itemData = {
         ...newItem,
         id: editingId || 0,
-        url: finalUrl,
-        imageUrl: finalImageUrl,
-        estadoId: Number(newItem.estadoId),
-        usuarioEdicionId: Number(newItem.usuarioEdicionId),
-        precio: Number(newItem.precio),
+        imagen: finalUrl,
       };
 
       if (editingId) {
-        await premiumService.update(
-          editingId,
-          itemData as unknown as PremiumContent
-        );
+        await preguntaService.update(editingId, itemData);
       } else {
-        await premiumService.create(itemData as unknown as PremiumContent);
+        await preguntaService.create(itemData);
       }
+      */
+      alert("Guardar no implementado aún");
       setIsModalOpen(false);
       resetForm();
       fetchData();
     } catch (err) {
       // eslint-disable-next-line no-alert
-      alert('Error guardando recurso');
+      alert('Error guardando pregunta');
     }
   };
 
@@ -345,7 +326,7 @@ const Recursos = () => {
       {/* SECCIÓN 1: HEADER */}
       <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm mb-4">
         <h1 className="text-xl font-bold text-white text-center">
-          Gestión de banco de preguntas / Recursos
+     
         </h1>
       </div>
 
@@ -628,19 +609,16 @@ const Recursos = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Título
+                    Enunciado
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Precio
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Archivo
+                    Respuesta
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Tipo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Imagen
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Acciones
@@ -654,9 +632,7 @@ const Recursos = () => {
                       colSpan={6}
                       className="px-6 py-12 text-center text-gray-500"
                     >
-                      {selectedTipo
-                        ? 'No se encontraron recursos para los filtros seleccionados.'
-                        : 'Selecciona filtros o usa el botón "Añadir" para crear contenido.'}
+                      No se encontraron preguntas.
                     </td>
                   </tr>
                 ) : (
@@ -666,48 +642,27 @@ const Recursos = () => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {stripHtml(item.titulo).substring(0, 40)}...
+                        {stripHtml(item.enunciado).substring(0, 40)}...
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span
-                          className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          style={{
-                            backgroundColor: item.estado?.colorHex
-                              ? `${item.estado.colorHex}20`
-                              : '#e5e7eb',
-                            color: item.estado?.colorHex || '#374151',
-                          }}
-                        >
-                          {item.estado?.nombre || 'Sin Estado'}
-                        </span>
+                        <span className="font-bold text-green-600">{item.respuesta}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.precio > 0 ? (
-                          `S/ ${item.precio}`
-                        ) : (
-                          <span className="text-green-600 font-bold">
-                            Gratis
-                          </span>
-                        )}
+                        {item.tipoPreguntaId}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.url ? (
+                        {item.imagen ? (
                           <a
-                            href={item.url}
+                            href={item.imagen}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary hover:underline flex items-center"
                           >
-                            <DocumentTextIcon className="w-4 h-4 mr-1" /> Ver
+                            <DocumentTextIcon className="w-4 h-4 mr-1" /> Ver Imagen
                           </a>
                         ) : (
-                          <span className="text-gray-400">Sin archivo</span>
+                          <span className="text-gray-400">Sin imagen</span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded bg-gray-100 text-gray-600 uppercase border border-gray-200">
-                          {getFileFormat(item.url)}
-                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
@@ -717,6 +672,7 @@ const Recursos = () => {
                         >
                           <EyeIcon className="w-5 h-5" />
                         </button>
+                         {/* TODO: Implement Edit/Delete for Preguntas
                         <button
                           onClick={() => handleEdit(item)}
                           className="text-indigo-600 hover:text-indigo-900 mr-4"
@@ -731,6 +687,7 @@ const Recursos = () => {
                         >
                           <TrashIcon className="w-5 h-5" />
                         </button>
+                        */}
                       </td>
                     </tr>
                   ))
@@ -830,41 +787,115 @@ const Recursos = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {editingId ? 'Editar Recurso' : 'Nuevo Recurso'}
-              </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-800">
+                {editingId ? 'Editar Pregunta' : 'Nueva Pregunta'}
+              </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-red-500 transition-colors"
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <XIcon className="w-8 h-8" />
+                <XIcon className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Columna Izquierda */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Título *
-                    </label>
-                    <div className="mb-6">
-                      <ReactQuill
-                        theme="snow"
-                        value={newItem.titulo}
-                        onChange={(value) =>
-                          setNewItem({ ...newItem, titulo: value })
-                        }
-                        className="h-auto bg-white"
-                        modules={modules}
-                      />
-                    </div>
+            <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-1 gap-6">
+                {/* Enunciado */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Enunciado *
+                  </label>
+                  <div className="mb-6">
+                    <ReactQuill
+                      theme="snow"
+                      value={newItem.enunciado}
+                      onChange={(value) =>
+                        setNewItem({ ...newItem, enunciado: value })
+                      }
+                      className="h-auto bg-white"
+                      modules={modules}
+                    />
                   </div>
+                </div>
 
-                  <div>
+                {/* Alternativas Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">Alternativa A</label>
+                        <textarea 
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                            rows={2}
+                            value={newItem.alternativaA}
+                            onChange={e => setNewItem({...newItem, alternativaA: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">Alternativa B</label>
+                        <textarea 
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                            rows={2}
+                            value={newItem.alternativaB}
+                            onChange={e => setNewItem({...newItem, alternativaB: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">Alternativa C</label>
+                        <textarea 
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                            rows={2}
+                            value={newItem.alternativaC}
+                            onChange={e => setNewItem({...newItem, alternativaC: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">Alternativa D</label>
+                        <textarea 
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                            rows={2}
+                            value={newItem.alternativaD}
+                            onChange={e => setNewItem({...newItem, alternativaD: e.target.value})}
+                        />
+                    </div>
+                </div>
+
+                {/* Respuesta Correcta */}
+                <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">Respuesta Correcta</label>
+                    <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={newItem.respuesta}
+                        onChange={(e) => setNewItem({ ...newItem, respuesta: e.target.value })}
+                    >
+                        <option value="">Seleccionar Respuesta...</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                {/* Sustento */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Sustento (Opcional)
+                  </label>
+                  <div className="h-48 mb-8">
+                    <ReactQuill
+                      theme="snow"
+                      value={newItem.sustento}
+                      onChange={(value) =>
+                        setNewItem({ ...newItem, sustento: value })
+                      }
+                      className="h-full bg-white"
+                      modules={modules}
+                    />
+                  </div>
+                </div>
+
+                {/* Imagen */}
+                <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Imagen de Portada
+                      Imagen de Referencia
                     </label>
                     <input
                       type="file"
@@ -874,140 +905,16 @@ const Recursos = () => {
                         setImageFile(e.target.files?.[0] || null)
                       }
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Estado *
-                    </label>
-                    <select
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.estadoId}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          estadoId: Number(e.target.value),
-                        })
+                     <input
+                      type="text"
+                      placeholder="O URL de la imagen..."
+                      className="w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                      value={newItem.imagen || ''}
+                       onChange={(e) =>
+                        setNewItem({ ...newItem, imagen: e.target.value })
                       }
-                    >
-                      <option value={0}>Seleccionar Estado...</option>
-                      {estados.map((est) => (
-                        <option key={est.id} value={est.id}>
-                          {est.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Precio (S/)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                        value={newItem.precio}
-                        onChange={(e) =>
-                          setNewItem({
-                            ...newItem,
-                            precio: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Teléfono
-                      </label>
-                      <input
-                        type="tel"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                        value={newItem.telefono}
-                        onChange={(e) =>
-                          setNewItem({ ...newItem, telefono: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Columna Derecha */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      URL Principal
-                    </label>
-                    <input
-                      type="url"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.url}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, url: e.target.value })
-                      }
-                      placeholder="https://..."
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Archivo URL (o subir abajo)
-                    </label>
-                    <input
-                      type="url"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.archivoUrl}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, archivoUrl: e.target.value })
-                      }
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Subir Archivo
-                    </label>
-                    <input
-                      type="file"
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-primary hover:file:bg-blue-100"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Video URL
-                    </label>
-                    <input
-                      type="url"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
-                      value={newItem.videoUrl}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, videoUrl: e.target.value })
-                      }
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Descripción
-                    </label>
-                    <div className="h-64 mb-12">
-                      <ReactQuill
-                        theme="snow"
-                        value={newItem.descripcion}
-                        onChange={(value) =>
-                          setNewItem({ ...newItem, descripcion: value })
-                        }
-                        className="h-full bg-white"
-                        modules={modules}
-                      />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="pt-6 border-t border-gray-100 flex justify-end space-x-4">
@@ -1022,7 +929,7 @@ const Recursos = () => {
                   type="submit"
                   className="px-6 py-3 rounded-lg bg-primary text-white hover:bg-blue-800 font-medium transition-colors shadow-lg"
                 >
-                  {editingId ? 'Guardar Cambios' : 'Crear Recurso'}
+                  {editingId ? 'Guardar Cambios' : 'Crear Pregunta'}
                 </button>
               </div>
             </form>
@@ -1036,7 +943,7 @@ const Recursos = () => {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center sticky top-0">
               <h3 className="text-xl font-bold text-gray-900">
-                Detalles del Recurso
+                Detalles de la Pregunta
               </h3>
               <button
                 onClick={() => setIsViewModalOpen(false)}
@@ -1047,110 +954,66 @@ const Recursos = () => {
             </div>
             <div className="p-6 space-y-4">
               {/* Imagen */}
-              {viewingItem.imageUrl && (
+              {viewingItem.imagen && (
                 <div className="w-full h-48 rounded-lg overflow-hidden mb-4 border border-gray-200">
                   <img
-                    src={viewingItem.imageUrl}
-                    alt="Portada"
-                    className="w-full h-full object-cover"
+                    src={viewingItem.imagen}
+                    alt="Referencia"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               )}
 
-              {/* Título */}
+              {/* Enunciado */}
               <div>
                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-                  Título
+                  Enunciado
                 </h4>
                 <div
-                  className="mt-1 text-lg text-gray-900"
-                  dangerouslySetInnerHTML={{ __html: viewingItem.titulo }}
+                  className="mt-1 text-gray-900 prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: viewingItem.enunciado }}
                 />
               </div>
 
-              {/* Grid info */}
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-500 uppercase">
-                    Estado
-                  </h4>
-                  <span
-                    className="inline-flex mt-1 px-2 py-1 text-xs font-semibold rounded-full"
-                    style={{
-                      backgroundColor: viewingItem.estado?.colorHex
-                        ? `${viewingItem.estado.colorHex}20`
-                        : '#e5e7eb',
-                      color: viewingItem.estado?.colorHex || '#374151',
-                    }}
-                  >
-                    {viewingItem.estado?.nombre}
-                  </span>
+              {/* Alternativas */}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
+                  Alternativas
+                </h4>
+                <div className={`p-2 rounded border ${viewingItem.respuesta === 'A' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                    <span className="font-bold mr-2">A:</span> {viewingItem.alternativaA}
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-500 uppercase">
-                    Precio
-                  </h4>
-                  <p className="font-semibold text-gray-900">
-                    {viewingItem.precio > 0
-                      ? `S/ ${viewingItem.precio}`
-                      : 'Gratis'}
-                  </p>
+                <div className={`p-2 rounded border ${viewingItem.respuesta === 'B' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                    <span className="font-bold mr-2">B:</span> {viewingItem.alternativaB}
+                </div>
+                <div className={`p-2 rounded border ${viewingItem.respuesta === 'C' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                    <span className="font-bold mr-2">C:</span> {viewingItem.alternativaC}
+                </div>
+                <div className={`p-2 rounded border ${viewingItem.respuesta === 'D' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                    <span className="font-bold mr-2">D:</span> {viewingItem.alternativaD}
                 </div>
               </div>
 
-              {/* Enlaces */}
-              <div className="space-y-2">
-                {viewingItem.url && (
-                  <p className="text-sm">
-                    <span className="font-bold">URL Principal:</span>{' '}
-                    <a
-                      href={viewingItem.url}
-                      target="_blank"
-                      className="text-primary hover:underline truncate block"
-                      rel="noreferrer"
-                    >
-                      {viewingItem.url}
-                    </a>
-                  </p>
-                )}
-                {viewingItem.archivoUrl && (
-                  <p className="text-sm">
-                    <span className="font-bold">Archivo:</span>{' '}
-                    <a
-                      href={viewingItem.archivoUrl}
-                      target="_blank"
-                      className="text-primary hover:underline truncate block"
-                      rel="noreferrer"
-                    >
-                      {viewingItem.archivoUrl}
-                    </a>
-                  </p>
-                )}
-                {viewingItem.videoUrl && (
-                  <p className="text-sm">
-                    <span className="font-bold">Video:</span>{' '}
-                    <a
-                      href={viewingItem.videoUrl}
-                      target="_blank"
-                      className="text-primary hover:underline truncate block"
-                      rel="noreferrer"
-                    >
-                      {viewingItem.videoUrl}
-                    </a>
-                  </p>
-                )}
+               {/* Respuesta Correcta */}
+              <div>
+                  <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+                    Respuesta Correcta
+                  </h4>
+                  <p className="text-lg font-bold text-green-600">{viewingItem.respuesta}</p>
               </div>
 
-              {/* Descripción */}
+              {/* Sustento */}
+              {viewingItem.sustento && (
               <div className="border-t border-gray-100 pt-4">
                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">
-                  Descripción
+                  Sustento
                 </h4>
                 <div
-                  className="text-gray-600 prose prose-sm max-w-none bg-gray-50 p-3 rounded"
-                  dangerouslySetInnerHTML={{ __html: viewingItem.descripcion }}
+                  className="text-gray-600 prose prose-sm max-w-none bg-blue-50 p-3 rounded"
+                  dangerouslySetInnerHTML={{ __html: viewingItem.sustento }}
                 />
               </div>
+              )}
             </div>
             <div className="bg-gray-50 px-6 py-4 flex justify-end sticky bottom-0">
               <button

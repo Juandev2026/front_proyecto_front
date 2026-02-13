@@ -6,6 +6,7 @@ const API_URL = `${API_BASE_URL}/Modalidades`;
 export interface Modalidad {
   id: number;
   nombre: string;
+  base?: number;
 }
 
 export const modalidadService = {
@@ -29,6 +30,7 @@ export const modalidadService = {
       const payload = {
         id: 0,
         nombre: modalidad.nombre,
+        base: 1,
       };
 
       const response = await fetch(API_URL, {
@@ -51,6 +53,7 @@ export const modalidadService = {
       const payload = {
         id,
         nombre: modalidad.nombre,
+        base: 1,
       };
 
       const response = await fetch(`${API_URL}/${id}`, {

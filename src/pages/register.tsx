@@ -49,14 +49,19 @@ const Register = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [regionsData, modalitiesData] = await Promise.all([
-          regionService.getAll(),
-          modalidadService.getAll(),
-        ]);
+        const regionsData = await regionService.getAll();
         setRegiones(regionsData);
-        setModalidades(modalitiesData);
       } catch (err) {
-        // console.error('Error loading registration data:', err);
+        console.error('Error loading regions:', err);
+      }
+
+      try {
+        const modalitiesData = await modalidadService.getAll();
+        // Filter modalities to show only those with base === 1
+        const filteredModalities = modalitiesData.filter(m => m.base === 1);
+        setModalidades(filteredModalities);
+      } catch (err) {
+        console.error('Error loading modalities:', err);
       }
     };
     fetchData();

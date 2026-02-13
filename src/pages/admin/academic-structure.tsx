@@ -152,13 +152,15 @@ const AcademicStructure = () => {
             : Promise.resolve([]),
         ]);
 
-      setModalidades(modalidadesData);
+      // Filter modalities to show only those with base === 1
+      const filteredModalities = modalidadesData.filter(m => m.base === 1);
+      setModalidades(filteredModalities);
       setNiveles(nivelesData);
       if (activeTab === 'especialidades') {
         setEspecialidades(especialidadesData);
       }
     } catch (error) {
-      // Error fetching data
+      console.error('Error fetching academic structure:', error);
     } finally {
       setLoading(false);
     }
