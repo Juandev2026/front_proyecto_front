@@ -16,6 +16,10 @@ import dynamic from 'next/dynamic';
 import AdminLayout from '../../../components/AdminLayout';
 import { estadoService, Estado } from '../../../services/estadoService';
 import {
+  examenService,
+  ExamenGrouped
+} from '../../../services/examenService';
+import {
   premiumService,
   PremiumContent,
 } from '../../../services/premiumService';
@@ -29,10 +33,10 @@ const Recursos = () => {
   // --- ESTADOS LOGICOS (CRUD) ---
   const [items, setItems] = useState<PremiumContent[]>([]);
   const [estados, setEstados] = useState<Estado[]>([]);
+  const [groupedData, setGroupedData] = useState<ExamenGrouped[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // CORRECCIÓN 1: Ahora usamos la variable 'error' para mostrar una alerta visual
-  const [error, setError] = useState<string | null>(null);
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -46,8 +50,12 @@ const Recursos = () => {
   const itemsPerPage = 15;
 
   // --- ESTADOS VISUALES (FILTROS UI) ---
-  const [filtroTipoExamen, setFiltroTipoExamen] = useState('');
-  const [filtroSeccionFuente, setFiltroSeccionFuente] = useState('');
+  const [selectedTipo, setSelectedTipo] = useState<number | ''>('');
+  const [selectedFuente, setSelectedFuente] = useState<number | ''>('');
+  const [selectedModalidad, setSelectedModalidad] = useState<number | ''>('');
+  const [selectedNivel, setSelectedNivel] = useState<number | ''>('');
+  const [selectedEspecialidad, setSelectedEspecialidad] = useState<number | ''>('');
+  const [selectedYear, setSelectedYear] = useState<string>('');
 
   // Form State
   const [newItem, setNewItem] = useState({
@@ -93,16 +101,34 @@ const Recursos = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      setError(null); // Limpiamos errores previos
-      const [data, estadosData] = await Promise.all([
-        premiumService.getAll(),
-        estadoService.getAll(),
-      ]);
-      setItems(data.sort((a, b) => b.id - a.id));
-      setEstados(estadosData);
-    } catch (err) {
-      setError('Error al cargar datos. Por favor intente nuevamente.');
-      console.error(err);
+
+      // 1. Load Examen/Grouped Data (Filters)
+      try {
+        const grouped = await examenService.getGrouped();
+        setGroupedData(grouped);
+      } catch (err: any) {
+        console.error('Examen Service Error:', err);
+      }
+
+      // 2. Load Estados (Dropdowns)
+      try {
+        const estadosData = await estadoService.getAll();
+        setEstados(estadosData);
+      } catch (err: any) {
+        console.error('Estado Service Error:', err);
+      }
+
+      // 3. Load Premium Content (Table)
+      try {
+        const data = await premiumService.getAll();
+        setItems(data.sort((a, b) => b.id - a.id));
+      } catch (err: any) {
+        console.error('Premium Service Error:', err);
+        setItems([]);
+      }
+
+    } catch (err: any) {
+      console.error('Unexpected Error:', err);
     } finally {
       setLoading(false);
     }
@@ -117,10 +143,46 @@ const Recursos = () => {
     return items.filter((item) => {
       // Filtramos solo si hay una sección seleccionada
       const matchesSeccion =
-        !filtroSeccionFuente || item.id === Number(filtroSeccionFuente);
+        !selectedFuente || item.id === Number(selectedFuente);
       return matchesSeccion;
     });
-  }, [items, filtroSeccionFuente]); // Se eliminó 'filtroTipoExamen' porque no se usaba dentro del filtro
+  }, [items, selectedFuente]);
+
+  // --- CASCADING LOGIC ---
+  const availableFuentes = useMemo(() => {
+    if (!selectedTipo) return [];
+    return groupedData.find(t => t.tipoExamenId === Number(selectedTipo))?.fuentes || [];
+  }, [groupedData, selectedTipo]);
+
+  const availableModalidades = useMemo(() => {
+    if (!selectedFuente) return [];
+    return availableFuentes.find(f => f.fuenteId === Number(selectedFuente))?.modalidades || [];
+  }, [availableFuentes, selectedFuente]);
+
+  const availableNiveles = useMemo(() => {
+    if (!selectedModalidad) return [];
+    return availableModalidades.find(m => m.modalidadId === Number(selectedModalidad))?.niveles || [];
+  }, [availableModalidades, selectedModalidad]);
+
+  const availableEspecialidades = useMemo(() => {
+    if (!selectedNivel) return [];
+    return availableNiveles.find(n => n.nivelId === Number(selectedNivel))?.especialidades || [];
+  }, [availableNiveles, selectedNivel]);
+
+  const availableYears = useMemo(() => {
+    // 1. If explicit specialty selected, use it
+    if (selectedEspecialidad) {
+      return availableEspecialidades.find(e => e.especialidadId === Number(selectedEspecialidad))?.years || [];
+    }
+    // 2. If single "null" specialty exists (no explicit ID), auto-select it for years
+    if (availableEspecialidades.length === 1) {
+      const onlySpec = availableEspecialidades[0];
+      if (onlySpec && (!onlySpec.especialidadId || onlySpec.especialidadId === 0)) {
+        return onlySpec.years || [];
+      }
+    }
+    return [];
+  }, [availableEspecialidades, selectedEspecialidad]);
 
   // --- PAGINATION LÓGICA ---
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -287,90 +349,172 @@ const Recursos = () => {
         </h1>
       </div>
 
+
+
       {/* CORRECCIÓN 1: Mostrar el error visualmente si existe */}
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <strong className="font-bold">¡Atención! </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
 
-
-      {error && (
-        <div className="mx-6 mb-6 bg-red-50 border-l-4 border-red-500 p-4 shadow-sm rounded-r-lg flex justify-between items-center animate-fade-in">
-          <div className="flex items-center">
-             <div className="flex-shrink-0 mr-3">
-                <svg className="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-             </div>
-             <div>
-                <p className="text-sm text-red-700 font-medium">
-                   {error}
-                </p>
-             </div>
-          </div>
-          <button 
-             onClick={fetchData} 
-             className="text-red-500 hover:text-red-700 text-sm font-semibold underline focus:outline-none"
-          >
-             Reintentar
-          </button>
-        </div>
-      )}
 
       <div className="space-y-6">
         {/* SECCIÓN 2: FILTROS */}
         <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
-          <div className="grid grid-cols-1 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {/* 1. Tipo Examen */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
                 Tipo Exámen <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={filtroTipoExamen}
+                value={selectedTipo}
                 onChange={(e) => {
-                  setFiltroTipoExamen(e.target.value);
-                  setFiltroSeccionFuente('');
+                  setSelectedTipo(e.target.value ? Number(e.target.value) : '');
+                  setSelectedFuente('');
+                  setSelectedModalidad('');
+                  setSelectedNivel('');
+                  setSelectedEspecialidad('');
+                  setSelectedYear('');
                   setCurrentPage(1);
                 }}
               >
                 <option value="">Seleccionar Tipo Exámen</option>
-                <option value="Ascenso">Ascenso</option>
-                <option value="Nombramiento">Nombramiento</option>
-                <option value="Directivos">Directivos</option>
+                {groupedData.map((t) => (
+                  <option key={t.tipoExamenId} value={t.tipoExamenId}>
+                    {t.tipoExamenNombre}
+                  </option>
+                ))}
               </select>
             </div>
 
+            {/* 2. Sección Fuente */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
                 Sección Fuente <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                value={filtroSeccionFuente}
+                value={selectedFuente}
                 onChange={(e) => {
-                  setFiltroSeccionFuente(e.target.value);
+                  setSelectedFuente(e.target.value ? Number(e.target.value) : '');
+                  setSelectedModalidad('');
+                  setSelectedNivel('');
+                  setSelectedEspecialidad('');
+                  setSelectedYear('');
                   setCurrentPage(1);
                 }}
-                disabled={!filtroTipoExamen}
+                disabled={!selectedTipo}
               >
                 <option value="">
-                  {filtroTipoExamen
+                  {selectedTipo
                     ? 'Selecciona una sección'
                     : 'Primero selecciona el tipo de examen'}
                 </option>
-                {items.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {stripHtml(i.titulo).substring(0, 60)}...
+                {availableFuentes.map((f) => (
+                  <option key={f.fuenteId} value={f.fuenteId}>
+                    {f.fuenteNombre}
                   </option>
                 ))}
               </select>
             </div>
+
+            {/* 3. Modalidad */}
+            <div>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Modalidad
+              </label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                value={selectedModalidad}
+                onChange={(e) => {
+                  setSelectedModalidad(e.target.value ? Number(e.target.value) : '');
+                  setSelectedNivel('');
+                  setSelectedEspecialidad('');
+                  setSelectedYear('');
+                }}
+                disabled={!selectedFuente || availableModalidades.length === 0}
+              >
+                <option value="">Seleccionar Modalidad</option>
+                {availableModalidades.map((m) => (
+                  <option key={m.modalidadId} value={m.modalidadId}>
+                    {m.modalidadNombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 4. Nivel */}
+            {availableNiveles.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-2">
+                  Nivel
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  value={selectedNivel}
+                  onChange={(e) => {
+                    setSelectedNivel(e.target.value ? Number(e.target.value) : '');
+                    setSelectedEspecialidad('');
+                    setSelectedYear('');
+                  }}
+                  disabled={!selectedModalidad}
+                >
+                  <option value="">Seleccionar Nivel</option>
+                  {availableNiveles.map((n) => (
+                    <option key={n.nivelId} value={n.nivelId}>
+                      {n.nivelNombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* 5. Especialidad */}
+            {availableEspecialidades.length > 0 &&
+             // Hide if it's the "null" single option
+             !(availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId)) && (
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-2">
+                  Especialidad
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  value={selectedEspecialidad}
+                  onChange={(e) => {
+                    setSelectedEspecialidad(e.target.value ? Number(e.target.value) : '');
+                    setSelectedYear('');
+                  }}
+                  disabled={!selectedNivel}
+                >
+                  <option value="">Seleccionar Especialidad</option>
+                  {availableEspecialidades.map((e) => (
+                    <option key={e.especialidadId} value={e.especialidadId}>
+                      {e.especialidadNombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* 6. Año */}
+            {availableYears.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-2">
+                  Año
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  disabled={!selectedEspecialidad}
+                >
+                  <option value="">Seleccionar Año</option>
+                  {availableYears.map((y) => (
+                    <option key={y.year} value={y.year}>
+                      {y.year} ({y.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap justify-end gap-3 mt-4">
@@ -510,7 +654,7 @@ const Recursos = () => {
                       colSpan={6}
                       className="px-6 py-12 text-center text-gray-500"
                     >
-                      {filtroTipoExamen
+                      {selectedTipo
                         ? 'No se encontraron recursos para los filtros seleccionados.'
                         : 'Selecciona filtros o usa el botón "Añadir" para crear contenido.'}
                     </td>

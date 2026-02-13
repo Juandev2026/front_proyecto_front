@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
+import { getAuthHeaders } from '../utils/apiUtils';
 
 export interface Estado {
   id: number;
@@ -14,7 +14,7 @@ export const estadoService = {
   getAll: async (): Promise<Estado[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getPublicHeaders(),
+        headers: getAuthHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener estados');

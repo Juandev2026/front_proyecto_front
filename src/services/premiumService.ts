@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export interface PremiumContent {
   id: number;
@@ -23,7 +23,7 @@ export const premiumService = {
   getAll: async (): Promise<PremiumContent[]> => {
     try {
       const response = await fetch(API_URL, {
-        headers: getPublicHeaders(),
+        headers: getAuthHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener contenido premium');
@@ -37,7 +37,7 @@ export const premiumService = {
   getById: async (id: number): Promise<PremiumContent> => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
-        headers: getPublicHeaders(),
+        headers: getAuthHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener el contenido premium');
