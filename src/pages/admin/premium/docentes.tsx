@@ -36,18 +36,38 @@ const AdminPremiumDocentes = () => {
           const premiumUsers = users.filter(u => u.role === 'Premium');
           
           // Map to Docente interface
-          const mappedDocentes: Docente[] = premiumUsers.map(u => ({
-              id: u.id,
-              nombre: u.nombreCompleto,
-              email: u.email,
-              telefono: u.celular || '-',
-              modalidad: u.modalidad?.nombre || '-',
-              nivel: u.nivel?.nombre || '-',
-              // These fields are not in User interface yet, verifying if available or defaulting
-              estado: 'Activo', // Defaulting as we don't have this logic yet
-              fechaExpiracion: '-', // Defaulting
-              avatarUrl: ''
-          }));
+          const mappedDocentes: Docente[] = premiumUsers.map(u => {
+              const expirationDate = u.fechaExpiracion ? new Date(u.fechaExpiracion) : null;
+              let estado: Docente['estado'] = 'Sin Estado';
+
+              if (expirationDate) {
+                  const now = new Date();
+                  const diffTime = expirationDate.getTime() - now.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                  if (diffDays < 0) {
+                      estado = 'Expirado';
+                  } else if (diffDays <= 7) {
+                      estado = 'Por vencer';
+                  } else {
+                      estado = 'Activo';
+                  }
+              } else {
+                  estado = 'Expirado'; // Default to expired if no date
+              }
+
+              return {
+                  id: u.id,
+                  nombre: u.nombreCompleto,
+                  email: u.email,
+                  telefono: u.celular || '-',
+                  modalidad: u.modalidad?.nombre || '-',
+                  nivel: u.nivel?.nombre || '-',
+                  estado: estado,
+                  fechaExpiracion: u.fechaExpiracion || '-',
+                  avatarUrl: ''
+              };
+          });
           
           setDocentes(mappedDocentes);
       } catch (error) {
@@ -217,6 +237,9 @@ const AdminPremiumDocentes = () => {
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
                             Expiración
                         </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
+                            Tiempo Restante
+                        </th>
                         <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
                             Acciones
                         </th>
@@ -263,7 +286,35 @@ const AdminPremiumDocentes = () => {
                                 </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {docente.fechaExpiracion}
+                                {docente.fechaExpiracion !== '-' ? (
+                                    <span className="font-medium text-gray-900">
+                                        {new Date(docente.fechaExpiracion).toLocaleDateString()}
+                                    </span>
+                                ) : (
+                                    '-'
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {docente.fechaExpiracion !== '-' ? (
+                                    <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                                        new Date(docente.fechaExpiracion) < new Date() 
+                                        ? 'bg-red-100 text-red-800' 
+                                        : 'bg-blue-100 text-blue-800'
+                                    }`}>
+                                        {(() => {
+                                            const expirationDate = new Date(docente.fechaExpiracion);
+                                            const now = new Date();
+                                            const diffTime = expirationDate.getTime() - now.getTime();
+                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                            
+                                            if (diffDays < 0) return 'Expirado';
+                                            if (diffDays === 0) return 'Vence hoy';
+                                            return `Falta ${diffDays} días`;
+                                        })()}
+                                    </span>
+                                ) : (
+                                    '-'
+                                )}
                             </td>
                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div className="flex justify-center space-x-2">

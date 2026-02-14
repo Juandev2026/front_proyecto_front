@@ -46,6 +46,7 @@ export interface User {
       };
     };
   };
+  fechaExpiracion?: string;
 }
 
 export const userService = {
