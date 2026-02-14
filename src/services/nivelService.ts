@@ -49,9 +49,8 @@ export const nivelService = {
   ): Promise<Nivel> => {
     try {
       const payload = {
-        id: 0,
         nombre: nivel.nombre,
-        modalidadIds: [nivel.modalidadId],
+        modalidadId: nivel.modalidadId,
       };
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -75,9 +74,8 @@ export const nivelService = {
   ): Promise<void> => {
     try {
       const payload = {
-        id,
         nombre: nivel.nombre,
-        modalidadIds: [nivel.modalidadId],
+        modalidadId: nivel.modalidadId,
       };
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
