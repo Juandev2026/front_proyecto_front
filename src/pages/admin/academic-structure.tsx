@@ -243,11 +243,37 @@ const AcademicStructure = () => {
   const openModal = (item?: Modalidad | Nivel | Especialidad) => {
     if (item) {
       setEditingId(item.id);
+      
+      // Extract modalidadId from modalidadIds array (API now returns array)
+      let modalidadId = 0;
+      if (activeTab === 'niveles') {
+        const nivel = item as Nivel;
+        if (Array.isArray(nivel.modalidadIds) && nivel.modalidadIds.length > 0) {
+          modalidadId = nivel.modalidadIds[0]!; // Safe because we check length > 0
+        } else if (typeof nivel.modalidadIds === 'number') {
+          modalidadId = nivel.modalidadIds;
+        } else if (nivel.modalidadId) {
+          // Fallback to old format
+          modalidadId = nivel.modalidadId;
+        }
+      }
+      
+      // Extract nivelId from array format for especialidades
+      let nivelId = 0;
+      if (activeTab === 'especialidades') {
+        const especialidad = item as Especialidad;
+        if (Array.isArray(especialidad.nivelId) && especialidad.nivelId.length > 0) {
+          nivelId = especialidad.nivelId[0]!; // Safe because we check length > 0
+        } else if (typeof especialidad.nivelId === 'number') {
+          nivelId = especialidad.nivelId;
+        }
+      }
+      
       setFormData({
         nombre: item.nombre,
         imageUrl: (item as Nivel).imageUrl || '',
-        modalidadId: (item as Nivel).modalidadId || 0,
-        nivelId: (item as Especialidad).nivelId || 0,
+        modalidadId: modalidadId || 0,
+        nivelId: nivelId || 0,
       });
       setFile(null);
     } else {
@@ -286,7 +312,17 @@ const AcademicStructure = () => {
     currentData = modalidades;
   } else if (activeTab === 'niveles') {
     if (selectedModalidadFilter !== 0) {
-      currentData = niveles.filter(n => n.modalidadId === selectedModalidadFilter);
+      currentData = niveles.filter(n => {
+        // Handle both array and single number formats
+        if (Array.isArray(n.modalidadIds)) {
+          return n.modalidadIds.includes(selectedModalidadFilter);
+        } else if (typeof n.modalidadIds === 'number') {
+          return n.modalidadIds === selectedModalidadFilter;
+        } else if (n.modalidadId) {
+          return n.modalidadId === selectedModalidadFilter;
+        }
+        return false;
+      });
     } else {
       currentData = niveles;
     }
@@ -436,11 +472,23 @@ const AcademicStructure = () => {
                   )}
                   {activeTab === 'especialidades' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {niveles.find(
-                        (n) => n.id === (item as Especialidad).nivelId
-                      )?.nombre ||
-                        (item as Especialidad).nivel?.nombre ||
-                        '-'}
+                      {(() => {
+                        const especialidad = item as Especialidad;
+                        const nivelId = especialidad.nivelId;
+                        
+                        // Handle nivelId as array or number
+                        if (Array.isArray(nivelId)) {
+                          const nivelNames = nivelId
+                            .map(id => niveles.find(n => n.id === id)?.nombre)
+                            .filter(Boolean);
+                          return nivelNames.length > 0 ? nivelNames.join(', ') : '-';
+                        } else if (typeof nivelId === 'number') {
+                          return niveles.find(n => n.id === nivelId)?.nombre || '-';
+                        }
+                        
+                        // Fallback to nivel object if available
+                        return especialidad.nivel?.nombre || '-';
+                      })()}
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

@@ -6,7 +6,7 @@ const API_URL = `${API_BASE_URL}/Especialidades`;
 export interface Especialidad {
   id: number;
   nombre: string;
-  nivelId: number;
+  nivelId: number | number[]; // Can be array or number
   nivel?: {
     id: number;
     nombre: string;
