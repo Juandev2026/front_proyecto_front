@@ -69,7 +69,8 @@ export const useAuth = () => {
                 role = 
                   payload.role || 
                   payload.Role || 
-                  payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                  payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+                  payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'];
                 
                 if (role) {
                     localStorage.setItem('role', role);
