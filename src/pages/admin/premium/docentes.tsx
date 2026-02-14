@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
 import { 
   SearchIcon, 
   PlusIcon, 
   DownloadIcon, 
-  ChevronLeftIcon, 
-  ChevronRightIcon,
-  DotsVerticalIcon,
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/outline';
+import { userService } from '../../../services/userService';
 
-// Mock data type
+// Mock data type for view (adapted to match User from API partially)
 interface Docente {
   id: number;
   nombre: string;
@@ -19,19 +17,87 @@ interface Docente {
   telefono: string;
   modalidad: string;
   nivel: string;
-  estado: 'Activo' | 'Por vencer' | 'Expirado';
+  estado: 'Activo' | 'Por vencer' | 'Expirado' | 'Sin Estado';
   fechaExpiracion: string;
   avatarUrl?: string;
 }
-
-
 
 const AdminPremiumDocentes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOption, setFilterOption] = useState('');
   const [docentes, setDocentes] = useState<Docente[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Status stats - Calculated from actual state
+  const fetchDocentes = async () => {
+      setLoading(true);
+      try {
+          const users = await userService.getAll();
+          // Filter by role 'Premium'
+          const premiumUsers = users.filter(u => u.role === 'Premium');
+          
+          // Map to Docente interface
+          const mappedDocentes: Docente[] = premiumUsers.map(u => ({
+              id: u.id,
+              nombre: u.nombreCompleto,
+              email: u.email,
+              telefono: u.celular || '-',
+              modalidad: u.modalidad?.nombre || '-',
+              nivel: u.nivel?.nombre || '-',
+              // These fields are not in User interface yet, verifying if available or defaulting
+              estado: 'Activo', // Defaulting as we don't have this logic yet
+              fechaExpiracion: '-', // Defaulting
+              avatarUrl: ''
+          }));
+          
+          setDocentes(mappedDocentes);
+      } catch (error) {
+          console.error("Error fetching docentes:", error);
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  useEffect(() => {
+      fetchDocentes();
+  }, []);
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+
+  // Filtering logic for the search bar and dropdown
+  const filteredDocentes = docentes.filter(d => {
+      const matchesSearch = d.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            d.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterOption ? d.estado.toLowerCase() === filterOption.toLowerCase() : true;
+      
+      return matchesSearch && matchesFilter;
+  });
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredDocentes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredDocentes.length / itemsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterOption]);
+
+  // Status stats - Calculated from filtered or total? Usually total.
   const stats = {
     total: docentes.length,
     activos: docentes.filter(d => d.estado === 'Activo').length,
@@ -157,14 +223,20 @@ const AdminPremiumDocentes = () => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {docentes.length === 0 ? (
+                    {loading ? (
+                        <tr>
+                           <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                               Cargando docentes...
+                           </td>
+                       </tr>
+                    ) : filteredDocentes.length === 0 ? (
                          <tr>
                             <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                                No hay docentes registrados.
+                                No hay docentes registrados con rol Premium.
                             </td>
                         </tr>
                     ) : (
-                        docentes.map((docente) => (
+                        currentItems.map((docente) => (
                         <tr key={docente.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
@@ -211,11 +283,19 @@ const AdminPremiumDocentes = () => {
 
         {/* Pagination */}
         <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 mt-4">
-            <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+                onClick={prevPage}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
                 Anterior
             </button>
-             <span className="text-sm text-gray-700">de</span>
-            <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+             <span className="text-sm text-gray-700">Page {currentPage} de {totalPages}</span>
+            <button 
+                onClick={nextPage}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
                 Siguiente
             </button>
         </div>

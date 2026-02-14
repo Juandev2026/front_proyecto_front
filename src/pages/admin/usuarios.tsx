@@ -204,11 +204,44 @@ const UsersPage = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredUsers = users.filter((user) => 
-    user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = 
+      user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Show ONLY 'Admin' and 'Client' roles as requested
+    const isAllowedRole = ['Admin', 'Client'].includes(user.role);
+    
+    return matchesSearch && isAllowedRole;
+  });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+  
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <AdminLayout>
@@ -284,7 +317,7 @@ const UsersPage = () => {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((user) => {
+              currentItems.map((user) => {
                 const regionName = user.region?.nombre || user.regionId?.toString() || '-';
                 return (
                   <tr key={user.id}>
@@ -364,6 +397,25 @@ const UsersPage = () => {
             )}
           </tbody>
         </table>
+        </div>
+        
+        {/* Pagination */}
+        <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 bg-gray-50">
+            <button 
+                onClick={prevPage}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                Anterior
+            </button>
+             <span className="text-sm text-gray-700">Page {currentPage} de {totalPages}</span>
+            <button 
+                onClick={nextPage}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                Siguiente
+            </button>
         </div>
       </div>
 
@@ -467,7 +519,6 @@ const UsersPage = () => {
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
-                    <option value="subadmin">subadmin</option>
                   </select>
                 </div>
 
