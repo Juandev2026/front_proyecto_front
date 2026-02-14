@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 const API_URL = `${API_BASE_URL}/Niveles`;
 
@@ -7,15 +7,15 @@ export interface Nivel {
   id: number;
   nombre: string;
   imageUrl?: string;
-  modalidadIds: number[];
-  modalidad?: string[]; // Array of strings based on API response
-  modalidadId?: number; // Keep for compatibility if needed, but API seems to use arrays
+  modalidadIds: number | number[]; // Can be single number or array
+  modalidad?: string | string[]; // Can be single string or array
+  modalidadId?: number; // Keep for compatibility
 }
 
 export const nivelService = {
   getAll: async (): Promise<Nivel[]> => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/usuarios`, {
         headers: getPublicHeaders(),
       });
       if (!response.ok) {
@@ -30,11 +30,14 @@ export const nivelService = {
 
   getByModalidadId: async (modalidadId: number): Promise<Nivel[]> => {
     try {
-      // Fallback to fetch all and filter
-      const response = await fetch(API_URL, { headers: getAuthHeaders() });
-      if (!response.ok) throw new Error('Error fetching levels');
-      const all: Nivel[] = await response.json();
-      return all.filter((n) => n.modalidadId === modalidadId);
+      const all = await nivelService.getAll();
+      return all.filter((n) => {
+        // Handle both single number and array formats
+        if (typeof n.modalidadIds === 'number') {
+          return n.modalidadIds === modalidadId;
+        }
+        return n.modalidadId === modalidadId || (n.modalidadIds && n.modalidadIds.includes(modalidadId));
+      });
     } catch (error) {
       // Log removed
       return [];
@@ -45,10 +48,15 @@ export const nivelService = {
     nivel: { nombre: string; modalidadId: number }
   ): Promise<Nivel> => {
     try {
+      const payload = {
+        id: 0,
+        nombre: nivel.nombre,
+        modalidadIds: [nivel.modalidadId],
+      };
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(nivel),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -66,10 +74,15 @@ export const nivelService = {
     nivel: { nombre: string; modalidadId: number }
   ): Promise<void> => {
     try {
+      const payload = {
+        id,
+        nombre: nivel.nombre,
+        modalidadIds: [nivel.modalidadId],
+      };
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ ...nivel, id }),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         const errorText = await response.text();

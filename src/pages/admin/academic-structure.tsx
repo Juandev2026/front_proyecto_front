@@ -140,14 +140,13 @@ const AcademicStructure = () => {
   });
   const [file, setFile] = useState<File | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceFresh = false) => {
     setLoading(true);
 
     // Fetch Modalidades
     try {
       const modalidesResponse = await modalidadService.getAll();
-      const filteredModalities = modalidesResponse.filter(m => m.base === 1);
-      setModalidades(filteredModalities);
+      setModalidades(modalidesResponse);
     } catch (error) {
       console.error('Error fetching modalidades:', error);
     }
@@ -193,7 +192,8 @@ const AcademicStructure = () => {
         });
       }
       closeModal();
-      fetchData();
+      // Small delay to ensure backend has processed
+      setTimeout(() => fetchData(true), 300);
     } catch (error) {
       // Error creating item
     }
@@ -216,7 +216,8 @@ const AcademicStructure = () => {
         });
       }
       closeModal();
-      fetchData();
+      // Small delay to ensure backend has processed
+      setTimeout(() => fetchData(true), 300);
     } catch (error) {
       // Error updating item
     }
@@ -424,11 +425,13 @@ const AcademicStructure = () => {
                   </td>
                   {activeTab === 'niveles' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {/* Show from string array directly */}
-                      {((item as Nivel).modalidad && Array.isArray((item as Nivel).modalidad) 
-                          ? (item as Nivel).modalidad?.join(', ') 
-                          : '-')
-                      }
+                      {(() => {
+                        const modalidad = (item as Nivel).modalidad;
+                        if (!modalidad) return '-';
+                        if (typeof modalidad === 'string') return modalidad;
+                        if (Array.isArray(modalidad)) return modalidad.join(', ');
+                        return '-';
+                      })()}
                     </td>
                   )}
                   {activeTab === 'especialidades' && (
@@ -659,10 +662,13 @@ const AcademicStructure = () => {
                       Modalidad
                     </label>
                     <p className="mt-1 text-gray-900">
-                      {((viewingItem as Nivel).modalidad && Array.isArray((viewingItem as Nivel).modalidad) 
-                          ? (viewingItem as Nivel).modalidad?.join(', ') 
-                          : '-')
-                      }
+                      {(() => {
+                        const modalidad = (viewingItem as Nivel).modalidad;
+                        if (!modalidad) return '-';
+                        if (typeof modalidad === 'string') return modalidad;
+                        if (Array.isArray(modalidad)) return modalidad.join(', ');
+                        return '-';
+                      })()}
                     </p>
                   </div>
                 </>

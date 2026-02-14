@@ -54,13 +54,8 @@ export const especialidadesService = {
 
   getByNivel: async (nivelId: number): Promise<Especialidad[]> => {
     try {
-      const response = await fetch(`${API_URL}/nivel/${nivelId}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
-      if (!response.ok)
-        throw new Error('Error al obtener especialidades por nivel');
-      return await response.json();
+      const all = await especialidadesService.getAll();
+      return all.filter((e) => e.nivelId === nivelId);
     } catch (error) {
       // Log removed
       throw error;

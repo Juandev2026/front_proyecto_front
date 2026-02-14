@@ -12,7 +12,7 @@ export interface Modalidad {
 export const modalidadService = {
   getAll: async (): Promise<Modalidad[]> => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/usuarios`, {
         headers: getPublicHeaders(),
       });
       if (!response.ok) {

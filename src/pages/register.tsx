@@ -33,7 +33,8 @@ const Register = () => {
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   // Removed 'niveles' state as we fetch specific to modality
-  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  // Store all data
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -48,6 +49,7 @@ const Register = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Fetch data independently to prevent one failure from blocking others
       try {
         const regionsData = await regionService.getAll();
         setRegiones(regionsData);
@@ -58,73 +60,82 @@ const Register = () => {
       try {
         const modalitiesData = await modalidadService.getAll();
         // Filter modalities to show only those with base === 1
-        const filteredModalities = modalitiesData.filter(m => m.base === 1);
-        setModalidades(filteredModalities);
+        setModalidades(modalitiesData.filter(m => m.base === 1));
       } catch (err) {
         console.error('Error loading modalities:', err);
+      }
+
+      try {
+        const nivelesData = await nivelService.getAll();
+        setNiveles(nivelesData);
+      } catch (err) {
+        console.error('Error loading niveles:', err);
+      }
+
+      try {
+        const especialidadesData = await especialidadesService.getAll();
+        setEspecialidades(especialidadesData);
+      } catch (err) {
+        console.error('Error loading especialidades:', err);
       }
     };
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const fetchNiveles = async () => {
-      if (formData.modalidadId) {
-        try {
-          const nivelesData = await nivelService.getByModalidadId(
-            Number(formData.modalidadId)
-          );
-          setFilteredNiveles(nivelesData);
-
-          // Reset level if current level is not in the new list (simplified check)
-          // or just always reset level on modality change if strictly hierarchical.
-          // Checking if current level ID exists in new list:
-          const currentLevelExists = nivelesData.some(
-            (n) => n.id === Number(formData.nivelId)
-          );
-          if (!currentLevelExists) {
-            setFormData((prev) => ({ ...prev, nivelId: 0, especialidadId: 0 }));
-          }
-        } catch (err) {
-          // console.error('Error loading levels:', err);
-          setFilteredNiveles([]);
-        }
-      } else {
-        setFilteredNiveles([]);
-        setFormData((prev) => ({ ...prev, nivelId: 0, especialidadId: 0 }));
+  // Helper functions for filtering
+  const getNivelesForModalidad = (modId: number) => {
+    if (!modId) return niveles;
+    return niveles.filter(n => {
+      // Handle both single number and array formats
+      if (typeof n.modalidadIds === 'number') {
+        return n.modalidadIds === modId;
       }
-    };
-    fetchNiveles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.modalidadId]); // Removed formData.nivelId dependency to avoid cycles, just fetching on modality change.
+      return n.modalidadId === modId || (n.modalidadIds && n.modalidadIds.includes(modId));
+    });
+  };
 
+  const getEspecialidadesForNivel = (nivId: number) => {
+    if (!nivId) return especialidades;
+    return especialidades.filter(e => e.nivelId === nivId);
+  };
+
+  const displayedNiveles = getNivelesForModalidad(Number(formData.modalidadId));
+  const displayedEspecialidades = getEspecialidadesForNivel(Number(formData.nivelId));
+
+  // Validation Effect: Reset child fields if they become invalid for the selected parent
   useEffect(() => {
-    const fetchEspecialidades = async () => {
-      if (formData.nivelId) {
-        try {
-          const data = await especialidadesService.getByNivel(
-            Number(formData.nivelId)
-          );
-          setEspecialidades(data);
+    let shouldUpdate = false;
+    const newData = { ...formData };
 
-          const currentExists = data.some(
-            (n) => n.id === Number(formData.especialidadId)
-          );
-          if (!currentExists) {
-            setFormData((prev) => ({ ...prev, especialidadId: 0 }));
-          }
-        } catch (err) {
-          // console.error('Error loading especialidades:', err);
-          setEspecialidades([]);
-        }
-      } else {
-        setEspecialidades([]);
-        setFormData((prev) => ({ ...prev, especialidadId: 0 }));
+    // Validate Nivel
+    if (formData.modalidadId && formData.nivelId && niveles.length > 0) {
+      const validNiveles = getNivelesForModalidad(Number(formData.modalidadId));
+      const isValid = validNiveles.some(n => n.id === Number(formData.nivelId));
+      if (!isValid) {
+        // Resetting invalid NivelId
+        newData.nivelId = 0;
+        newData.especialidadId = 0; // Cascade reset
+        shouldUpdate = true;
       }
-    };
-    fetchEspecialidades();
+    }
+
+    // Validate Especialidad
+    if (formData.nivelId && formData.especialidadId && especialidades.length > 0) {
+      const validEspecialidades = getEspecialidadesForNivel(Number(formData.nivelId));
+      const isValid = validEspecialidades.some(e => e.id === Number(formData.especialidadId));
+      if (!isValid) {
+        // Resetting invalid EspecialidadId
+        newData.especialidadId = 0;
+        shouldUpdate = true;
+      }
+    }
+
+    if (shouldUpdate) {
+      setFormData(newData);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.nivelId]);
+  }, [formData.modalidadId, formData.nivelId, formData.especialidadId, niveles, especialidades]);
+
 
   const validatePassword = (password: string) => {
     const requirements = {
@@ -351,11 +362,11 @@ const Register = () => {
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
                     <option value={0}>Seleccione una modalidad</option>
-                    {modalidades.map((mod) => (
+                    {modalidades && modalidades.length > 0 ? modalidades.map((mod) => (
                       <option key={mod.id} value={mod.id}>
                         {mod.nombre}
                       </option>
-                    ))}
+                    )) : <option disabled>Cargando o sin datos...</option>}
                   </select>
                 </div>
 
@@ -371,13 +382,12 @@ const Register = () => {
                     id="nivelId"
                     name="nivelId"
                     required
-                    disabled={!formData.modalidadId}
                     value={formData.nivelId}
                     onChange={handleChange}
-                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
                     <option value={0}>Seleccione un nivel</option>
-                    {filteredNiveles.map((nivel) => (
+                    {displayedNiveles.map((nivel) => (
                       <option key={nivel.id} value={nivel.id}>
                         {nivel.nombre}
                       </option>
@@ -399,15 +409,14 @@ const Register = () => {
                   <select
                     id="especialidadId"
                     name="especialidadId"
-                    disabled={!formData.nivelId || especialidades.length === 0}
                     value={formData.especialidadId}
                     onChange={handleChange}
-                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
                     <option value={0}>
                       Seleccione una especialidad (Opcional)
                     </option>
-                    {especialidades.map((esp) => (
+                    {displayedEspecialidades.map((esp) => (
                       <option key={esp.id} value={esp.id}>
                         {esp.nombre}
                       </option>
