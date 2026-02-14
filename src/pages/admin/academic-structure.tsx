@@ -182,19 +182,8 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.create({ nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-        let { imageUrl } = formData;
-        if (file) {
-          try {
-            imageUrl = await uploadService.uploadImage(file);
-          } catch (e: any) {
-            console.error('Upload Error:', e);
-            alert(`Error al subir imagen: ${e.message}`);
-            return;
-          }
-        }
         await nivelService.create({
           nombre: formData.nombre,
-          imageUrl,
           modalidadId: formData.modalidadId,
         });
       } else {
@@ -216,19 +205,8 @@ const AcademicStructure = () => {
       if (activeTab === 'modalidades') {
         await modalidadService.update(editingId, { nombre: formData.nombre });
       } else if (activeTab === 'niveles') {
-        let { imageUrl } = formData;
-        if (file) {
-          try {
-            imageUrl = await uploadService.uploadImage(file);
-          } catch (e: any) {
-            console.error('Upload Error:', e);
-            alert(`Error al subir imagen: ${e.message}`);
-            return;
-          }
-        }
         await nivelService.update(editingId, {
           nombre: formData.nombre,
-          imageUrl,
           modalidadId: formData.modalidadId,
         });
       } else {
@@ -404,11 +382,7 @@ const AcademicStructure = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Nombre
               </th>
-              {activeTab === 'niveles' && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Imagen
-                </th>
-              )}
+
               {activeTab === 'niveles' && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Modalidad
@@ -450,26 +424,11 @@ const AcademicStructure = () => {
                   </td>
                   {activeTab === 'niveles' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(item as Nivel).imageUrl ? (
-                        <img
-                          src={(item as Nivel).imageUrl}
-                          alt={(item as Nivel).nombre}
-                          className="h-10 w-16 object-cover rounded shadow-sm"
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-xs italic">
-                          Sin imagen
-                        </span>
-                      )}
-                    </td>
-                  )}
-                  {activeTab === 'niveles' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {modalidades.find(
-                        (m) => m.id === (item as Nivel).modalidadId
-                      )?.nombre ||
-                        (item as Nivel).modalidad?.nombre ||
-                        '-'}
+                      {/* Show from string array directly */}
+                      {((item as Nivel).modalidad && Array.isArray((item as Nivel).modalidad) 
+                          ? (item as Nivel).modalidad?.join(', ') 
+                          : '-')
+                      }
                     </td>
                   )}
                   {activeTab === 'especialidades' && (
@@ -580,48 +539,7 @@ const AcademicStructure = () => {
 
               {activeTab === 'niveles' && (
                 <>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Imagen del Nivel
-                    </label>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">
-                          Opción 1: Subir Archivo
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              setFile(e.target.files[0]);
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="text-center text-xs text-gray-400 font-medium">
-                        - O -
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">
-                          Opción 2: URL de Imagen
-                        </label>
-                        <input
-                          type="text"
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                          value={formData.imageUrl || ''}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              imageUrl: e.target.value,
-                            })
-                          }
-                          placeholder="https://ejemplo.com/imagen.jpg"
-                        />
-                      </div>
-                    </div>
-                  </div>
+
                   <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Modalidad
@@ -735,34 +653,16 @@ const AcademicStructure = () => {
 
               {activeTab === 'niveles' && (
                 <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">
-                      Imagen
-                    </label>
-                    <div className="mt-1">
-                      {(viewingItem as Nivel).imageUrl ? (
-                        <img
-                          src={(viewingItem as Nivel).imageUrl}
-                          alt={(viewingItem as Nivel).nombre}
-                          className="h-48 w-auto object-cover rounded shadow-md"
-                        />
-                      ) : (
-                        <span className="text-gray-400 italic">
-                          Sin imagen asignada
-                        </span>
-                      )}
-                    </div>
-                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Modalidad
                     </label>
                     <p className="mt-1 text-gray-900">
-                      {modalidades.find(
-                        (m) => m.id === (viewingItem as Nivel).modalidadId
-                      )?.nombre ||
-                        (viewingItem as Nivel).modalidad?.nombre ||
-                        '-'}
+                      {((viewingItem as Nivel).modalidad && Array.isArray((viewingItem as Nivel).modalidad) 
+                          ? (viewingItem as Nivel).modalidad?.join(', ') 
+                          : '-')
+                      }
                     </p>
                   </div>
                 </>
