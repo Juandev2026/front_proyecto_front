@@ -29,7 +29,7 @@ import { nivelService, Nivel } from '../../services/nivelService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import { uploadService } from '../../services/uploadService';
 import { estadoService, Estado } from '../../services/estadoService';
-import { stripHtml } from '../../utils/urlUtils';
+
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -179,15 +179,13 @@ const AdminNews = () => {
   // Filter levels when modality changes or modal opens with data
   useEffect(() => {
     if (formData.modalidadId) {
-      const filtered = niveles.filter(
-        (n) => n.modalidadId === Number(formData.modalidadId)
-      );
-      // Fallback: If filtering returns empty but we have levels, show all (API issue workaround)
-      if (filtered.length === 0 && niveles.length > 0) {
-         setFilteredNiveles(niveles);
-      } else {
-         setFilteredNiveles(filtered);
-      }
+      const filtered = niveles.filter((n) => {
+        if (Array.isArray(n.modalidadIds)) {
+          return n.modalidadIds.includes(Number(formData.modalidadId));
+        }
+        return n.modalidadIds === Number(formData.modalidadId);
+      });
+      setFilteredNiveles(filtered);
     } else {
       setFilteredNiveles([]);
     }

@@ -11,6 +11,7 @@ const UsersPage = () => {
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,6 +81,20 @@ const UsersPage = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (formData.modalidadId) {
+      const filtered = niveles.filter((n) => {
+        if (Array.isArray(n.modalidadIds)) {
+          return n.modalidadIds.includes(Number(formData.modalidadId));
+        }
+        return n.modalidadIds === Number(formData.modalidadId);
+      });
+      setFilteredNiveles(filtered);
+    } else {
+      setFilteredNiveles([]);
+    }
+  }, [formData.modalidadId, niveles]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -489,6 +504,7 @@ const UsersPage = () => {
                       setFormData({
                         ...formData,
                         modalidadId: Number(e.target.value),
+                        nivelId: 0, // Reset nivel
                       })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
@@ -517,7 +533,7 @@ const UsersPage = () => {
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
                     <option value={0}>Seleccionar Nivel</option>
-                    {niveles.map((n) => (
+                    {filteredNiveles.map((n) => (
                       <option key={n.id} value={n.id}>
                         {n.nombre}
                       </option>

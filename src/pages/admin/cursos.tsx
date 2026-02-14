@@ -154,9 +154,12 @@ const AdminCursos = () => {
   useEffect(() => {
     if (currentCourse.modalidadId) {
       setFilteredNiveles(
-        niveles.filter(
-          (n) => n.modalidadId === Number(currentCourse.modalidadId)
-        )
+        niveles.filter((n) => {
+          if (Array.isArray(n.modalidadIds)) {
+            return n.modalidadIds.includes(Number(currentCourse.modalidadId));
+          }
+          return n.modalidadIds === Number(currentCourse.modalidadId);
+        })
       );
     } else {
       setFilteredNiveles([]);

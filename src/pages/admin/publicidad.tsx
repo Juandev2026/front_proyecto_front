@@ -110,16 +110,13 @@ const AdminPublicidad = () => {
 
   useEffect(() => {
     if (formData.modalidadId) {
-      // Filter locally using the already fetched 'niveles'
-      // Note: backend 'Niveles' endpoint might miss 'modalidadId', causing filter to be empty.
-      const filtered = niveles.filter(n => n.modalidadId === Number(formData.modalidadId));
-      
-      // Fallback: If filtering returns empty but we have levels, show all (API issue workaround)
-      if (filtered.length === 0 && niveles.length > 0) {
-        setFilteredNiveles(niveles);
-      } else {
-        setFilteredNiveles(filtered);
-      }
+      const filtered = niveles.filter((n) => {
+        if (Array.isArray(n.modalidadIds)) {
+          return n.modalidadIds.includes(Number(formData.modalidadId));
+        }
+        return n.modalidadIds === Number(formData.modalidadId);
+      });
+      setFilteredNiveles(filtered);
     } else {
       setFilteredNiveles([]);
     }
