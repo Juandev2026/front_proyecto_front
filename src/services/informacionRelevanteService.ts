@@ -39,11 +39,12 @@ export const informacionRelevanteService = {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        throw new Error('Error al crear informacion relevante');
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
       return await response.json();
     } catch (error) {
-      // Log removed
+      console.error('Error creating informacion relevante:', error);
       throw error;
     }
   },

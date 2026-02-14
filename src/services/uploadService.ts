@@ -1,7 +1,7 @@
 import { getAuthHeadersFormData } from '../utils/apiUtils';
 
 // Bypass proxy to avoid socket hang up and debug CORS/Server issues directly
-const API_URL = '/api/proxy_upload_image';
+const API_URL = '/api/local_upload';
 
 export const uploadService = {
   uploadImage: async (file: File): Promise<string> => {

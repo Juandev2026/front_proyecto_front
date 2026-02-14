@@ -99,21 +99,49 @@ const AdminCursos = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [coursesData, categoriesData, modalidadesData, nivelesData, estadosData] =
-        await Promise.all([
-          cursoService.getAll(),
-          categoriaService.getAll(),
-          modalidadService.getAll(),
-          nivelService.getAll(),
-          estadoService.getAll(),
-        ]);
-      setCourses(coursesData.sort((a, b) => b.id - a.id));
-      setCategories(categoriesData);
-      setModalidades(modalidadesData);
-      setNiveles(nivelesData);
-      setEstados(estadosData);
+
+      // Fetch Cursos
+      try {
+        const coursesData = await cursoService.getAll();
+        setCourses(coursesData.sort((a, b) => b.id - a.id));
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+
+      // Fetch Categorias
+      try {
+        const categoriesData = await categoriaService.getAll();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+
+      // Fetch Modalidades
+      try {
+        const modalidadesData = await modalidadService.getAll();
+        setModalidades(modalidadesData);
+      } catch (error) {
+        console.error('Error fetching modalidades:', error);
+      }
+
+      // Fetch Niveles
+      try {
+        const nivelesData = await nivelService.getAll();
+        setNiveles(nivelesData);
+      } catch (error) {
+        console.error('Error fetching niveles:', error);
+      }
+
+      // Fetch Estados
+      try {
+        const estadosData = await estadoService.getAll();
+        setEstados(estadosData);
+      } catch (error) {
+        console.error('Error fetching estados:', error);
+      }
+
     } catch (error) {
-      // console.error('Error fetching data:', error);
+       console.error('Error in fetchData:', error);
     } finally {
       setLoading(false);
     }

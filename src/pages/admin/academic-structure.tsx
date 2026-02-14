@@ -142,28 +142,35 @@ const AcademicStructure = () => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    try {
-      const [modalidadesData, nivelesData, especialidadesData] =
-        await Promise.all([
-          modalidadService.getAll(),
-          nivelService.getAll(),
-          activeTab === 'especialidades'
-            ? especialidadesService.getAll()
-            : Promise.resolve([]),
-        ]);
 
-      // Filter modalities to show only those with base === 1
-      const filteredModalities = modalidadesData.filter(m => m.base === 1);
+    // Fetch Modalidades
+    try {
+      const modalidesResponse = await modalidadService.getAll();
+      const filteredModalities = modalidesResponse.filter(m => m.base === 1);
       setModalidades(filteredModalities);
-      setNiveles(nivelesData);
-      if (activeTab === 'especialidades') {
-        setEspecialidades(especialidadesData);
-      }
     } catch (error) {
-      console.error('Error fetching academic structure:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching modalidades:', error);
     }
+
+    // Fetch Niveles
+    try {
+      const nivelesResponse = await nivelService.getAll();
+      setNiveles(nivelesResponse);
+    } catch (error) {
+      console.error('Error fetching niveles:', error);
+    }
+
+    // Fetch Especialidades (if active tab)
+    if (activeTab === 'especialidades') {
+      try {
+        const especialidadesResponse = await especialidadesService.getAll();
+        setEspecialidades(especialidadesResponse);
+      } catch (error) {
+        console.error('Error fetching especialidades:', error);
+      }
+    }
+
+    setLoading(false);
   }, [activeTab]);
 
   useEffect(() => {
@@ -179,8 +186,9 @@ const AcademicStructure = () => {
         if (file) {
           try {
             imageUrl = await uploadService.uploadImage(file);
-          } catch (e) {
-            alert('Error al subir imagen');
+          } catch (e: any) {
+            console.error('Upload Error:', e);
+            alert(`Error al subir imagen: ${e.message}`);
             return;
           }
         }
@@ -212,8 +220,9 @@ const AcademicStructure = () => {
         if (file) {
           try {
             imageUrl = await uploadService.uploadImage(file);
-          } catch (e) {
-            alert('Error al subir imagen');
+          } catch (e: any) {
+            console.error('Upload Error:', e);
+            alert(`Error al subir imagen: ${e.message}`);
             return;
           }
         }

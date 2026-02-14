@@ -188,9 +188,9 @@ const AdminInformacionRelevante = () => {
       });
       setFile(null);
       fetchData();
-    } catch (error) {
-      alert('Error creating item');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Create error:', error);
+      alert(`Error creating item: ${error.message}`);
     }
   };
 

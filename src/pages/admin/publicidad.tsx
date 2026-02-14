@@ -55,21 +55,43 @@ const AdminPublicidad = () => {
   });
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const [pubData, modData, nivData, estadosData] = await Promise.all([
-        publicidadService.getAll(),
-        modalidadService.getAll(),
-        nivelService.getAll(), 
-        estadoService.getAll(),
-      ]);
-      setPublicidades(pubData);
-      setModalidades(modData);
-      setNiveles(nivData);
-      setEstados(estadosData);
+      // Fetch Publicidades
+      try {
+        const pubData = await publicidadService.getAll();
+        setPublicidades(pubData);
+      } catch (err) {
+        console.error('Error fetching publicidades:', err);
+      }
+
+      // Fetch Modalidades
+      try {
+        const modData = await modalidadService.getAll();
+        setModalidades(modData);
+      } catch (err) {
+        console.error('Error fetching modalidades:', err);
+      }
+
+      // Fetch Niveles
+      try {
+        const nivData = await nivelService.getAll();
+        setNiveles(nivData);
+      } catch (err) {
+        console.error('Error fetching niveles:', err);
+      }
+
+      // Fetch Estados
+      try {
+        const estadosData = await estadoService.getAll();
+        setEstados(estadosData);
+      } catch (err) {
+        console.error('Error fetching estados:', err);
+      }
+
     } catch (err) {
       setError('Error loading data');
-      // console.error(err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -84,36 +106,24 @@ const AdminPublicidad = () => {
     fetchData();
   }, []);
 
-  // ... (existing useEffect for formData.modalidadId driven nivel fetching might conflict? no, it just filters for the form dropdown)
-  // Actually, the original code had:
-  /*
-  useEffect(() => {
-    if (formData.modalidadId) {
-      nivelService.getByModalidadId(formData.modalidadId).then(setNiveles).catch(console.error);
-    } else {
-      setNiveles([]);
-    }
-  }, [formData.modalidadId]);
-  */
-  // If I overwrite `niveles` with `getAll` in `fetchData`, this effect might overwrite it again with a filtered list when `formData` changes.
-  // We should separate "all levels" for display vs "form levels" for dropdown.
-  // Let's call the `getAll` result `allNiveles`? or just use `filteredNiveles` for the form?
-  // I will introduce `filteredNiveles` for the form dropdown.
-
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
 
   useEffect(() => {
     if (formData.modalidadId) {
-      // filter locally if we have all levels, or fetch?
-      // existing code used `getByModalidadId`. I'll stick to that pattern for the dropdown but populate `filteredNiveles`.
-      nivelService
-        .getByModalidadId(formData.modalidadId)
-        .then(setFilteredNiveles);
-      // .catch(console.error);
+      // Filter locally using the already fetched 'niveles'
+      // Note: backend 'Niveles' endpoint might miss 'modalidadId', causing filter to be empty.
+      const filtered = niveles.filter(n => n.modalidadId === Number(formData.modalidadId));
+      
+      // Fallback: If filtering returns empty but we have levels, show all (API issue workaround)
+      if (filtered.length === 0 && niveles.length > 0) {
+        setFilteredNiveles(niveles);
+      } else {
+        setFilteredNiveles(filtered);
+      }
     } else {
       setFilteredNiveles([]);
     }
-  }, [formData.modalidadId]);
+  }, [formData.modalidadId, niveles]);
 
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
