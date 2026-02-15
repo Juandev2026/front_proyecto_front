@@ -7,7 +7,11 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/outline';
-import { userService } from '../../../services/userService';
+import { userService, User } from '../../../services/userService';
+import { regionService, Region } from '../../../services/regionService';
+import { modalidadService, Modalidad } from '../../../services/modalidadService';
+import { nivelService, Nivel } from '../../../services/nivelService';
+import { especialidadesService, Especialidad } from '../../../services/especialidadesService';
 
 // Mock data type for view (adapted to match User from API partially)
 interface Docente {
@@ -27,6 +31,151 @@ const AdminPremiumDocentes = () => {
   const [filterOption, setFilterOption] = useState('');
   const [docentes, setDocentes] = useState<Docente[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Modal & Form State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<Partial<User>>({
+    nombreCompleto: '',
+    email: '',
+    password: '',
+    role: 'Premium', // Default role
+    celular: '',
+    ie: '',
+    estado: 'Activo', // Default state
+    observaciones: '',
+    tiempo: 0,
+    regionId: 0,
+    modalidadId: 0,
+    nivelId: 0,
+    especialidadId: 0,
+  });
+
+  // Catalogs
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  
+  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
+
+  // Expiration Logic
+  const [expirationMode, setExpirationMode] = useState<'1year' | '5months' | '10months' | 'custom'>('custom');
+
+  const calculateExpirationDate = (mode: '1year' | '5months' | '10months') => {
+    const date = new Date();
+    if (mode === '1year') {
+      date.setFullYear(date.getFullYear() + 1);
+    } else if (mode === '5months') {
+      date.setMonth(date.getMonth() + 5);
+    } else if (mode === '10months') {
+      date.setMonth(date.getMonth() + 10);
+    }
+    return date.toISOString();
+  };
+
+  const handleExpirationPresetChange = (mode: '1year' | '5months' | '10months') => {
+    setExpirationMode(mode);
+    const newDate = calculateExpirationDate(mode);
+    setFormData((prev) => ({ ...prev, fechaExpiracion: newDate }));
+  };
+
+  const fetchCatalogs = async () => {
+    try {
+        const [r, m, n, e] = await Promise.all([
+            regionService.getAll(),
+            modalidadService.getAll(),
+            nivelService.getAll(),
+            especialidadesService.getAll()
+        ]);
+        setRegions(r);
+        setModalidades(m);
+        setNiveles(n);
+        setEspecialidades(e);
+    } catch (error) {
+        console.error("Error fetching catalogs", error);
+    }
+  };
+
+  useEffect(() => {
+    // Reset expiration when modal opens if needed, or default to something?
+    // For now, let's keep it clean or default to custom
+  }, [isModalOpen]);
+
+  useEffect(() => {
+      fetchCatalogs();
+  }, []);
+
+  // Cascading Logic
+  useEffect(() => {
+      if (formData.modalidadId) {
+          const filtered = niveles.filter(n => {
+             if (Array.isArray(n.modalidadIds)) return n.modalidadIds.includes(Number(formData.modalidadId));
+             return n.modalidadId === Number(formData.modalidadId) || n.modalidadIds === Number(formData.modalidadId);
+          });
+          setFilteredNiveles(filtered);
+      } else {
+          setFilteredNiveles([]);
+      }
+  }, [formData.modalidadId, niveles]);
+
+  useEffect(() => {
+      if (formData.nivelId) {
+          const filtered = especialidades.filter(e => {
+             if (Array.isArray(e.nivelId)) return e.nivelId.includes(Number(formData.nivelId));
+             return e.nivelId === Number(formData.nivelId);
+          });
+          setFilteredEspecialidades(filtered);
+      } else {
+          setFilteredEspecialidades([]);
+      }
+  }, [formData.nivelId, especialidades]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+          // Construct payload manually to ensure all fields are present and correct types
+          const payload: any = {
+              nombreCompleto: formData.nombreCompleto,
+              email: formData.email,
+              password: formData.password,
+              role: 'Premium',
+              celular: formData.celular,
+              estado: formData.estado,
+              ie: formData.ie,
+              observaciones: formData.observaciones,
+              tiempo: Number(formData.tiempo),
+              regionId: Number(formData.regionId),
+              modalidadId: Number(formData.modalidadId),
+              nivelId: Number(formData.nivelId),
+              especialidadId: Number(formData.especialidadId),
+              fechaExpiracion: formData.fechaExpiracion
+          };
+
+          await userService.create(payload);
+          setIsModalOpen(false);
+          setFormData({
+              nombreCompleto: '',
+              email: '',
+              password: '',
+              role: 'Premium',
+              celular: '',
+              ie: '',
+              estado: 'Activo',
+              observaciones: '',
+              tiempo: 0,
+              regionId: 0,
+              modalidadId: 0,
+              nivelId: 0,
+              especialidadId: 0,
+          });
+          fetchDocentes(); // Refresh list
+      } catch (error) {
+          console.error("Error creating docente", error);
+          alert("Error al crear docente");
+      }
+  };
+
   
   const fetchDocentes = async () => {
       setLoading(true);
@@ -185,6 +334,7 @@ const AdminPremiumDocentes = () => {
 
                  {/* Add Button */}
                 <button
+                    onClick={() => setIsModalOpen(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
@@ -352,6 +502,333 @@ const AdminPremiumDocentes = () => {
         </div>
 
       </div>
+
+      {/* Create Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
+          <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
+            <div className="flex items-center justify-between rounded-t border-b p-4">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Agregar Nuevo Docente
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nombre y Email */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nombreCompleto}
+                    onChange={(e) => setFormData({ ...formData, nombreCompleto: e.target.value })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    required
+                  />
+                </div>
+
+                {/* Password y Celular */}
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                      required
+                    />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Celular
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.celular}
+                    onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                  />
+                </div>
+
+                {/* IE y Estado */}
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Institución Educativa (IE)
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.ie}
+                        onChange={(e) => setFormData({ ...formData, ie: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    />
+                </div>
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Estado
+                    </label>
+                    <select
+                        value={formData.estado}
+                        onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    >
+                        <option value="Activo">Activo</option>
+                        <option value="Por vencer">Por vencer</option>
+                        <option value="Expirado">Expirado</option>
+                    </select>
+                </div>
+
+                {/* Expiration Date Section */}
+                <div className="col-span-1 md:col-span-2 rounded-lg border border-gray-200 p-4">
+                    <h4 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Fecha de expiración
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex items-center rounded border border-gray-200 pl-4 py-2 hover:bg-gray-50">
+                        <input
+                          id="exp-1year"
+                          type="radio"
+                          name="expiration-preset"
+                          checked={expirationMode === '1year'}
+                          onChange={() => handleExpirationPresetChange('1year')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label
+                          htmlFor="exp-1year"
+                          className="ml-2 w-full cursor-pointer text-sm font-medium text-gray-900"
+                        >
+                          1 año desde hoy
+                        </label>
+                      </div>
+                      <div className="flex items-center rounded border border-gray-200 pl-4 py-2 hover:bg-gray-50">
+                        <input
+                          id="exp-5months"
+                          type="radio"
+                          name="expiration-preset"
+                          checked={expirationMode === '5months'}
+                          onChange={() => handleExpirationPresetChange('5months')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label
+                          htmlFor="exp-5months"
+                          className="ml-2 w-full cursor-pointer text-sm font-medium text-gray-900"
+                        >
+                          5 meses desde hoy
+                        </label>
+                      </div>
+                      <div className="flex items-center rounded border border-gray-200 pl-4 py-2 hover:bg-gray-50">
+                        <input
+                          id="exp-10months"
+                          type="radio"
+                          name="expiration-preset"
+                          checked={expirationMode === '10months'}
+                          onChange={() => handleExpirationPresetChange('10months')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label
+                          htmlFor="exp-10months"
+                          className="ml-2 w-full cursor-pointer text-sm font-medium text-gray-900"
+                        >
+                          10 meses desde hoy
+                        </label>
+                      </div>
+                      <div className="flex items-center rounded border border-gray-200 pl-4 py-2 hover:bg-gray-50">
+                        <input
+                          id="exp-custom"
+                          type="radio"
+                          name="expiration-preset"
+                          checked={expirationMode === 'custom'}
+                          onChange={() => setExpirationMode('custom')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label
+                          htmlFor="exp-custom"
+                          className="ml-2 w-full cursor-pointer text-sm font-medium text-gray-900"
+                        >
+                          Elegir fecha específica
+                        </label>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                       <input
+                          type="datetime-local"
+                          value={formData.fechaExpiracion ? new Date(formData.fechaExpiracion).toISOString().slice(0, 16) : ''}
+                          onChange={(e) => {
+                             setExpirationMode('custom');
+                             setFormData({ ...formData, fechaExpiracion: new Date(e.target.value).toISOString() });
+                          }}
+                          disabled={expirationMode !== 'custom'}
+                          className={`block w-full rounded-lg border p-2.5 text-sm ${
+                            expirationMode !== 'custom'
+                              ? 'bg-gray-100 text-gray-500 border-gray-200'
+                              : 'bg-gray-50 text-gray-900 border-gray-300 focus:border-primary focus:ring-primary'
+                          }`}
+                        />
+                    </div>
+                </div>
+
+                {/* Tiempo y Observable (Full width or split?) Split looks good */}
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Tiempo (días/meses?)
+                    </label>
+                    <input
+                        type="number"
+                        value={formData.tiempo}
+                        onChange={(e) => setFormData({ ...formData, tiempo: Number(e.target.value) })}
+                        placeholder="0"
+                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    />
+                </div>
+                <div>
+                     <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Observaciones
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.observaciones}
+                        onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    />
+                </div>
+                
+                {/* Academic Structure Cascading Selects */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Región
+                  </label>
+                  <select
+                    value={formData.regionId ?? 0}
+                    onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                  >
+                    <option value={0}>Seleccionar Región</option>
+                    {regions.map((r) => (
+                      <option key={r.id} value={r.id}>{r.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Modalidad
+                  </label>
+                  <select
+                    value={formData.modalidadId ?? 0}
+                    onChange={(e) => setFormData({ 
+                        ...formData, 
+                        modalidadId: Number(e.target.value),
+                        nivelId: 0, 
+                        especialidadId: 0 
+                    })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                  >
+                    <option value={0}>Seleccionar Modalidad</option>
+                    {modalidades.map((m) => (
+                      <option key={m.id} value={m.id}>{m.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Nivel
+                  </label>
+                  <select
+                    value={formData.nivelId ?? 0}
+                    onChange={(e) => setFormData({ 
+                        ...formData, 
+                        nivelId: Number(e.target.value),
+                        especialidadId: 0
+                    })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    disabled={!formData.modalidadId}
+                  >
+                    <option value={0}>Seleccionar Nivel</option>
+                    {filteredNiveles.map((n) => (
+                      <option key={n.id} value={n.id}>{n.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Especialidad
+                  </label>
+                  <select
+                    value={formData.especialidadId ?? 0}
+                    onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    disabled={!formData.nivelId}
+                  >
+                    <option value={0}>Seleccionar Especialidad</option>
+                    {filteredEspecialidades.map((e) => (
+                      <option key={e.id} value={e.id}>{e.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Submit Action */}
+                <div className="col-span-1 md:col-span-2 mt-4">
+                    <button
+                    type="submit"
+                    className="w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300"
+                    >
+                    Guardar Docente
+                    </button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     </AdminLayout>
   );
 };

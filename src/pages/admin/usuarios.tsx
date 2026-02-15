@@ -27,10 +27,35 @@ const UsersPage = () => {
     nivelId: 0,
     especialidadId: 0,
     passwordHash: '',
+    fechaExpiracion: undefined,
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
+
+  const [expirationMode, setExpirationMode] = useState<'1year' | '5months' | '10months' | 'custom'>('custom');
+
+  const handleExpirationChange = (mode: '1year' | '5months' | '10months' | 'custom') => {
+    setExpirationMode(mode);
+    
+    if (mode === 'custom') {
+       // Keep existing or empty if switching to custom
+       return;
+    }
+
+    const today = new Date();
+    let newDate = new Date(today);
+
+    if (mode === '1year') {
+      newDate.setFullYear(today.getFullYear() + 1);
+    } else if (mode === '5months') {
+      newDate.setMonth(today.getMonth() + 5);
+    } else if (mode === '10months') {
+      newDate.setMonth(today.getMonth() + 10);
+    }
+
+    setFormData(prev => ({ ...prev, fechaExpiracion: newDate.toISOString() }));
+  };
 
   const resetForm = () => {
     setFormData({
@@ -44,7 +69,9 @@ const UsersPage = () => {
       nivelId: 0,
       especialidadId: 0,
       passwordHash: '',
+      fechaExpiracion: undefined,
     });
+    setExpirationMode('custom');
   };
 
   const loadUsersOnly = async () => {
@@ -177,7 +204,9 @@ const UsersPage = () => {
       nivelId: user.nivelId || 0,
       especialidadId: user.especialidadId || 0,
       passwordHash: user.passwordHash || '',
+      fechaExpiracion: user.fechaExpiracion,
     });
+    setExpirationMode('custom'); // Default to custom when editing, or we could check if it matches a preset
     setIsModalOpen(true);
   };
 
@@ -445,7 +474,7 @@ const UsersPage = () => {
               </button>
             </div>
             <div className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Nombre Completo
@@ -478,7 +507,7 @@ const UsersPage = () => {
                   />
                 </div>
                 {!editingUser && (
-                  <div>
+                  <div className="col-span-1 md:col-span-2">
                     <label className="mb-2 block text-sm font-medium text-gray-900">
                       Contraseña
                     </label>
@@ -512,15 +541,114 @@ const UsersPage = () => {
                   </label>
                   <select
                     value={formData.role ?? 'User'}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const newRole = e.target.value;
+                      setFormData({ ...formData, role: newRole });
+                      // Reset expiration if not Premium (optional, or keep it)
+                      if (newRole !== 'Premium') {
+                         setExpirationMode('custom'); // or reset logic
+                      }
+                    }}
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
+                    <option value="Premium">Premium</option>
                   </select>
                 </div>
+
+                {formData.role === 'Premium' && (
+                  <div className="col-span-1 md:col-span-2 rounded-lg border border-gray-200 p-4">
+                    <h4 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Fecha de expiración
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                       {/* 1 Año */}
+                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name="expirationMode"
+                          value="1year"
+                          checked={expirationMode === '1year'}
+                          onChange={() => handleExpirationChange('1year')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-700">1 año desde hoy</span>
+                      </label>
+
+                       {/* 5 Meses */}
+                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name="expirationMode"
+                          value="5months"
+                          checked={expirationMode === '5months'}
+                          onChange={() => handleExpirationChange('5months')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-700">5 meses desde hoy</span>
+                      </label>
+
+                       {/* 10 Meses */}
+                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name="expirationMode"
+                          value="10months"
+                          checked={expirationMode === '10months'}
+                          onChange={() => handleExpirationChange('10months')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-700">10 meses desde hoy</span>
+                      </label>
+
+                       {/* Custom */}
+                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name="expirationMode"
+                          value="custom"
+                          checked={expirationMode === 'custom'}
+                          onChange={() => handleExpirationChange('custom')}
+                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-700">Elegir fecha específica</span>
+                      </label>
+                    </div>
+
+                    {/* Date Picker for Custom or Display for others */}
+                    <div className="mt-3">
+                       <input
+                          type="datetime-local"
+                          value={formData.fechaExpiracion ? new Date(formData.fechaExpiracion).toISOString().slice(0, 16) : ''}
+                          onChange={(e) => {
+                             setExpirationMode('custom');
+                             setFormData({ ...formData, fechaExpiracion: new Date(e.target.value).toISOString() });
+                          }}
+                          disabled={expirationMode !== 'custom'}
+                          className={`block w-full rounded-lg border p-2.5 text-sm ${
+                            expirationMode !== 'custom'
+                              ? 'bg-gray-100 text-gray-500 border-gray-200'
+                              : 'bg-gray-50 text-gray-900 border-gray-300 focus:border-primary focus:ring-primary'
+                          }`}
+                        />
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
@@ -569,7 +697,7 @@ const UsersPage = () => {
                   </select>
                 </div>
 
-                <div>
+                <div className="col-span-1 md:col-span-2">
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Nivel
                   </label>
@@ -594,7 +722,7 @@ const UsersPage = () => {
 
                 <button
                   type="submit"
-                  className="w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  className="col-span-1 md:col-span-2 w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300"
                 >
                   {editingUser ? 'Actualizar' : 'Crear'}
                 </button>

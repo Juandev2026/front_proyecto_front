@@ -47,6 +47,10 @@ export interface User {
     };
   };
   fechaExpiracion?: string;
+  estado?: string;
+  ie?: string;
+  observaciones?: string;
+  tiempo?: number;
 }
 
 export const userService = {
