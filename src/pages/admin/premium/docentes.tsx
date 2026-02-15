@@ -34,6 +34,7 @@ const AdminPremiumDocentes = () => {
   
   // Modal & Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({
     nombreCompleto: '',
     email: '',
@@ -131,6 +132,55 @@ const AdminPremiumDocentes = () => {
       }
   }, [formData.nivelId, especialidades]);
 
+  const handleEdit = async (docenteId: number) => {
+    try {
+      const user = await userService.getById(docenteId);
+      setEditingUser(docenteId);
+      setFormData({
+        nombreCompleto: user.nombreCompleto,
+        email: user.email,
+        password: '', // Don't populate password
+        role: 'Premium',
+        celular: user.celular,
+        estado: user.estado || 'Activo',
+        ie: user.ie || '',
+        observaciones: user.observaciones || '',
+        tiempo: user.tiempo || 0,
+        regionId: user.regionId,
+        modalidadId: user.modalidadId,
+        nivelId: user.nivelId,
+        especialidadId: user.especialidadId,
+        fechaExpiracion: user.fechaExpiracion
+      });
+      // Set expiration mode based on date? Or just Custom?
+      setExpirationMode('custom');
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching user details", error);
+      alert("Error al cargar datos del docente");
+    }
+  };
+
+  const resetForm = () => {
+    setEditingUser(null);
+    setFormData({
+      nombreCompleto: '',
+      email: '',
+      password: '',
+      role: 'Premium',
+      celular: '',
+      ie: '',
+      estado: 'Activo',
+      observaciones: '',
+      tiempo: 0,
+      regionId: 0,
+      modalidadId: 0,
+      nivelId: 0,
+      especialidadId: 0,
+    });
+    setExpirationMode('custom');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
@@ -138,7 +188,6 @@ const AdminPremiumDocentes = () => {
           const payload: any = {
               nombreCompleto: formData.nombreCompleto,
               email: formData.email,
-              password: formData.password,
               role: 'Premium',
               celular: formData.celular,
               estado: formData.estado,
@@ -152,27 +201,28 @@ const AdminPremiumDocentes = () => {
               fechaExpiracion: formData.fechaExpiracion
           };
 
-          await userService.create(payload);
+          // Only add password if it's set (for updates) or required (for create)
+          if (formData.password) {
+            payload.password = formData.password;
+          }
+
+          if (editingUser) {
+             await userService.update(editingUser, payload);
+          } else {
+             if (!formData.password) {
+               alert("La contraseña es obligatoria para nuevos usuarios");
+               return;
+             }
+             payload.password = formData.password; // Ensure it's there for create
+             await userService.create(payload);
+          }
+          
           setIsModalOpen(false);
-          setFormData({
-              nombreCompleto: '',
-              email: '',
-              password: '',
-              role: 'Premium',
-              celular: '',
-              ie: '',
-              estado: 'Activo',
-              observaciones: '',
-              tiempo: 0,
-              regionId: 0,
-              modalidadId: 0,
-              nivelId: 0,
-              especialidadId: 0,
-          });
+          resetForm();
           fetchDocentes(); // Refresh list
       } catch (error) {
-          console.error("Error creating docente", error);
-          alert("Error al crear docente");
+          console.error("Error saving docente", error);
+          alert("Error al guardar docente");
       }
   };
 
@@ -334,7 +384,7 @@ const AdminPremiumDocentes = () => {
 
                  {/* Add Button */}
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => { resetForm(); setIsModalOpen(true); }}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
@@ -468,7 +518,10 @@ const AdminPremiumDocentes = () => {
                             </td>
                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div className="flex justify-center space-x-2">
-                                     <button className="text-blue-600 hover:text-blue-900">
+                                     <button 
+                                        onClick={() => handleEdit(docente.id)}
+                                        className="text-blue-600 hover:text-blue-900"
+                                     >
                                         <PencilIcon className="w-5 h-5"/>
                                     </button>
                                     <button className="text-red-600 hover:text-red-900">
@@ -509,7 +562,7 @@ const AdminPremiumDocentes = () => {
           <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
             <div className="flex items-center justify-between rounded-t border-b p-4">
               <h3 className="text-xl font-semibold text-gray-900">
-                Agregar Nuevo Docente
+                {editingUser ? 'Editar Docente' : 'Agregar Nuevo Docente'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -566,7 +619,8 @@ const AdminPremiumDocentes = () => {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                      required
+                      required={!editingUser}
+                      placeholder={editingUser ? "Dejar en blanco para mantener actual" : ""}
                     />
                 </div>
                 <div>
