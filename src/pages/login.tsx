@@ -56,8 +56,12 @@ const Login = () => {
       if (response.nivelId) {
         localStorage.setItem('nivelId', String(response.nivelId));
       }
+      // Save role safely handling null/undefined
       if (response.role) {
         localStorage.setItem('role', response.role);
+      } else {
+         // Fallback: try to decode from token if role is missing in body but present in token? 
+         // For now, assume backend sends it or we rely on useAuth to decode it later.
       }
 
       if (

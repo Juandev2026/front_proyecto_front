@@ -47,10 +47,55 @@ export const preguntaService = {
     }
   },
   
-  // Basic CRUD placeholders if needed later
-  /*
-  create: async (item: Omit<Pregunta, 'id'>): Promise<Pregunta> => { ... },
-  update: async (id: number, item: Pregunta): Promise<Pregunta> => { ... },
-  delete: async (id: number): Promise<void> => { ... }
-  */
+  create: async (item: Omit<Pregunta, 'id'>): Promise<Pregunta> => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear la pregunta');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  update: async (id: number, item: Partial<Pregunta>): Promise<Pregunta> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la pregunta');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  delete: async (id: number): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar la pregunta');
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
 };

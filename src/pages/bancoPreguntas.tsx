@@ -12,25 +12,33 @@ import {
 
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
-import { examenService, ExamenGrouped } from '../services/examenService';
+import { examenService } from '../services/examenService';
 import { premiumService, PremiumContent } from '../services/premiumService';
 import { modalidadService, Modalidad } from '../services/modalidadService';
 import { nivelService, Nivel } from '../services/nivelService';
 import { especialidadesService, Especialidad } from '../services/especialidadesService';
 
-// Mapeo estático para Tipos de Examen (según lo observado en la data)
 const TIPOS_EXAMEN = [
   { id: 1, nombre: 'Nombramiento' },
   { id: 2, nombre: 'Ascenso' },
   { id: 3, nombre: 'Directivos' },
 ];
 
+export interface ExamenFlat {
+  tipoExamenId: number;
+  fuenteId: number;
+  modalidadId: number;
+  nivelId: number | null;
+  especialidadId: number | null;
+  year: string | null;
+}
+
 const BancoPreguntasPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   // --- Data & Catalogs State ---
-  const [groupedData, setGroupedData] = useState<ExamenGrouped[]>([]);
+  const [groupedData, setGroupedData] = useState<ExamenFlat[]>([]);
   const [fuentes, setFuentes] = useState<PremiumContent[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
@@ -72,7 +80,79 @@ const BancoPreguntasPage = () => {
           especialidadesService.getAll()
         ]);
 
-        setGroupedData(grouped);
+        // Aplanar la estructura jerárquica
+        const flatData: ExamenFlat[] = [];
+        grouped.forEach(examen => {
+          if (!examen.fuentes || examen.fuentes.length === 0) {
+             // Caso base si no hay fuentes (aunque raro)
+             // flatData.push(...) - Omitir si no es útil
+             return; 
+          }
+          examen.fuentes.forEach(fuente => {
+             if (!fuente.modalidades || fuente.modalidades.length === 0) {
+                 flatData.push({
+                     tipoExamenId: examen.tipoExamenId,
+                     fuenteId: fuente.fuenteId,
+                     modalidadId: 0, // Placeholder or simply omit
+                     nivelId: null,
+                     especialidadId: null,
+                     year: null
+                 });
+                 return;
+             }
+             fuente.modalidades.forEach(modalidad => {
+                 if (!modalidad.niveles || modalidad.niveles.length === 0) {
+                      flatData.push({
+                          tipoExamenId: examen.tipoExamenId,
+                          fuenteId: fuente.fuenteId,
+                          modalidadId: modalidad.modalidadId,
+                          nivelId: null,
+                          especialidadId: null,
+                          year: null
+                      });
+                      return;
+                 }
+                 modalidad.niveles.forEach(nivel => {
+                      if (!nivel.especialidades || nivel.especialidades.length === 0) {
+                          flatData.push({
+                              tipoExamenId: examen.tipoExamenId,
+                              fuenteId: fuente.fuenteId,
+                              modalidadId: modalidad.modalidadId,
+                              nivelId: nivel.nivelId,
+                              especialidadId: null,
+                              year: null
+                          });
+                          return;
+                      }
+                      nivel.especialidades.forEach(especialidad => {
+                           if (!especialidad.years || especialidad.years.length === 0) {
+                               flatData.push({
+                                   tipoExamenId: examen.tipoExamenId,
+                                   fuenteId: fuente.fuenteId,
+                                   modalidadId: modalidad.modalidadId,
+                                   nivelId: nivel.nivelId,
+                                   especialidadId: especialidad.especialidadId,
+                                   year: null
+                               });
+                               return;
+                           }
+                           especialidad.years.forEach(year => {
+                               flatData.push({
+                                   tipoExamenId: examen.tipoExamenId,
+                                   fuenteId: fuente.fuenteId,
+                                   modalidadId: modalidad.modalidadId,
+                                   nivelId: nivel.nivelId,
+                                   especialidadId: especialidad.especialidadId,
+                                   year: year.year
+                               });
+                           });
+                      });
+                 });
+             });
+          });
+        });
+
+        setGroupedData(flatData);
         setFuentes(fuentesData);
         setModalidades(modalidadesData);
         setNiveles(nivelesData);
@@ -168,7 +248,7 @@ const BancoPreguntasPage = () => {
       (selectedEspecialidad ? d.especialidadId === Number(selectedEspecialidad) : true)
     );
 
-    const years = new Set(relevantData.map(d => d.year).filter(y => y)); // Filter out empty strings
+    const years = new Set(relevantData.map(d => d.year).filter((y): y is string => !!y)); // Filter out empty strings
     return Array.from(years).sort().reverse();
   }, [groupedData, selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad]);
 
