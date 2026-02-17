@@ -6,6 +6,7 @@ import { nivelService, Nivel } from '../../services/nivelService';
 import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
+import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -13,7 +14,9 @@ const UsersPage = () => {
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
+  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -32,6 +35,10 @@ const UsersPage = () => {
     passwordHash: '',
     fechaExpiracion: undefined,
     accesoIds: [],
+    estado: 'Activo',
+    tiempo: 0,
+    ie: '',
+    observaciones: '',
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -75,6 +82,10 @@ const UsersPage = () => {
       passwordHash: '',
       fechaExpiracion: undefined,
       accesoIds: [],
+      estado: 'Activo',
+      tiempo: 0,
+      ie: '',
+      observaciones: '',
     });
     setExpirationMode('custom');
   };
@@ -84,20 +95,21 @@ const UsersPage = () => {
       const data = await userService.getAll();
       setUsers(data);
     } catch (e) {
-      // Error loading users
+      console.error('Error loading users:', e);
     }
   };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, modalidadesData, nivelesData, tiposAccesoData] =
+      const [usersData, regionsData, modalidadesData, nivelesData, tiposAccesoData, especialidadesData] =
         await Promise.all([
           userService.getAll(),
           regionService.getAll(),
           modalidadService.getAll(),
           nivelService.getAll(),
           tipoAccesoService.getAll(),
+          especialidadesService.getAll(),
         ]);
 
       setUsers(usersData);
@@ -105,14 +117,16 @@ const UsersPage = () => {
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
       setTiposAcceso(tiposAccesoData);
+      setEspecialidades(especialidadesData);
     } catch (error) {
-      // Error loading data
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("UsersPage mounted");
     loadData();
   }, []);
 
@@ -122,7 +136,7 @@ const UsersPage = () => {
         if (Array.isArray(n.modalidadIds)) {
           return n.modalidadIds.includes(Number(formData.modalidadId));
         }
-        return n.modalidadIds === Number(formData.modalidadId);
+        return Number(n.modalidadIds) === Number(formData.modalidadId);
       });
       setFilteredNiveles(filtered);
     } else {
@@ -130,79 +144,68 @@ const UsersPage = () => {
     }
   }, [formData.modalidadId, niveles]);
 
+  useEffect(() => {
+    if (formData.nivelId) {
+      const filtered = especialidades.filter((e) => {
+        if (Array.isArray(e.nivelId)) {
+          return e.nivelId.includes(Number(formData.nivelId));
+        }
+        return Number(e.nivelId) === Number(formData.nivelId);
+      });
+      setFilteredEspecialidades(filtered);
+    } else {
+      setFilteredEspecialidades([]);
+    }
+  }, [formData.nivelId, especialidades]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const payload: any = { ...formData };
+      console.log("Payload original (pre-sanitización):", payload);
       
-      // Ensure accesoIds is an array of numbers
-      if (!Array.isArray(payload.accesoIds)) {
-          payload.accesoIds = [];
-      }
-      
-      // Sanitize Foreign Keys (send null if 0 or undefined)
-      if (!payload.regionId) payload.regionId = null;
-      if (!payload.modalidadId) payload.modalidadId = null;
-      if (!payload.nivelId) payload.nivelId = null;
-      if (!payload.especialidadId) payload.especialidadId = null;
+      // Ensure IDs are numbers
+      payload.regionId = Number(payload.regionId || 0);
+      payload.modalidadId = Number(payload.modalidadId || 0);
+      payload.nivelId = Number(payload.nivelId || 0);
+      payload.especialidadId = Number(payload.especialidadId || 0);
 
-      // Clear Premium fields if not Premium
+      // Default values
+      if (!payload.estado) payload.estado = 'Activo';
+      if (!payload.tiempo) payload.tiempo = 1;
+
+      // Handle Role constraints
       if (payload.role !== 'Premium') {
-        delete payload.ie;
-        delete payload.observaciones;
-        delete payload.fechaExpiracion;
+        payload.ie = "";
+        payload.observaciones = "";
+        payload.accesoIds = [];
+      } else if (!Array.isArray(payload.accesoIds)) {
+        payload.accesoIds = [];
       }
+
+      // Cleanup payload for backend
+      delete payload.passwordHash;
+      delete payload.fechaExpiracion;
+      delete payload.region;
+      delete payload.modalidad;
+      delete payload.nivel;
+      delete payload.especialidad;
+
+      console.log("Payload final que se enviará al Backend:", payload);
 
       if (editingUser) {
-        // Reconstruct nested objects (some backends require them even if ID is present)
-        const selectedRegion = regions.find((r) => r.id === formData.regionId);
-        const selectedModalidad = modalidades.find(
-          (m) => m.id === formData.modalidadId
-        );
-        const selectedNivel = niveles.find((n) => n.id === formData.nivelId);
-
-        if (selectedRegion) {
-          payload.region = {
-            id: selectedRegion.id,
-            nombre: selectedRegion.nombre,
-          };
-        }
-        if (selectedModalidad) {
-          payload.modalidad = {
-            id: selectedModalidad.id,
-            nombre: selectedModalidad.nombre,
-          };
-        }
-        // Nesting logic based on schema provided by user (Nivel contains Modalidad?)
-        if (selectedNivel) {
-          payload.nivel = {
-            id: selectedNivel.id,
-            nombre: selectedNivel.nombre,
-            modalidadId: selectedNivel.modalidadId,
-            modalidad: { id: selectedNivel.modalidadId, nombre: 'string' }, // Mocking if we don't have full object ref handy without lookup, or lookup again
-          };
-          // Better lookup for nested
-          const modalForNivel = modalidades.find(
-            (m) => m.id === selectedNivel.modalidadId
-          );
-          if (modalForNivel) {
-            payload.nivel.modalidad = {
-              id: modalForNivel.id,
-              nombre: modalForNivel.nombre,
-            };
-          }
-        }
-
         await userService.update(editingUser.id, payload);
       } else {
+        delete payload.id;
         await userService.create(payload as User);
       }
+      
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
-      loadUsersOnly();
+      await loadUsersOnly();
     } catch (error) {
-      // Error saving user
+      console.error('Error in handleSubmit:', error);
     }
   };
 
@@ -791,7 +794,7 @@ const UsersPage = () => {
                   </select>
                 </div>
 
-                <div className="col-span-1 md:col-span-2">
+                <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Nivel
                   </label>
@@ -801,6 +804,7 @@ const UsersPage = () => {
                       setFormData({
                         ...formData,
                         nivelId: Number(e.target.value),
+                        especialidadId: 0, // Reset especialidad
                       })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
@@ -809,6 +813,29 @@ const UsersPage = () => {
                     {filteredNiveles.map((n) => (
                       <option key={n.id} value={n.id}>
                         {n.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Especialidad
+                  </label>
+                  <select
+                    value={formData.especialidadId ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        especialidadId: Number(e.target.value),
+                      })
+                    }
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                  >
+                    <option value={0}>Seleccionar Especialidad</option>
+                    {filteredEspecialidades.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.nombre}
                       </option>
                     ))}
                   </select>

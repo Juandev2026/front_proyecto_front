@@ -87,19 +87,24 @@ export const userService = {
 
   create: async (user: Omit<User, 'id'>): Promise<User> => {
     try {
-      const payload = {
-        ...user,
-        id: 0,
-        // ensure required fields are present if not strictly typed in Omit
-      };
-
+      console.log('UserService.create payload:', user);
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(user),
       });
       if (!response.ok) {
-        throw new Error('Error al crear usuario');
+        const text = await response.text();
+        console.log('Backend raw response text:', text);
+        let errorData;
+        try {
+          errorData = JSON.parse(text);
+          console.error('Backend error details (parsed):', errorData);
+        } catch (e) {
+          console.error('Could not parse backend error as JSON');
+          errorData = { message: text };
+        }
+        throw new Error(errorData.message || `Error ${response.status}: ${text}`);
       }
       return await response.json();
     } catch (error) {
