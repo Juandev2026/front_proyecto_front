@@ -23,6 +23,24 @@ const RespuestasErroneasPage = () => {
   // State
   const [modalidad, setModalidad] = useState('Educación Básica Alternativa - Inicial - Intermedio');
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  // Mock Question Data
+  const MOCK_QUESTIONS = [
+    {
+      id: 90,
+      type: 'Pregunta Común',
+      text: 'Un estudiante realiza el siguiente comentario:',
+      comment: '"Yo creo que, si hay espacio libre en el envase, este no se va a hundir, sin importar lo que coloquemos dentro".',
+      subText: '¿Cuál de las siguientes acciones es pertinente que realice el docente para retroalimentar al estudiante respecto del error en su comentario?',
+      options: [
+        { id: 'A', text: 'Proponerle que repita la experiencia colocando una esfera pequeña de acero en el interior del envase.', status: 'correct' },
+        { id: 'B', text: 'Proponerle que vuelva a realizar la experiencia utilizando envases del mismo material, pero de mayor volumen.', status: 'neutral' },
+        { id: 'C', text: 'Preguntarle cómo puede relacionar su comentario con el hecho de que hay barcos muy grandes que pueden flotar en el agua.', status: 'wrong' },
+      ],
+      sustento: 'Sin justificación disponible'
+    }
+  ];
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -208,27 +226,87 @@ const RespuestasErroneasPage = () => {
            </div>
 
            {/* History List */}
-           <div className="space-y-3">
+           <div className="space-y-4">
               {[
+                 { date: '29 de enero de 2026', errors: 1, points: 1.5 },
                  { date: '14 de enero de 2026', errors: 4, points: 6 },
                  { date: '2 de enero de 2026', errors: 1, points: 1.5 },
                  { date: '1 de diciembre de 2025', errors: 1, points: 1.5 },
-                 { date: '11 de noviembre de 2025', errors: 2, points: 3 },
               ].map((item, index) => (
-                 <div key={index} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
-                    <span className="font-bold text-gray-700 text-sm">Errores - {item.date}</span>
-                    
-                    <div className="flex items-center gap-4">
-                       <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">{item.errors} {item.errors === 1 ? 'error' : 'errores'}</span>
-                       <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold">{item.points} pts</span>
-                       <ChevronDownIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
+                 <div key={index} className="space-y-3">
+                    {/* Header Row */}
+                    <div 
+                      onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${expandedIndex === index ? 'border-cyan-400 bg-gray-50 shadow-sm' : 'border-gray-100 hover:bg-gray-50'}`}
+                    >
+                       <span className="font-bold text-[#002B6B] text-sm md:text-base">Errores - {item.date}</span>
+                       
+                       <div className="flex items-center gap-4">
+                          <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
+                             <span className="text-base leading-none font-bold">!</span> {item.errors} {item.errors === 1 ? 'error' : 'errores'}
+                          </span>
+                          <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">{item.points} pts</span>
+                          <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${expandedIndex === index ? 'rotate-180 text-[#002B6B]' : 'group-hover:text-gray-600'}`} />
+                       </div>
                     </div>
+
+                    {/* Expanded Content */}
+                    {expandedIndex === index && (
+                       <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          {MOCK_QUESTIONS.map((q) => (
+                             <div key={q.id} className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4">
+                                {/* Question Header */}
+                                <div className="flex items-center gap-3">
+                                   <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
+                                      {q.id}
+                                   </div>
+                                   <span className="font-bold text-[#2B3674] text-lg">{q.type}</span>
+                                </div>
+
+                                {/* Question Body */}
+                                <div className="space-y-4 text-[#2B3674] font-medium">
+                                   <p>{q.text}</p>
+                                   
+                                   {/* Comment Box */}
+                                   <div className="bg-gray-100 rounded-lg p-6 my-4 italic text-center text-gray-700 font-normal">
+                                      {q.comment}
+                                   </div>
+
+                                   <p>{q.subText}</p>
+                                </div>
+
+                                {/* Options Grid */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                                   {q.options.map((opt) => (
+                                      <div 
+                                        key={opt.id}
+                                        className={`flex flex-col gap-2 p-5 rounded-xl border-2 transition-all ${
+                                          opt.status === 'correct' ? 'border-green-400 bg-green-50 shadow-sm' : 
+                                          opt.status === 'wrong' ? 'border-red-400 bg-red-50 shadow-sm' : 
+                                          'border-gray-200 bg-white opacity-80'
+                                        }`}
+                                      >
+                                         <div className="flex gap-3">
+                                            <span className="font-bold text-lg">{opt.id})</span>
+                                            <span className="text-sm md:text-base leading-relaxed">{opt.text}</span>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+
+                                {/* Sustento */}
+                                <div className="pt-4 border-t border-gray-100 mt-6">
+                                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Sustento :</p>
+                                   <p className="text-gray-500 text-sm">{q.sustento}</p>
+                                </div>
+                             </div>
+                          ))}
+                       </div>
+                    )}
                  </div>
               ))}
            </div>
-
         </div>
-
       </div>
     </PremiumLayout>
   );

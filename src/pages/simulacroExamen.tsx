@@ -51,6 +51,22 @@ const SimulacroExamenPage = () => {
     .filter(([_, isSelected]) => isSelected)
     .map(([year]) => year);
 
+  const handleClear = () => {
+    setModalidad('Educación Básica Regular');
+    setNivel('');
+    setSelectedYears({
+      '2018': false,
+      '2019': false,
+      '2022': false,
+      '2024': false,
+      '2025': false,
+    });
+  };
+
+  const handleConfirm = () => {
+    router.push('/examen');
+  };
+
   return (
     <PremiumLayout title="Simulacro de Examen" breadcrumb="Pages / Simulacro de Examen">
       <Head>
@@ -158,8 +174,25 @@ const SimulacroExamenPage = () => {
               </div>
            </div>
 
+           {/* Buttons */}
+           <div className="flex justify-center gap-4 mt-6">
+              <button 
+                onClick={handleClear}
+                className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium text-sm md:text-base"
+              >
+                 <XIcon className="h-4 w-4" />
+                 Limpiar
+              </button>
+              <button 
+                 onClick={handleConfirm}
+                 disabled={selectedYearsList.length < 2 || !nivel}
+                 className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
+                 Confirmar selección
+              </button>
+           </div>
+
            {/* Footer Note */}
-           <div className="flex items-start gap-2 text-xs text-gray-600 px-2">
+           <div className="flex items-start gap-2 text-xs text-gray-600 px-2 mt-4">
               <span className="font-bold">•</span>
               <p>Si desea solo de un año determinado en específico puede ir al módulo de <a href="/bancoPreguntas" className="font-bold text-gray-800 hover:underline">Banco de preguntas</a></p>
            </div>
