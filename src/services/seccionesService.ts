@@ -9,6 +9,10 @@ export interface Seccion {
   modalidadId: number | null;
   nivelId: number | null;
   especialidadId: number | null;
+  tipoExamenNombre?: string;
+  modalidadNombre?: string;
+  nivelNombre?: string;
+  especialidadNombre?: string;
   estado?: string;
   categoriasCount?: number;
 }
@@ -25,7 +29,7 @@ export interface CreateSeccionRequest {
 export const seccionesService = {
   getAll: async (): Promise<Seccion[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones`, {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener secciones');
@@ -38,7 +42,7 @@ export const seccionesService = {
 
   create: async (data: CreateSeccionRequest): Promise<Seccion> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones`, {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
@@ -54,12 +58,25 @@ export const seccionesService = {
     }
   },
 
-  update: async (id: number, data: Partial<CreateSeccionRequest>): Promise<void> => {
+  getById: async (id: number): Promise<Seccion> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Error al obtener sección');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching seccion by id:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: number, data: CreateSeccionRequest): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ id, ...data }),
+        body: JSON.stringify({ ...data }),
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -73,7 +90,7 @@ export const seccionesService = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });

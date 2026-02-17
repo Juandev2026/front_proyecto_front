@@ -11,12 +11,18 @@ import {
 
 import AdminLayout from '../../../components/AdminLayout';
 import { seccionesService, Seccion as APISeccion } from '../../../services/seccionesService';
+import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
+import { estructuraAcademicaService, Modalidad } from '../../../services/estructuraAcademicaService';
 
 // Interfaz para definir la estructura de datos
 interface Seccion {
   id: number;
   nombre: string;
   descripcion: string;
+  tipoExamenId: number | null;
+  modalidadId: number | null;
+  nivelId: number | null;
+  especialidadId: number | null;
   tipoExamenNombre?: string;
   estado: string;
   categoriasCount: number;
@@ -43,11 +49,19 @@ const AdminPremiumSecciones = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [seccionToDelete, setSeccionToDelete] = useState<number | null>(null);
 
+  // --- API DATA ---
+  const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+
   // --- MODAL STATE ---
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSection, setNewSection] = useState({
       nombre: '',
       descripcion: '',
+      tipoExamenId: null as number | null,
+      modalidadId: null as number | null,
+      nivelId: null as number | null,
+      especialidadId: null as number | null,
       isDefault: false,
       isVisible: true
   });
@@ -68,7 +82,11 @@ const AdminPremiumSecciones = () => {
         id: s.id,
         nombre: s.nombre,
         descripcion: s.descripcion,
-        tipoExamenNombre: 'General', // Default since others are null
+        tipoExamenId: s.tipoExamenId,
+        modalidadId: s.modalidadId,
+        nivelId: s.nivelId,
+        especialidadId: s.especialidadId,
+        tipoExamenNombre: s.tipoExamenNombre || 'General',
         estado: s.estado || 'Visible',
         categoriasCount: s.categoriasCount || 0
       }));
@@ -80,14 +98,28 @@ const AdminPremiumSecciones = () => {
     }
   };
 
+  const fetchApiData = async () => {
+    try {
+      const [tipos, modular] = await Promise.all([
+        tipoAccesoService.getAll(),
+        estructuraAcademicaService.getAll()
+      ]);
+      setTiposAcceso(tipos);
+      setModalidades(modular);
+    } catch (error) {
+      console.error("Error fetching supplemental API data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchSections();
+    fetchApiData();
   }, []);
 
   const handleCreateSection = async () => {
       // Basic validation
-      if (!newSection.nombre) {
-          alert("Por favor ingrese el nombre de la sección.");
+      if (!newSection.nombre || !newSection.descripcion || !newSection.tipoExamenId) {
+          alert("Por favor complete los campos obligatorios (*).");
           return;
       }
 
@@ -95,10 +127,10 @@ const AdminPremiumSecciones = () => {
           await seccionesService.create({
               nombre: newSection.nombre,
               descripcion: newSection.descripcion,
-              tipoExamenId: null,
-              modalidadId: null,
-              nivelId: null,
-              especialidadId: null
+              tipoExamenId: newSection.tipoExamenId,
+              modalidadId: newSection.modalidadId,
+              nivelId: newSection.nivelId,
+              especialidadId: newSection.especialidadId
           });
           
           await fetchSections();
@@ -106,9 +138,14 @@ const AdminPremiumSecciones = () => {
           setNewSection({
               nombre: '',
               descripcion: '',
+              tipoExamenId: null,
+              modalidadId: null,
+              nivelId: null,
+              especialidadId: null,
               isDefault: false,
               isVisible: true
           });
+          alert("Sección creada con éxito.");
       } catch (error) {
           alert("Error al crear la sección.");
       }
@@ -123,7 +160,11 @@ const AdminPremiumSecciones = () => {
      try {
        await seccionesService.update(editingSection.id, {
          nombre: editingSection.nombre,
-         descripcion: editingSection.descripcion
+         descripcion: editingSection.descripcion,
+         tipoExamenId: editingSection.tipoExamenId,
+         modalidadId: editingSection.modalidadId,
+         nivelId: editingSection.nivelId,
+         especialidadId: editingSection.especialidadId
        });
        await fetchSections();
        setShowEditModal(false);
@@ -372,24 +413,20 @@ const AdminPremiumSecciones = () => {
       {/* --- ADD SECTION MODAL --- */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-spawn">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 pb-0">
-                    <h2 className="text-xl font-bold text-gray-900">Crear Nueva Sección</h2>
-                    <button onClick={() => setShowAddModal(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                    <h2 className="text-xl font-bold text-gray-900">Registrar Nueva Sección</h2>
+                    <button onClick={() => setShowAddModal(false)} className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
                         <span className="text-lg">&times;</span>
                     </button>
-                </div>
-
-                <div className="px-6 pt-4">
-                   <p className="text-xs text-gray-500">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
                 </div>
 
                 {/* Body */}
                 <div className="p-6 space-y-4">
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre *</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -401,21 +438,125 @@ const AdminPremiumSecciones = () => {
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Descripción *</label>
                         <textarea 
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
-                            placeholder="Ingrese una descripción para la sección"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 h-20 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                            placeholder="Ingrese la descripción de la sección"
                             value={newSection.descripcion}
                             onChange={(e) => setNewSection({...newSection, descripcion: e.target.value})}
                         />
                     </div>
+
+                    {/* Tipo de Examen */}
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Tipo de Examen *</label>
+                        <select 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                            value={newSection.tipoExamenId || ''}
+                            onChange={(e) => setNewSection({...newSection, tipoExamenId: Number(e.target.value) || null})}
+                        >
+                            <option value="">Seleccione un tipo de examen</option>
+                            {tiposAcceso.map(t => (
+                                <option key={t.id} value={t.id}>{t.descripcion}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Checkboxes */}
+                    <div className="flex items-center gap-6 pt-1">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                checked={newSection.isDefault}
+                                onChange={(e) => setNewSection({...newSection, isDefault: e.target.checked})}
+                            />
+                            <span className="text-xs text-gray-700">Marcar como sección por defecto</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                checked={newSection.isVisible}
+                                onChange={(e) => setNewSection({...newSection, isVisible: e.target.checked})}
+                            />
+                            <span className="text-xs text-gray-700">Sección visible</span>
+                        </label>
+                    </div>
+
+                    {/* Categorías Section */}
+                    <div className="pt-2 border-t border-gray-100">
+                        <h3 className="text-sm font-bold text-[#002B6B] mb-3">Categorías *</h3>
+                        
+                        <div className="space-y-4">
+                            {/* Tipo (Modalidad) */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
+                                <select 
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                    value={newSection.modalidadId || ''}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value) || null;
+                                        setNewSection({...newSection, modalidadId: val, nivelId: null, especialidadId: null});
+                                    }}
+                                >
+                                    <option value="">Selecciona tipo</option>
+                                    {modalidades.map(m => (
+                                        <option key={m.id} value={m.id}>{m.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Nivel (Depends on Modalidad) */}
+                            {newSection.modalidadId && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Nivel</label>
+                                    <select 
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                        value={newSection.nivelId || ''}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value) || null;
+                                            setNewSection({...newSection, nivelId: val, especialidadId: null});
+                                        }}
+                                    >
+                                        <option value="">Selecciona nivel</option>
+                                        {modalidades.find(m => m.id === newSection.modalidadId)?.niveles.map(n => (
+                                            <option key={n.id} value={n.id}>{n.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Especialidad (Depends on Nivel) */}
+                            {newSection.nivelId && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Especialidad</label>
+                                    <select 
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                        value={newSection.especialidadId || ''}
+                                        onChange={(e) => setNewSection({...newSection, especialidadId: Number(e.target.value) || null})}
+                                    >
+                                        <option value="">Selecciona especialidad</option>
+                                        {modalidades.find(m => m.id === newSection.modalidadId)?.niveles.find(n => n.id === newSection.nivelId)?.especialidades.map(esp => (
+                                            <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+
+                        <button className="mt-4 flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors">
+                            <PlusIcon className="w-4 h-4" />
+                            Agregar Categoría
+                        </button>
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 pt-0 flex gap-4">
+                <div className="p-6 pt-2 flex gap-4 bg-gray-50">
                     <button 
                         onClick={() => setShowAddModal(false)}
-                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-white transition-colors font-medium text-sm"
                     >
                         Cancelar
                     </button>
@@ -432,16 +573,18 @@ const AdminPremiumSecciones = () => {
 
       {/* --- EDIT SECTION MODAL --- */}
       {showEditModal && editingSection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-spawn">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800">Editar Sección</h2>
-                    <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-red-500 transition-colors text-2xl">&times;</button>
+                    <button onClick={() => setShowEditModal(false)} className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <span className="text-lg">&times;</span>
+                    </button>
                 </div>
 
                 <div className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Nombre *</label>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre *</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -451,19 +594,96 @@ const AdminPremiumSecciones = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Descripción *</label>
                         <textarea 
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 h-20 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
                             value={editingSection.descripcion}
                             onChange={(e) => setEditingSection({...editingSection, descripcion: e.target.value})}
                         />
+                    </div>
+
+                    {/* Tipo de Examen */}
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Tipo de Examen *</label>
+                        <select 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                            value={editingSection.tipoExamenId || ''}
+                            onChange={(e) => setEditingSection({...editingSection, tipoExamenId: Number(e.target.value) || null})}
+                        >
+                            <option value="">Seleccione un tipo de examen</option>
+                            {tiposAcceso.map(t => (
+                                <option key={t.id} value={t.id}>{t.descripcion}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Categorías Section */}
+                    <div className="pt-2 border-t border-gray-100">
+                        <h3 className="text-sm font-bold text-[#002B6B] mb-3">Categorías *</h3>
+                        
+                        <div className="space-y-4">
+                            {/* Tipo (Modalidad) */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
+                                <select 
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                    value={editingSection.modalidadId || ''}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value) || null;
+                                        setEditingSection({...editingSection, modalidadId: val, nivelId: null, especialidadId: null});
+                                    }}
+                                >
+                                    <option value="">Selecciona tipo</option>
+                                    {modalidades.map(m => (
+                                        <option key={m.id} value={m.id}>{m.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Nivel */}
+                            {editingSection.modalidadId && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Nivel</label>
+                                    <select 
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                        value={editingSection.nivelId || ''}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value) || null;
+                                            setEditingSection({...editingSection, nivelId: val, especialidadId: null});
+                                        }}
+                                    >
+                                        <option value="">Selecciona nivel</option>
+                                        {modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.map(n => (
+                                            <option key={n.id} value={n.id}>{n.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Especialidad */}
+                            {editingSection.nivelId && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Especialidad</label>
+                                    <select 
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
+                                        value={editingSection.especialidadId || ''}
+                                        onChange={(e) => setEditingSection({...editingSection, especialidadId: Number(e.target.value) || null})}
+                                    >
+                                        <option value="">Selecciona especialidad</option>
+                                        {modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.find(n => n.id === editingSection.nivelId)?.especialidades.map(esp => (
+                                            <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                     <button 
                         onClick={() => setShowEditModal(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-white font-medium text-sm"
+                        className="px-4 py-2 border border-blue-400 rounded-lg text-gray-600 hover:bg-white font-medium text-sm"
                     >
                         Cancelar
                     </button>
@@ -484,7 +704,9 @@ const AdminPremiumSecciones = () => {
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-spawn">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800">Información de Sección</h2>
-                    <button onClick={() => setShowViewModal(false)} className="text-gray-400 hover:text-red-500 transition-colors text-2xl">&times;</button>
+                    <button onClick={() => setShowViewModal(false)} className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <span className="text-lg">&times;</span>
+                    </button>
                 </div>
 
                  <div className="p-6 space-y-4">
@@ -500,12 +722,16 @@ const AdminPremiumSecciones = () => {
                         <p className="text-xs font-bold text-gray-500 uppercase">Descripción</p>
                         <p className="text-gray-800">{viewingSection.descripcion || 'Sin descripción'}</p>
                     </div>
+                    <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Tipo de Examen</p>
+                        <p className="text-gray-800">{viewingSection.tipoExamenNombre || 'General'}</p>
+                    </div>
                 </div>
                  
                 <div className="p-4 border-t border-gray-100 flex justify-end bg-gray-50">
                      <button 
                         onClick={() => setShowViewModal(false)}
-                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-white font-medium text-sm"
+                        className="px-6 py-2 border border-blue-400 rounded-lg text-gray-600 hover:bg-white font-medium text-sm"
                     >
                         Cerrar
                     </button>
