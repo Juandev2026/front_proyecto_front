@@ -8,6 +8,7 @@ import { especialidadesService, Especialidad } from '../../services/especialidad
 import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
+import { exportToExcel } from '../../utils/excelUtils';
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,6 +18,7 @@ const UsersPage = () => {
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
+  
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
   const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +39,10 @@ const UsersPage = () => {
     passwordHash: '',
     fechaExpiracion: undefined,
     accesoIds: [],
+    estado: 'Activo',
+    tiempo: 0,
+    ie: '',
+    observaciones: '',
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -80,6 +86,10 @@ const UsersPage = () => {
       passwordHash: '',
       fechaExpiracion: undefined,
       accesoIds: [],
+      estado: 'Activo',
+      tiempo: 0,
+      ie: '',
+      observaciones: '',
     });
     setExpirationMode('custom');
   };
@@ -89,21 +99,21 @@ const UsersPage = () => {
       const data = await userService.getAll();
       setUsers(data);
     } catch (e) {
-      // Error loading users
+      console.error('Error loading users:', e);
     }
   };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, modalidadesData, nivelesData, especialidadesData, tiposAccesoData] =
+      const [usersData, regionsData, modalidadesData, nivelesData, tiposAccesoData, especialidadesData] =
         await Promise.all([
           userService.getAll(),
           regionService.getAll(),
           modalidadService.getAll(),
           nivelService.getAll(),
-          especialidadesService.getAll(),
           tipoAccesoService.getAll(),
+          especialidadesService.getAll(),
         ]);
 
       setUsers(usersData);
@@ -113,13 +123,14 @@ const UsersPage = () => {
       setEspecialidades(especialidadesData);
       setTiposAcceso(tiposAccesoData);
     } catch (error) {
-      // Error loading data
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("UsersPage mounted");
     loadData();
   }, []);
 
@@ -129,7 +140,7 @@ const UsersPage = () => {
         if (Array.isArray(n.modalidadIds)) {
           return n.modalidadIds.includes(Number(formData.modalidadId));
         }
-        return n.modalidadIds === Number(formData.modalidadId);
+        return Number(n.modalidadIds) === Number(formData.modalidadId);
       });
       setFilteredNiveles(filtered);
     } else {
@@ -143,7 +154,7 @@ const UsersPage = () => {
         if (Array.isArray(e.nivelId)) {
           return e.nivelId.includes(Number(formData.nivelId));
         }
-        return e.nivelId === Number(formData.nivelId);
+        return Number(e.nivelId) === Number(formData.nivelId);
       });
       setFilteredEspecialidades(filtered);
     } else {
@@ -155,79 +166,51 @@ const UsersPage = () => {
     e.preventDefault();
     try {
       const payload: any = { ...formData };
+      console.log("Payload original (pre-sanitización):", payload);
       
-      // Ensure accesoIds is an array of numbers
-      if (!Array.isArray(payload.accesoIds)) {
-          payload.accesoIds = [];
-      }
-      
-      // Sanitize Foreign Keys (send null if 0 or undefined)
-      if (!payload.regionId) payload.regionId = null;
-      if (!payload.modalidadId) payload.modalidadId = null;
-      if (!payload.nivelId) payload.nivelId = null;
-      if (!payload.especialidadId) payload.especialidadId = null;
+      // Ensure IDs are numbers
+      payload.regionId = Number(payload.regionId || 0);
+      payload.modalidadId = Number(payload.modalidadId || 0);
+      payload.nivelId = Number(payload.nivelId || 0);
+      payload.especialidadId = Number(payload.especialidadId || 0);
 
-      // Clear Premium fields if not Premium
+      // Default values
+      if (!payload.estado) payload.estado = 'Activo';
+      if (!payload.tiempo) payload.tiempo = 1;
+
+      // Handle Role constraints
       if (payload.role !== 'Premium') {
-        delete payload.ie;
-        delete payload.observaciones;
-        delete payload.fechaExpiracion;
+        payload.ie = "";
+        payload.observaciones = "";
+        payload.accesoIds = [];
+      } else if (!Array.isArray(payload.accesoIds)) {
+        payload.accesoIds = [];
       }
 
-      console.log('Sending payload:', payload); // Debug payload
+      // Cleanup payload for backend
+      delete payload.passwordHash;
+      delete payload.fechaExpiracion;
+      delete payload.region;
+      delete payload.modalidad;
+      delete payload.nivel;
+      delete payload.especialidad;
+
+      console.log("Payload final que se enviará al Backend:", payload);
 
       if (editingUser) {
-        // ... existing edit logic ...
-        // Reconstruct nested objects (some backends require them even if ID is present)
-        const selectedRegion = regions.find((r) => r.id === formData.regionId);
-        const selectedModalidad = modalidades.find(
-          (m) => m.id === formData.modalidadId
-        );
-        const selectedNivel = niveles.find((n) => n.id === formData.nivelId);
-
-        if (selectedRegion) {
-          payload.region = {
-            id: selectedRegion.id,
-            nombre: selectedRegion.nombre,
-          };
-        }
-        if (selectedModalidad) {
-          payload.modalidad = {
-            id: selectedModalidad.id,
-            nombre: selectedModalidad.nombre,
-          };
-        }
-        // Nesting logic based on schema provided by user (Nivel contains Modalidad?)
-        if (selectedNivel) {
-          payload.nivel = {
-            id: selectedNivel.id,
-            nombre: selectedNivel.nombre,
-            modalidadId: selectedNivel.modalidadId,
-            modalidad: { id: selectedNivel.modalidadId, nombre: 'string' }, // Mocking if we don't have full object ref handy without lookup, or lookup again
-          };
-          // Better lookup for nested
-          const modalForNivel = modalidades.find(
-            (m) => m.id === selectedNivel.modalidadId
-          );
-          if (modalForNivel) {
-            payload.nivel.modalidad = {
-              id: modalForNivel.id,
-              nombre: modalForNivel.nombre,
-            };
-          }
-        }
-
         await userService.update(editingUser.id, payload);
       } else {
+        delete payload.id;
         await userService.create(payload as User);
       }
+      
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
-      loadUsersOnly();
+      await loadUsersOnly();
     } catch (error: any) {
-      console.error('Error saving user:', error);
-      alert(`Error al guardar usuario: ${error.message}`);
+      console.error('Error in handleSubmit:', error);
+      alert(`Error al guardar usuario: ${error.message || error}`);
     }
   };
 
@@ -313,6 +296,43 @@ const UsersPage = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  const handleExportExcel = async () => {
+    try {
+      const allUsers = await userService.getAll();
+      // On this page we show Admin and Client, but maybe the export should include all or follow the same filter?
+      // Usually export should match what's visible or all. I'll export all and let them filter in Excel.
+      
+      const dataToExport = allUsers.map(u => ({
+        'ID': u.id,
+        'Nombre Completo': u.nombreCompleto,
+        'Teléfono': u.celular || '-',
+        'Email': u.email,
+        'Rol': u.role,
+        'Estado': u.estado || 'Activo',
+        'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
+        'Suscripciones Activas': u.modalidad?.nombre ? `${u.modalidad.nombre}: ${u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-'}` : '-',
+        'Modalidad': u.modalidad?.nombre || '-',
+        'Nivel': u.nivel?.nombre || '-',
+        'Especialidad': u.especialidad?.nombre || '-',
+        'Región': u.region?.nombre || '-',
+        'IE': u.ie || '-',
+        'Observaciones': u.observaciones || '-'
+      }));
+
+      const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
+      exportToExcel(dataToExport, `Reporte_Usuarios_${today}`, 'Usuarios');
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("Error al exportar a Excel");
+    }
+  };
+
+  const handleCreateUser = () => {
+      setEditingUser(null);
+      resetForm();
+      setIsModalOpen(true);
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -336,11 +356,16 @@ const UsersPage = () => {
             />
           </div>
           <button
-            onClick={() => {
-              setEditingUser(null);
-              resetForm();
-              setIsModalOpen(true);
-            }}
+            onClick={handleExportExcel}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
+          >
+            <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Exportar Excel
+          </button>
+          <button
+            onClick={handleCreateUser}
             className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors whitespace-nowrap"
           >
             Crear Usuario
@@ -818,7 +843,7 @@ const UsersPage = () => {
                   </select>
                 </div>
 
-                <div className="col-span-1 md:col-span-2">
+                <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Nivel
                   </label>
