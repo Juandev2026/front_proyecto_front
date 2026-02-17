@@ -99,7 +99,8 @@ export const userService = {
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error('Error al crear usuario');
+        const errorText = await response.text();
+        throw new Error(`Error al crear usuario: ${response.status} ${errorText}`);
       }
       return await response.json();
     } catch (error) {

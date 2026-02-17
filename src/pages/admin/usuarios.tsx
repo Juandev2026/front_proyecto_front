@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
+
 import { nivelService, Nivel } from '../../services/nivelService';
+import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
@@ -11,9 +13,12 @@ const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+
   const [niveles, setNiveles] = useState<Nivel[]>([]);
+  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -91,12 +96,13 @@ const UsersPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, modalidadesData, nivelesData, tiposAccesoData] =
+      const [usersData, regionsData, modalidadesData, nivelesData, especialidadesData, tiposAccesoData] =
         await Promise.all([
           userService.getAll(),
           regionService.getAll(),
           modalidadService.getAll(),
           nivelService.getAll(),
+          especialidadesService.getAll(),
           tipoAccesoService.getAll(),
         ]);
 
@@ -104,6 +110,7 @@ const UsersPage = () => {
       setRegions(regionsData);
       setModalidades(modalidadesData);
       setNiveles(nivelesData);
+      setEspecialidades(especialidadesData);
       setTiposAcceso(tiposAccesoData);
     } catch (error) {
       // Error loading data
@@ -130,6 +137,20 @@ const UsersPage = () => {
     }
   }, [formData.modalidadId, niveles]);
 
+  useEffect(() => {
+    if (formData.nivelId) {
+      const filtered = especialidades.filter((e) => {
+        if (Array.isArray(e.nivelId)) {
+          return e.nivelId.includes(Number(formData.nivelId));
+        }
+        return e.nivelId === Number(formData.nivelId);
+      });
+      setFilteredEspecialidades(filtered);
+    } else {
+      setFilteredEspecialidades([]);
+    }
+  }, [formData.nivelId, especialidades]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -153,7 +174,10 @@ const UsersPage = () => {
         delete payload.fechaExpiracion;
       }
 
+      console.log('Sending payload:', payload); // Debug payload
+
       if (editingUser) {
+        // ... existing edit logic ...
         // Reconstruct nested objects (some backends require them even if ID is present)
         const selectedRegion = regions.find((r) => r.id === formData.regionId);
         const selectedModalidad = modalidades.find(
@@ -201,8 +225,9 @@ const UsersPage = () => {
       setEditingUser(null);
       resetForm();
       loadUsersOnly();
-    } catch (error) {
-      // Error saving user
+    } catch (error: any) {
+      console.error('Error saving user:', error);
+      alert(`Error al guardar usuario: ${error.message}`);
     }
   };
 
@@ -777,7 +802,9 @@ const UsersPage = () => {
                       setFormData({
                         ...formData,
                         modalidadId: Number(e.target.value),
+
                         nivelId: 0, // Reset nivel
+                        especialidadId: 0, // Reset especialidad
                       })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
@@ -801,6 +828,7 @@ const UsersPage = () => {
                       setFormData({
                         ...formData,
                         nivelId: Number(e.target.value),
+                        especialidadId: 0, // Reset especialidad
                       })
                     }
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
@@ -809,6 +837,29 @@ const UsersPage = () => {
                     {filteredNiveles.map((n) => (
                       <option key={n.id} value={n.id}>
                         {n.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-span-1 md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-gray-900">
+                    Especialidad
+                  </label>
+                  <select
+                    value={formData.especialidadId ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        especialidadId: Number(e.target.value),
+                      })
+                    }
+                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                  >
+                    <option value={0}>Seleccionar Especialidad</option>
+                    {filteredEspecialidades.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.nombre}
                       </option>
                     ))}
                   </select>

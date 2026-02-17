@@ -10,7 +10,8 @@ import {
   MenuIcon,
   DownloadIcon,
   EyeIcon,
-  UploadIcon
+  UploadIcon,
+  XIcon
 } from '@heroicons/react/outline';
 
 // --- TYPES ---
@@ -33,6 +34,12 @@ interface Section {
   id: number;
   title: string;
   subsections: Subsection[];
+}
+
+interface IntroContent {
+  title: string;
+  description: string;
+  videoUrl: string;
 }
 
 // --- MOCK DATA ---
@@ -78,6 +85,25 @@ const Recursos = () => {
   const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Default first open
   const [expandedSubsections, setExpandedSubsections] = useState<number[]>([101]);
 
+  // Intro Content State
+  const [introContent, setIntroContent] = useState<IntroContent>({
+    title: '¿CÓMO NAVEGAR EN ESCALA DOCENTE?',
+    description: 'Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO. PRONTO: GENERADORES DE PROMPT PARA SESIONES Y COMUNIDAD VIP.',
+    videoUrl: 'https://youtube.com/shorts/w54preUQrN4?feature=share'
+  });
+  const [isIntroModalOpen, setIsIntroModalOpen] = useState(false);
+  const [editingIntro, setEditingIntro] = useState<IntroContent>({ title: '', description: '', videoUrl: '' });
+
+  const handleOpenIntroModal = () => {
+    setEditingIntro({ ...introContent });
+    setIsIntroModalOpen(true);
+  };
+
+  const handleSaveIntro = () => {
+    setIntroContent(editingIntro);
+    setIsIntroModalOpen(false);
+  };
+
   const toggleSection = (id: number) => {
     setExpandedSections(prev => 
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
@@ -120,7 +146,11 @@ const Recursos = () => {
             <PlusIcon className="w-5 h-5 mr-2" />
             Nueva sección
         </button>
-         <button className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded-lg border border-gray-300 flex items-center shadow-sm transition-colors">
+
+        <button 
+            onClick={handleOpenIntroModal}
+            className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded-lg border border-gray-300 flex items-center shadow-sm transition-colors"
+        >
             <DocumentTextIcon className="w-5 h-5 mr-2" />
             Contenido intro
         </button>
@@ -148,9 +178,9 @@ const Recursos = () => {
              <button className="text-red-400 hover:text-red-600 p-1"><TrashIcon className="w-5 h-5"/></button>
         </div>
         <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full mb-3 inline-block">Contenido Intro</span>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">¿CÓMO NAVEGAR EN ESCALA DOCENTE?</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{introContent.title}</h2>
         <p className="text-gray-600 text-sm mb-6 max-w-2xl">
-            Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO. PRONTO: GENERADORES DE PROMPT PARA SESIONES Y COMUNIDAD VIP.
+            {introContent.description}
         </p>
         <div className="flex gap-3">
              <button className="flex-1 max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors">
@@ -282,6 +312,79 @@ const Recursos = () => {
             </div>
         ))}
       </div>
+
+      {/* Intro Modal */}
+      {isIntroModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900">Contenido de Introducción</h3>
+                    <button onClick={() => setIsIntroModalOpen(false)} className="bg-red-500 rounded-full p-1 text-white hover:bg-red-600">
+                        <XIcon className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="p-6 space-y-4">
+                    <p className="text-xs text-gray-500 mb-4">
+                        Configure el contenido de introducción del módulo con nombre, descripción y URL del video
+                    </p>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del módulo *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            value={editingIntro.title}
+                            onChange={(e) => setEditingIntro({...editingIntro, title: e.target.value})}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+                        <textarea 
+                            rows={4}
+                            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                            value={editingIntro.description}
+                            onChange={(e) => setEditingIntro({...editingIntro, description: e.target.value})}
+                        />
+                    </div>
+
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">URL del video *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            value={editingIntro.videoUrl}
+                            onChange={(e) => setEditingIntro({...editingIntro, videoUrl: e.target.value})}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Ingrese la URL completa del video de introducción</p>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <span className="text-blue-600 font-bold text-xs block mb-1">Configuración actual:</span>
+                        <div className="text-xs space-y-1">
+                             <p><span className="font-bold text-blue-700">Nombre:</span> <span className="text-blue-600">{introContent.title}</span></p>
+                             <p><span className="font-bold text-blue-700">Descripción:</span> <span className="text-blue-600">{introContent.description}</span></p>
+                             <p><span className="font-bold text-blue-700">URL:</span> <span className="text-blue-600 truncate block">{introContent.videoUrl}</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+                     <button 
+                        onClick={() => setIsIntroModalOpen(false)}
+                        className="text-gray-700 font-medium py-2 px-6 rounded-lg border border-gray-300 hover:bg-white bg-white transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        onClick={handleSaveIntro}
+                        className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
+                    >
+                        Actualizar Contenido
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
     </AdminLayout>
   );
