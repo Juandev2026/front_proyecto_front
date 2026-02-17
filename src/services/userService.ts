@@ -51,6 +51,7 @@ export interface User {
   ie?: string;
   observaciones?: string;
   tiempo?: number;
+  accesoIds?: number[];
 }
 
 export const userService = {
