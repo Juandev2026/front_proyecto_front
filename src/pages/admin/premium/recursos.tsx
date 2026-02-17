@@ -13,6 +13,7 @@ import {
   UploadIcon,
   XIcon
 } from '@heroicons/react/outline';
+import { seccionesService } from '../../../services/seccionesService';
 
 // --- TYPES ---
 interface Resource {
@@ -94,6 +95,13 @@ const Recursos = () => {
   const [isIntroModalOpen, setIsIntroModalOpen] = useState(false);
   const [editingIntro, setEditingIntro] = useState<IntroContent>({ title: '', description: '', videoUrl: '' });
 
+  // New Section Modal State
+  const [isAddSectionModalOpen, setIsAddSectionModalOpen] = useState(false);
+  const [newSection, setNewSection] = useState({
+    nombre: '',
+    descripcion: ''
+  });
+
   const handleOpenIntroModal = () => {
     setEditingIntro({ ...introContent });
     setIsIntroModalOpen(true);
@@ -102,6 +110,31 @@ const Recursos = () => {
   const handleSaveIntro = () => {
     setIntroContent(editingIntro);
     setIsIntroModalOpen(false);
+  };
+
+  const handleCreateSection = async () => {
+    if (!newSection.nombre) {
+      alert("Por favor ingrese el nombre de la sección.");
+      return;
+    }
+
+    try {
+      await seccionesService.create({
+        nombre: newSection.nombre,
+        descripcion: newSection.descripcion,
+        tipoExamenId: null,
+        modalidadId: null,
+        nivelId: null,
+        especialidadId: null
+      });
+      // In a real app, we'd fetch the sections again here
+      // fetchSections(); 
+      setIsAddSectionModalOpen(false);
+      setNewSection({ nombre: '', descripcion: '' });
+      alert("Sección creada con éxito");
+    } catch (error) {
+      alert("Error al crear la sección.");
+    }
   };
 
   const toggleSection = (id: number) => {
@@ -142,7 +175,10 @@ const Recursos = () => {
 
        {/* --- ACTIONS HEADER --- */}
       <div className="flex gap-4 mb-8">
-        <button className="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center shadow-md transition-colors">
+        <button 
+          onClick={() => setIsAddSectionModalOpen(true)}
+          className="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center shadow-md transition-colors"
+        >
             <PlusIcon className="w-5 h-5 mr-2" />
             Nueva sección
         </button>
@@ -216,7 +252,7 @@ const Recursos = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="bg-primary hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors">
+                        <button className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white">
                             <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
                         </button>
                          <button className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors">
@@ -264,10 +300,10 @@ const Recursos = () => {
                                             </button>
                                              <button className="text-gray-500 hover:text-blue-600 p-1.5 border border-gray-200 rounded bg-white transition-colors">
                                                 <PencilIcon className="w-3.5 h-3.5" />
-                                            </button>
+                                             </button>
                                              <button className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors">
                                                 <TrashIcon className="w-3.5 h-3.5" />
-                                            </button>
+                                             </button>
                                          </div>
                                      </div>
 
@@ -323,7 +359,7 @@ const Recursos = () => {
                         <XIcon className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 text-left">
                     <p className="text-xs text-gray-500 mb-4">
                         Configure el contenido de introducción del módulo con nombre, descripción y URL del video
                     </p>
@@ -380,6 +416,67 @@ const Recursos = () => {
                         className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
                     >
                         Actualizar Contenido
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* --- ADD SECTION MODAL --- */}
+      {isAddSectionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+                {/* Header */}
+                <div className="flex justify-between items-center p-6 pb-0">
+                    <h2 className="text-xl font-bold text-gray-900">Crear Nueva Sección</h2>
+                    <button onClick={() => setIsAddSectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <span className="text-lg">&times;</span>
+                    </button>
+                </div>
+
+                <div className="px-6 pt-4">
+                   <p className="text-xs text-gray-500">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 space-y-4">
+                    {/* Name */}
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="Ingrese el nombre de la sección"
+                            value={newSection.nombre}
+                            onChange={(e) => setNewSection({...newSection, nombre: e.target.value})}
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
+                        <textarea 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                            placeholder="Ingrese una descripción para la sección"
+                            value={newSection.descripcion}
+                            onChange={(e) => setNewSection({...newSection, descripcion: e.target.value})}
+                        />
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 pt-0 flex gap-4">
+                    <button 
+                        onClick={() => setIsAddSectionModalOpen(false)}
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        onClick={handleCreateSection}
+                        className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                    >
+                        Crear Sección
                     </button>
                 </div>
             </div>
