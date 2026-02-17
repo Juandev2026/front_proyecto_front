@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
 import { 
   PlusIcon,
@@ -14,6 +14,9 @@ import {
   XIcon
 } from '@heroicons/react/outline';
 import { seccionesService } from '../../../services/seccionesService';
+import { materialCategoriaService, CategoriaSimple } from '../../../services/materialCategoriaService';
+import { seccionRecursosService } from '../../../services/seccionRecursosService';
+import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
 
 // --- TYPES ---
 interface Resource {
@@ -38,62 +41,38 @@ interface Section {
 }
 
 interface IntroContent {
+  id: number;
   title: string;
   description: string;
   videoUrl: string;
 }
 
-// --- MOCK DATA ---
-const initialSections: Section[] = [
-  {
-    id: 1,
-    title: 'TEMARIO INICIAL',
-    subsections: [
-      {
-        id: 101,
-        title: 'INICIAL',
-        resources: [
-            { id: 1001, title: 'Temario_EBR_Inicial_A25.pdf', filename: 'Temario_EBR_Inicial_A25_AF_LCCG_HG.pdf', size: '274.7 KB', type: 'PDF', url: '#' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: 'MODIFICATORIA DE CRONOGRAMA',
-    subsections: [
-         {
-        id: 201,
-        title: 'Normativa General',
-        resources: []
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: 'NORMATIVIDAD - PROCESOS',
-    subsections: []
-  },
-    {
-    id: 4,
-    title: 'NUEVOS PROTOCOLOS DE ATENCIÓN SISEVE',
-    subsections: []
-  },
-];
+// --- MOCK DATA FOR SECTIONS ---
+const initialSections: Section[] = [];
 
 const Recursos = () => {
   const [sections, setSections] = useState<Section[]>(initialSections);
+  const [subsecciones, setSubsecciones] = useState<CategoriaSimple[]>([]);
   const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Default first open
   const [expandedSubsections, setExpandedSubsections] = useState<number[]>([101]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Stats State
+  const [stats, setStats] = useState({
+    secciones: 0,
+    subsecciones: 0,
+    archivosPdf: 0
+  });
 
   // Intro Content State
   const [introContent, setIntroContent] = useState<IntroContent>({
+    id: 1, // Default ID based on API example
     title: '¿CÓMO NAVEGAR EN ESCALA DOCENTE?',
-    description: 'Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO. PRONTO: GENERADORES DE PROMPT PARA SESIONES Y COMUNIDAD VIP.',
+    description: 'Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO.',
     videoUrl: 'https://youtube.com/shorts/w54preUQrN4?feature=share'
   });
   const [isIntroModalOpen, setIsIntroModalOpen] = useState(false);
-  const [editingIntro, setEditingIntro] = useState<IntroContent>({ title: '', description: '', videoUrl: '' });
+  const [editingIntro, setEditingIntro] = useState<IntroContent>({ id: 0, title: '', description: '', videoUrl: '' });
 
   // New Section Modal State
   const [isAddSectionModalOpen, setIsAddSectionModalOpen] = useState(false);
@@ -102,14 +81,121 @@ const Recursos = () => {
     descripcion: ''
   });
 
+  // New Subsection Modal State
+  const [isAddSubsectionModalOpen, setIsAddSubsectionModalOpen] = useState(false);
+  const [newSubsection, setNewSubsection] = useState({
+    nombre: '',
+    sectionId: 0 // To know where it was triggered from
+  });
+
+  // New Resource Modal State
+  const [isAddResourceModalOpen, setIsAddResourceModalOpen] = useState(false);
+  const [newResource, setNewResource] = useState({
+    idSeccion: 0,
+    idSubSeccion: 0,
+    nombreArchivo: '',
+    pdf: '',
+    imagen: ''
+  });
+
+  const fetchIntroContent = async () => {
+    try {
+      const data = await contenidoIntroductorioService.getAll();
+      const firstItem = data[0];
+      if (firstItem) {
+        setIntroContent({
+          id: firstItem.id,
+          title: firstItem.nombreModulo,
+          description: firstItem.descripcion,
+          videoUrl: firstItem.urlVideo
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching intro content:", error);
+    }
+  };
+
+  const fetchSections = async () => {
+    setIsLoading(true);
+    try {
+      const allSections = await seccionesService.getAll();
+      const allCategories = await materialCategoriaService.getAll();
+      const allResources = await seccionRecursosService.getAll();
+
+      setSubsecciones(allCategories);
+
+      const mappedSections: Section[] = allSections.map(s => {
+        const sectionResources = allResources.filter(r => r.idSeccion === s.id);
+        
+        // Group resources by idSubSeccion
+        const subsectionsMap = new Map<number, Subsection>();
+        
+        sectionResources.forEach(r => {
+          if (!subsectionsMap.has(r.idSubSeccion)) {
+            const cat = allCategories.find(c => c.id === r.idSubSeccion);
+            subsectionsMap.set(r.idSubSeccion, {
+              id: r.idSubSeccion,
+              title: cat ? cat.nombre : (r.descripcionSubSeccion || 'General'),
+              resources: []
+            });
+          }
+          
+          subsectionsMap.get(r.idSubSeccion)?.resources.push({
+            id: r.numero || Math.random(),
+            title: r.nombreArchivo || 'Sin título',
+            filename: r.pdf,
+            size: 'N/A', // API doesn't provide size
+            type: 'PDF',
+            url: r.pdf
+          });
+        });
+
+        return {
+          id: s.id,
+          title: s.nombre,
+          subsections: Array.from(subsectionsMap.values())
+        };
+      });
+
+      setSections(mappedSections);
+      setStats({
+        secciones: allSections.length,
+        subsecciones: allCategories.length,
+        archivosPdf: allResources.length
+      });
+    } catch (error) {
+      console.error("Error fetching sections and resources:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIntroContent();
+    fetchSections();
+  }, []);
+
   const handleOpenIntroModal = () => {
     setEditingIntro({ ...introContent });
     setIsIntroModalOpen(true);
   };
 
-  const handleSaveIntro = () => {
-    setIntroContent(editingIntro);
-    setIsIntroModalOpen(false);
+  const handleSaveIntro = async () => {
+    if (!editingIntro.id) return;
+
+    try {
+      await contenidoIntroductorioService.update(editingIntro.id, {
+        nombreModulo: editingIntro.title,
+        descripcion: editingIntro.description,
+        urlVideo: editingIntro.videoUrl
+      });
+      
+      await fetchIntroContent(); // Re-fetch to confirm update
+      setIsIntroModalOpen(false);
+      alert("Contenido de introducción actualizado correctamente.");
+    } catch (error) {
+       alert("Error al actualizar el contenido.");
+    }
   };
 
   const handleCreateSection = async () => {
@@ -127,15 +213,87 @@ const Recursos = () => {
         nivelId: null,
         especialidadId: null
       });
-      // In a real app, we'd fetch the sections again here
-      // fetchSections(); 
       setIsAddSectionModalOpen(false);
       setNewSection({ nombre: '', descripcion: '' });
+      await fetchSections();
       alert("Sección creada con éxito");
     } catch (error) {
       alert("Error al crear la sección.");
     }
   };
+
+  const handleDeleteSection = async (id: number) => {
+    if (!confirm("¿Está seguro de eliminar esta sección?")) return;
+    try {
+      await seccionesService.delete(id);
+      await fetchSections();
+      alert("Sección eliminada con éxito");
+    } catch (error) {
+      alert("Error al eliminar la sección.");
+    }
+  };
+
+  const handleOpenAddResourceGlobal = () => {
+    setNewResource({
+      idSeccion: 0,
+      idSubSeccion: 0,
+      nombreArchivo: '',
+      pdf: '',
+      imagen: ''
+    });
+    setIsAddResourceModalOpen(true);
+  };
+
+  const handleOpenAddResource = (seccionId: number, subSeccionId: number) => {
+    setNewResource({
+      idSeccion: seccionId,
+      idSubSeccion: subSeccionId,
+      nombreArchivo: '',
+      pdf: '',
+      imagen: ''
+    });
+    setIsAddResourceModalOpen(true);
+  };
+
+  const handleCreateResource = async () => {
+    if (!newResource.nombreArchivo || !newResource.pdf || !newResource.idSeccion || !newResource.idSubSeccion) {
+      alert("Por favor complete los campos obligatorios (Sección, Subsección, Nombre y PDF).");
+      return;
+    }
+
+    try {
+      await seccionRecursosService.create({
+        idSeccion: Number(newResource.idSeccion),
+        idSubSeccion: Number(newResource.idSubSeccion),
+        pdf: newResource.pdf,
+        imagen: newResource.imagen,
+        nombreArchivo: newResource.nombreArchivo
+      });
+      setIsAddResourceModalOpen(false);
+      await fetchSections();
+      alert("Recurso registrado con éxito");
+    } catch (error) {
+      alert("Error al registrar el recurso.");
+    }
+  };
+
+  const handleCreateSubsection = async () => {
+    if (!newSubsection.nombre) {
+      alert("Por favor ingrese el nombre de la subsección.");
+      return;
+    }
+
+    try {
+      await materialCategoriaService.create({ nombre: newSubsection.nombre });
+      setIsAddSubsectionModalOpen(false);
+      setNewSubsection({ nombre: '', sectionId: 0 });
+      await fetchSections();
+      alert("Subsección creada con éxito. Ahora puedes asignarle recursos.");
+    } catch (error) {
+      alert("Error al crear la subsección.");
+    }
+  };
+
 
   const toggleSection = (id: number) => {
     setExpandedSections(prev => 
@@ -149,10 +307,15 @@ const Recursos = () => {
     );
   };
 
-  // Stats
-  const totalSections = sections.length;
-  const totalSubsections = sections.reduce((acc, s) => acc + s.subsections.length, 0);
-  const totalFiles = sections.reduce((acc, s) => acc + s.subsections.reduce((acc2, sub) => acc2 + sub.resources.length, 0), 0);
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -184,6 +347,14 @@ const Recursos = () => {
         </button>
 
         <button 
+          onClick={handleOpenAddResourceGlobal}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center shadow-md transition-colors"
+        >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Nuevo Recurso
+        </button>
+
+        <button 
             onClick={handleOpenIntroModal}
             className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded-lg border border-gray-300 flex items-center shadow-sm transition-colors"
         >
@@ -195,35 +366,32 @@ const Recursos = () => {
       {/* --- STATS CARDS --- */}
        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold text-gray-800 mb-1">{totalSections}</span>
+            <span className="text-4xl font-bold text-gray-800 mb-1">{stats.secciones}</span>
             <span className="text-gray-500 font-medium">Secciones</span>
         </div>
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-             <span className="text-4xl font-bold text-gray-800 mb-1">{totalSubsections}</span>
+             <span className="text-4xl font-bold text-gray-800 mb-1">{stats.subsecciones}</span>
             <span className="text-gray-500 font-medium">Subsecciones</span>
         </div>
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-             <span className="text-4xl font-bold text-gray-800 mb-1">{totalFiles}</span>
+             <span className="text-4xl font-bold text-gray-800 mb-1">{stats.archivosPdf}</span>
             <span className="text-gray-500 font-medium">Archivos PDF</span>
         </div>
       </div>
 
       {/* --- INTRO CARD --- */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 relative overflow-hidden">
-        <div className="absolute top-4 right-4">
-             <button className="text-red-400 hover:text-red-600 p-1"><TrashIcon className="w-5 h-5"/></button>
-        </div>
         <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full mb-3 inline-block">Contenido Intro</span>
         <h2 className="text-xl font-bold text-gray-900 mb-2">{introContent.title}</h2>
-        <p className="text-gray-600 text-sm mb-6 max-w-2xl">
+        <p className="text-gray-600 text-sm mb-6 max-w-2xl text-left">
             {introContent.description}
         </p>
         <div className="flex gap-3">
-             <button className="flex-1 max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors">
+             <button 
+                onClick={() => window.open(introContent.videoUrl, '_blank')}
+                className="max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-8 rounded-lg flex items-center justify-center transition-colors"
+             >
                 <EyeIcon className="w-4 h-4 mr-2" /> Ver
-            </button>
-             <button className="flex-1 max-w-xs bg-primary text-white hover:bg-blue-600 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors">
-                <DownloadIcon className="w-4 h-4 mr-2" /> Descargar
             </button>
         </div>
       </div>
@@ -248,17 +416,26 @@ const Recursos = () => {
                         </button>
                         <div>
                              <h3 className="text-lg font-bold text-gray-800 uppercase">{section.title}</h3>
-                             <p className="text-xs text-gray-500 mt-0.5">{section.subsections.length} subsecciones • {section.subsections.reduce((a,s) => a + s.resources.length, 0)} recursos</p>
+                             <p className="text-xs text-gray-500 mt-0.5 text-left">{section.subsections.length} subsecciones • {section.subsections.reduce((a,s) => a + s.resources.length, 0)} recursos</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white">
+                        <button 
+                            onClick={() => {
+                                setNewSubsection({...newSubsection, sectionId: section.id});
+                                setIsAddSubsectionModalOpen(true);
+                            }}
+                            className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white"
+                        >
                             <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
                         </button>
                          <button className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors">
                             <PencilIcon className="w-4 h-4" />
                         </button>
-                         <button className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors">
+                         <button 
+                            onClick={() => handleDeleteSection(section.id)}
+                            className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors"
+                         >
                             <TrashIcon className="w-4 h-4" />
                         </button>
                     </div>
@@ -292,12 +469,18 @@ const Recursos = () => {
                                             <span className="ml-2 text-xs text-gray-400">{sub.resources.length} documentos disponibles</span>
                                          </div>
                                          <div className="flex items-center gap-2">
-                                            <button className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors">
-                                                <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF libre
-                                            </button>
-                                            <button className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors">
-                                                <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF premium
-                                            </button>
+                                             <button 
+                                                 onClick={() => handleOpenAddResource(section.id, sub.id)}
+                                                 className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                             >
+                                                 <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF libre
+                                             </button>
+                                             <button 
+                                                 onClick={() => handleOpenAddResource(section.id, sub.id)}
+                                                 className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                             >
+                                                 <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF premium
+                                             </button>
                                              <button className="text-gray-500 hover:text-blue-600 p-1.5 border border-gray-200 rounded bg-white transition-colors">
                                                 <PencilIcon className="w-3.5 h-3.5" />
                                              </button>
@@ -318,9 +501,9 @@ const Recursos = () => {
                                                     </div>
                                                     <div className="flex flex-col h-full">
                                                         <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded w-max mb-3">PDF</span>
-                                                        <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2">{res.title}</h4>
-                                                        <p className="text-gray-500 text-xs mb-4 line-clamp-1">{res.filename}</p>
-                                                        <span className="text-gray-400 text-xs mb-4 block">{res.size}</span>
+                                                        <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2 text-left">{res.title}</h4>
+                                                        <p className="text-gray-500 text-xs mb-4 line-clamp-1 text-left">{res.filename}</p>
+                                                        <span className="text-gray-400 text-xs mb-4 block text-left">{res.size}</span>
                                                         
                                                         <div className="mt-auto flex gap-2">
                                                             <button className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 rounded flex items-center justify-center transition-colors">
@@ -352,7 +535,7 @@ const Recursos = () => {
       {/* Intro Modal */}
       {isIntroModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-spawn">
                 <div className="flex justify-between items-center p-4 border-b border-gray-200">
                     <h3 className="text-lg font-bold text-gray-900">Contenido de Introducción</h3>
                     <button onClick={() => setIsIntroModalOpen(false)} className="bg-red-500 rounded-full p-1 text-white hover:bg-red-600">
@@ -399,7 +582,7 @@ const Recursos = () => {
                         <span className="text-blue-600 font-bold text-xs block mb-1">Configuración actual:</span>
                         <div className="text-xs space-y-1">
                              <p><span className="font-bold text-blue-700">Nombre:</span> <span className="text-blue-600">{introContent.title}</span></p>
-                             <p><span className="font-bold text-blue-700">Descripción:</span> <span className="text-blue-600">{introContent.description}</span></p>
+                             <p><span className="font-bold text-blue-700">Descripción:</span> <span className="text-blue-600 line-clamp-1">{introContent.description}</span></p>
                              <p><span className="font-bold text-blue-700">URL:</span> <span className="text-blue-600 truncate block">{introContent.videoUrl}</span></p>
                         </div>
                     </div>
@@ -435,7 +618,7 @@ const Recursos = () => {
                 </div>
 
                 <div className="px-6 pt-4">
-                   <p className="text-xs text-gray-500">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
+                   <p className="text-xs text-gray-500 text-left">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
                 </div>
 
                 {/* Body */}
@@ -477,6 +660,137 @@ const Recursos = () => {
                         className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
                     >
                         Crear Sección
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* --- ADD RESOURCE MODAL --- */}
+      {isAddResourceModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-spawn">
+                <div className="flex justify-between items-center p-6 pb-0">
+                    <h2 className="text-xl font-bold text-gray-900">Registrar Nuevo Recurso</h2>
+                    <button onClick={() => setIsAddResourceModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <span className="text-lg">&times;</span>
+                    </button>
+                </div>
+                <div className="px-6 pt-4">
+                   <p className="text-xs text-gray-500">Suba un archivo PDF y asigne un nombre para el nuevo recurso.</p>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre del Archivo *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="Ej: Temario Inicial 2025"
+                            value={newResource.nombreArchivo}
+                            onChange={(e) => setNewResource({...newResource, nombreArchivo: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">URL del PDF / Archivo *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="https://ejemplo.com/archivo.pdf"
+                            value={newResource.pdf}
+                            onChange={(e) => setNewResource({...newResource, pdf: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">URL de la Imagen (opcional)</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="https://ejemplo.com/previsualizacion.jpg"
+                            value={newResource.imagen}
+                            onChange={(e) => setNewResource({...newResource, imagen: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sección *</label>
+                            <select 
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                                value={newResource.idSeccion}
+                                onChange={(e) => setNewResource({...newResource, idSeccion: Number(e.target.value)})}
+                            >
+                                <option value={0}>Elegir...</option>
+                                {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Subsección *</label>
+                            <select 
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                                value={newResource.idSubSeccion}
+                                onChange={(e) => setNewResource({...newResource, idSubSeccion: Number(e.target.value)})}
+                            >
+                                <option value={0}>Elegir...</option>
+                                {subsecciones.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-6 pt-0 flex gap-4">
+                    <button 
+                        onClick={() => setIsAddResourceModalOpen(false)}
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        onClick={handleCreateResource}
+                        className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                    >
+                        Guardar Recurso
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* --- ADD SUBSECTION MODAL --- */}
+      {isAddSubsectionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+                <div className="flex justify-between items-center p-6 pb-0">
+                    <h2 className="text-xl font-bold text-gray-900">Añadir Subsección</h2>
+                    <button onClick={() => setIsAddSubsectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <span className="text-lg">&times;</span>
+                    </button>
+                </div>
+                <div className="px-6 pt-4">
+                   <p className="text-xs text-gray-500">Crea una nueva categoría para organizar tus recursos.</p>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre de la Subsección *</label>
+                        <input 
+                            type="text" 
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="Ej: Exámenes 2024"
+                            value={newSubsection.nombre}
+                            onChange={(e) => setNewSubsection({...newSubsection, nombre: e.target.value})}
+                        />
+                    </div>
+                </div>
+                <div className="p-6 pt-0 flex gap-4">
+                    <button 
+                        onClick={() => setIsAddSubsectionModalOpen(false)}
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        onClick={handleCreateSubsection}
+                        className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                    >
+                        Crear
                     </button>
                 </div>
             </div>
