@@ -47,6 +47,8 @@ export interface User {
     };
   };
   fechaExpiracion?: string;
+  fechaCreacion?: string;
+  fecha_creacion?: string; // Support both naming conventions
   estado?: string;
   ie?: string;
   observaciones?: string;

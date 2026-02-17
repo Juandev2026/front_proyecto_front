@@ -7,6 +7,7 @@ import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
 import { especialidadesService, Especialidad } from '../../services/especialidadesService';
+import { exportToExcel } from '../../utils/excelUtils';
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -291,6 +292,37 @@ const UsersPage = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  const handleExportExcel = async () => {
+    try {
+      const allUsers = await userService.getAll();
+      // On this page we show Admin and Client, but maybe the export should include all or follow the same filter?
+      // Usually export should match what's visible or all. I'll export all and let them filter in Excel.
+      
+      const dataToExport = allUsers.map(u => ({
+        'ID': u.id,
+        'Nombre Completo': u.nombreCompleto,
+        'Teléfono': u.celular || '-',
+        'Email': u.email,
+        'Rol': u.role,
+        'Estado': u.estado || 'Activo',
+        'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
+        'Suscripciones Activas': u.modalidad?.nombre ? `${u.modalidad.nombre}: ${u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-'}` : '-',
+        'Modalidad': u.modalidad?.nombre || '-',
+        'Nivel': u.nivel?.nombre || '-',
+        'Especialidad': u.especialidad?.nombre || '-',
+        'Región': u.region?.nombre || '-',
+        'IE': u.ie || '-',
+        'Observaciones': u.observaciones || '-'
+      }));
+
+      const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
+      exportToExcel(dataToExport, `Reporte_Usuarios_${today}`, 'Usuarios');
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("Error al exportar a Excel");
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -313,6 +345,15 @@ const UsersPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <button
+            onClick={handleExportExcel}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
+          >
+            <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Exportar Excel
+          </button>
           <button
             onClick={() => {
               setEditingUser(null);

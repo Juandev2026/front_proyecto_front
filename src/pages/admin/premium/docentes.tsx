@@ -12,6 +12,7 @@ import { regionService, Region } from '../../../services/regionService';
 import { modalidadService, Modalidad } from '../../../services/modalidadService';
 import { nivelService, Nivel } from '../../../services/nivelService';
 import { especialidadesService, Especialidad } from '../../../services/especialidadesService';
+import { exportToExcel } from '../../../utils/excelUtils';
 
 // Mock data type for view (adapted to match User from API partially)
 interface Docente {
@@ -280,6 +281,51 @@ const AdminPremiumDocentes = () => {
       fetchDocentes();
   }, []);
   
+  const handleExportExcel = async () => {
+    try {
+      const allUsers = await userService.getAll();
+      const premiumUsers = allUsers.filter(u => u.role === 'Premium');
+      
+      const dataToExport = premiumUsers.map(u => {
+        // Calculate status same as in list
+        const expirationDate = u.fechaExpiracion ? new Date(u.fechaExpiracion) : null;
+        let estado = 'Sin Estado';
+        if (expirationDate) {
+            const now = new Date();
+            const diffTime = expirationDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) estado = 'Expirado';
+            else if (diffDays <= 7) estado = 'Por vencer';
+            else estado = 'Activo';
+        } else {
+            estado = 'Expirado';
+        }
+
+        return {
+          'ID': u.id,
+          'Nombre Completo': u.nombreCompleto,
+          'Teléfono': u.celular || '-',
+          'Email': u.email,
+          'Estado': estado,
+          'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
+          'Suscripciones Activas': u.modalidad?.nombre ? `${u.modalidad.nombre}: ${u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-'}` : 'Todas expiradas',
+          'Modalidades': u.modalidad?.nombre || '-',
+          'Niveles': u.nivel?.nombre || '-',
+          'Especialidades': u.especialidad?.nombre || '-',
+          'Región': u.region?.nombre || '-',
+          'IE': u.ie || '-',
+          'Observaciones': u.observaciones || '-'
+        };
+      });
+
+      const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
+      exportToExcel(dataToExport, `Reporte_Docentes_${today}`, 'Docentes');
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("Error al exportar a Excel");
+    }
+  };
+  
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
@@ -376,6 +422,7 @@ const AdminPremiumDocentes = () => {
             <div className="flex gap-4 w-full md:w-auto">
                  {/* Export Button */}
                 <button
+                    onClick={handleExportExcel}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <DownloadIcon className="-ml-1 mr-2 h-5 w-5 text-gray-400" />
