@@ -15,9 +15,9 @@ export interface RelacionSeccion {
 }
 
 export interface CreateRelacionRequest {
-    seccionId: number;
-    subSeccionId: number;
-    materialId: number | null;
+    idSeccion: number;
+    idSubSeccion: number;
+    materialId: number;
 }
 
 export const seccionRelacionService = {
@@ -41,9 +41,16 @@ export const seccionRelacionService = {
                 headers: getAuthHeaders(),
                 body: JSON.stringify(data),
             });
-            if (!response.ok) throw new Error('Error al crear relación');
+
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error("Error backend crear relación:", errText);
+                throw new Error(`Error al crear relación: ${errText}`);
+            }
+
             return await response.json();
         } catch (error) {
+            console.error('Error creating relacion params:', data);
             console.error('Error creating relacion:', error);
             throw error;
         }

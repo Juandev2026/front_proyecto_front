@@ -72,10 +72,11 @@ export const seccionesService = {
 
   update: async (id: number, data: CreateSeccionRequest): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
+      // using simple endpoint
+      const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ ...data }),
+        body: JSON.stringify(data),
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -115,10 +116,6 @@ export const seccionesService = {
 
   createSubseccion: async (seccionId: number, nombre: string): Promise<any> => {
     try {
-      // NOTE: User indicated /api/SubSecciones is the endpoint for creation.
-      // However, this endpoint doesn't seem to take seccionId.
-      // We are creating the entity, but the link to the section might be missing
-      // if not handled by another endpoint.
       const response = await fetch(`${API_BASE_URL}/SubSecciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -131,6 +128,23 @@ export const seccionesService = {
       return await response.json();
     } catch (error) {
       console.error('Error creating subseccion:', error);
+      throw error;
+    }
+  },
+
+  updateSubseccion: async (id: number, nombre: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/SubSecciones/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nombre, descripcion: 'Descripción por defecto' }),
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Error al actualizar subsección: ${errText}`);
+      }
+    } catch (error) {
+      console.error('Error updating subseccion:', error);
       throw error;
     }
   },

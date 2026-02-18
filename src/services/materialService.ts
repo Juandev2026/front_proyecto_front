@@ -9,28 +9,28 @@ export interface Material {
   imageUrl?: string;
   archivoUrl?: string;
   videoUrl?: string;
-  categoriaId: number;
-  categoria?: { 
-    id: number; 
+  categoriaId: number | null;
+  categoria?: {
+    id: number;
     nombre: string;
     materiales?: string[];
   };
-  modalidadId: number;
+  modalidadId: number | null;
   modalidad?: { id: number; nombre: string };
-  nivelId: number;
-  nivel?: { 
-    id: number; 
+  nivelId: number | null;
+  nivel?: {
+    id: number;
     nombre: string;
     imageUrl?: string;
     modalidadId?: number;
     modalidad?: { id: number; nombre: string };
   };
-  estadoId: number;
+  estadoId: number | null;
   estado?: { id: number; nombre: string; codigo: string; colorHex: string };
-  usuarioEdicionId: number;
+  usuarioEdicionId: number | null;
   fechaEdicion?: string;
   precio: number;
-  telefono: string;
+  telefono?: string;
 }
 
 const API_URL = `${API_BASE_URL}/Materiales`;
@@ -97,7 +97,7 @@ export const materialService = {
           fd.delete('nivelId');
         }
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId'); 
+          fd.delete('estadoId');
         }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
           // optional handling if needed
@@ -109,12 +109,13 @@ export const materialService = {
           ...m,
           modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
           nivelId: m.nivelId ? Number(m.nivelId) : null,
+          categoriaId: m.categoriaId ? Number(m.categoriaId) : null,
           estadoId: m.estadoId ? Number(m.estadoId) : null,
           usuarioEdicionId: m.usuarioEdicionId
             ? Number(m.usuarioEdicionId)
             : null,
           precio: m.precio ? Number(m.precio) : 0,
-          telefono: m.telefono || '',
+          telefono: m.telefono || '999999999',
         });
       }
 
@@ -125,9 +126,8 @@ export const materialService = {
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        // Log removed
-        throw new Error(`Error al crear el material: ${errText}`);
+        const text = await response.text();
+        throw new Error(`Error al crear el material: ${text}`);
       }
 
       return await response.json();
@@ -156,7 +156,7 @@ export const materialService = {
           fd.delete('nivelId');
         }
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId');
+          fd.delete('estadoId');
         }
         body = fd;
       } else {
@@ -166,6 +166,7 @@ export const materialService = {
           id,
           modalidadId: m.modalidadId ? Number(m.modalidadId) : null,
           nivelId: m.nivelId ? Number(m.nivelId) : null,
+          categoriaId: m.categoriaId ? Number(m.categoriaId) : null,
           estadoId: m.estadoId ? Number(m.estadoId) : null,
           usuarioEdicionId: m.usuarioEdicionId
             ? Number(m.usuarioEdicionId)

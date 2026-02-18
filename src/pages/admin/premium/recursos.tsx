@@ -14,10 +14,11 @@ import {
   XIcon
 } from '@heroicons/react/outline';
 import { seccionesService } from '../../../services/seccionesService';
-import { seccionRelacionService } from '../../../services/seccionRelacionService';
 import { seccionRecursosService } from '../../../services/seccionRecursosService';
-import { materialService } from '../../../services/materialService';
 import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
+import { uploadService } from '../../../services/uploadService';
+import { materialService } from '../../../services/materialService';
+import { seccionRelacionService } from '../../../services/seccionRelacionService';
 
 // --- TYPES ---
 interface Resource {
@@ -93,6 +94,7 @@ const Recursos = () => {
 
   // New Resource Modal State
   const [isAddResourceModalOpen, setIsAddResourceModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [newResource, setNewResource] = useState({
     idSeccion: 0,
     idSubSeccion: 0,
@@ -123,18 +125,29 @@ const Recursos = () => {
     try {
       // 1. Get Nested Data (Tree Structure)
       const sectionsData = await seccionRecursosService.getDatosAnidados();
+      console.log("DATOS ANIDADOS RAW:", sectionsData);
 
       // Map to internal state structure (if needed, but SeccionAnidada is very similar)
       const mappedSections: Section[] = sectionsData.map((s: any) => ({
         id: s.id,
         nombre: s.nombre,
         descripcion: s.descripcion || '',
-        subSecciones: s.subSecciones.map((sub: any) => ({
-          id: sub.id,
-          nombre: sub.nombre,
-          descripcion: sub.descripcion || '',
-          recursos: sub.recursos || [] // Ensure resources exist
-        }))
+        subSecciones: s.subSecciones.map((sub: any) => {
+          // The API might return 'recurso' (singular) or 'recursos' (array)
+          let recursosArray: Resource[] = [];
+          if (Array.isArray(sub.recursos)) {
+            recursosArray = sub.recursos;
+          } else if (sub.recurso) {
+            recursosArray = [sub.recurso];
+          }
+
+          return {
+            id: sub.id,
+            nombre: sub.nombre,
+            descripcion: sub.descripcion || '',
+            recursos: recursosArray
+          };
+        })
       }));
 
       setSections(mappedSections);
@@ -232,44 +245,79 @@ const Recursos = () => {
     setIsAddResourceModalOpen(true);
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'pdf' | 'imagen') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadService.uploadImage(file);
+      setNewResource(prev => ({
+        ...prev,
+        [type]: url
+      }));
+    } catch (error) {
+      console.error(error);
+      alert("Error al subir el archivo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleCreateResource = async () => {
     if (!newResource.nombreArchivo || !newResource.pdf || !newResource.idSeccion || !newResource.idSubSeccion) {
-      alert("Por favor complete los campos obligatorios (Sección, Subsección, Nombre y PDF).");
+      alert("Por favor complete los campos obligatorios (Nombre y PDF).");
       return;
     }
 
     try {
-      // 1. Create Material (Assuming we send URL directly, or we uploaded file separately)
-      // Since the input is just string URLs, we can create the material directly
-      const material = await materialService.create({
-        titulo: newResource.nombreArchivo,
-        descripcion: 'Recurso añadido desde modulo recursos',
-        url: newResource.pdf,
-        imageUrl: newResource.imagen,
-        categoriaId: 0,
-        modalidadId: 0,
-        nivelId: 0,
-        estadoId: 1, // Active
-        usuarioEdicionId: 1,
-        precio: 0,
-        telefono: ''
-      });
+      setUploading(true);
 
-      // 2. Create Relation
+      const payload = {
+        titulo: newResource.nombreArchivo,
+        descripcion: "Recurso de sección",
+        url: newResource.pdf,
+        imageUrl: newResource.imagen || '',
+        archivoUrl: newResource.pdf,
+        videoUrl: '',
+        categoriaId: null, // Allow null as seen in existing materials
+        modalidadId: null,
+        nivelId: null,
+        estadoId: 1,      // 'Publicado' as seen in working examples
+        usuarioEdicionId: null,
+        precio: 0,
+        telefono: '999999999'
+      };
+
+      const material = await materialService.create(payload as any);
+
+      // 2. Link it to the Section/Subsection
       await seccionRelacionService.create({
-        seccionId: Number(newResource.idSeccion),
-        subSeccionId: Number(newResource.idSubSeccion),
+        idSeccion: newResource.idSeccion,
+        idSubSeccion: newResource.idSubSeccion,
         materialId: material.id
       });
+
+      console.log("Relación creada con éxito");
 
       setIsAddResourceModalOpen(false);
       await fetchSections();
       alert("Recurso registrado con éxito");
     } catch (error) {
       console.error(error);
-      alert("Error al registrar el recurso.");
+      alert("Error al registrar el recurso: " + (error instanceof Error ? error.message : "Error desconocido"));
+    } finally {
+      setUploading(false);
     }
   };
+
+  // Edit Section Modal State
+  const [isEditSectionModalOpen, setIsEditSectionModalOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState({ id: 0, nombre: '', descripcion: '' });
+
+  // Edit Subsection Modal State
+  const [isEditSubsectionModalOpen, setIsEditSubsectionModalOpen] = useState(false);
+  const [editingSubsection, setEditingSubsection] = useState({ id: 0, nombre: '', sectionId: 0 });
 
   const handleCreateSubsection = async () => {
     if (!newSubsection.nombre || !newSubsection.sectionId) {
@@ -288,6 +336,59 @@ const Recursos = () => {
     } catch (error) {
       console.error(error);
       alert("Error al crear la subsección.");
+    }
+  };
+
+  const handleOpenEditSection = (section: Section) => {
+    setEditingSection({
+      id: section.id,
+      nombre: section.nombre,
+      descripcion: section.descripcion
+    });
+    setIsEditSectionModalOpen(true);
+  };
+
+  const handleUpdateSection = async () => {
+    if (!editingSection.nombre) {
+      alert("Por favor ingrese el nombre de la sección.");
+      return;
+    }
+    try {
+      await seccionesService.update(editingSection.id, {
+        nombre: editingSection.nombre,
+        descripcion: editingSection.descripcion
+      });
+      setIsEditSectionModalOpen(false);
+      await fetchSections();
+      alert("Sección actualizada con éxito");
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar la sección.");
+    }
+  };
+
+  const handleOpenEditSubsection = (sub: Subsection, sectionId: number) => {
+    setEditingSubsection({
+      id: sub.id,
+      nombre: sub.nombre,
+      sectionId: sectionId
+    });
+    setIsEditSubsectionModalOpen(true);
+  };
+
+  const handleUpdateSubsection = async () => {
+    if (!editingSubsection.nombre) {
+      alert("Por favor ingrese el nombre de la subsección.");
+      return;
+    }
+    try {
+      await seccionesService.updateSubseccion(editingSubsection.id, editingSubsection.nombre);
+      setIsEditSubsectionModalOpen(false);
+      await fetchSections();
+      alert("Subsección actualizada con éxito");
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar la subsección.");
     }
   };
 
@@ -426,7 +527,10 @@ const Recursos = () => {
                 >
                   <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
                 </button>
-                <button className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors">
+                <button
+                  onClick={() => handleOpenEditSection(section)}
+                  className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors"
+                >
                   <PencilIcon className="w-4 h-4" />
                 </button>
                 <button
@@ -478,7 +582,10 @@ const Recursos = () => {
                           >
                             <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF premium
                           </button>
-                          <button className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-sm font-medium">
+                          <button
+                            onClick={() => handleOpenEditSubsection(sub, section.id)}
+                            className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-sm font-medium"
+                          >
                             <PencilIcon className="w-4 h-4 mr-1.5" /> Editar
                           </button>
                           <button className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors">
@@ -709,52 +816,51 @@ const Recursos = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-blue-600 mb-1">URL del PDF / Archivo *</label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                    placeholder="https://ejemplo.com/archivo.pdf"
-                    value={newResource.pdf}
-                    onChange={(e) => setNewResource({ ...newResource, pdf: e.target.value })}
-                  />
+                  <label className="block text-sm font-bold text-blue-600 mb-1">Archivo PDF *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
+                      placeholder="URL del archivo subido"
+                      value={newResource.pdf}
+                    />
+                    <label className={`bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <UploadIcon className="w-5 h-5" />
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={(e) => handleFileUpload(e, 'pdf')}
+                      />
+                    </label>
+                  </div>
+                  {uploading && <p className="text-xs text-blue-500 mt-1">Subiendo archivo...</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-blue-600 mb-1">URL de la Imagen (opcional)</label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                    placeholder="https://ejemplo.com/previsualizacion.jpg"
-                    value={newResource.imagen}
-                    onChange={(e) => setNewResource({ ...newResource, imagen: e.target.value })}
-                  />
+                  <label className="block text-sm font-bold text-blue-600 mb-1">Imagen (opcional)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
+                      placeholder="URL de la imagen subida"
+                      value={newResource.imagen}
+                    />
+                    <label className={`bg-gray-600 hover:bg-gray-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <UploadIcon className="w-5 h-5" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={(e) => handleFileUpload(e, 'imagen')}
+                      />
+                    </label>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div>
-                    <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Sección *</label>
-                    <select
-                      className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
-                      value={newResource.idSeccion}
-                      onChange={(e) => setNewResource({ ...newResource, idSeccion: Number(e.target.value) })}
-                    >
-                      <option value={0}>Elegir...</option>
-                      {sections.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Subsección *</label>
-                    <select
-                      className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
-                      value={newResource.idSubSeccion}
-                      onChange={(e) => setNewResource({ ...newResource, idSubSeccion: Number(e.target.value) })}
-                    >
-                      <option value={0}>Elegir...</option>
-                      {sections.find(s => s.id === newResource.idSeccion)?.subSecciones.map(c => (
-                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
               </div>
               <div className="p-6 pt-0 flex gap-4">
                 <button
@@ -773,7 +879,7 @@ const Recursos = () => {
 
             </div>
 
-          </div>
+          </div >
         )
       }
 
@@ -815,6 +921,101 @@ const Recursos = () => {
                   className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
                 >
                   Crear
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* --- EDIT SECTION MODAL --- */}
+      {
+        isEditSectionModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+              <div className="flex justify-between items-center p-6 pb-0">
+                <h2 className="text-xl font-bold text-gray-900">Editar Sección</h2>
+                <button onClick={() => setIsEditSectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <span className="text-lg">&times;</span>
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                    value={editingSection.nombre}
+                    onChange={(e) => setEditingSection({ ...editingSection, nombre: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
+                  <textarea
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                    value={editingSection.descripcion}
+                    onChange={(e) => setEditingSection({ ...editingSection, descripcion: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-6 pt-0 flex gap-4">
+                <button
+                  onClick={() => setIsEditSectionModalOpen(false)}
+                  className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateSection}
+                  className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                >
+                  Actualizar
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* --- EDIT SUBSECTION MODAL --- */}
+      {
+        isEditSubsectionModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+              <div className="flex justify-between items-center p-6 pb-0">
+                <h2 className="text-xl font-bold text-gray-900">Editar Subsección</h2>
+                <button onClick={() => setIsEditSubsectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <span className="text-lg">&times;</span>
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre de la Subsección *</label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                    value={editingSubsection.nombre}
+                    onChange={(e) => setEditingSubsection({ ...editingSubsection, nombre: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-6 pt-0 flex gap-4">
+                <button
+                  onClick={() => setIsEditSubsectionModalOpen(false)}
+                  className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateSubsection}
+                  className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                >
+                  Actualizar
                 </button>
               </div>
             </div>
