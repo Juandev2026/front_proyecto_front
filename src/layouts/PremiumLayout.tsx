@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { 
-  HomeIcon, 
-  AcademicCapIcon, 
-  UserGroupIcon, 
-  ChartBarIcon, 
-  MenuIcon, 
-  XIcon, 
+import {
+  HomeIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  MenuIcon,
+  XIcon,
   LogoutIcon,
   ClipboardListIcon,
   ExclamationCircleIcon,
@@ -33,7 +33,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
-  
+
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -53,7 +53,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
   const toggleSubMenu = (name: string) => {
     setExpandedMenu(expandedMenu === name ? null : name);
   };
-  
+
   // Auto-expand menu based on active route
   useEffect(() => {
     menuItems.forEach(item => {
@@ -67,9 +67,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
   }, [router.pathname]);
 
   const allMenuItems = [
-    { 
-      name: 'Nombramiento', 
-      href: '/premium', 
+    {
+      name: 'Nombramiento',
+      href: '/premium',
       icon: AcademicCapIcon,
       children: [
         { name: 'Banco de Preguntas', href: '/bancoPreguntas', icon: CollectionIcon },
@@ -77,10 +77,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
         { name: 'Respuestas Erróneas', href: '/respuestasErroneas', icon: ExclamationCircleIcon },
       ]
     },
-    { 
-      name: 'Ascenso', 
-      href: '#', 
-      icon: ChartBarIcon, 
+    {
+      name: 'Ascenso',
+      href: '#',
+      icon: ChartBarIcon,
       current: false,
       children: [
         { name: 'Banco de Preguntas', href: '/bancoPreguntasAscenso', icon: CollectionIcon },
@@ -89,41 +89,41 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
         { name: 'Recursos', href: '/recursosAscenso', icon: ArchiveIcon },
       ]
     },
-    { 
-      name: 'Directivos', 
-      href: '#', 
-      icon: UserGroupIcon, 
+    {
+      name: 'Directivos',
+      href: '#',
+      icon: UserGroupIcon,
       current: false,
       children: [
         { name: 'Exámenes MINEDU y Simulacros', href: '/examenesDirectivos', icon: FolderIcon }
       ]
     },
-    { 
-      name: 'Próximamente', 
-      href: '#', 
-      icon: HomeIcon, 
+    {
+      name: 'Próximamente',
+      href: '#',
+      icon: HomeIcon,
       current: false,
       children: [
         { name: 'IA para maestros', href: '#', icon: ChipIcon, locked: true },
         { name: 'Generador de prompt', href: '#', icon: ViewBoardsIcon, locked: true },
         { name: 'Comunidad VIP', href: '#', icon: UserIcon, locked: true },
       ]
-    }, 
+    },
   ];
 
   const menuItems = React.useMemo(() => {
     if (!user?.accesoNombres || user.accesoNombres.length === 0) return allMenuItems;
-    
+
     return allMenuItems.filter(item => {
       // "Próximamente" is always visible
       if (item.name === 'Próximamente') return true;
-      
+
       // Check if item name (e.g. "Nombramiento") is in user.accesoNombres
       // We use case-insensitive matching and handle "Directivo" vs "Directivos"
       return user.accesoNombres!.some(access => {
         const normalizedAccess = access.toLowerCase().trim();
         const normalizedItemName = item.name.toLowerCase().trim();
-        
+
         // Match exact or contains (for cases like "Directivo" matching "Directivos")
         return normalizedItemName.includes(normalizedAccess) || normalizedAccess.includes(normalizedItemName);
       });
@@ -133,11 +133,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
 
   return (
-    <div className="min-h-screen bg-[#F4F7FE] flex font-sans">
+    <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 md:hidden" 
+        <div
+          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -151,66 +151,66 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       `}>
         {/* Logo Area */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-24 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}>
-           {!isCollapsed && (
-             <Link href="/">
-               <a className="flex items-center gap-2 group">
-                  <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight whitespace-nowrap">AVENDOCENTE</span>
-               </a>
-             </Link>
-           )}
-           <button 
-             onClick={() => setIsCollapsed(!isCollapsed)}
-             className="hidden md:block text-gray-400 hover:text-[#2B3674] transition-colors focus:outline-none"
-           >
-             {isCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6" /> : <ChevronDoubleLeftIcon className="h-6 w-6" />}
-           </button>
-           <button 
-             className="md:hidden text-gray-400 hover:text-gray-600"
-             onClick={() => setSidebarOpen(false)}
-           >
-             <XIcon className="h-6 w-6" />
-           </button>
+          {!isCollapsed && (
+            <Link href="/">
+              <a className="flex items-center gap-2 group">
+                <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight whitespace-nowrap">AVENDOCENTE</span>
+              </a>
+            </Link>
+          )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden md:block text-gray-400 hover:text-[#2B3674] transition-colors focus:outline-none"
+          >
+            {isCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6" /> : <ChevronDoubleLeftIcon className="h-6 w-6" />}
+          </button>
+          <button
+            className="md:hidden text-gray-400 hover:text-gray-600"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <XIcon className="h-6 w-6" />
+          </button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto overflow-x-hidden">
           {menuItems.map((item) => {
-             const isActive = router.pathname === item.href;
-             const hasChildren = item.children && item.children.length > 0;
-             const isExpanded = expandedMenu === item.name;
+            const isActive = router.pathname === item.href;
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedMenu === item.name;
 
-             return (
+            return (
               <div key={item.name}>
                 {hasChildren ? (
                   <button
                     onClick={() => {
-                        if(isCollapsed) setIsCollapsed(false);
-                        toggleSubMenu(item.name)
+                      if (isCollapsed) setIsCollapsed(false);
+                      toggleSubMenu(item.name)
                     }}
                     className={`
                       w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                       ${isExpanded
-                        ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
+                        ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg'
                         : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
                     `}
                     title={isCollapsed ? item.name : ''}
                   >
                     <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
-                      <item.icon 
+                      <item.icon
                         className={`
                           h-6 w-6 flex-shrink-0 transition-colors
                           ${isExpanded ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
-                        `} 
+                        `}
                       />
                       {!isCollapsed && <span>{item.name}</span>}
                     </div>
                     {/* Arrow Icon */}
                     {!isCollapsed && (
-                      <svg 
-                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -219,22 +219,22 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                   </button>
                 ) : (
                   <Link href={item.href}>
-                    <a 
+                    <a
                       className={`
                         group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
-                        ${isActive 
-                          ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg' 
+                        ${isActive
+                          ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg'
                           : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
                       title={isCollapsed ? item.name : ''}
                     >
-                      <item.icon 
+                      <item.icon
                         className={`
                            flex-shrink-0 transition-colors
                           ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
-                        `} 
+                        `}
                       />
                       {!isCollapsed && item.name}
                     </a>
@@ -246,22 +246,22 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                   <div className="mt-2 space-y-1 pl-4 pr-2">
                     {item.children.map((child: any) => (
                       <Link key={child.name} href={child.href}>
-                         <a className={`
+                        <a className={`
                             flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                            ${child.locked 
-                              ? 'text-gray-400 cursor-not-allowed opacity-75' 
-                              : 'text-[#A3AED0] hover:text-[#2B3674] hover:bg-gray-50'}
+                            ${child.locked
+                            ? 'text-gray-400 cursor-not-allowed opacity-75'
+                            : 'text-[#A3AED0] hover:text-[#2B3674] hover:bg-gray-50'}
                          `}>
-                           <div className="flex items-center">
-                             {child.icon && (
-                               <child.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                             )}
-                             {child.name}
-                           </div>
-                           {child.locked && (
-                              <LockClosedIcon className="h-4 w-4 ml-2" />
-                           )}
-                         </a>
+                          <div className="flex items-center">
+                            {child.icon && (
+                              <child.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                            )}
+                            {child.name}
+                          </div>
+                          {child.locked && (
+                            <LockClosedIcon className="h-4 w-4 ml-2" />
+                          )}
+                        </a>
                       </Link>
                     ))}
                   </div>
@@ -273,72 +273,72 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
         {/* Footer Actions */}
         <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
-           {!isCollapsed ? (
-             <>
-               <Link href="/">
-                 <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
-                   <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
-                   Volver a Inicio
-                 </a>
-               </Link>
-               <button 
-                 onClick={handleLogout}
-                 className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
-               >
-                 <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
-                 Cerrar Sesión
-               </button>
-             </>
-           ) : (
-              <div className="flex flex-col gap-2 items-center">
-                 <Link href="/">
-                    <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]" title="Volver a Inicio">
-                       <HomeIcon className="h-6 w-6" />
-                    </a>
-                 </Link>
-                 <button onClick={handleLogout} className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600" title="Cerrar Sesión">
-                    <LogoutIcon className="h-6 w-6" />
-                 </button>
-              </div>
-           )}
+          {!isCollapsed ? (
+            <>
+              <Link href="/">
+                <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
+                  <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
+                  Volver a Inicio
+                </a>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
+              >
+                <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
+                Cerrar Sesión
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-2 items-center">
+              <Link href="/">
+                <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]" title="Volver a Inicio">
+                  <HomeIcon className="h-6 w-6" />
+                </a>
+              </Link>
+              <button onClick={handleLogout} className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600" title="Cerrar Sesión">
+                <LogoutIcon className="h-6 w-6" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F4F7FE]">
-        
+
         {/* Top Header (Desktop & Mobile) */}
         <header className="bg-white/50 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6 py-4 shadow-sm md:shadow-none md:bg-transparent">
-           <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
-              >
-                  <MenuIcon className="h-6 w-6" />
-              </button>
-              
-              {/* Breadcrumb / Page Title Placeholder */}
-              <div className="hidden md:block">
-                 <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
-                 <h1 className="text-2xl font-bold text-[#2B3674] mt-1">{title}</h1>
-              </div>
-           </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              <MenuIcon className="h-6 w-6" />
+            </button>
 
-           {/* Right Side: Profile & Actions */}
-           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
-              <div className="hidden md:flex flex-col items-end mr-2">
-                 <span className="text-sm font-bold text-[#2B3674] leading-tight">{user?.name || 'Usuario'}</span>
-                 <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
-                 {(user?.name || 'U').charAt(0).toUpperCase()}
-              </div>
-           </div>
+            {/* Breadcrumb / Page Title Placeholder */}
+            <div className="hidden md:block">
+              <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
+              <h1 className="text-2xl font-bold text-[#2B3674] mt-1">{title}</h1>
+            </div>
+          </div>
+
+          {/* Right Side: Profile & Actions */}
+          <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
+            <div className="hidden md:flex flex-col items-end mr-2">
+              <span className="text-sm font-bold text-[#2B3674] leading-tight">{user?.name || 'Usuario'}</span>
+              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
+              {(user?.name || 'U').charAt(0).toUpperCase()}
+            </div>
+          </div>
         </header>
 
         {/* Main Scrollable Content */}
         <main className="flex-1 overflow-y-auto focus:outline-none p-4 md:p-8">
-            {children}
+          {children}
         </main>
       </div>
     </div>
