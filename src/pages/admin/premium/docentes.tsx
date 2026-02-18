@@ -14,6 +14,7 @@ import { regionService, Region } from '../../../services/regionService';
 import { modalidadService, Modalidad } from '../../../services/modalidadService';
 import { nivelService, Nivel } from '../../../services/nivelService';
 import { especialidadesService, Especialidad } from '../../../services/especialidadesService';
+import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
 import { exportToExcel } from '../../../utils/excelUtils';
 
 // Mock data type for view (adapted to match User from API partially)
@@ -52,6 +53,7 @@ const AdminPremiumDocentes = () => {
     modalidadId: 0,
     nivelId: 0,
     especialidadId: 0,
+    accesoIds: [],
   });
 
   // Catalogs
@@ -59,6 +61,7 @@ const AdminPremiumDocentes = () => {
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
   
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
   const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
@@ -86,16 +89,18 @@ const AdminPremiumDocentes = () => {
 
   const fetchCatalogs = async () => {
     try {
-        const [r, m, n, e] = await Promise.all([
+        const [r, m, n, e, t] = await Promise.all([
             regionService.getAll(),
             modalidadService.getAll(),
             nivelService.getAll(),
-            especialidadesService.getAll()
+            especialidadesService.getAll(),
+            tipoAccesoService.getAll()
         ]);
         setRegions(r);
         setModalidades(m);
         setNiveles(n);
         setEspecialidades(e);
+        setTiposAcceso(t);
     } catch (error) {
         console.error("Error fetching catalogs", error);
     }
@@ -153,7 +158,8 @@ const AdminPremiumDocentes = () => {
         modalidadId: user.modalidadId,
         nivelId: user.nivelId,
         especialidadId: user.especialidadId,
-        fechaExpiracion: user.fechaExpiracion
+        fechaExpiracion: user.fechaExpiracion,
+        accesoIds: Array.isArray(user.accesoIds) ? user.accesoIds.map(Number) : []
       });
       // Set expiration mode based on date? Or just Custom?
       setExpirationMode('custom');
@@ -180,6 +186,7 @@ const AdminPremiumDocentes = () => {
       modalidadId: 0,
       nivelId: 0,
       especialidadId: 0,
+      accesoIds: [],
     });
     setExpirationMode('custom');
   };
@@ -201,7 +208,8 @@ const AdminPremiumDocentes = () => {
               modalidadId: Number(formData.modalidadId),
               nivelId: Number(formData.nivelId),
               especialidadId: Number(formData.especialidadId),
-              fechaExpiracion: formData.fechaExpiracion
+              fechaExpiracion: formData.fechaExpiracion,
+              accesoIds: formData.accesoIds || []
           };
 
           // Only add password if it's set (for updates) or required (for create)
@@ -708,8 +716,8 @@ const handleExportExcel = async () => {
 
       {/* Create Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
+          <div className="relative w-full max-w-4xl max-h-[95vh] flex flex-col rounded-lg bg-white shadow-lg">
             <div className="flex items-center justify-between rounded-t border-b p-4">
               <h3 className="text-xl font-semibold text-gray-900">
                 {editingUser ? 'Editar Docente' : 'Agregar Nuevo Docente'}
@@ -731,7 +739,7 @@ const handleExportExcel = async () => {
                 </svg>
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Nombre y Email */}
                 <div>
@@ -759,20 +767,20 @@ const handleExportExcel = async () => {
                   />
                 </div>
 
-                {/* Password y Celular */}
-                <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-900">
-                      Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                      required={!editingUser}
-                      placeholder={editingUser ? "Dejar en blanco para mantener actual" : ""}
-                    />
-                </div>
+                {!editingUser && (
+                  <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                        required
+                      />
+                  </div>
+                )}
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-900">
                     Celular
@@ -810,6 +818,37 @@ const handleExportExcel = async () => {
                         <option value="Por vencer">Por vencer</option>
                         <option value="Expirado">Expirado</option>
                     </select>
+                </div>
+
+                {/* Acceso Multi-select or Checkboxes */}
+                <div className="col-span-1 md:col-span-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-900">
+                        Accesos (Módulos permitidos)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                        {tiposAcceso.map((tipo) => (
+                            <div key={tipo.id} className="flex items-center">
+                                <input
+                                    id={`acceso-${tipo.id}`}
+                                    type="checkbox"
+                                    checked={formData.accesoIds?.map(Number).includes(Number(tipo.id))}
+                                    onChange={(e) => {
+                                        const currentIds = formData.accesoIds || [];
+                                        const id = Number(tipo.id);
+                                        if (e.target.checked) {
+                                            setFormData({ ...formData, accesoIds: [...currentIds.map(Number), id] });
+                                        } else {
+                                            setFormData({ ...formData, accesoIds: currentIds.map(Number).filter(cid => cid !== id) });
+                                        }
+                                    }}
+                                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                />
+                                <label htmlFor={`acceso-${tipo.id}`} className="ml-2 text-sm text-gray-900 cursor-pointer">
+                                    {tipo.descripcion}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Expiration Date Section */}
