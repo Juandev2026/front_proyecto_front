@@ -16,13 +16,21 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   React.useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
     const storedName = localStorage.getItem('fullName');
 
     if (!token) {
       router.push('/login');
     } else {
-      setIsAuthorized(true);
-      setFullName(storedName || 'Admin User');
+      if (
+        role?.toUpperCase() === 'ADMIN' ||
+        role?.toUpperCase() === 'SUBADMIN'
+      ) {
+        setIsAuthorized(true);
+        setFullName(storedName || 'Admin User');
+      } else {
+        router.push('/');
+      }
     }
   }, [router]);
 
@@ -324,42 +332,40 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-blue-100 flex">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
+        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
         <div className={`flex items-center h-16 border-b border-gray-200 flex-shrink-0 transition-all ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
           {!isCollapsed && <span className="text-2xl font-bold text-primary">AdminPanel</span>}
-          
+
           {/* Toggle Button for Desktop */}
-          <button 
-             onClick={() => setIsCollapsed(!isCollapsed)}
-             className="hidden md:flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none"
-             title={isCollapsed ? "Expandir" : "Contraer"}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden md:flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none"
+            title={isCollapsed ? "Expandir" : "Contraer"}
           >
-             {isCollapsed ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                </svg>
-             ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-             )}
+            {isCollapsed ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            )}
           </button>
         </div>
-        
+
         <nav className="mt-6 px-2 space-y-2 overflow-y-auto flex-1 pb-4">
           {navigation.map((item) => (
             <div key={item.name}>
               {!item.children ? (
                 <Link href={item.href}>
                   <a
-                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                      router.pathname === item.href
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${router.pathname === item.href
                         ? 'bg-primary text-white'
                         : 'text-gray-700 hover:bg-blue-100'
-                    } ${isCollapsed ? 'justify-center' : ''}`}
+                      } ${isCollapsed ? 'justify-center' : ''}`}
                     title={isCollapsed ? item.name : ''}
                   >
                     <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
@@ -370,11 +376,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <>
                   <button
                     onClick={() => toggleMenu(item.name)}
-                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                      expandedMenus[item.name]
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${expandedMenus[item.name]
                         ? 'bg-blue-50 text-primary'
                         : 'text-gray-700 hover:bg-blue-100'
-                    } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+                      } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
                     title={isCollapsed ? item.name : ''}
                   >
                     <div className="flex items-center">
@@ -383,9 +388,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </div>
                     {!isCollapsed && (
                       <svg
-                        className={`w-4 h-4 transform transition-transform duration-200 ${
-                          expandedMenus[item.name] ? 'rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 transform transition-transform duration-200 ${expandedMenus[item.name] ? 'rotate-180' : ''
+                          }`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -402,20 +406,19 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   {expandedMenus[item.name] && !isCollapsed && (
                     <div className="bg-blue-50 rounded-b-lg mb-2 space-y-1 pb-2">
                       {item.children.map((subItem) => (
-                         subItem.href === '#' ? null : (
-                        <Link key={subItem.name} href={subItem.href}>
-                          <a
-                            className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                              router.pathname === subItem.href
-                                ? 'text-primary bg-blue-100'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
-                            }`}
-                          >
-                            {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
-                            {subItem.name}
-                          </a>
-                        </Link>
-                         )
+                        subItem.href === '#' ? null : (
+                          <Link key={subItem.name} href={subItem.href}>
+                            <a
+                              className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${router.pathname === subItem.href
+                                  ? 'text-primary bg-blue-100'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
+                                }`}
+                            >
+                              {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
+                              {subItem.name}
+                            </a>
+                          </Link>
+                        )
                       ))}
                     </div>
                   )}
