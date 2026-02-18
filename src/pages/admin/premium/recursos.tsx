@@ -199,14 +199,7 @@ const Recursos = () => {
     try {
       await seccionesService.create({
         nombre: newSection.nombre,
-        descripcion: newSection.descripcion,
-        tipoExamenId: null,
-        modalidadId: null,
-        nivelId: null,
-        especialidadId: null,
-        esVisible: true,
-        esDefault: false,
-        categoriasIds: []
+        descripcion: newSection.descripcion
       });
       setIsAddSectionModalOpen(false);
       setNewSection({ nombre: '', descripcion: '' });
@@ -285,12 +278,15 @@ const Recursos = () => {
     }
 
     try {
+      // 1. Create the Subsection entity (now trying to send seccionId in body)
       await seccionesService.createSubseccion(newSubsection.sectionId, newSubsection.nombre);
+
       setIsAddSubsectionModalOpen(false);
       setNewSubsection({ nombre: '', sectionId: 0 });
       await fetchSections();
       alert("Subsección creada con éxito.");
     } catch (error) {
+      console.error(error);
       alert("Error al crear la subsección.");
     }
   };
