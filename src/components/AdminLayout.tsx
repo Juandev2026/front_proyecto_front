@@ -321,7 +321,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-blue-100 flex">
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
@@ -357,8 +357,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   <a
                     className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       router.pathname === item.href
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-blue-100'
                     } ${isCollapsed ? 'justify-center' : ''}`}
                     title={isCollapsed ? item.name : ''}
                   >
@@ -372,8 +372,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     onClick={() => toggleMenu(item.name)}
                     className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       expandedMenus[item.name]
-                        ? 'bg-blue-50 text-blue-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-50 text-primary'
+                        : 'text-gray-700 hover:bg-blue-100'
                     } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
                     title={isCollapsed ? item.name : ''}
                   >
@@ -400,7 +400,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     )}
                   </button>
                   {expandedMenus[item.name] && !isCollapsed && (
-                    <div className="bg-gray-50 rounded-b-lg mb-2 space-y-1 pb-2">
+                    <div className="bg-blue-50 rounded-b-lg mb-2 space-y-1 pb-2">
                       {item.children.map((subItem) => (
                          subItem.href === '#' ? null : (
                         <Link key={subItem.name} href={subItem.href}>
@@ -408,7 +408,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                             className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
                               router.pathname === subItem.href
                                 ? 'text-primary bg-blue-100'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
                             }`}
                           >
                             {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
@@ -485,7 +485,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-blue-100 p-6">
           {children}
         </main>
       </div>
@@ -533,7 +533,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <button
                 onClick={() => setIsLogoutModalOpen(false)}
                 type="button"
-                className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200"
+                className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 hover:bg-blue-100 hover:text-gray-900 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 Cancelar
               </button>
