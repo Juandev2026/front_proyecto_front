@@ -11,47 +11,23 @@ import {
 
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
-
-/* 
-  --- FUTURE API INTEGRATION ---
-  Se usará para rellenar los selectores dinámicamente en el futuro.
-  
-  import { examenService } from '../services/examenService';
-  import { premiumService, PremiumContent } from '../services/premiumService';
-  import { modalidadService, Modalidad } from '../services/modalidadService';
-  import { nivelService, Nivel } from '../services/nivelService';
-  import { especialidadesService, Especialidad } from '../services/especialidadesService';
-  
-  export interface ExamenFlat {
-    tipoExamenId: number;
-    fuenteId: number;
-    modalidadId: number;
-    nivelId: number | null;
-    especialidadId: number | null;
-    year: string | null;
-  }
-*/
-
-const MODALIDADES = [
-  'Educación básica alternativa',
-  'Educación básica Especial',
-  'Educación básica Regular'
-];
-
-const NIVELES = [
-  'Inicial-Intermedio'
-];
-
-const YEARS = Array.from({ length: 8 }, (_, i) => (2018 + i).toString()).reverse();
+import { estructuraAcademicaService, Modalidad } from '../services/estructuraAcademicaService';
+// We'll use dynamic years instead of a static constant
+// const YEARS = Array.from({ length: 8 }, (_, i) => (2018 + i).toString()).reverse();
 
 const BancoPreguntasPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   // --- Current Selection State ---
-  const [selectedModalidad, setSelectedModalidad] = useState<string>('');
-  const [selectedNivel, setSelectedNivel] = useState<string>('');
+  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [selectedModalidadId, setSelectedModalidadId] = useState<number | ''>('');
+  const [selectedNivelId, setSelectedNivelId] = useState<number | ''>('');
+  const [selectedEspecialidadId, setSelectedEspecialidadId] = useState<number | ''>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [conteoPreguntas, setConteoPreguntas] = useState<{[key: string]: number}>({});
+  const [isCounting, setIsCounting] = useState(false);
 
   /* 
     --- FUTURE API STATES ---
@@ -76,6 +52,57 @@ const BancoPreguntasPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+       try {
+         setIsLoading(true);
+         const data = await estructuraAcademicaService.getAgrupados();
+         setModalidades(data);
+       } catch (error) {
+         console.error("Error loading filters:", error);
+       } finally {
+         setIsLoading(false);
+       }
+    };
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated]);
+
+  const modalidadesData = modalidades;
+  const nivelesData = selectedModalidadId ? modalidades.find(m => m.id === selectedModalidadId)?.niveles || [] : [];
+  const especialidadesData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.especialidades || [] : [];
+  const aniosData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.anios || [] : [];
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (selectedModalidadId && selectedNivelId && selectedYear) {
+        try {
+          setIsCounting(true);
+          const counts = await estructuraAcademicaService.getConteoPreguntas(
+            Number(selectedModalidadId),
+            Number(selectedNivelId),
+            selectedYear
+          );
+          // Assuming counts is an array of { tipoPregunta: string, cantidad: number }
+          const countMap: {[key: string]: number} = {};
+          counts.forEach((item: any) => {
+            countMap[item.tipoPregunta.toLowerCase()] = item.cantidad;
+          });
+          setConteoPreguntas(countMap);
+        } catch (error) {
+          console.error("Error fetching counts:", error);
+          setConteoPreguntas({});
+        } finally {
+          setIsCounting(false);
+        }
+      } else {
+        setConteoPreguntas({});
+      }
+    };
+    fetchCounts();
+  }, [selectedModalidadId, selectedNivelId, selectedYear]);
+
   /* 
     --- FUTURE API EFFECT ---
     useEffect(() => {
@@ -98,8 +125,9 @@ const BancoPreguntasPage = () => {
 
   // --- Handlers ---
   const handleClear = () => {
-    setSelectedModalidad('');
-    setSelectedNivel('');
+    setSelectedModalidadId('');
+    setSelectedNivelId('');
+    setSelectedEspecialidadId('');
     setSelectedYear('');
     setTiposPregunta({
       comprension: true,
@@ -108,16 +136,32 @@ const BancoPreguntasPage = () => {
     });
   };
 
-  const handleConfirm = () => {
-     router.push('/examen');
-  };
+  const handleConfirm = async () => {
+    if (selectedModalidadId && selectedNivelId && selectedYear) {
+      try {
+        setIsLoading(true);
+        // Map types to IDs (Assuming IDs for now, should ideally come from API)
+        const tipoPreguntaIds: number[] = [];
+        if (tiposPregunta.comprension) tipoPreguntaIds.push(1);
+        if (tiposPregunta.razonamiento) tipoPreguntaIds.push(2);
+        if (tiposPregunta.conocimientos) tipoPreguntaIds.push(3);
 
-  const getSelectionSummary = () => {
-    const parts = [];
-    if (selectedModalidad) parts.push(`Modalidad: ${selectedModalidad}`);
-    if (selectedNivel) parts.push(`Nivel: ${selectedNivel}`);
-    if (selectedYear) parts.push(`Año: ${selectedYear}`);
-    return parts;
+        const questions = await estructuraAcademicaService.getPreguntas(
+          Number(selectedModalidadId),
+          Number(selectedNivelId),
+          selectedYear,
+          tipoPreguntaIds
+        );
+        console.log("Fetched questions:", questions);
+        // Store in localStorage or state management to be used in /examen
+        localStorage.setItem('currentQuestions', JSON.stringify(questions));
+        router.push('/examen');
+      } catch (error) {
+        console.error("Error confirming selection:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   if (loading || !isAuthenticated) {
@@ -152,13 +196,19 @@ const BancoPreguntasPage = () => {
                  <span>Modalidad habilitada</span>
               </div>
               <select 
-                value={selectedModalidad}
-                onChange={(e) => setSelectedModalidad(e.target.value)}
+                value={selectedModalidadId}
+                onChange={(e) => {
+                    const id = e.target.value === '' ? '' : Number(e.target.value);
+                    setSelectedModalidadId(id);
+                    setSelectedNivelId('');
+                    setSelectedEspecialidadId('');
+                }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                disabled={isLoading}
               >
                  <option value="">Selecciona Modalidad</option>
-                 {MODALIDADES.map(m => (
-                     <option key={m} value={m}>{m}</option>
+                 {modalidadesData.map(m => (
+                     <option key={m.id} value={m.id}>{m.nombre}</option>
                  ))}
               </select>
            </div>
@@ -170,13 +220,41 @@ const BancoPreguntasPage = () => {
                  <span>Nivel</span>
               </div>
               <select 
-                value={selectedNivel}
-                onChange={(e) => setSelectedNivel(e.target.value)}
+                value={selectedNivelId}
+                onChange={(e) => {
+                  const id = e.target.value === '' ? '' : Number(e.target.value);
+                  setSelectedNivelId(id);
+                  setSelectedEspecialidadId('');
+                  setSelectedYear(''); // Clear year when level changes
+                }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                disabled={!selectedModalidadId}
               >
                  <option value="">Selecciona Nivel</option>
-                 {NIVELES.map(n => (
-                     <option key={n} value={n}>{n}</option>
+                 {nivelesData.map(n => (
+                     <option key={n.id} value={n.id}>{n.nombre}</option>
+                 ))}
+              </select>
+           </div>
+
+           {/* 3. Especialidad */}
+           <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                 <AcademicCapIcon className="h-5 w-5" />
+                 <span>Especialidad</span>
+              </div>
+              <select 
+                value={selectedEspecialidadId}
+                onChange={(e) => {
+                    const id = e.target.value === '' ? '' : Number(e.target.value);
+                    setSelectedEspecialidadId(id);
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                disabled={!selectedNivelId}
+              >
+                 <option value="">Selecciona Especialidad</option>
+                 {especialidadesData.map(e => (
+                     <option key={e.id} value={e.id}>{e.nombre}</option>
                  ))}
               </select>
            </div>
@@ -190,11 +268,12 @@ const BancoPreguntasPage = () => {
               <select 
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                disabled={!selectedNivelId || aniosData.length === 0}
               >
                  <option value="">Selecciona Año</option>
-                 {YEARS.map(y => (
-                     <option key={y} value={y}>{y}</option>
+                 {aniosData.map(year => (
+                     <option key={year} value={year}>{year}</option>
                  ))}
               </select>
            </div>
@@ -206,76 +285,208 @@ const BancoPreguntasPage = () => {
                  <span>Tipos de Pregunta*</span>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 {/* Card 1 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.comprension ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
-                    <div className="flex items-start gap-2">
-                       <input 
-                         type="checkbox" 
-                         className="mt-1"
-                         checked={tiposPregunta.comprension}
-                         onChange={(e) => setTiposPregunta({...tiposPregunta, comprension: e.target.checked})}
-                       />
-                       <div>
-                          <p className="font-semibold text-gray-700">Comprensión Lectora</p>
-                          <p className="text-xs text-gray-400">0 preguntas (no disponible)</p>
-                       </div>
-                    </div>
-                 </label>
+                     {/* Card 1 */}
+                     <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.comprension ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                        <div className="flex items-start gap-2">
+                           <input 
+                             type="checkbox" 
+                             className="mt-1"
+                             checked={tiposPregunta.comprension}
+                             onChange={(e) => setTiposPregunta({...tiposPregunta, comprension: e.target.checked})}
+                           />
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
+                              <span className="text-[#05CD99] text-sm font-medium">
+                                {isCounting ? 'Cargando...' : `${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
+                              </span>
+                           </div>
+                        </div>
+                     </label>
 
-                 {/* Card 2 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.razonamiento ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
-                    <div className="flex items-start gap-2">
-                       <input 
-                         type="checkbox" 
-                         className="mt-1"
-                         checked={tiposPregunta.razonamiento}
-                         onChange={(e) => setTiposPregunta({...tiposPregunta, razonamiento: e.target.checked})}
-                       />
-                       <div>
-                          <p className="font-semibold text-gray-700">Razonamiento Lógico</p>
-                          <p className="text-xs text-gray-400">0 preguntas (no disponible)</p>
-                       </div>
-                    </div>
-                 </label>
+                     {/* Card 2 */}
+                     <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.razonamiento ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                        <div className="flex items-start gap-2">
+                           <input 
+                             type="checkbox" 
+                             className="mt-1"
+                             checked={tiposPregunta.razonamiento}
+                             onChange={(e) => setTiposPregunta({...tiposPregunta, razonamiento: e.target.checked})}
+                           />
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
+                              <span className="text-[#05CD99] text-sm font-medium">
+                                {isCounting ? 'Cargando...' : `${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
+                              </span>
+                           </div>
+                        </div>
+                     </label>
 
-                 {/* Card 3 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.conocimientos ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
-                    <div className="flex items-start gap-2">
-                       <input 
-                         type="checkbox" 
-                         className="mt-1"
-                         checked={tiposPregunta.conocimientos}
-                         onChange={(e) => setTiposPregunta({...tiposPregunta, conocimientos: e.target.checked})}
-                       />
-                       <div>
-                          <p className="font-semibold text-gray-700">Conocimientos Curriculares y Pedagógicos</p>
-                          <p className="text-xs text-gray-400">0 preguntas (no disponible)</p>
-                       </div>
-                    </div>
-                 </label>
-              </div>
+                     {/* Card 3 */}
+                     <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.conocimientos ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                        <div className="flex items-start gap-2">
+                           <input 
+                             type="checkbox" 
+                             className="mt-1"
+                             checked={tiposPregunta.conocimientos}
+                             onChange={(e) => setTiposPregunta({...tiposPregunta, conocimientos: e.target.checked})}
+                           />
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
+                              <span className="text-[#05CD99] text-sm font-medium">
+                                {isCounting ? 'Cargando...' : `${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
+                              </span>
+                           </div>
+                        </div>
+                     </label>
               <p className="text-xs text-gray-500 mt-3">* Selecciona al menos un tipo de pregunta</p>
            </div>
 
-           {/* Resumen de selección */}
-           <div className="border border-primary rounded-lg p-4 bg-white min-h-[100px]">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                 <AcademicCapIcon className="h-5 w-5" />
-                 <span>Resumen de selección</span>
-              </div>
-              <div className="text-gray-500 text-sm">
-                 {getSelectionSummary().length === 0 ? (
-                    <p>No has seleccionado ninguna opción.</p>
-                 ) : (
-                    <div className="flex flex-col gap-1">
-                       {getSelectionSummary().map((line, idx) => (
-                           <p key={idx}><span className="font-semibold">{line.split(':')[0]}:</span> {line.split(':')[1]}</p>
-                       ))}
-                    </div>
-                 )}
-              </div>
-           </div>
+            {/* Tipos de Pregunta Seleccionados */}
+            {(tiposPregunta.comprension || tiposPregunta.razonamiento || tiposPregunta.conocimientos) && (
+               <div className="mt-8 space-y-4">
+                  <h3 className="text-[#2B3674] font-bold text-xl">Tipos de Pregunta Seleccionados</h3>
+                  
+                  <div className="space-y-3">
+                     {tiposPregunta.conocimientos && (
+                        <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold text-base">Conocimientos Curriculares y Pedagógicos</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                                    {conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas
+                                 </span>
+                                 <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⭐</span> 3 pts/correcta
+                                 </span>
+                                 <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🎯</span> Máx: 120 pts
+                                 </span>
+                                 <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">✅</span> Mínimo: 90 pts
+                                 </span>
+                                 <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⏱️</span> 3 min/pregunta
+                                 </span>
+                                 <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🕒</span> Total: 120min
+                                 </span>
+                              </div>
+                           </div>
+                           <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
+                              <div className="bg-[#6B4BFF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">CCP</div>
+                           </div>
+                        </div>
+                     )}
+
+                     {tiposPregunta.razonamiento && (
+                        <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold text-base">Razonamiento Lógico</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                                    {conteoPreguntas['razonamiento lógico'] || 0} preguntas
+                                 </span>
+                                 <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⭐</span> 2 pts/correcta
+                                 </span>
+                                 <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🎯</span> Máx: 50 pts
+                                 </span>
+                                 <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">✅</span> Mínimo: 16 pts
+                                 </span>
+                                 <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⏱️</span> 3 min/pregunta
+                                 </span>
+                                 <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🕒</span> Total: 75min
+                                 </span>
+                              </div>
+                           </div>
+                           <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
+                              <div className="bg-[#4318FF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">RL</div>
+                           </div>
+                        </div>
+                     )}
+
+                     {tiposPregunta.comprension && (
+                        <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
+                           <div className="flex flex-col">
+                              <span className="text-[#2B3674] font-bold text-base">Comprensión Lectora</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                                    {conteoPreguntas['comprensión lectora'] || 0} preguntas
+                                 </span>
+                                 <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⭐</span> 2 pts/correcta
+                                 </span>
+                                 <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🎯</span> Máx: 50 pts
+                                 </span>
+                                 <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">✅</span> Mínimo: 14 pts
+                                 </span>
+                                 <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">⏱️</span> 3 min/pregunta
+                                 </span>
+                                 <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span className="text-sm">🕒</span> Total: 75min
+                                 </span>
+                              </div>
+                           </div>
+                           <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
+                              <div className="bg-[#01B9FF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">CL</div>
+                           </div>
+                        </div>
+                     )}
+                  </div>
+
+                  {/* New Row: Resumen Total */}
+                  <div className="bg-[#F8F9FA] border border-gray-200 rounded-xl p-4 mt-6">
+                     <div className="flex items-center gap-2 mb-3 text-[#2B3674] font-bold">
+                        <span className="text-lg">📊</span>
+                        <span>Resumen Total</span>
+                     </div>
+                     <div className="flex flex-wrap gap-4">
+                        <div className="bg-[#4FACFE] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm">
+                           <div className="bg-white/30 p-1 rounded">📚</div>
+                           <span>{
+                              (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos'] || 0) : 0) +
+                              (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico'] || 0) : 0) +
+                              (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora'] || 0) : 0)
+                           } preguntas totales</span>
+                        </div>
+                        <div className="bg-[#05CD99] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm">
+                           <div className="bg-white/30 p-1 rounded">🕒</div>
+                           <span>{
+                              (tiposPregunta.conocimientos ? 120 : 0) +
+                              (tiposPregunta.razonamiento ? 75 : 0) +
+                              (tiposPregunta.comprension ? 75 : 0)
+                           } min totales</span>
+                        </div>
+                        <div className="bg-[#6B4BFF] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm">
+                           <div className="bg-white/30 p-1 rounded">🎯</div>
+                           <span>{
+                              (tiposPregunta.conocimientos ? 120 : 0) +
+                              (tiposPregunta.razonamiento ? 50 : 0) +
+                              (tiposPregunta.comprension ? 50 : 0)
+                           } pts máximo</span>
+                        </div>
+                        <div className="bg-[#F6AD55] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm">
+                           <div className="bg-white/30 p-1 rounded">✅</div>
+                           <span>{
+                              (tiposPregunta.conocimientos ? 90 : 0) +
+                              (tiposPregunta.razonamiento ? 16 : 0) +
+                              (tiposPregunta.comprension ? 14 : 0)
+                           } pts mínimo</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            )}
 
            {/* Buttons */}
            <div className="flex justify-center gap-4 mt-6">
@@ -286,12 +497,13 @@ const BancoPreguntasPage = () => {
                  <XIcon className="h-4 w-4" />
                  Limpiar
               </button>
-              <button 
-                 onClick={handleConfirm}
-                 disabled={!selectedModalidad || !selectedNivel || !selectedYear}
-                 className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                 Confirmar selección
-              </button>
+               <button 
+                  onClick={handleConfirm}
+                  disabled={!selectedModalidadId || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId) || (aniosData.length > 0 && !selectedYear)}
+                  className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                  Confirmar selección
+               </button>
            </div>
 
         </div>
