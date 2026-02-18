@@ -22,10 +22,10 @@ export interface Seccion {
 export interface CreateSeccionRequest {
   nombre: string;
   descripcion: string;
-  tipoExamenId: number;
-  modalidadId: number;
-  nivelId: number;
-  especialidadId: number;
+  tipoExamenId: number | null;
+  modalidadId: number | null;
+  nivelId: number | null;
+  especialidadId: number | null;
   esVisible: boolean;
   esDefault: boolean;
   categoriasIds: number[];
