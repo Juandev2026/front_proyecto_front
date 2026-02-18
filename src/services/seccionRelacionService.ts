@@ -17,7 +17,7 @@ export interface RelacionSeccion {
 export interface CreateRelacionRequest {
     seccionId: number;
     subSeccionId: number;
-    materialId: number;
+    materialId: number | null;
 }
 
 export const seccionRelacionService = {

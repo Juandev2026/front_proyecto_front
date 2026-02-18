@@ -22,13 +22,6 @@ export interface Seccion {
 export interface CreateSeccionRequest {
   nombre: string;
   descripcion: string;
-  tipoExamenId: number | null;
-  modalidadId: number | null;
-  nivelId: number | null;
-  especialidadId: number | null;
-  esVisible: boolean;
-  esDefault: boolean;
-  categoriasIds: number[];
 }
 
 export const seccionesService = {
@@ -47,7 +40,8 @@ export const seccionesService = {
 
   create: async (data: CreateSeccionRequest): Promise<Seccion> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones`, {
+      // Use the simple endpoint for creation as identified
+      const response = await fetch(`${API_BASE_URL}/Secciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
@@ -121,12 +115,19 @@ export const seccionesService = {
 
   createSubseccion: async (seccionId: number, nombre: string): Promise<any> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`, {
+      // NOTE: User indicated /api/SubSecciones is the endpoint for creation.
+      // However, this endpoint doesn't seem to take seccionId.
+      // We are creating the entity, but the link to the section might be missing
+      // if not handled by another endpoint.
+      const response = await fetch(`${API_BASE_URL}/SubSecciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ nombre }),
+        body: JSON.stringify({ nombre, descripcion: 'Descripción por defecto', seccionId }),
       });
-      if (!response.ok) throw new Error('Error al crear subsección');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Error al crear subsección: ${errText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error('Error creating subseccion:', error);
