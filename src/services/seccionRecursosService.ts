@@ -12,6 +12,29 @@ export interface SeccionRecurso {
   descripcionSubSeccion: string;
 }
 
+export interface RecursoAnidado {
+  idSeccionGestion: number;
+  idSubSeccion: number;
+  pdf: string;
+  imagen: string;
+  nombreArchivo: string;
+  numero: number;
+}
+
+export interface SubSeccionAnidada {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  recursos: RecursoAnidado[];
+}
+
+export interface SeccionAnidada {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  subSecciones: SubSeccionAnidada[];
+}
+
 export interface CreateSeccionRecursoRequest {
   idSeccion: number;
   idSubSeccion: number;
@@ -118,6 +141,19 @@ export const seccionRecursosService = {
     } catch (error) {
       console.error('Error deleting seccion recurso:', error);
       throw error;
+    }
+  },
+
+  getDatosAnidados: async (): Promise<SeccionAnidada[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/datos-anidados`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Error al obtener datos anidados');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching nested data:', error);
+      return [];
     }
   }
 };

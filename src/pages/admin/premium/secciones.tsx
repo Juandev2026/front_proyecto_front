@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/outline';
 
 import AdminLayout from '../../../components/AdminLayout';
-import { seccionesService, Seccion as APISeccion } from '../../../services/seccionesService';
+import { seccionesService } from '../../../services/seccionesService';
 import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
 import { estructuraAcademicaService, Modalidad } from '../../../services/estructuraAcademicaService';
 
@@ -19,13 +19,18 @@ interface Seccion {
   id: number;
   nombre: string;
   descripcion: string;
-  tipoExamenId: number | null;
-  modalidadId: number | null;
-  nivelId: number | null;
-  especialidadId: number | null;
-  tipoExamenNombre?: string;
-  estado: string;
-  categoriasCount: number;
+  tipoExamenId: number;
+  modalidadId: number;
+  nivelId: number;
+  especialidadId: number;
+  tipoExamenNombre: string;
+  modalidadNombre: string;
+  nivelNombre: string;
+  especialidadNombre: string;
+  esVisible: boolean;
+  esDefault: boolean;
+  categorias: { id: number; descripcion: string }[];
+  cantidadCategorias: number;
 }
 
 // Add this helper function before the component
@@ -58,12 +63,14 @@ const AdminPremiumSecciones = () => {
   const [newSection, setNewSection] = useState({
       nombre: '',
       descripcion: '',
-      tipoExamenId: null as number | null,
-      modalidadId: null as number | null,
-      nivelId: null as number | null,
-      especialidadId: null as number | null,
-      isDefault: false,
-      isVisible: true
+      tipoExamenId: 0,
+      modalidadId: 0,
+      nivelId: 0,
+      especialidadId: 0,
+      esDefault: false,
+      esVisible: true,
+      categoriasIds: [] as number[],
+      categoriasList: [] as { id: number; nombre: string }[]
   });
 
   // --- EDIT MODAL STATE ---
@@ -79,16 +86,9 @@ const AdminPremiumSecciones = () => {
     try {
       const data = await seccionesService.getAll();
       const transformed: Seccion[] = data.map(s => ({
-        id: s.id,
-        nombre: s.nombre,
-        descripcion: s.descripcion,
-        tipoExamenId: s.tipoExamenId,
-        modalidadId: s.modalidadId,
-        nivelId: s.nivelId,
-        especialidadId: s.especialidadId,
+        ...s,
         tipoExamenNombre: s.tipoExamenNombre || 'General',
-        estado: s.estado || 'Visible',
-        categoriasCount: s.categoriasCount || 0
+        cantidadCategorias: s.cantidadCategorias || 0
       }));
       setSecciones(transformed);
     } catch (error) {
@@ -130,7 +130,10 @@ const AdminPremiumSecciones = () => {
               tipoExamenId: newSection.tipoExamenId,
               modalidadId: newSection.modalidadId,
               nivelId: newSection.nivelId,
-              especialidadId: newSection.especialidadId
+              especialidadId: newSection.especialidadId,
+              esVisible: newSection.esVisible,
+              esDefault: newSection.esDefault,
+              categoriasIds: newSection.categoriasIds
           });
           
           await fetchSections();
@@ -138,12 +141,14 @@ const AdminPremiumSecciones = () => {
           setNewSection({
               nombre: '',
               descripcion: '',
-              tipoExamenId: null,
-              modalidadId: null,
-              nivelId: null,
-              especialidadId: null,
-              isDefault: false,
-              isVisible: true
+              tipoExamenId: 0,
+              modalidadId: 0,
+              nivelId: 0,
+              especialidadId: 0,
+              esDefault: false,
+              esVisible: true,
+              categoriasIds: [],
+              categoriasList: []
           });
           alert("Sección creada con éxito.");
       } catch (error) {
@@ -157,21 +162,25 @@ const AdminPremiumSecciones = () => {
          return;
      }
      
-     try {
-       await seccionesService.update(editingSection.id, {
-         nombre: editingSection.nombre,
-         descripcion: editingSection.descripcion,
-         tipoExamenId: editingSection.tipoExamenId,
-         modalidadId: editingSection.modalidadId,
-         nivelId: editingSection.nivelId,
-         especialidadId: editingSection.especialidadId
-       });
-       await fetchSections();
-       setShowEditModal(false);
-       setEditingSection(null);
-     } catch (error) {
-       alert("Error al actualizar la sección.");
-     }
+      try {
+        await seccionesService.update(editingSection.id, {
+          nombre: editingSection.nombre,
+          descripcion: editingSection.descripcion,
+          tipoExamenId: Number(editingSection.tipoExamenId), // Ensure number type
+          modalidadId: Number(editingSection.modalidadId),   // Ensure number type
+          nivelId: Number(editingSection.nivelId),           // Ensure number type
+          especialidadId: Number(editingSection.especialidadId), // Ensure number type
+          esVisible: editingSection.esVisible,
+          esDefault: editingSection.esDefault,
+          categoriasIds: editingSection.categorias.map(c => c.id)
+        });
+        await fetchSections();
+        setShowEditModal(false);
+        setEditingSection(null);
+        alert("Sección actualizada con éxito.");
+      } catch (error) {
+        alert("Error al actualizar la sección.");
+      }
   };
 
   const confirmDelete = async () => {
@@ -220,6 +229,109 @@ const AdminPremiumSecciones = () => {
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
     setSeccionToDelete(null);
+  };
+
+  const handleAddCategory = (isEdit: boolean) => {
+    if (isEdit) {
+      if (!editingSection) return;
+      if (!editingSection.modalidadId) {
+        alert("Seleccione un tipo (modalidad).");
+        return;
+      }
+      
+      const mod = modalidades.find(m => m.id === editingSection.modalidadId);
+      if (!mod) {
+        console.error("Modalidad not found:", editingSection.modalidadId);
+        return;
+      }
+
+      let categoryId = 0;
+      let name = '';
+
+      if (editingSection.especialidadId) {
+        categoryId = editingSection.especialidadId;
+        const niv = mod.niveles.find(n => n.id === editingSection.nivelId);
+        const esp = niv?.especialidades.find(e => e.id === editingSection.especialidadId);
+        name = `${mod.nombre} - ${niv?.nombre} - ${esp?.nombre}`;
+      } else if (editingSection.nivelId) {
+        categoryId = editingSection.nivelId;
+        const niv = mod.niveles.find(n => n.id === editingSection.nivelId);
+        name = `${mod.nombre} - ${niv?.nombre}`;
+      } else {
+        categoryId = editingSection.modalidadId;
+        name = mod.nombre;
+      }
+
+      if (editingSection.categorias.some(c => c.id === categoryId)) {
+        alert("Esta categoría ya ha sido agregada.");
+        return;
+      }
+
+      setEditingSection(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          categorias: [...prev.categorias, { id: categoryId, descripcion: name }]
+        };
+      });
+    } else {
+      if (!newSection.modalidadId) {
+        alert("Seleccione un tipo (modalidad).");
+        return;
+      }
+
+      const mod = modalidades.find(m => m.id === newSection.modalidadId);
+      if (!mod) {
+        console.error("Modalidad not found:", newSection.modalidadId);
+        return;
+      }
+
+      let categoryId = 0;
+      let name = '';
+
+      if (newSection.especialidadId) {
+        categoryId = newSection.especialidadId;
+        const niv = mod.niveles.find(n => n.id === newSection.nivelId);
+        const esp = niv?.especialidades.find(e => e.id === newSection.especialidadId);
+        name = `${mod.nombre} - ${niv?.nombre} - ${esp?.nombre}`;
+      } else if (newSection.nivelId) {
+        categoryId = newSection.nivelId;
+        const niv = mod.niveles.find(n => n.id === newSection.nivelId);
+        name = `${mod.nombre} - ${niv?.nombre}`;
+      } else {
+        categoryId = newSection.modalidadId;
+        name = mod.nombre;
+      }
+
+      if (newSection.categoriasIds.includes(categoryId)) {
+        alert("Esta categoría ya ha sido agregada.");
+        return;
+      }
+
+      setNewSection(prev => ({
+        ...prev,
+        categoriasIds: [...prev.categoriasIds, categoryId],
+        categoriasList: [...prev.categoriasList, { id: categoryId, nombre: name }]
+      }));
+    }
+  };
+
+  const handleRemoveCategory = (id: number, isEdit: boolean) => {
+    if (isEdit) {
+      setEditingSection(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          categorias: prev.categorias.filter(c => c.id !== id)
+        };
+      });
+    } else {
+      setNewSection(prev => ({
+        ...prev,
+        categoriasIds: prev.categoriasIds.filter(cid => cid !== id),
+        categoriasList: prev.categoriasList.filter(c => c.id !== id)
+      }));
+    }
   };
 
   if (isLoading) {
@@ -332,15 +444,15 @@ const AdminPremiumSecciones = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                        <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full ${
-                          seccion.estado === 'Oculta' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                          !seccion.esVisible ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                        }`}>
-                          {seccion.estado === 'Oculta' && <EyeOffIcon className="w-3 h-3 mr-1" />}
-                          {seccion.estado}
+                          {!seccion.esVisible && <EyeOffIcon className="w-3 h-3 mr-1" />}
+                          {seccion.esVisible ? 'Visible' : 'Oculta'}
                        </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                       <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
-                          {seccion.categoriasCount} categorías
+                          {seccion.cantidadCategorias} categorías
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -423,7 +535,7 @@ const AdminPremiumSecciones = () => {
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre *</label>
@@ -453,7 +565,7 @@ const AdminPremiumSecciones = () => {
                         <select 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                             value={newSection.tipoExamenId || ''}
-                            onChange={(e) => setNewSection({...newSection, tipoExamenId: Number(e.target.value) || null})}
+                            onChange={(e) => setNewSection({...newSection, tipoExamenId: Number(e.target.value) || 0})}
                         >
                             <option value="">Seleccione un tipo de examen</option>
                             {tiposAcceso.map(t => (
@@ -468,8 +580,8 @@ const AdminPremiumSecciones = () => {
                             <input 
                                 type="checkbox" 
                                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                checked={newSection.isDefault}
-                                onChange={(e) => setNewSection({...newSection, isDefault: e.target.checked})}
+                                checked={newSection.esDefault}
+                                onChange={(e) => setNewSection({...newSection, esDefault: e.target.checked})}
                             />
                             <span className="text-xs text-gray-700">Marcar como sección por defecto</span>
                         </label>
@@ -477,8 +589,8 @@ const AdminPremiumSecciones = () => {
                             <input 
                                 type="checkbox" 
                                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                checked={newSection.isVisible}
-                                onChange={(e) => setNewSection({...newSection, isVisible: e.target.checked})}
+                                checked={newSection.esVisible}
+                                onChange={(e) => setNewSection({...newSection, esVisible: e.target.checked})}
                             />
                             <span className="text-xs text-gray-700">Sección visible</span>
                         </label>
@@ -496,8 +608,8 @@ const AdminPremiumSecciones = () => {
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                     value={newSection.modalidadId || ''}
                                     onChange={(e) => {
-                                        const val = Number(e.target.value) || null;
-                                        setNewSection({...newSection, modalidadId: val, nivelId: null, especialidadId: null});
+                                        const val = Number(e.target.value) || 0;
+                                        setNewSection({...newSection, modalidadId: val, nivelId: 0, especialidadId: 0});
                                     }}
                                 >
                                     <option value="">Selecciona tipo</option>
@@ -515,8 +627,8 @@ const AdminPremiumSecciones = () => {
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                         value={newSection.nivelId || ''}
                                         onChange={(e) => {
-                                            const val = Number(e.target.value) || null;
-                                            setNewSection({...newSection, nivelId: val, especialidadId: null});
+                                            const val = Number(e.target.value) || 0;
+                                            setNewSection({...newSection, nivelId: val, especialidadId: 0});
                                         }}
                                     >
                                         <option value="">Selecciona nivel</option>
@@ -534,7 +646,7 @@ const AdminPremiumSecciones = () => {
                                     <select 
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                         value={newSection.especialidadId || ''}
-                                        onChange={(e) => setNewSection({...newSection, especialidadId: Number(e.target.value) || null})}
+                                        onChange={(e) => setNewSection({...newSection, especialidadId: Number(e.target.value) || 0})}
                                     >
                                         <option value="">Selecciona especialidad</option>
                                         {modalidades.find(m => m.id === newSection.modalidadId)?.niveles.find(n => n.id === newSection.nivelId)?.especialidades.map(esp => (
@@ -545,15 +657,39 @@ const AdminPremiumSecciones = () => {
                             )}
                         </div>
 
-                        <button className="mt-4 flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors">
+                        <button 
+                            onClick={() => handleAddCategory(false)}
+                            className="mt-4 flex items-center gap-2 bg-[#4285F4] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors shadow-sm"
+                        >
                             <PlusIcon className="w-4 h-4" />
                             Agregar Categoría
                         </button>
+
+                        {/* Categorías agregadas List (Inside Categorías section for better flow) */}
+                        {newSection.categoriasList.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h4 className="text-sm font-bold text-gray-700 mb-2">Categorías agregadas:</h4>
+                                <div className="space-y-2">
+                                    {newSection.categoriasList.map((cat) => (
+                                        <div key={cat.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 group">
+                                            <span className="text-xs text-gray-700 font-medium">{cat.nombre}</span>
+                                            <button 
+                                                onClick={() => handleRemoveCategory(cat.id, false)}
+                                                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                title="Eliminar categoría"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 pt-2 flex gap-4 bg-gray-50">
+                <div className="p-6 pt-4 flex gap-4 bg-gray-50 border-t border-gray-100">
                     <button 
                         onClick={() => setShowAddModal(false)}
                         className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-white transition-colors font-medium text-sm"
@@ -608,7 +744,7 @@ const AdminPremiumSecciones = () => {
                         <select 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                             value={editingSection.tipoExamenId || ''}
-                            onChange={(e) => setEditingSection({...editingSection, tipoExamenId: Number(e.target.value) || null})}
+                            onChange={(e) => setEditingSection({...editingSection, tipoExamenId: Number(e.target.value) || 0})}
                         >
                             <option value="">Seleccione un tipo de examen</option>
                             {tiposAcceso.map(t => (
@@ -629,8 +765,8 @@ const AdminPremiumSecciones = () => {
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                     value={editingSection.modalidadId || ''}
                                     onChange={(e) => {
-                                        const val = Number(e.target.value) || null;
-                                        setEditingSection({...editingSection, modalidadId: val, nivelId: null, especialidadId: null});
+                                        const val = Number(e.target.value) || 0;
+                                        setEditingSection(prev => prev ? {...prev, modalidadId: val, nivelId: 0, especialidadId: 0} : null);
                                     }}
                                 >
                                     <option value="">Selecciona tipo</option>
@@ -648,8 +784,8 @@ const AdminPremiumSecciones = () => {
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                         value={editingSection.nivelId || ''}
                                         onChange={(e) => {
-                                            const val = Number(e.target.value) || null;
-                                            setEditingSection({...editingSection, nivelId: val, especialidadId: null});
+                                            const val = Number(e.target.value) || 0;
+                                            setEditingSection(prev => prev ? {...prev, nivelId: val, especialidadId: 0} : null);
                                         }}
                                     >
                                         <option value="">Selecciona nivel</option>
@@ -667,7 +803,10 @@ const AdminPremiumSecciones = () => {
                                     <select 
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-white"
                                         value={editingSection.especialidadId || ''}
-                                        onChange={(e) => setEditingSection({...editingSection, especialidadId: Number(e.target.value) || null})}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value) || 0;
+                                            setEditingSection(prev => prev ? {...prev, especialidadId: val} : null);
+                                        }}
                                     >
                                         <option value="">Selecciona especialidad</option>
                                         {modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.find(n => n.id === editingSection.nivelId)?.especialidades.map(esp => (
@@ -677,6 +816,35 @@ const AdminPremiumSecciones = () => {
                                 </div>
                             )}
                         </div>
+
+                        <button 
+                            onClick={() => handleAddCategory(true)}
+                            className="mt-4 flex items-center gap-2 bg-[#4285F4] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors shadow-sm"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            Agregar Categoría
+                        </button>
+
+                        {/* Categorías agregadas List */}
+                        {editingSection.categorias.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h4 className="text-sm font-bold text-gray-700 mb-2">Categorías agregadas:</h4>
+                                <div className="space-y-2">
+                                    {editingSection.categorias.map((cat) => (
+                                        <div key={cat.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 group">
+                                            <span className="text-xs text-gray-700 font-medium">{cat.descripcion}</span>
+                                            <button 
+                                                onClick={() => handleRemoveCategory(cat.id, true)}
+                                                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                title="Eliminar categoría"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

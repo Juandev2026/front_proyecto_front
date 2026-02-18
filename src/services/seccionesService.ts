@@ -5,25 +5,30 @@ export interface Seccion {
   id: number;
   nombre: string;
   descripcion: string;
-  tipoExamenId: number | null;
-  modalidadId: number | null;
-  nivelId: number | null;
-  especialidadId: number | null;
-  tipoExamenNombre?: string;
-  modalidadNombre?: string;
-  nivelNombre?: string;
-  especialidadNombre?: string;
-  estado?: string;
-  categoriasCount?: number;
+  tipoExamenId: number;
+  modalidadId: number;
+  nivelId: number;
+  especialidadId: number;
+  tipoExamenNombre: string;
+  modalidadNombre: string;
+  nivelNombre: string;
+  especialidadNombre: string;
+  esVisible: boolean;
+  esDefault: boolean;
+  categorias: { id: number; descripcion: string }[];
+  cantidadCategorias: number;
 }
 
 export interface CreateSeccionRequest {
   nombre: string;
   descripcion: string;
-  tipoExamenId: number | null;
-  modalidadId: number | null;
-  nivelId: number | null;
-  especialidadId: number | null;
+  tipoExamenId: number;
+  modalidadId: number;
+  nivelId: number;
+  especialidadId: number;
+  esVisible: boolean;
+  esDefault: boolean;
+  categoriasIds: number[];
 }
 
 export const seccionesService = {

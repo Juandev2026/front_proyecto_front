@@ -20,24 +20,26 @@ import { contenidoIntroductorioService } from '../../../services/contenidoIntrod
 
 // --- TYPES ---
 interface Resource {
-  id: number;
-  title: string;
-  filename: string;
-  size: string;
-  type: 'PDF' | 'VIDEO' | 'LINK';
-  url: string;
+  idSeccionGestion: number;
+  idSubSeccion: number;
+  pdf: string;
+  imagen: string;
+  nombreArchivo: string;
+  numero: number;
 }
 
 interface Subsection {
   id: number;
-  title: string;
-  resources: Resource[];
+  nombre: string;
+  descripcion: string;
+  recursos: Resource[];
 }
 
 interface Section {
   id: number;
-  title: string;
-  subsections: Subsection[];
+  nombre: string;
+  descripcion: string;
+  subSecciones: Subsection[];
 }
 
 interface IntroContent {
@@ -118,53 +120,29 @@ const Recursos = () => {
   const fetchSections = async () => {
     setIsLoading(true);
     try {
-      const allSections = await seccionesService.getAll();
+      const nestedData = await seccionRecursosService.getDatosAnidados();
       const allCategories = await materialCategoriaService.getAll();
-      const allResources = await seccionRecursosService.getAll();
 
+      setSections(nestedData);
       setSubsecciones(allCategories);
 
-      const mappedSections: Section[] = allSections.map(s => {
-        const sectionResources = allResources.filter(r => r.idSeccion === s.id);
-        
-        // Group resources by idSubSeccion
-        const subsectionsMap = new Map<number, Subsection>();
-        
-        sectionResources.forEach(r => {
-          if (!subsectionsMap.has(r.idSubSeccion)) {
-            const cat = allCategories.find(c => c.id === r.idSubSeccion);
-            subsectionsMap.set(r.idSubSeccion, {
-              id: r.idSubSeccion,
-              title: cat ? cat.nombre : (r.descripcionSubSeccion || 'General'),
-              resources: []
-            });
-          }
-          
-          subsectionsMap.get(r.idSubSeccion)?.resources.push({
-            id: r.numero || Math.random(),
-            title: r.nombreArchivo || 'Sin título',
-            filename: r.pdf,
-            size: 'N/A', // API doesn't provide size
-            type: 'PDF',
-            url: r.pdf
-          });
+      // Calculate stats
+      let totalSubsections = 0;
+      let totalResources = 0;
+      nestedData.forEach(s => {
+        totalSubsections += s.subSecciones.length;
+        s.subSecciones.forEach(sub => {
+          totalResources += sub.recursos.length;
         });
-
-        return {
-          id: s.id,
-          title: s.nombre,
-          subsections: Array.from(subsectionsMap.values())
-        };
       });
 
-      setSections(mappedSections);
       setStats({
-        secciones: allSections.length,
-        subsecciones: allCategories.length,
-        archivosPdf: allResources.length
+        secciones: nestedData.length,
+        subsecciones: totalSubsections,
+        archivosPdf: totalResources
       });
     } catch (error) {
-      console.error("Error fetching sections and resources:", error);
+      console.error("Error fetching nested sections and resources:", error);
     } finally {
       setIsLoading(false);
     }
@@ -208,10 +186,13 @@ const Recursos = () => {
       await seccionesService.create({
         nombre: newSection.nombre,
         descripcion: newSection.descripcion,
-        tipoExamenId: null,
-        modalidadId: null,
-        nivelId: null,
-        especialidadId: null
+        tipoExamenId: 0,
+        modalidadId: 0,
+        nivelId: 0,
+        especialidadId: 0,
+        esVisible: true,
+        esDefault: false,
+        categoriasIds: []
       });
       setIsAddSectionModalOpen(false);
       setNewSection({ nombre: '', descripcion: '' });
@@ -415,8 +396,8 @@ const Recursos = () => {
                             )}
                         </button>
                         <div>
-                             <h3 className="text-lg font-bold text-gray-800 uppercase">{section.title}</h3>
-                             <p className="text-xs text-gray-500 mt-0.5 text-left">{section.subsections.length} subsecciones • {section.subsections.reduce((a,s) => a + s.resources.length, 0)} recursos</p>
+                             <h3 className="text-lg font-bold text-gray-800 uppercase">{section.nombre}</h3>
+                             <p className="text-xs text-gray-500 mt-0.5 text-left">{section.subSecciones.length} subsecciones • {section.subSecciones.reduce((a,s) => a + s.recursos.length, 0)} recursos</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -443,13 +424,13 @@ const Recursos = () => {
 
                 {/* Subsections */}
                 {expandedSections.includes(section.id) && (
-                    <div className="bg-gray-50/50 p-4 border-t border-gray-100 space-y-4">
-                        {section.subsections.length === 0 ? (
+                    <div className="bg-gray-100/30 p-4 border-t border-gray-100 space-y-4">
+                        {section.subSecciones.length === 0 ? (
                             <div className="text-center py-4 text-gray-400 text-sm italic">
                                 No hay subsecciones todavía. ¡Crea una!
                             </div>
                         ) : (
-                            section.subsections.map(sub => (
+                            section.subSecciones.map(sub => (
                                 <div key={sub.id} className="border border-gray-200 rounded-lg bg-white ml-0 md:ml-8">
                                      {/* Subsection Header */}
                                      <div className="p-3 flex items-center justify-between border-b border-gray-100">
@@ -465,19 +446,19 @@ const Recursos = () => {
                                                     <ChevronRightIcon className="w-4 h-4" />
                                                 )}
                                             </button>
-                                            <span className="font-bold text-gray-700">{sub.title}</span>
-                                            <span className="ml-2 text-xs text-gray-400">{sub.resources.length} documentos disponibles</span>
+                                            <span className="font-bold text-gray-700">{sub.nombre}</span>
+                                            <span className="ml-2 text-xs text-gray-400">{sub.recursos.length} documentos disponibles</span>
                                          </div>
                                          <div className="flex items-center gap-2">
                                              <button 
                                                  onClick={() => handleOpenAddResource(section.id, sub.id)}
-                                                 className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                                 className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
                                              >
                                                  <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF libre
                                              </button>
                                              <button 
                                                  onClick={() => handleOpenAddResource(section.id, sub.id)}
-                                                 className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                                 className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
                                              >
                                                  <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF premium
                                              </button>
@@ -493,33 +474,52 @@ const Recursos = () => {
                                      {/* Resources List */}
                                      {expandedSubsections.includes(sub.id) && (
                                          <div className="p-4 bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                             {sub.resources.map(res => (
-                                                <div key={res.id} className="bg-white rounded-lg border border-green-200 shadow-sm p-4 relative">
-                                                    <div className="absolute top-2 right-2 flex gap-1">
-                                                        <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-500"><PencilIcon className="w-3 h-3"/></button>
-                                                        <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-red-500"><TrashIcon className="w-3 h-3"/></button>
-                                                    </div>
-                                                    <div className="flex flex-col h-full">
-                                                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded w-max mb-3">PDF</span>
-                                                        <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2 text-left">{res.title}</h4>
-                                                        <p className="text-gray-500 text-xs mb-4 line-clamp-1 text-left">{res.filename}</p>
-                                                        <span className="text-gray-400 text-xs mb-4 block text-left">{res.size}</span>
-                                                        
-                                                        <div className="mt-auto flex gap-2">
-                                                            <button className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 rounded flex items-center justify-center transition-colors">
-                                                                <EyeIcon className="w-3 h-3 mr-1" /> Ver
-                                                            </button>
-                                                            <button className="flex-1 bg-primary hover:bg-blue-600 text-white text-xs font-bold py-1.5 rounded flex items-center justify-center transition-colors">
-                                                                <DownloadIcon className="w-3 h-3 mr-1" /> Descargar
-                                                            </button>
+                                             {sub.recursos.length === 0 ? (
+                                                 <div className="col-span-full py-4 text-center text-gray-400 text-sm italic">
+                                                     No hay recursos en esta subsección
+                                                 </div>
+                                             ) : (
+                                                 sub.recursos.map(res => (
+                                                    <div key={res.numero} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 relative group">
+                                                        <div className="absolute top-2 right-2 flex gap-1 bg-white p-1 rounded-md shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-blue-500"><PencilIcon className="w-3.5 h-3.5"/></button>
+                                                            <button className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-red-500"><TrashIcon className="w-3.5 h-3.5"/></button>
+                                                        </div>
+                                                        <div className="flex flex-col h-full">
+                                                            <div className="mb-3">
+                                                                <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">PDF</span>
+                                                            </div>
+                                                            
+                                                            {res.imagen ? (
+                                                                <div className="mb-4 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 h-32 flex items-center justify-center">
+                                                                    <img src={res.imagen} alt={res.nombreArchivo} className="max-h-full object-contain" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 border-dashed bg-gray-50 h-32 flex items-center justify-center">
+                                                                    <DocumentTextIcon className="w-10 h-10 text-gray-300" />
+                                                                </div>
+                                                            )}
+                                                            
+                                                            <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2 text-left">{res.nombreArchivo}</h4>
+                                                            <p className="text-gray-400 text-[11px] mb-4 truncate text-left">{res.pdf}</p>
+                                                            
+                                                            <div className="mt-auto flex gap-2">
+                                                                <button 
+                                                                    onClick={() => window.open(res.pdf, '_blank')}
+                                                                    className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                                >
+                                                                    <EyeIcon className="w-3.5 h-3.5 mr-1.5" /> Ver
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => window.open(res.pdf, '_blank')}
+                                                                    className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                                >
+                                                                    <DownloadIcon className="w-3.5 h-3.5 mr-1.5" /> Descargar
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                             ))}
-                                             {sub.resources.length === 0 && (
-                                                 <div className="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-400 text-sm">
-                                                     No hay recursos en esta subsección. Sube un PDF.
-                                                 </div>
+                                                 ))
                                              )}
                                          </div>
                                      )}
@@ -720,7 +720,7 @@ const Recursos = () => {
                                 onChange={(e) => setNewResource({...newResource, idSeccion: Number(e.target.value)})}
                             >
                                 <option value={0}>Elegir...</option>
-                                {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                                {sections.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
                             </select>
                         </div>
                         <div>
