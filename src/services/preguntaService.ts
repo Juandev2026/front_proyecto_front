@@ -98,4 +98,47 @@ export const preguntaService = {
       throw error;
     }
   },
+
+  // --- NEW ENDPOINTS FOR EXAM-CENTRIC LOGIC ---
+
+  getByExamenId: async (examenId: number): Promise<Pregunta[]> => {
+    try {
+      const response = await fetch(`${API_URL}/examen/${examenId}`, {
+         headers: getAuthHeaders(),
+      });
+
+      if (response.status === 404) {
+         // Exam not found or handled by API returning 404
+         return [];
+      }
+      if (!response.ok) {
+         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+       console.error("Error fetching questions by exam:", error);
+       return [];
+    }
+  },
+
+  createForExamen: async (examenId: number, questions: Partial<Pregunta>[]): Promise<Pregunta[]> => {
+     try {
+        const response = await fetch(`${API_URL}/examen/${examenId}`, {
+           method: 'POST',
+           headers: {
+              ...getAuthHeaders(),
+              'Content-Type': 'application/json'
+           },
+           body: JSON.stringify(questions)
+        });
+
+        if (!response.ok) {
+           const err = await response.text();
+           throw new Error(`Error creating questions: ${err}`);
+        }
+        return await response.json();
+     } catch (error) {
+        throw error;
+     }
+  }
 };

@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import Script from 'next/script';
 
 import '../styles/main.css';
+import '../styles/tiptap-editor.css';
+import 'katex/dist/katex.min.css';
 import WhatsAppWidget from '../components/WhatsAppWidget';
 import { GA_MEASUREMENT_ID, trackPageView } from '../lib/analytics';
 
