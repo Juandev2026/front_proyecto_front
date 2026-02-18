@@ -310,7 +310,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                  <span className="text-sm font-bold text-[#2B3674] leading-tight">{user?.name || 'Usuario'}</span>
                  <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
               </div>
-              <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-blue-700 transition-colors">
+              <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
                  {(user?.name || 'U').charAt(0).toUpperCase()}
               </div>
            </div>

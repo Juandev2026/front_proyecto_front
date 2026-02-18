@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { 
@@ -6,8 +6,7 @@ import {
   QuestionMarkCircleIcon, 
   XIcon,
   FilterIcon,
-  CalendarIcon,
-  BookOpenIcon
+  CalendarIcon
 } from '@heroicons/react/outline';
 
 import PremiumLayout from '../layouts/PremiumLayout';
@@ -123,7 +122,7 @@ const BancoPreguntasPage = () => {
 
   if (loading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
       </div>
     );
@@ -147,15 +146,15 @@ const BancoPreguntasPage = () => {
         <div className="space-y-4">
            
            {/* 1. Modalidad */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Modalidad habilitada</span>
               </div>
               <select 
                 value={selectedModalidad}
                 onChange={(e) => setSelectedModalidad(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
                  <option value="">Selecciona Modalidad</option>
                  {MODALIDADES.map(m => (
@@ -165,15 +164,15 @@ const BancoPreguntasPage = () => {
            </div>
 
            {/* 2. Nivel */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                  <FilterIcon className="h-5 w-5" />
                  <span>Nivel</span>
               </div>
               <select 
                 value={selectedNivel}
                 onChange={(e) => setSelectedNivel(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
                  <option value="">Selecciona Nivel</option>
                  {NIVELES.map(n => (
@@ -183,15 +182,15 @@ const BancoPreguntasPage = () => {
            </div>
 
            {/* 3. Año */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                  <CalendarIcon className="h-5 w-5" />
                  <span>Elige un año</span>
               </div>
               <select 
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
                  <option value="">Selecciona Año</option>
                  {YEARS.map(y => (
@@ -201,15 +200,15 @@ const BancoPreguntasPage = () => {
            </div>
 
            {/* Tipos de Pregunta */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                  <QuestionMarkCircleIcon className="h-5 w-5" />
                  <span>Tipos de Pregunta*</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  {/* Card 1 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.comprension ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.comprension ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
                     <div className="flex items-start gap-2">
                        <input 
                          type="checkbox" 
@@ -225,7 +224,7 @@ const BancoPreguntasPage = () => {
                  </label>
 
                  {/* Card 2 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.razonamiento ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.razonamiento ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
                     <div className="flex items-start gap-2">
                        <input 
                          type="checkbox" 
@@ -241,7 +240,7 @@ const BancoPreguntasPage = () => {
                  </label>
 
                  {/* Card 3 */}
-                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.conocimientos ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                 <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.conocimientos ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
                     <div className="flex items-start gap-2">
                        <input 
                          type="checkbox" 
@@ -260,8 +259,8 @@ const BancoPreguntasPage = () => {
            </div>
 
            {/* Resumen de selección */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px]">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-primary rounded-lg p-4 bg-white min-h-[100px]">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Resumen de selección</span>
               </div>
@@ -282,7 +281,7 @@ const BancoPreguntasPage = () => {
            <div className="flex justify-center gap-4 mt-6">
               <button 
                 onClick={handleClear}
-                className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-blue-50 transition-colors font-medium"
               >
                  <XIcon className="h-4 w-4" />
                  Limpiar
@@ -290,7 +289,7 @@ const BancoPreguntasPage = () => {
               <button 
                  onClick={handleConfirm}
                  disabled={!selectedModalidad || !selectedNivel || !selectedYear}
-                 className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                 className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                  Confirmar selección
               </button>
            </div>

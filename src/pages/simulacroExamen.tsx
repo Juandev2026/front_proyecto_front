@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { 
   AcademicCapIcon, 
@@ -194,7 +195,7 @@ const SimulacroExamenPage = () => {
            {/* Footer Note */}
            <div className="flex items-start gap-2 text-xs text-gray-600 px-2 mt-4">
               <span className="font-bold">•</span>
-              <p>Si desea solo de un año determinado en específico puede ir al módulo de <a href="/bancoPreguntas" className="font-bold text-gray-800 hover:underline">Banco de preguntas</a></p>
+              <p>Si desea solo de un año determinado en específico puede ir al módulo de <Link href="/bancoPreguntas"><a className="font-bold text-gray-800 hover:underline">Banco de preguntas</a></Link></p>
            </div>
            
            {/* START Button (Floating or Fixed at bottom right if desired, but not in screenshot. Assuming consistency or simple note for now. Adding a button just in case is good practice, or user might ask for it later. Screenshot shows a green button cut off at the bottom right?) */}

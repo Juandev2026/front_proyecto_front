@@ -466,7 +466,7 @@ const Recursos = () => {
       <AdminLayout>
         <div className="space-y-6">
           {/* HEADER FORM */}
-          <div className="w-full bg-[#002B6B] py-4 px-6 rounded-t-lg shadow-sm flex justify-between items-center">
+          <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm flex justify-between items-center">
             <div className="flex items-center gap-4">
                <button 
                  onClick={() => setViewMode('list')}
@@ -486,31 +486,31 @@ const Recursos = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-8">
             
             {/* 1. Basic Info Accordion/Card */}
-            <div className="border border-cyan-400 rounded-lg overflow-hidden">
+            <div className="border border-primary rounded-lg overflow-hidden">
                <div className="bg-white p-4 border-b border-gray-100 flex justify-between items-center cursor-pointer">
-                  <span className="text-[#002B6B] font-medium">Pregunta Individual</span>
+                  <span className="text-primary font-medium">Pregunta Individual</span>
                   <ChevronDownIcon className="w-5 h-5 text-gray-500" />
                </div>
                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Numero de la pregunta */}
                   <div>
-                    <label className="block text-xs font-bold text-[#002B6B] mb-1">
+                    <label className="block text-xs font-bold text-primary mb-1">
                       Número de la pregunta
                     </label>
                     <input 
                       type="number" 
-                      className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-primary outline-none"
                       placeholder="0"
                     />
                   </div>
                   
                   {/* Tipo de pregunta */}
                   <div>
-                    <label className="block text-xs font-bold text-[#002B6B] mb-1">
+                    <label className="block text-xs font-bold text-primary mb-1">
                       Tipo de pregunta
                     </label>
                     <select 
-                      className="w-full border border-blue-800 rounded-md p-2 text-sm text-[#002B6B] font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full border border-primary rounded-md p-2 text-sm text-primary font-medium focus:ring-2 focus:ring-primary outline-none"
                       value={newItem.tipoPreguntaId}
                       onChange={(e) => setNewItem({...newItem, tipoPreguntaId: Number(e.target.value)})}
                     >
@@ -524,14 +524,14 @@ const Recursos = () => {
             </div>
 
             {/* 2. Enunciado */}
-            <div className="border border-cyan-400 rounded-lg p-6">
+            <div className="border border-primary rounded-lg p-6">
                <div className="flex justify-between items-center mb-4">
-                  <label className="text-[#002B6B] font-medium text-sm">Enunciado de la pregunta</label>
+                  <label className="text-primary font-medium text-sm">Enunciado de la pregunta</label>
                   <div className="flex gap-2">
-                     <button className="flex items-center gap-1 text-blue-600 border border-blue-200 px-3 py-1 rounded hover:bg-blue-50 text-xs">
+                     <button className="flex items-center gap-1 text-primary border border-primary px-3 py-1 rounded hover:bg-blue-50 text-xs">
                         <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
                      </button>
-                     <button className="flex items-center gap-1 text-gray-600 border border-gray-200 px-3 py-1 rounded hover:bg-gray-50 text-xs">
+                     <button className="flex items-center gap-1 text-gray-600 border border-gray-200 px-3 py-1 rounded hover:bg-blue-50 text-xs">
                         <span className="text-lg leading-none">+</span> Añadir Imagen
                      </button>
                   </div>
@@ -539,7 +539,7 @@ const Recursos = () => {
                
                <div className="bg-white border border-gray-200 rounded-lg p-1">
                  {/* Text Header Mock */}
-                 <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50 rounded-t-lg">
+                 <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-blue-50 rounded-t-lg">
                     <div className="flex items-center gap-2">
                        <span className="text-gray-400">⋮⋮</span>
                        <span className="text-xs font-bold text-gray-600">Texto</span>
@@ -562,7 +562,7 @@ const Recursos = () => {
                  </div>
                  
                  <div className="px-4 py-2 flex items-center gap-2 mt-2">
-                    <input type="checkbox" className="rounded text-blue-600" />
+                    <input type="checkbox" className="rounded text-primary" />
                     <span className="text-xs text-gray-500">Texto en gris</span>
                  </div>
                </div>
@@ -570,10 +570,10 @@ const Recursos = () => {
 
             {/* 3. Alternativas */}
             <div className="space-y-4">
-               <h3 className="text-[#002B6B] font-bold text-sm">Alternativas</h3>
+               <h3 className="text-primary font-bold text-sm">Alternativas</h3>
                
                {/* Alternativa A */}
-               <div className="border border-cyan-400 rounded-lg p-1 bg-white">
+               <div className="border border-primary rounded-lg p-1 bg-white">
                   <div className="p-2">
                      <ReactQuill
                         theme="bubble"
@@ -583,7 +583,7 @@ const Recursos = () => {
                         placeholder="Ingresa el texto de la alternativa A"
                      />
                   </div>
-                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-gray-50">
+                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-blue-50">
                      <button 
                         onClick={() => setNewItem({...newItem, respuesta: 'A'})}
                         className={`px-3 py-1 text-xs rounded transition-colors ${newItem.respuesta === 'A' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
@@ -595,7 +595,7 @@ const Recursos = () => {
                </div>
 
                {/* Alternativa B */}
-               <div className="border border-cyan-400 rounded-lg p-1 bg-white">
+               <div className="border border-primary rounded-lg p-1 bg-white">
                   <div className="p-2">
                      <ReactQuill
                         theme="bubble"
@@ -605,7 +605,7 @@ const Recursos = () => {
                         placeholder="Ingresa el texto de la alternativa B"
                      />
                   </div>
-                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-gray-50">
+                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-blue-50">
                      <button 
                         onClick={() => setNewItem({...newItem, respuesta: 'B'})}
                         className={`px-3 py-1 text-xs rounded transition-colors ${newItem.respuesta === 'B' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
@@ -617,7 +617,7 @@ const Recursos = () => {
                </div>
 
                {/* Alternativa C */}
-               <div className="border border-cyan-400 rounded-lg p-1 bg-white">
+               <div className="border border-primary rounded-lg p-1 bg-white">
                   <div className="p-2">
                      <ReactQuill
                         theme="bubble"
@@ -627,7 +627,7 @@ const Recursos = () => {
                         placeholder="Ingresa el texto de la alternativa C"
                      />
                   </div>
-                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-gray-50">
+                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-blue-50">
                      <button 
                         onClick={() => setNewItem({...newItem, respuesta: 'C'})}
                         className={`px-3 py-1 text-xs rounded transition-colors ${newItem.respuesta === 'C' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
@@ -639,7 +639,7 @@ const Recursos = () => {
                </div>
 
                {/* Alternativa D */}
-               <div className="border border-cyan-400 rounded-lg p-1 bg-white">
+               <div className="border border-primary rounded-lg p-1 bg-white">
                   <div className="p-2">
                      <ReactQuill
                         theme="bubble"
@@ -649,7 +649,7 @@ const Recursos = () => {
                         placeholder="Ingresa el texto de la alternativa D"
                      />
                   </div>
-                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-gray-50">
+                  <div className="flex justify-end p-2 gap-2 border-t border-gray-100 bg-blue-50">
                      <button 
                         onClick={() => setNewItem({...newItem, respuesta: 'D'})}
                         className={`px-3 py-1 text-xs rounded transition-colors ${newItem.respuesta === 'D' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
@@ -660,26 +660,26 @@ const Recursos = () => {
                   </div>
                </div>
 
-               <button className="w-full py-2 border border-cyan-400 text-[#002B6B] rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+               <button className="w-full py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
                   Añadir Alternativa
                </button>
             </div>
 
             {/* 4. Justificación */}
-            <div className="border border-cyan-400 rounded-lg p-4">
+            <div className="border border-primary rounded-lg p-4">
                <div className="flex justify-between items-center mb-4">
-                  <label className="text-[#002B6B] font-bold text-sm">Justificación de la respuesta</label>
+                  <label className="text-primary font-bold text-sm">Justificación de la respuesta</label>
                   <div className="flex gap-2">
-                     <button className="flex items-center gap-1 text-blue-600 border border-blue-200 px-3 py-1 rounded hover:bg-blue-50 text-xs">
+                     <button className="flex items-center gap-1 text-primary border border-primary px-3 py-1 rounded hover:bg-blue-50 text-xs">
                         <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
                      </button>
-                     <button className="flex items-center gap-1 text-gray-600 border border-gray-200 px-3 py-1 rounded hover:bg-gray-50 text-xs">
+                     <button className="flex items-center gap-1 text-gray-600 border border-gray-200 px-3 py-1 rounded hover:bg-blue-50 text-xs">
                          <span className="text-lg leading-none">+</span> Añadir Imagen
                      </button>
                   </div>
                </div>
                
-               <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50">
+               <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-blue-50">
                    {newItem.sustento ? (
                         <div className="w-full">
                            <ReactQuill
@@ -696,7 +696,7 @@ const Recursos = () => {
                         {/* Hidden input trigger for simplicity or toggle the state to show editor */}
                         <button 
                            onClick={() => setNewItem({...newItem, sustento: '<p></p>'})}
-                           className="mt-4 text-blue-500 underline text-sm"
+                           className="mt-4 text-primary underline text-sm"
                         >
                            Activar Editor
                         </button>
@@ -711,14 +711,14 @@ const Recursos = () => {
           <div className="flex gap-4">
              <button 
                 onClick={handleSubmit}
-                className="flex-1 bg-[#002B6B] text-white py-3 rounded-md font-medium hover:bg-blue-900 transition-colors flex justify-center items-center gap-2"
+                className="flex-1 bg-primary text-white py-3 rounded-md font-medium hover:bg-primary transition-colors flex justify-center items-center gap-2"
              >
                 <FolderIcon className="w-5 h-5" />
                 Guardar Pregunta
              </button>
              <button 
                 onClick={handleSubmit} // For now same action
-                className="flex-1 bg-[#002B6B] text-white py-3 rounded-md font-medium hover:bg-blue-900 transition-colors flex justify-center items-center gap-2"
+                className="flex-1 bg-primary text-white py-3 rounded-md font-medium hover:bg-primary transition-colors flex justify-center items-center gap-2"
              >
                 <FolderIcon className="w-5 h-5" />
                 Guardar y Añadir otra pregunta
@@ -745,7 +745,7 @@ const Recursos = () => {
         {/* SECCIÓN 2: FILTROS (Show only if !showResults) */}
         {!showResults && (
         <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <div className="flex flex-col gap-4 mb-6">
             {/* 1. Tipo Examen */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
@@ -779,7 +779,7 @@ const Recursos = () => {
                 Sección Fuente <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                 value={selectedFuente}
                 onChange={(e) => {
                   setSelectedFuente(e.target.value ? Number(e.target.value) : '');
@@ -810,7 +810,7 @@ const Recursos = () => {
                 Modalidad
               </label>
               <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                 value={selectedModalidad}
                 onChange={(e) => {
                   setSelectedModalidad(e.target.value ? Number(e.target.value) : '');
@@ -836,7 +836,7 @@ const Recursos = () => {
                   Nivel
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                   value={selectedNivel}
                   onChange={(e) => {
                     setSelectedNivel(e.target.value ? Number(e.target.value) : '');
@@ -864,7 +864,7 @@ const Recursos = () => {
                   Especialidad
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                   value={selectedEspecialidad}
                   onChange={(e) => {
                     setSelectedEspecialidad(e.target.value ? Number(e.target.value) : '');
@@ -889,7 +889,7 @@ const Recursos = () => {
                   Año
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
@@ -910,13 +910,13 @@ const Recursos = () => {
                  <input 
                      type="text"
                      placeholder="Nuevo año (ej: 2025)"
-                     className="w-40 border border-blue-900 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                     className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                      value={newYearInput}
                      onChange={(e) => setNewYearInput(e.target.value)}
                  />
                  <button
                      onClick={handleAddYear}
-                     className="bg-[#002B6B] text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors text-sm font-medium shadow-md whitespace-nowrap"
+                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
                  >
                      Agregar Año
                  </button>
@@ -934,10 +934,10 @@ const Recursos = () => {
              </div>
           )}
 
-          <div className="flex flex-wrap justify-end gap-3 mt-4">
+          <div className="flex flex-wrap justify-center gap-3 mt-4">
             <button
               onClick={handleAddNew}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-800 transition-colors text-sm font-medium shadow-md"
+              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               Añadir preguntas
@@ -945,7 +945,7 @@ const Recursos = () => {
 
             <button
               onClick={() => setIsAiModalOpen(true)}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-800 transition-colors text-sm font-medium shadow-md"
+              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
               Añadir preguntas con IA
@@ -953,7 +953,7 @@ const Recursos = () => {
 
             <button
               onClick={handleGenerateAnswersAI}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-800 transition-colors text-sm font-medium shadow-md"
+              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
               disabled={isGeneratingAi || viewMode === 'list'} 
               title={viewMode === 'list' ? "Entra a modo crear/editar primero" : "Generar respuestas para el enunciado actual"}
             >
@@ -968,7 +968,7 @@ const Recursos = () => {
             <button
                disabled={!selectedTipo} 
                onClick={() => setShowResults(true)}
-               className="bg-[#002B6B] text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-900 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+               className="bg-white text-primary border border-primary px-4 py-2 rounded-lg flex items-center hover:bg-blue-50 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
                <EyeIcon className="w-4 h-4 mr-2" />
                Visualizar Preguntas
@@ -985,7 +985,7 @@ const Recursos = () => {
 
         {/* SECCIÓN 3: INSTRUCCIONES (Show only if !showResults) */}
         {!showResults && (
-        <div className="bg-white rounded-lg shadow-sm border border-cyan-400 p-6 relative">
+        <div className="bg-white rounded-lg shadow-sm border border-primary p-6 relative">
           <h3 className="text-primary font-bold text-lg mb-4">Instrucciones</h3>
           <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
             <li>
@@ -1037,7 +1037,7 @@ const Recursos = () => {
         {showResults && (
           <div>
             {/* RESULT HEADER & CRITERIA */}
-            <div className="w-full bg-[#002B6B] py-4 px-6 rounded-t-lg shadow-sm flex items-center gap-4">
+            <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm flex items-center gap-4">
                  <button onClick={() => setShowResults(false)} className="text-white hover:text-gray-200 font-medium flex items-center gap-1">
                     <ChevronLeftIcon className="w-5 h-5" /> Volver
                  </button>
@@ -1050,7 +1050,7 @@ const Recursos = () => {
                          <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
                          {/* Display Selected Criteria as Pills */}
                          {groupedData.find(t => t.tipoExamenId === selectedTipo) && (
-                            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">
+                            <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
                                 {groupedData.find(t => t.tipoExamenId === selectedTipo)?.tipoExamenNombre}
                             </span>
                          )}
@@ -1070,7 +1070,7 @@ const Recursos = () => {
                             });
                             setViewMode('create');
                         }}
-                        className="bg-[#002B6B] text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-900 transition-colors flex items-center gap-2"
+                        className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
                      >
                         <PlusIcon className="w-5 h-5" />
                         Añadir preguntas
@@ -1091,7 +1091,7 @@ const Recursos = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 font-bold text-gray-700">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 font-bold text-gray-700">
                       {indexOfFirstItem + index + 1}
                     </span>
                     <h3 className="font-bold text-lg text-gray-900">
@@ -1105,7 +1105,7 @@ const Recursos = () => {
                   <div className="flex items-center gap-2">
                     {/* Badge */}
                     {item.tipoPreguntaId === 2 ? (
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold border border-blue-200">
+                      <span className="bg-blue-100 text-primary text-xs px-2 py-1 rounded font-bold border border-primary">
                          Comprensión
                       </span>
                     ) : (
@@ -1116,7 +1116,7 @@ const Recursos = () => {
 
                     <button
                       onClick={() => handleEdit(item)}
-                      className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded border border-blue-200 flex items-center gap-1 text-sm font-medium transition-colors"
+                      className="text-primary hover:text-primary bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded border border-primary flex items-center gap-1 text-sm font-medium transition-colors"
                     >
                       <PencilIcon className="w-4 h-4" /> Editar
                     </button>
@@ -1148,7 +1148,7 @@ const Recursos = () => {
                       href={item.imagen}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:underline mt-1 block"
+                      className="text-xs text-primary hover:underline mt-1 block"
                     >
                       Ver imagen original
                     </a>
@@ -1224,7 +1224,7 @@ const Recursos = () => {
                   <button
                     onClick={() => paginate(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
                   >
                     Anterior
                   </button>
@@ -1233,7 +1233,7 @@ const Recursos = () => {
                       paginate(Math.min(totalPages, currentPage + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
                   >
                     Siguiente
                   </button>
@@ -1264,7 +1264,7 @@ const Recursos = () => {
                       <button
                         onClick={() => paginate(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                       >
                         <span className="sr-only">Anterior</span>
                         <ChevronLeftIcon
@@ -1282,8 +1282,8 @@ const Recursos = () => {
                             }
                             className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                               currentPage === page
-                                ? 'bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                ? 'bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0'
                             }`}
                           >
                             {page}
@@ -1295,7 +1295,7 @@ const Recursos = () => {
                           paginate(Math.min(totalPages, currentPage + 1))
                         }
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                       >
                         <span className="sr-only">Siguiente</span>
                         <ChevronRightIcon
@@ -1329,7 +1329,7 @@ const Recursos = () => {
                  <div className={`p-2 border rounded ${viewingItem.respuesta === 'D' ? 'bg-green-100 border-green-500' : ''}`}>D: <span dangerouslySetInnerHTML={{__html: viewingItem.alternativaD}} /></div>
               </div>
               <div className="mt-4 flex justify-end">
-                 <button onClick={() => setIsViewModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cerrar</button>
+                 <button onClick={() => setIsViewModalOpen(false)} className="bg-blue-500 text-white px-4 py-2 rounded">Cerrar</button>
               </div>
            </div>
          </div>
@@ -1339,12 +1339,12 @@ const Recursos = () => {
        {isAiModalOpen && (
            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
                <div className="bg-white rounded-lg p-6 max-w-lg w-full">
-                   <h3 className="text-xl font-bold mb-4 text-[#002B6B]">Generar Pregunta con IA</h3>
+                   <h3 className="text-xl font-bold mb-4 text-primary">Generar Pregunta con IA</h3>
                    <p className="text-gray-600 mb-4 text-sm">
                        Ingresa el tema o contexto sobre el cual deseas generar una pregunta.
                    </p>
                    <textarea
-                       className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                       className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
                        rows={4}
                        placeholder="Ej: Historia del Perú - Guerra con Chile, o Principios de la educación inclusiva..."
                        value={aiTopic}
@@ -1353,14 +1353,14 @@ const Recursos = () => {
                    <div className="flex justify-end gap-3">
                        <button 
                            onClick={() => setIsAiModalOpen(false)}
-                           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-blue-50"
                            disabled={isGeneratingAi}
                        >
                            Cancelar
                        </button>
                        <button 
                            onClick={handleGenerateQuestionAI}
-                           className="px-4 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 flex items-center gap-2"
+                           className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary flex items-center gap-2"
                            disabled={isGeneratingAi}
                        >
                            {isGeneratingAi && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}

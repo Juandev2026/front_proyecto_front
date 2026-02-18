@@ -533,262 +533,342 @@ const Recursos = () => {
                 <XIcon className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-6 space-y-4 text-left">
-              <p className="text-xs text-gray-500 mb-4">
-                Configure el contenido de introducción del módulo con nombre, descripción y URL del video
-              </p>
+          </div>
+          <div className="p-6 space-y-4 text-left">
+            <p className="text-xs text-gray-500 mb-4">
+              Configure el contenido de introducción del módulo con nombre, descripción y URL del video
+            </p>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del módulo *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  value={editingIntro.title}
-                  onChange={(e) => setEditingIntro({ ...editingIntro, title: e.target.value })}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del módulo *</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                value={editingIntro.title}
+                onChange={(e) => setEditingIntro({ ...editingIntro, title: e.target.value })}
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
-                <textarea
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-                  value={editingIntro.description}
-                  onChange={(e) => setEditingIntro({ ...editingIntro, description: e.target.value })}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+              <textarea
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                value={editingIntro.description}
+                onChange={(e) => setEditingIntro({ ...editingIntro, description: e.target.value })}
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">URL del video *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  value={editingIntro.videoUrl}
-                  onChange={(e) => setEditingIntro({ ...editingIntro, videoUrl: e.target.value })}
-                />
-                <p className="text-xs text-gray-400 mt-1">Ingrese la URL completa del video de introducción</p>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">URL del video *</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                value={editingIntro.videoUrl}
+                onChange={(e) => setEditingIntro({ ...editingIntro, videoUrl: e.target.value })}
+              />
+              <p className="text-xs text-gray-400 mt-1">Ingrese la URL completa del video de introducción</p>
+            </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <span className="text-blue-600 font-bold text-xs block mb-1">Configuración actual:</span>
-                <div className="text-xs space-y-1">
-                  <p><span className="font-bold text-blue-700">Nombre:</span> <span className="text-blue-600">{introContent.title}</span></p>
-                  <p><span className="font-bold text-blue-700">Descripción:</span> <span className="text-blue-600 line-clamp-1">{introContent.description}</span></p>
-                  <p><span className="font-bold text-blue-700">URL:</span> <span className="text-blue-600 truncate block">{introContent.videoUrl}</span></p>
-                </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <span className="text-blue-600 font-bold text-xs block mb-1">Configuración actual:</span>
+              <div className="text-xs space-y-1">
+                <p><span className="font-bold text-blue-700">Nombre:</span> <span className="text-blue-600">{introContent.title}</span></p>
+                <p><span className="font-bold text-blue-700">Descripción:</span> <span className="text-blue-600 line-clamp-1">{introContent.description}</span></p>
+                <p><span className="font-bold text-blue-700">URL:</span> <span className="text-blue-600 truncate block">{introContent.videoUrl}</span></p>
               </div>
             </div>
-            <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
-              <button
-                onClick={() => setIsIntroModalOpen(false)}
-                className="text-gray-700 font-medium py-2 px-6 rounded-lg border border-gray-300 hover:bg-white bg-white transition-colors"
+          </div>
+          <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={() => setIsIntroModalOpen(false)}
+              className="text-gray-700 font-medium py-2 px-6 rounded-lg border border-gray-300 hover:bg-white bg-white transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveIntro}
+              className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
+            >
+              Actualizar Contenido
+            </button>
+          </div>
+        </div>
+        </div>
+  )
+}
+
+{/* --- ADD SECTION MODAL --- */ }
+{
+  isAddSectionModalOpen && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 pb-0">
+          <h2 className="text-xl font-bold text-gray-900">Crear Nueva Sección</h2>
+          <button onClick={() => setIsAddSectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+            <span className="text-lg">&times;</span>
+          </button>
+        </div>
+
+        <div className="px-6 pt-4">
+          <p className="text-xs text-gray-500 text-left">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+              placeholder="Ingrese el nombre de la sección"
+              value={newSection.nombre}
+              onChange={(e) => setNewSection({ ...newSection, nombre: e.target.value })}
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
+            <textarea
+              className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+              placeholder="Ingrese una descripción para la sección"
+              value={newSection.descripcion}
+              onChange={(e) => setNewSection({ ...newSection, descripcion: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 pt-0 flex gap-4">
+          <button
+            onClick={() => setIsAddSectionModalOpen(false)}
+            className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleCreateSection}
+            className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+          >
+            Crear Sección
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+{/* --- ADD RESOURCE MODAL --- */ }
+{
+  isAddResourceModalOpen && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-spawn">
+        <div className="flex justify-between items-center p-6 pb-0">
+          <h2 className="text-xl font-bold text-gray-900">Registrar Nuevo Recurso</h2>
+          <button onClick={() => setIsAddResourceModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+            <span className="text-lg">&times;</span>
+          </button>
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-blue-600 mb-1">Nombre del Archivo *</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                placeholder="Ej: Temario Inicial 2025"
+                value={newResource.nombreArchivo}
+                onChange={(e) => setNewResource({ ...newResource, nombreArchivo: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-600 mb-1">URL del PDF / Archivo *</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                placeholder="https://ejemplo.com/archivo.pdf"
+                value={newResource.pdf}
+                onChange={(e) => setNewResource({ ...newResource, pdf: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-600 mb-1">URL de la Imagen (opcional)</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                placeholder="https://ejemplo.com/previsualizacion.jpg"
+                value={newResource.imagen}
+                onChange={(e) => setNewResource({ ...newResource, imagen: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Sección *</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                  value={newResource.idSeccion}
+                  onChange={(e) => setNewResource({ ...newResource, idSeccion: Number(e.target.value) })}
+                >
+                  <option value={0}>Elegir...</option>
+                  {sections.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Subsección *</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                  value={newResource.idSubSeccion}
+                  onChange={(e) => setNewResource({ ...newResource, idSubSeccion: Number(e.target.value) })}
+                >
+                  <option value={0}>Elegir...</option>
+                  {subsecciones.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 pt-0 flex gap-4">
+            <button
+              onClick={() => setIsAddResourceModalOpen(false)}
+              className="flex-1 py-2 border border-blue-400 rounded-lg text-blue-600 hover:bg-gray-50 transition-colors font-medium text-sm"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleCreateResource}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+            >
+              Guardar Recurso
+            </button>
+          </div>
+
+        </div>
+        <div className="px-6 pt-4">
+          <p className="text-xs text-gray-500">Suba un archivo PDF y asigne un nombre para el nuevo recurso.</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre del Archivo *</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+              placeholder="Ej: Temario Inicial 2025"
+              value={newResource.nombreArchivo}
+              onChange={(e) => setNewResource({ ...newResource, nombreArchivo: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-1">URL del PDF / Archivo *</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+              placeholder="https://ejemplo.com/archivo.pdf"
+              value={newResource.pdf}
+              onChange={(e) => setNewResource({ ...newResource, pdf: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-1">URL de la Imagen (opcional)</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+              placeholder="https://ejemplo.com/previsualizacion.jpg"
+              value={newResource.imagen}
+              onChange={(e) => setNewResource({ ...newResource, imagen: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sección *</label>
+              <select
+                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                value={newResource.idSeccion}
+                onChange={(e) => setNewResource({ ...newResource, idSeccion: Number(e.target.value) })}
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveIntro}
-                className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
+                <option value={0}>Elegir...</option>
+                {sections.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Subsección *</label>
+              <select
+                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                value={newResource.idSubSeccion}
+                onChange={(e) => setNewResource({ ...newResource, idSubSeccion: Number(e.target.value) })}
               >
-                Actualizar Contenido
-              </button>
+                <option value={0}>Elegir...</option>
+                {subsecciones.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select>
             </div>
           </div>
         </div>
-      )}
+        <div className="p-6 pt-0 flex gap-4">
+          <button
+            onClick={() => setIsAddResourceModalOpen(false)}
+            className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleCreateResource}
+            className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+          >
+            Guardar Recurso
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-      {/* --- ADD SECTION MODAL --- */}
-      {isAddSectionModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 pb-0">
-              <h2 className="text-xl font-bold text-gray-900">Crear Nueva Sección</h2>
-              <button onClick={() => setIsAddSectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
-                <span className="text-lg">&times;</span>
-              </button>
-            </div>
-
-            <div className="px-6 pt-4">
-              <p className="text-xs text-gray-500 text-left">Complete los datos para crear una nueva sección en el repositorio de contenidos</p>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                  placeholder="Ingrese el nombre de la sección"
-                  value={newSection.nombre}
-                  onChange={(e) => setNewSection({ ...newSection, nombre: e.target.value })}
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
-                <textarea
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
-                  placeholder="Ingrese una descripción para la sección"
-                  value={newSection.descripcion}
-                  onChange={(e) => setNewSection({ ...newSection, descripcion: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-6 pt-0 flex gap-4">
-              <button
-                onClick={() => setIsAddSectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateSection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
-              >
-                Crear Sección
-              </button>
-            </div>
+{/* --- ADD SUBSECTION MODAL --- */ }
+{
+  isAddSubsectionModalOpen && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
+        <div className="flex justify-between items-center p-6 pb-0">
+          <h2 className="text-xl font-bold text-gray-900">Añadir Subsección</h2>
+          <button onClick={() => setIsAddSubsectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+            <span className="text-lg">&times;</span>
+          </button>
+        </div>
+        <div className="px-6 pt-4">
+          <p className="text-xs text-gray-500">Crea una nueva categoría para organizar tus recursos.</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre de la Subsección *</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+              placeholder="Ej: Exámenes 2024"
+              value={newSubsection.nombre}
+              onChange={(e) => setNewSubsection({ ...newSubsection, nombre: e.target.value })}
+            />
           </div>
         </div>
-      )}
-
-      {/* --- ADD RESOURCE MODAL --- */}
-      {isAddResourceModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-spawn">
-            <div className="flex justify-between items-center p-6 pb-0">
-              <h2 className="text-xl font-bold text-gray-900">Registrar Nuevo Recurso</h2>
-              <button onClick={() => setIsAddResourceModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
-                <span className="text-lg">&times;</span>
-              </button>
-            </div>
-            <div className="px-6 pt-4">
-              <p className="text-xs text-gray-500">Suba un archivo PDF y asigne un nombre para el nuevo recurso.</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre del Archivo *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                  placeholder="Ej: Temario Inicial 2025"
-                  value={newResource.nombreArchivo}
-                  onChange={(e) => setNewResource({ ...newResource, nombreArchivo: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">URL del PDF / Archivo *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                  placeholder="https://ejemplo.com/archivo.pdf"
-                  value={newResource.pdf}
-                  onChange={(e) => setNewResource({ ...newResource, pdf: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">URL de la Imagen (opcional)</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                  placeholder="https://ejemplo.com/previsualizacion.jpg"
-                  value={newResource.imagen}
-                  onChange={(e) => setNewResource({ ...newResource, imagen: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sección *</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
-                    value={newResource.idSeccion}
-                    onChange={(e) => setNewResource({ ...newResource, idSeccion: Number(e.target.value) })}
-                  >
-                    <option value={0}>Elegir...</option>
-                    {sections.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Subsección *</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
-                    value={newResource.idSubSeccion}
-                    onChange={(e) => setNewResource({ ...newResource, idSubSeccion: Number(e.target.value) })}
-                  >
-                    <option value={0}>Elegir...</option>
-                    {subsecciones.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 pt-0 flex gap-4">
-              <button
-                onClick={() => setIsAddResourceModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateResource}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
-              >
-                Guardar Recurso
-              </button>
-            </div>
-          </div>
+        <div className="p-6 pt-0 flex gap-4">
+          <button
+            onClick={() => setIsAddSubsectionModalOpen(false)}
+            className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleCreateSubsection}
+            className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+          >
+            Crear
+          </button>
         </div>
-      )}
+      </div>
+    </div>
+  )
+}
 
-      {/* --- ADD SUBSECTION MODAL --- */}
-      {isAddSubsectionModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
-            <div className="flex justify-between items-center p-6 pb-0">
-              <h2 className="text-xl font-bold text-gray-900">Añadir Subsección</h2>
-              <button onClick={() => setIsAddSubsectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
-                <span className="text-lg">&times;</span>
-              </button>
-            </div>
-            <div className="px-6 pt-4">
-              <p className="text-xs text-gray-500">Crea una nueva categoría para organizar tus recursos.</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre de la Subsección *</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
-                  placeholder="Ej: Exámenes 2024"
-                  value={newSubsection.nombre}
-                  onChange={(e) => setNewSubsection({ ...newSubsection, nombre: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="p-6 pt-0 flex gap-4">
-              <button
-                onClick={() => setIsAddSubsectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateSubsection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
-              >
-                Crear
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-    </AdminLayout>
+    </AdminLayout >
   );
 };
 
