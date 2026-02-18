@@ -329,7 +329,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-100 flex">
+    <div className="h-screen bg-blue-100 flex overflow-hidden">
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -363,8 +363,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <Link href={item.href}>
                   <a
                     className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${router.pathname === item.href
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-blue-100'
+                      ? 'bg-primary text-white'
+                      : 'text-gray-700 hover:bg-blue-100'
                       } ${isCollapsed ? 'justify-center' : ''}`}
                     title={isCollapsed ? item.name : ''}
                   >
@@ -377,8 +377,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   <button
                     onClick={() => toggleMenu(item.name)}
                     className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${expandedMenus[item.name]
-                        ? 'bg-blue-50 text-primary'
-                        : 'text-gray-700 hover:bg-blue-100'
+                      ? 'bg-blue-50 text-primary'
+                      : 'text-gray-700 hover:bg-blue-100'
                       } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
                     title={isCollapsed ? item.name : ''}
                   >
@@ -410,8 +410,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                           <Link key={subItem.name} href={subItem.href}>
                             <a
                               className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${router.pathname === subItem.href
-                                  ? 'text-primary bg-blue-100'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
+                                ? 'text-primary bg-blue-100'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
                                 }`}
                             >
                               {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
