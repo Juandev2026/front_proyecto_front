@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
 export interface SeccionRecurso {
   idSeccion: number;
@@ -96,12 +96,12 @@ export const seccionRecursosService = {
     }
   },
 
-  create: async (data: CreateSeccionRecursoRequest): Promise<SeccionRecurso> => {
+  create: async (data: FormData): Promise<SeccionRecurso> => {
     try {
       const response = await fetch(`${API_BASE_URL}/SeccionRecursos`, {
         method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(data),
+        headers: getAuthHeadersFormData(),
+        body: data,
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -114,12 +114,14 @@ export const seccionRecursosService = {
     }
   },
 
-  update: async (idSeccion: number, idSubSeccion: number, data: CreateSeccionRecursoRequest): Promise<void> => {
+  update: async (idSeccion: number, idSubSeccion: number, numero: number, data: FormData): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}`, {
+      // The API expects 'multipart/form-data'. We let the browser set the Content-Type with boundary.
+      // We only send Authorization header.
+      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(data),
+        headers: getAuthHeadersFormData(), 
+        body: data,
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -131,9 +133,9 @@ export const seccionRecursosService = {
     }
   },
 
-  delete: async (idSeccion: number, idSubSeccion: number): Promise<void> => {
+  delete: async (idSeccion: number, idSubSeccion: number, numero: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}`, {
+      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });

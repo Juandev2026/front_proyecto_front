@@ -17,8 +17,6 @@ import { seccionesService } from '../../../services/seccionesService';
 import { seccionRecursosService } from '../../../services/seccionRecursosService';
 import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
 import { uploadService } from '../../../services/uploadService';
-import { materialService } from '../../../services/materialService';
-import { seccionRelacionService } from '../../../services/seccionRelacionService';
 
 // --- TYPES ---
 interface Resource {
@@ -103,6 +101,17 @@ const Recursos = () => {
     imagen: ''
   });
 
+  // Edit Resource Modal State
+  const [isEditResourceModalOpen, setIsEditResourceModalOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState({
+    idSeccion: 0,
+    idSubSeccion: 0,
+    numero: 0,
+    nombreArchivo: '',
+    pdf: '',
+    imagen: ''
+  });
+
   const fetchIntroContent = async () => {
     try {
       const data = await contenidoIntroductorioService.getAll();
@@ -137,6 +146,8 @@ const Recursos = () => {
           let recursosArray: Resource[] = [];
           if (Array.isArray(sub.recursos)) {
             recursosArray = sub.recursos;
+          } else if (Array.isArray(sub.recurso)) {
+            recursosArray = sub.recurso;
           } else if (sub.recurso) {
             recursosArray = [sub.recurso];
           }
@@ -264,6 +275,25 @@ const Recursos = () => {
     }
   };
 
+  const handleFileUpdate = async (e: React.ChangeEvent<HTMLInputElement>, type: 'pdf' | 'imagen') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadService.uploadImage(file);
+      setEditingResource(prev => ({
+        ...prev,
+        [type]: url
+      }));
+    } catch (error) {
+      console.error(error);
+      alert("Error al subir el archivo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleCreateResource = async () => {
     if (!newResource.nombreArchivo || !newResource.pdf || !newResource.idSeccion || !newResource.idSubSeccion) {
       alert("Por favor complete los campos obligatorios (Nombre y PDF).");
@@ -273,32 +303,15 @@ const Recursos = () => {
     try {
       setUploading(true);
 
-      const payload = {
-        titulo: newResource.nombreArchivo,
-        descripcion: "Recurso de sección",
-        url: newResource.pdf,
-        imageUrl: newResource.imagen || '',
-        archivoUrl: newResource.pdf,
-        videoUrl: '',
-        categoriaId: null, // Allow null as seen in existing materials
-        modalidadId: null,
-        nivelId: null,
-        estadoId: 1,      // 'Publicado' as seen in working examples
-        usuarioEdicionId: null,
-        precio: 0,
-        telefono: '999999999'
-      };
+      const formData = new FormData();
+      formData.append('IdSeccion', String(newResource.idSeccion));
+      formData.append('IdSubSeccion', String(newResource.idSubSeccion));
+      formData.append('NombreArchivo', newResource.nombreArchivo);
+      // We send the URL strings in the Pdf and Imagen fields as per Swagger "string" type
+      formData.append('Pdf', newResource.pdf);
+      formData.append('Imagen', newResource.imagen || '');
 
-      const material = await materialService.create(payload as any);
-
-      // 2. Link it to the Section/Subsection
-      await seccionRelacionService.create({
-        idSeccion: newResource.idSeccion,
-        idSubSeccion: newResource.idSubSeccion,
-        materialId: material.id
-      });
-
-      console.log("Relación creada con éxito");
+      await seccionRecursosService.create(formData);
 
       setIsAddResourceModalOpen(false);
       await fetchSections();
@@ -308,6 +321,64 @@ const Recursos = () => {
       alert("Error al registrar el recurso: " + (error instanceof Error ? error.message : "Error desconocido"));
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleOpenEditResource = (resource: Resource, sectionId: number, subSectionId: number) => {
+    setEditingResource({
+      idSeccion: sectionId,
+      idSubSeccion: subSectionId,
+      numero: resource.numero,
+      nombreArchivo: resource.nombreArchivo,
+      pdf: resource.pdf,
+      imagen: resource.imagen
+    });
+    setIsEditResourceModalOpen(true);
+  };
+
+  const handleUpdateResource = async () => {
+    if (!editingResource.nombreArchivo || !editingResource.pdf) {
+      alert("Por favor complete los campos obligatorios (Nombre y PDF).");
+      return;
+    }
+
+    try {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('IdSeccion', String(editingResource.idSeccion));
+        formData.append('IdSubSeccion', String(editingResource.idSubSeccion));
+        formData.append('Numero', String(editingResource.numero));
+        formData.append('NombreArchivo', editingResource.nombreArchivo);
+        formData.append('Pdf', editingResource.pdf);
+        formData.append('Imagen', editingResource.imagen || '');
+
+        await seccionRecursosService.update(
+            editingResource.idSeccion, 
+            editingResource.idSubSeccion, 
+            editingResource.numero, 
+            formData
+        );
+
+        setIsEditResourceModalOpen(false);
+        await fetchSections();
+        alert("Recurso actualizado con éxito");
+    } catch (error) {
+        console.error(error);
+        alert("Error al actualizar el recurso.");
+    } finally {
+        setUploading(false);
+    }
+  };
+
+  const handleDeleteResource = async (idSeccion: number, idSubSeccion: number, numero: number) => {
+    if (!confirm("¿Está seguro de eliminar este recurso?")) return;
+    try {
+      await seccionRecursosService.delete(idSeccion, idSubSeccion, numero);
+      await fetchSections();
+      alert("Recurso eliminado con éxito");
+    } catch (error) {
+      console.error(error);
+      alert("Error al eliminar el recurso.");
     }
   };
 
@@ -605,8 +676,18 @@ const Recursos = () => {
                             sub.recursos.map(res => (
                               <div key={res.numero} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 relative group">
                                 <div className="absolute top-2 right-2 flex gap-1 bg-white p-1 rounded-md shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-blue-500"><PencilIcon className="w-3.5 h-3.5" /></button>
-                                  <button className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-red-500"><TrashIcon className="w-3.5 h-3.5" /></button>
+                                  <button 
+                                    onClick={() => handleOpenEditResource(res, section.id, sub.id)}
+                                    className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-blue-500"
+                                  >
+                                    <PencilIcon className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteResource(section.id, sub.id, res.numero)}
+                                    className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-red-500"
+                                  >
+                                    <TrashIcon className="w-3.5 h-3.5" />
+                                  </button>
                                 </div>
                                 <div className="flex flex-col h-full">
                                   <div className="mb-3">
@@ -1016,6 +1097,115 @@ const Recursos = () => {
                   className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
                 >
                   Actualizar
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* --- EDIT RESOURCE MODAL --- */}
+      {
+        isEditResourceModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-spawn">
+              <div className="flex justify-between items-center p-6 pb-0">
+                <h2 className="text-xl font-bold text-gray-900">Editar Recurso</h2>
+                <button onClick={() => setIsEditResourceModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <span className="text-lg">&times;</span>
+                </button>
+              </div>
+
+              <div className="px-6 pt-4">
+                <p className="text-xs text-gray-500 text-left">Modifique los datos del recurso</p>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* Nombre Archivo */}
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre del archivo *</label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
+                    placeholder="Ej: Guía de estudio 2024"
+                    value={editingResource.nombreArchivo}
+                    onChange={(e) => setEditingResource({ ...editingResource, nombreArchivo: e.target.value })}
+                  />
+                </div>
+
+                {/* PDF Upload */}
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Documento PDF *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
+                      placeholder="URL del PDF"
+                      value={editingResource.pdf}
+                    />
+                    <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
+                      <UploadIcon className="w-5 h-5" />
+                      <input 
+                        type="file" 
+                        accept="application/pdf" 
+                        className="hidden" 
+                        onChange={(e) => handleFileUpdate(e, 'pdf')}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Imagen de portada (Opcional)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
+                      placeholder="URL de la imagen"
+                      value={editingResource.imagen}
+                    />
+                    <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
+                      <UploadIcon className="w-5 h-5" />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handleFileUpdate(e, 'imagen')} 
+                      />
+                    </label>
+                  </div>
+                  {editingResource.imagen && (
+                    <div className="mt-2 h-20 w-full bg-gray-50 rounded border border-gray-200 flex items-center justify-center overflow-hidden">
+                      <img src={editingResource.imagen} alt="Preview" className="h-full object-contain" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 pt-0 flex gap-4">
+                <button
+                  onClick={() => setIsEditResourceModalOpen(false)}
+                  className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                  disabled={uploading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateResource}
+                  className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm flex justify-center items-center"
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar Cambios'
+                  )}
                 </button>
               </div>
             </div>
