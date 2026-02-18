@@ -45,26 +45,26 @@ const Menu = () => {
 
                 {/* Mobile: Login / Register on Right (Only if NOT authenticated) */}
                 <div className="flex md:hidden items-center gap-2 ml-auto">
-                   {!isAuthenticated && (
-                     <>
-                        <Link href="/login">
-                          <a className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
-                            Login
-                          </a>
-                        </Link>
-                        <Link href="/register">
-                          <a className="text-white bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
-                            Register
-                          </a>
-                        </Link>
-                     </>
-                   )}
-                   {/* If authenticated, show greeting */}
-                   {isAuthenticated && (
-                     <span className="text-gray-700 font-medium text-sm whitespace-nowrap">
-                       Hola, {user?.name?.split(' ')[0]}
-                     </span>
-                   )}
+                  {!isAuthenticated && (
+                    <>
+                      <Link href="/login">
+                        <a className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
+                          Login
+                        </a>
+                      </Link>
+                      <Link href="/register">
+                        <a className="text-white bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
+                          Register
+                        </a>
+                      </Link>
+                    </>
+                  )}
+                  {/* If authenticated, show greeting */}
+                  {isAuthenticated && (
+                    <span className="text-gray-700 font-medium text-sm whitespace-nowrap">
+                      Hola, {user?.name?.split(' ')[0]}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -77,11 +77,10 @@ const Menu = () => {
                       {({ open }) => (
                         <>
                           <Popover.Button
-                            className={`text-base font-medium transition-colors hover:text-primary focus:outline-none ${
-                              router.pathname === item.href || router.pathname.startsWith(item.href)
+                            className={`text-base font-medium transition-colors hover:text-primary focus:outline-none ${router.pathname === item.href || router.pathname.startsWith(item.href)
                                 ? 'text-primary'
                                 : 'text-gray-500'
-                            }`}
+                              }`}
                           >
                             <span className="flex items-center gap-1">
                               {item.name}
@@ -123,16 +122,15 @@ const Menu = () => {
                     </Popover>
                   );
                 }
-                
+
                 // Regular navigation item without dropdown
                 return (
                   <Link key={item.name} href={item.href}>
                     <a
-                      className={`text-base font-medium transition-colors hover:text-primary ${
-                        router.pathname === item.href
+                      className={`text-base font-medium transition-colors hover:text-primary ${router.pathname === item.href
                           ? 'text-primary'
                           : 'text-gray-500'
-                      }`}
+                        }`}
                     >
                       {item.name}
                     </a>
@@ -146,6 +144,13 @@ const Menu = () => {
                       Aula Virtual
                     </a>
                   </Link>
+                  {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
+                    <Link href="/admin">
+                      <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">
+                        Panel Admin
+                      </a>
+                    </Link>
+                  )}
                   <span className="text-gray-700 font-medium">
                     Hola, {user?.name?.split(' ')[0]}
                   </span>
@@ -234,7 +239,7 @@ const Menu = () => {
                       </div>
                     );
                   }
-                  
+
                   // Regular navigation item without dropdown
                   return (
                     <Link key={item.name} href={item.href}>
@@ -246,7 +251,7 @@ const Menu = () => {
                 })}
               </div>
 
-              
+
               {!isAuthenticated ? null : (
                 <div className="mt-6 px-5 space-y-4">
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
@@ -257,6 +262,13 @@ const Menu = () => {
                       Aula Virtual
                     </a>
                   </Link>
+                  {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
+                    <Link href="/admin">
+                      <a className="block w-full px-5 py-3 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-full transition-colors shadow-md">
+                        Panel Admin
+                      </a>
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       localStorage.removeItem('token');
