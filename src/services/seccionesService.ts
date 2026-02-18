@@ -105,4 +105,32 @@ export const seccionesService = {
       throw error;
     }
   },
+
+  getSubsecciones: async (seccionId: number): Promise<any[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Error al obtener subsecciones');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching subsecciones:', error);
+      return [];
+    }
+  },
+
+  createSubseccion: async (seccionId: number, nombre: string): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ nombre }),
+      });
+      if (!response.ok) throw new Error('Error al crear subsección');
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating subseccion:', error);
+      throw error;
+    }
+  },
 };

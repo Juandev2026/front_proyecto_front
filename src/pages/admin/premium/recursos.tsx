@@ -14,8 +14,8 @@ import {
   XIcon
 } from '@heroicons/react/outline';
 import { seccionesService } from '../../../services/seccionesService';
-import { materialCategoriaService, CategoriaSimple } from '../../../services/materialCategoriaService';
-import { seccionRecursosService } from '../../../services/seccionRecursosService';
+import { seccionRelacionService } from '../../../services/seccionRelacionService';
+import { materialService } from '../../../services/materialService';
 import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
 
 // --- TYPES ---
@@ -26,6 +26,7 @@ interface Resource {
   imagen: string;
   nombreArchivo: string;
   numero: number;
+  materialId: number; // Added to track actual material ID
 }
 
 interface Subsection {
@@ -54,8 +55,7 @@ const initialSections: Section[] = [];
 
 const Recursos = () => {
   const [sections, setSections] = useState<Section[]>(initialSections);
-  const [subsecciones, setSubsecciones] = useState<CategoriaSimple[]>([]);
-  const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Default first open
+  const [expandedSections, setExpandedSections] = useState<number[]>([1]);
   const [expandedSubsections, setExpandedSubsections] = useState<number[]>([101]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,7 +68,7 @@ const Recursos = () => {
 
   // Intro Content State
   const [introContent, setIntroContent] = useState<IntroContent>({
-    id: 1, // Default ID based on API example
+    id: 1,
     title: '¿CÓMO NAVEGAR EN ESCALA DOCENTE?',
     description: 'Se vienen nuevas implementaciones para ASCENSO, DIRECTIVO Y NOMBRAMIENTO.',
     videoUrl: 'https://youtube.com/shorts/w54preUQrN4?feature=share'
@@ -87,7 +87,7 @@ const Recursos = () => {
   const [isAddSubsectionModalOpen, setIsAddSubsectionModalOpen] = useState(false);
   const [newSubsection, setNewSubsection] = useState({
     nombre: '',
-    sectionId: 0 // To know where it was triggered from
+    sectionId: 0
   });
 
   // New Resource Modal State
@@ -120,16 +120,51 @@ const Recursos = () => {
   const fetchSections = async () => {
     setIsLoading(true);
     try {
-      const nestedData = await seccionRecursosService.getDatosAnidados();
-      const allCategories = await materialCategoriaService.getAll();
+      // 1. Get Top-level Sections
+      const sectionsData = await seccionesService.getAll();
 
-      setSections(nestedData);
-      setSubsecciones(allCategories);
+      // 2. Cascading fetch for Subsections and Resources
+      const mappedSections: Section[] = await Promise.all(sectionsData.map(async (s: any) => {
+        // Get Subsections for this section
+        const subseccionesData = await seccionesService.getSubsecciones(s.id);
+
+        const mappedSubsections: Subsection[] = await Promise.all(subseccionesData.map(async (sub: any) => {
+          // Get Resources (Relaciones) for this subsection
+          const recursosData = await seccionRelacionService.getBySubSeccion(sub.id);
+
+          // Map to Resource interface
+          const mappedRecursos: Resource[] = recursosData.map((rel: any) => ({
+            idSeccionGestion: s.id,
+            idSubSeccion: sub.id,
+            pdf: rel.material?.url || rel.material?.archivoUrl || '',
+            imagen: rel.material?.imageUrl || '',
+            nombreArchivo: rel.material?.titulo || 'Sin título',
+            numero: rel.id, // Relation ID
+            materialId: rel.materialId
+          }));
+
+          return {
+            id: sub.id,
+            nombre: sub.nombre,
+            descripcion: sub.descripcion || '',
+            recursos: mappedRecursos
+          };
+        }));
+
+        return {
+          id: s.id,
+          nombre: s.nombre,
+          descripcion: s.descripcion || '',
+          subSecciones: mappedSubsections
+        };
+      }));
+
+      setSections(mappedSections);
 
       // Calculate stats
       let totalSubsections = 0;
       let totalResources = 0;
-      nestedData.forEach(s => {
+      mappedSections.forEach(s => {
         totalSubsections += s.subSecciones.length;
         s.subSecciones.forEach(sub => {
           totalResources += sub.recursos.length;
@@ -137,10 +172,11 @@ const Recursos = () => {
       });
 
       setStats({
-        secciones: nestedData.length,
+        secciones: mappedSections.length,
         subsecciones: totalSubsections,
         archivosPdf: totalResources
       });
+
     } catch (error) {
       console.error("Error fetching nested sections and resources:", error);
     } finally {
@@ -168,7 +204,7 @@ const Recursos = () => {
         urlVideo: editingIntro.videoUrl
       });
 
-      await fetchIntroContent(); // Re-fetch to confirm update
+      await fetchIntroContent();
       setIsIntroModalOpen(false);
       alert("Contenido de introducción actualizado correctamente.");
     } catch (error) {
@@ -214,8 +250,6 @@ const Recursos = () => {
     }
   };
 
-
-
   const handleOpenAddResource = (seccionId: number, subSeccionId: number) => {
     setNewResource({
       idSeccion: seccionId,
@@ -234,33 +268,50 @@ const Recursos = () => {
     }
 
     try {
-      await seccionRecursosService.create({
-        idSeccion: Number(newResource.idSeccion),
-        idSubSeccion: Number(newResource.idSubSeccion),
-        pdf: newResource.pdf,
-        imagen: newResource.imagen,
-        nombreArchivo: newResource.nombreArchivo
+      // 1. Create Material (Assuming we send URL directly, or we uploaded file separately)
+      // Since the input is just string URLs, we can create the material directly
+      const material = await materialService.create({
+        titulo: newResource.nombreArchivo,
+        descripcion: 'Recurso añadido desde modulo recursos',
+        url: newResource.pdf,
+        imageUrl: newResource.imagen,
+        categoriaId: 0,
+        modalidadId: 0,
+        nivelId: 0,
+        estadoId: 1, // Active
+        usuarioEdicionId: 1,
+        precio: 0,
+        telefono: ''
       });
+
+      // 2. Create Relation
+      await seccionRelacionService.create({
+        seccionId: Number(newResource.idSeccion),
+        subSeccionId: Number(newResource.idSubSeccion),
+        materialId: material.id
+      });
+
       setIsAddResourceModalOpen(false);
       await fetchSections();
       alert("Recurso registrado con éxito");
     } catch (error) {
+      console.error(error);
       alert("Error al registrar el recurso.");
     }
   };
 
   const handleCreateSubsection = async () => {
-    if (!newSubsection.nombre) {
+    if (!newSubsection.nombre || !newSubsection.sectionId) {
       alert("Por favor ingrese el nombre de la subsección.");
       return;
     }
 
     try {
-      await materialCategoriaService.create({ nombre: newSubsection.nombre });
+      await seccionesService.createSubseccion(newSubsection.sectionId, newSubsection.nombre);
       setIsAddSubsectionModalOpen(false);
       setNewSubsection({ nombre: '', sectionId: 0 });
       await fetchSections();
-      alert("Subsección creada con éxito. Ahora puedes asignarle recursos.");
+      alert("Subsección creada con éxito.");
     } catch (error) {
       alert("Error al crear la subsección.");
     }
@@ -724,7 +775,9 @@ const Recursos = () => {
                       onChange={(e) => setNewResource({ ...newResource, idSubSeccion: Number(e.target.value) })}
                     >
                       <option value={0}>Elegir...</option>
-                      {subsecciones.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                      {sections.find(s => s.id === newResource.idSeccion)?.subSecciones.map(c => (
+                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
