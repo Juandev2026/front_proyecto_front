@@ -59,10 +59,12 @@ const Login = () => {
       // Save role safely handling null/undefined
       if (response.role) {
         localStorage.setItem('role', response.role);
-      } else {
-         // Fallback: try to decode from token if role is missing in body but present in token? 
-         // For now, assume backend sends it or we rely on useAuth to decode it later.
       }
+      
+      if (response.accesoNombres) {
+        localStorage.setItem('accesoNombres', JSON.stringify(response.accesoNombres));
+      }
+
 
       if (
         response.role?.toUpperCase() === 'ADMIN' ||

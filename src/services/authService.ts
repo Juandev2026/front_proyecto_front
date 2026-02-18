@@ -39,7 +39,10 @@ export interface LoginResponse {
   role: string;
   id: number;
   nivelId: number;
+  accesoIds?: number[];
+  accesoNombres?: string[];
 }
+
 
 export interface ResetPasswordRequest {
   token: string;

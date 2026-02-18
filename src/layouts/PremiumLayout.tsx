@@ -43,6 +43,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
     localStorage.removeItem('userId');
     localStorage.removeItem('nivelId');
     localStorage.removeItem('role');
+    localStorage.removeItem('accesoNombres');
     window.location.href = '/login';
   };
 
@@ -65,7 +66,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
     });
   }, [router.pathname]);
 
-  const menuItems = [
+  const allMenuItems = [
     { 
       name: 'Nombramiento', 
       href: '/premium', 
@@ -109,6 +110,25 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       ]
     }, 
   ];
+
+  const menuItems = React.useMemo(() => {
+    if (!user?.accesoNombres || user.accesoNombres.length === 0) return allMenuItems;
+    
+    return allMenuItems.filter(item => {
+      // "Próximamente" is always visible
+      if (item.name === 'Próximamente') return true;
+      
+      // Check if item name (e.g. "Nombramiento") is in user.accesoNombres
+      // We use case-insensitive matching and handle "Directivo" vs "Directivos"
+      return user.accesoNombres!.some(access => {
+        const normalizedAccess = access.toLowerCase().trim();
+        const normalizedItemName = item.name.toLowerCase().trim();
+        
+        // Match exact or contains (for cases like "Directivo" matching "Directivos")
+        return normalizedItemName.includes(normalizedAccess) || normalizedAccess.includes(normalizedItemName);
+      });
+    });
+  }, [user?.accesoNombres]);
 
 
 

@@ -7,6 +7,7 @@ export const useAuth = () => {
     id?: number;
     nivelId?: number;
     role?: string;
+    accesoNombres?: string[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,6 +17,8 @@ export const useAuth = () => {
     let userId = localStorage.getItem('userId');
     let nivelId = localStorage.getItem('nivelId');
     let role = localStorage.getItem('role');
+    let accesoNombresRaw = localStorage.getItem('accesoNombres');
+
 
     // Clean up invalid strings
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') userId = null;
@@ -62,11 +65,21 @@ export const useAuth = () => {
       const parsedId = userId ? Number(userId) : undefined;
       const parsedNivelId = nivelId ? Number(nivelId) : undefined;
       
+      let accesoNombres: string[] = [];
+      if (accesoNombresRaw) {
+        try {
+          accesoNombres = JSON.parse(accesoNombresRaw);
+        } catch (e) {
+          console.error("Error parsing accesoNombres from localStorage:", e);
+        }
+      }
+
       setUser({
         name: fullName || 'Usuario', // Fallback to avoid null
         id: !isNaN(parsedId!) ? parsedId : undefined,
         nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
         role: role || undefined,
+        accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
       });
     } else {
       setIsAuthenticated(false);
