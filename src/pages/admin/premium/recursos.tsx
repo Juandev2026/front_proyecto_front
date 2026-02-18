@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/outline';
 import { seccionesService } from '../../../services/seccionesService';
 import { seccionRelacionService } from '../../../services/seccionRelacionService';
+import { seccionRecursosService } from '../../../services/seccionRecursosService';
 import { materialService } from '../../../services/materialService';
 import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
 
@@ -120,43 +121,20 @@ const Recursos = () => {
   const fetchSections = async () => {
     setIsLoading(true);
     try {
-      // 1. Get Top-level Sections
-      const sectionsData = await seccionesService.getAll();
+      // 1. Get Nested Data (Tree Structure)
+      const sectionsData = await seccionRecursosService.getDatosAnidados();
 
-      // 2. Cascading fetch for Subsections and Resources
-      const mappedSections: Section[] = await Promise.all(sectionsData.map(async (s: any) => {
-        // Get Subsections for this section
-        const subseccionesData = await seccionesService.getSubsecciones(s.id);
-
-        const mappedSubsections: Subsection[] = await Promise.all(subseccionesData.map(async (sub: any) => {
-          // Get Resources (Relaciones) for this subsection
-          const recursosData = await seccionRelacionService.getBySubSeccion(sub.id);
-
-          // Map to Resource interface
-          const mappedRecursos: Resource[] = recursosData.map((rel: any) => ({
-            idSeccionGestion: s.id,
-            idSubSeccion: sub.id,
-            pdf: rel.material?.url || rel.material?.archivoUrl || '',
-            imagen: rel.material?.imageUrl || '',
-            nombreArchivo: rel.material?.titulo || 'Sin título',
-            numero: rel.id, // Relation ID
-            materialId: rel.materialId
-          }));
-
-          return {
-            id: sub.id,
-            nombre: sub.nombre,
-            descripcion: sub.descripcion || '',
-            recursos: mappedRecursos
-          };
-        }));
-
-        return {
-          id: s.id,
-          nombre: s.nombre,
-          descripcion: s.descripcion || '',
-          subSecciones: mappedSubsections
-        };
+      // Map to internal state structure (if needed, but SeccionAnidada is very similar)
+      const mappedSections: Section[] = sectionsData.map((s: any) => ({
+        id: s.id,
+        nombre: s.nombre,
+        descripcion: s.descripcion || '',
+        subSecciones: s.subSecciones.map((sub: any) => ({
+          id: sub.id,
+          nombre: sub.nombre,
+          descripcion: sub.descripcion || '',
+          recursos: sub.recursos || [] // Ensure resources exist
+        }))
       }));
 
       setSections(mappedSections);
@@ -222,10 +200,10 @@ const Recursos = () => {
       await seccionesService.create({
         nombre: newSection.nombre,
         descripcion: newSection.descripcion,
-        tipoExamenId: 0,
-        modalidadId: 0,
-        nivelId: 0,
-        especialidadId: 0,
+        tipoExamenId: null,
+        modalidadId: null,
+        nivelId: null,
+        especialidadId: null,
         esVisible: true,
         esDefault: false,
         categoriasIds: []
