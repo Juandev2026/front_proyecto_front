@@ -7,6 +7,8 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/outline';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { userService, User } from '../../../services/userService';
 import { regionService, Region } from '../../../services/regionService';
 import { modalidadService, Modalidad } from '../../../services/modalidadService';
@@ -281,51 +283,152 @@ const AdminPremiumDocentes = () => {
       fetchDocentes();
   }, []);
   
-  const handleExportExcel = async () => {
-    try {
-      const allUsers = await userService.getAll();
-      const premiumUsers = allUsers.filter(u => u.role === 'Premium');
-      
-      const dataToExport = premiumUsers.map(u => {
-        // Calculate status same as in list
-        const expirationDate = u.fechaExpiracion ? new Date(u.fechaExpiracion) : null;
-        let estado = 'Sin Estado';
-        if (expirationDate) {
-            const now = new Date();
-            const diffTime = expirationDate.getTime() - now.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) estado = 'Expirado';
-            else if (diffDays <= 7) estado = 'Por vencer';
-            else estado = 'Activo';
-        } else {
-            estado = 'Expirado';
-        }
+const handleExportExcel = async () => {
+    const calcularEstadoUsuario = (fechaExpiracion: string | null | undefined) => {
+      if (!fechaExpiracion) return 'Expirado';
+      const expirationDate = new Date(fechaExpiracion);
+      const now = new Date();
+      const diffTime = expirationDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        return {
-          'ID': u.id,
-          'Nombre Completo': u.nombreCompleto,
-          'Teléfono': u.celular || '-',
-          'Email': u.email,
-          'Estado': estado,
-          'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
-          'Suscripciones Activas': u.modalidad?.nombre ? `${u.modalidad.nombre}: ${u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-'}` : 'Todas expiradas',
-          'Modalidades': u.modalidad?.nombre || '-',
-          'Niveles': u.nivel?.nombre || '-',
-          'Especialidades': u.especialidad?.nombre || '-',
-          'Región': u.region?.nombre || '-',
-          'IE': u.ie || '-',
-          'Observaciones': u.observaciones || '-'
-        };
+      if (diffDays < 0) return 'Expirado';
+      if (diffDays <= 7) return 'Por vencer';
+      return 'Activo';
+    };
+
+    try {
+      setLoading(true);
+
+      const allUsers = await userService.getAll();
+      let premiumUsers = allUsers.filter(u => u.role === 'Premium');
+
+      // --- FILTROS ---
+      if (filterOption) {
+        premiumUsers = premiumUsers.filter(u => {
+           const estado = calcularEstadoUsuario(u.fechaExpiracion);
+           return estado.toLowerCase() === filterOption.toLowerCase();
+        });
+      }
+
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        premiumUsers = premiumUsers.filter(u => 
+          (u.nombreCompleto || '').toLowerCase().includes(term) || 
+          (u.email || '').toLowerCase().includes(term)
+        );
+      }
+
+      if (premiumUsers.length === 0) {
+        alert("No hay datos para exportar con los filtros actuales.");
+        setLoading(false);
+        return;
+      }
+
+      // --- CREAR EXCEL ---
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Reporte Docentes');
+
+      const headerColor = 'FF2E7D32'; 
+      const rowActiveColor = 'FFC6EFCE'; 
+      const rowInactiveColor = 'FFFFC7CE'; 
+
+      // Fila 1: Título
+      worksheet.mergeCells('A1:M1'); 
+      const titleCell = worksheet.getCell('A1');
+      titleCell.value = 'Reporte de Docentes';
+      titleCell.font = { name: 'Arial', size: 16, bold: true };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Fila 3: Filtros
+      let filtrosTexto = 'Filtros aplicados: ';
+      const filtrosActivos = [];
+      if (searchTerm) filtrosActivos.push(`Búsqueda: "${searchTerm}"`);
+      if (filterOption) filtrosActivos.push(`Estado: "${filterOption}"`);
+      filtrosTexto += filtrosActivos.length > 0 ? filtrosActivos.join(', ') : 'Sin filtros aplicados';
+
+      worksheet.mergeCells('A3:M3');
+      const filterCell = worksheet.getCell('A3');
+      filterCell.value = filtrosTexto;
+      filterCell.font = { italic: true, color: { argb: 'FF555555' } };
+
+      // Fila 5: Cabeceras
+      const headerRow = worksheet.getRow(5);
+      headerRow.values = [
+        'ID', 
+        'Nombre Completo', 
+        'Teléfono', 
+        'Email', 
+        'Estado', 
+        'Fecha Registro', 
+        'Suscripciones Activas', 
+        'Modalidades', 
+        'Niveles', 
+        'Especialidad', // NUEVO
+        'Región', 
+        'IE',           // NUEVO
+        'Observaciones'
+      ];
+
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: headerColor } };
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.alignment = { horizontal: 'center' };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
       });
 
+      // Llenado de filas
+      premiumUsers.forEach((u) => {
+        const estado = calcularEstadoUsuario(u.fechaExpiracion);
+
+        const rowValues = [
+          u.id,
+          u.nombreCompleto,
+          u.celular || '-',
+          u.email,
+          estado,
+          u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
+          u.modalidad?.nombre ? `${u.modalidad.nombre}: ${u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-'}` : 'Todas expiradas',
+          u.modalidad?.nombre || '-',
+          u.nivel?.nombre || '-',
+          u.especialidad?.nombre || '-', // DATOS DE ESPECIALIDAD
+          u.region?.nombre || '-',
+          u.ie || '-',                   // DATOS DE IE
+          u.observaciones || '-'
+        ];
+
+        const newRow = worksheet.addRow(rowValues);
+        const elColor = estado === 'Activo' ? rowActiveColor : rowInactiveColor;
+
+        newRow.eachCell({ includeEmpty: true }, (cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: elColor } };
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        });
+      });
+
+      // AutoFit Columnas
+      worksheet.columns.forEach((column) => {
+        let maxLength = 0;
+        column.eachCell?.({ includeEmpty: true }, (cell) => {
+          const rowNumber = Number(cell.row);
+          if (rowNumber <= 5) return; 
+          const cellValue = cell.value ? cell.value.toString() : '';
+          if (cellValue.length > maxLength) maxLength = cellValue.length;
+        });
+        column.width = maxLength < 12 ? 12 : maxLength + 2;
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
       const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
-      exportToExcel(dataToExport, `Reporte_Docentes_${today}`, 'Docentes');
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `Reporte_Docentes_${today}.xlsx`);
+
     } catch (error) {
-      console.error("Error exporting to Excel:", error);
+      console.error("Error exporting:", error);
       alert("Error al exportar a Excel");
+    } finally {
+      setLoading(false);
     }
   };
-  
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;

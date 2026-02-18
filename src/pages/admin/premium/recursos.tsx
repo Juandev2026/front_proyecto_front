@@ -596,7 +596,7 @@ const Recursos = () => {
                     </button>
                     <button 
                         onClick={handleSaveIntro}
-                        className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
+                        className="bg-blue-600 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
                     >
                         Actualizar Contenido
                     </button>
@@ -611,7 +611,7 @@ const Recursos = () => {
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-spawn">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 pb-0">
-                    <h2 className="text-xl font-bold text-gray-900">Crear Nueva Sección</h2>
+                    <h2 className="text-xl font-bold text-blue-600">Crear Nueva Sección</h2>
                     <button onClick={() => setIsAddSectionModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
                         <span className="text-lg">&times;</span>
                     </button>
@@ -625,7 +625,7 @@ const Recursos = () => {
                 <div className="p-6 space-y-4">
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Nombre de la sección *</label>
+                        <label className="block text-sm font-bold text-blue-600 mb-2 text-left">Nombre de la sección *</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -637,7 +637,7 @@ const Recursos = () => {
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">Descripción (opcional)</label>
+                        <label className="block text-sm font-bold text-blue-600 mb-2 text-left">Descripción (opcional)</label>
                         <textarea 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
                             placeholder="Ingrese una descripción para la sección"
@@ -651,13 +651,13 @@ const Recursos = () => {
                 <div className="p-6 pt-0 flex gap-4">
                     <button 
                         onClick={() => setIsAddSectionModalOpen(false)}
-                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-blue-600 hover:bg-gray-50 transition-colors font-medium text-sm"
                     >
                         Cancelar
                     </button>
                     <button 
                         onClick={handleCreateSection}
-                        className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
                     >
                         Crear Sección
                     </button>
@@ -671,7 +671,7 @@ const Recursos = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4 text-left">
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-spawn">
                 <div className="flex justify-between items-center p-6 pb-0">
-                    <h2 className="text-xl font-bold text-gray-900">Registrar Nuevo Recurso</h2>
+                    <h2 className="text-xl font-bold text-blue-600">Registrar Nuevo Recurso</h2>
                     <button onClick={() => setIsAddResourceModalOpen(false)} className="bg-red-500 text-white rounded-sm w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
                         <span className="text-lg">&times;</span>
                     </button>
@@ -681,7 +681,7 @@ const Recursos = () => {
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-1">Nombre del Archivo *</label>
+                        <label className="block text-sm font-bold text-blue-600 mb-1">Nombre del Archivo *</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -691,7 +691,7 @@ const Recursos = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-1">URL del PDF / Archivo *</label>
+                        <label className="block text-sm font-bold text-blue-600 mb-1">URL del PDF / Archivo *</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -701,7 +701,7 @@ const Recursos = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-[#002B6B] mb-1">URL de la Imagen (opcional)</label>
+                        <label className="block text-sm font-bold text-blue-600 mb-1">URL de la Imagen (opcional)</label>
                         <input 
                             type="text" 
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 outline-none text-sm"
@@ -713,7 +713,7 @@ const Recursos = () => {
 
                     <div className="grid grid-cols-2 gap-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Sección *</label>
+                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Sección *</label>
                             <select 
                                 className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                 value={newResource.idSeccion}
@@ -724,7 +724,7 @@ const Recursos = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Subsección *</label>
+                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Subsección *</label>
                             <select 
                                 className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
                                 value={newResource.idSubSeccion}
@@ -739,13 +739,13 @@ const Recursos = () => {
                 <div className="p-6 pt-0 flex gap-4">
                     <button 
                         onClick={() => setIsAddResourceModalOpen(false)}
-                        className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                        className="flex-1 py-2 border border-blue-400 rounded-lg text-blue-600 hover:bg-gray-50 transition-colors font-medium text-sm"
                     >
                         Cancelar
                     </button>
                     <button 
                         onClick={handleCreateResource}
-                        className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
                     >
                         Guardar Recurso
                     </button>

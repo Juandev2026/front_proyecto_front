@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { 
@@ -6,8 +6,7 @@ import {
   QuestionMarkCircleIcon, 
   XIcon,
   FilterIcon,
-  CalendarIcon,
-  BookOpenIcon
+  CalendarIcon
 } from '@heroicons/react/outline';
 
 import PremiumLayout from '../layouts/PremiumLayout';

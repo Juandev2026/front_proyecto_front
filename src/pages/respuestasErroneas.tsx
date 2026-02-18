@@ -5,13 +5,9 @@ import {
   BookOpenIcon, 
   ChevronDownIcon, 
   ChartBarIcon, 
-  FilterIcon, 
   ClockIcon,
   CheckCircleIcon
 } from '@heroicons/react/solid';
-import { 
-  AcademicCapIcon,
-} from '@heroicons/react/outline';
 
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
@@ -277,21 +273,25 @@ const RespuestasErroneasPage = () => {
 
                                 {/* Options Grid */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-                                   {q.options.map((opt) => (
-                                      <div 
-                                        key={opt.id}
-                                        className={`flex flex-col gap-2 p-5 rounded-xl border-2 transition-all ${
-                                          opt.status === 'correct' ? 'border-green-400 bg-green-50 shadow-sm' : 
-                                          opt.status === 'wrong' ? 'border-red-400 bg-red-50 shadow-sm' : 
-                                          'border-gray-200 bg-white opacity-80'
-                                        }`}
-                                      >
-                                         <div className="flex gap-3">
-                                            <span className="font-bold text-lg">{opt.id})</span>
-                                            <span className="text-sm md:text-base leading-relaxed">{opt.text}</span>
-                                         </div>
-                                      </div>
-                                   ))}
+                                   {q.options.map((opt) => {
+                                      const getStatusStyles = (status: string) => {
+                                        if (status === 'correct') return 'border-green-400 bg-green-50 shadow-sm';
+                                        if (status === 'wrong') return 'border-red-400 bg-red-50 shadow-sm';
+                                        return 'border-gray-200 bg-white opacity-80';
+                                      };
+                                      
+                                      return (
+                                        <div 
+                                          key={opt.id}
+                                          className={`flex flex-col gap-2 p-5 rounded-xl border-2 transition-all ${getStatusStyles(opt.status)}`}
+                                        >
+                                           <div className="flex gap-3">
+                                              <span className="font-bold text-lg">{opt.id})</span>
+                                              <span className="text-sm md:text-base leading-relaxed">{opt.text}</span>
+                                           </div>
+                                        </div>
+                                      );
+                                   })}
                                 </div>
 
                                 {/* Sustento */}
