@@ -125,15 +125,15 @@ const SimulacrosDirectivosPage = () => {
         <div className="space-y-4">
            
            {/* Bloque I Container */}
-           <div className="border border-primary rounded-lg p-6 bg-white relative mt-6">
-              <div className="absolute -top-4 left-4 bg-white px-4 py-1 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-6 bg-white relative mt-6">
+              <div className="absolute -top-4 left-4 bg-white px-4 py-1 text-[#002B6B] font-bold">
                  <span className="text-xl">Bloque I - Exámenes MINEDU</span>
               </div>
 
               <div className="mt-2 space-y-4">
                   {/* Modalidad Habilitada */}
-                  <div className="border border-primary rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-primary font-bold text-sm">
+                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Modalidad habilitada</span>
                       </div>
@@ -156,8 +156,8 @@ const SimulacrosDirectivosPage = () => {
                   </div>
 
                   {/* Nivel */}
-                  <div className="border border-primary rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-primary font-bold text-sm">
+                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
                         <FilterIcon className="h-4 w-4" />
                         <span>Nivel</span>
                       </div>
@@ -180,8 +180,8 @@ const SimulacrosDirectivosPage = () => {
                   </div>
 
                   {/* Especialidad */}
-                  <div className="border border-primary rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-primary font-bold text-sm">
+                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Especialidad</span>
                       </div>
@@ -202,8 +202,8 @@ const SimulacrosDirectivosPage = () => {
                   </div>
 
                   {/* Selecciona mínimo dos años */}
-                  <div className="border border-primary rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-3 text-primary font-bold text-sm">
+                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Selecciona mínimo dos años*</span>
                       </div>
@@ -232,8 +232,8 @@ const SimulacrosDirectivosPage = () => {
            </div>
 
            {/* Resumen de selección */}
-           <div className="border border-primary rounded-lg p-4 bg-white min-h-[100px]">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px]">
+              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Resumen de selección</span>
               </div>
@@ -277,7 +277,7 @@ const SimulacrosDirectivosPage = () => {
                 <button 
                    onClick={handleConfirm}
                    disabled={selectedYearsList.length < 2 || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId)}
-                   className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                   className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
                 >
                    Confirmar selección
                 </button>

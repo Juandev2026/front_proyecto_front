@@ -113,8 +113,8 @@ const RespuestasErroneasAscensoPage = () => {
            </div>
 
            {/* Right Panel: Statistics (White) */}
-           <div className="bg-white rounded-xl p-6 border border-primary shadow-sm">
-              <div className="flex items-center gap-2 mb-6 text-primary">
+           <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm">
+              <div className="flex items-center gap-2 mb-6 text-[#002B6B]">
                  <ChartBarIcon className="h-5 w-5" />
                  <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
               </div>
@@ -155,7 +155,7 @@ const RespuestasErroneasAscensoPage = () => {
 
         {/* Bottom Section: History */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-           <div className="flex items-center gap-2 mb-2 text-primary">
+           <div className="flex items-center gap-2 mb-2 text-[#002B6B]">
               <ClockIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Historial de Preguntas Erróneas</h2>
            </div>

@@ -199,8 +199,8 @@ const BancoPreguntasAscensoPage = () => {
         <div className="space-y-4">
            
            {/* Modalidad Habilitada */}
-           <div className="border border-primary rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Modalidad habilitada</span>
               </div>
@@ -223,8 +223,8 @@ const BancoPreguntasAscensoPage = () => {
            </div>
 
            {/* Nivel */}
-           <div className="border border-primary rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
                  <FilterIcon className="h-5 w-5" />
                  <span>Nivel</span>
               </div>
@@ -247,8 +247,8 @@ const BancoPreguntasAscensoPage = () => {
            </div>
 
            {/* Especialidad */}
-           <div className="border border-primary rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Especialidad</span>
               </div>
@@ -270,8 +270,8 @@ const BancoPreguntasAscensoPage = () => {
            </div>
 
            {/* Año */}
-           <div className="border border-primary rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+           <div className="border border-cyan-400 rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
                  <CalendarIcon className="h-5 w-5" />
                  <span>Elige un año</span>
               </div>
@@ -289,8 +289,8 @@ const BancoPreguntasAscensoPage = () => {
            </div>
 
            {/* Tipos de Pregunta */}
-           <div className={`border border-primary rounded-lg p-6 bg-white shadow-sm transition-opacity duration-300 ${!anio ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-               <div className="flex items-center gap-2 mb-6 text-primary font-bold border-b pb-2">
+           <div className={`border border-cyan-400 rounded-lg p-6 bg-white shadow-sm transition-opacity duration-300 ${!anio ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+               <div className="flex items-center gap-2 mb-6 text-[#002B6B] font-bold border-b pb-2">
                   <FilterIcon className="h-5 w-5" />
                   <span>Tipos de Pregunta*</span>
                </div>
@@ -386,7 +386,7 @@ const BancoPreguntasAscensoPage = () => {
                               <span className="text-[#2B3674] font-extrabold text-lg">Conocimientos Curriculares y Pedagógicos</span>
                               <div className="flex flex-wrap gap-2 mt-3">
                                   <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <div className="bg-primary w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
+                                    <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
                                     {conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
@@ -418,7 +418,7 @@ const BancoPreguntasAscensoPage = () => {
                               <span className="text-[#2B3674] font-extrabold text-lg">Razonamiento Lógico</span>
                               <div className="flex flex-wrap gap-2 mt-3">
                                   <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <div className="bg-primary w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
+                                    <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
                                     {conteoPreguntas['razonamiento lógico']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
@@ -450,7 +450,7 @@ const BancoPreguntasAscensoPage = () => {
                               <span className="text-[#2B3674] font-extrabold text-lg">Comprensión Lectora</span>
                               <div className="flex flex-wrap gap-2 mt-3">
                                   <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <div className="bg-primary w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
+                                    <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
                                     {conteoPreguntas['comprensión lectora']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
@@ -610,7 +610,7 @@ const BancoPreguntasAscensoPage = () => {
                       }
                    }}
                    disabled={isLoading || !selectedModalidadId || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId) || (aniosData.length > 0 && !anio) || (!tiposPregunta.comprension && !tiposPregunta.razonamiento && !tiposPregunta.conocimientos)}
-                   className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                   className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                    {isLoading ? 'Cargando...' : 'Confirmar selección'}
                 </button>

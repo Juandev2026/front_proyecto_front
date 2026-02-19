@@ -104,7 +104,7 @@ const RecursosAscensoPage = () => {
             </div>
 
             {/* Content Section */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-primary">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-cyan-400">
 
                <div className="mb-4">
                   <span className="inline-block bg-blue-50 text-blue-600 text-xs font-bold px-2 py-1 rounded mb-2">
@@ -146,12 +146,12 @@ const RecursosAscensoPage = () => {
                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                      onClick={() => window.open(intro?.urlVideo, '_blank')}
-                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-blue-50 transition-colors"
+                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-[#3B82F6] text-[#3B82F6] font-bold rounded-lg hover:bg-blue-50 transition-colors"
                   >
                      <EyeIcon className="h-5 w-5" />
                      Ver original
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-blue-600 transition-colors shadow-md">
+                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#3B82F6] text-white font-bold rounded-lg hover:bg-blue-600 transition-colors shadow-md">
                      <ArrowsExpandIcon className="h-5 w-5" />
                      Pantalla completa
                   </button>
@@ -163,7 +163,7 @@ const RecursosAscensoPage = () => {
             <div className="space-y-4">
                {sections.map(section => (
                   <div key={section.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                     <div className="bg-primary px-6 py-3">
+                     <div className="bg-[#3B82F6] px-6 py-3">
                         <h3 className="text-white font-bold uppercase">{section.nombre}</h3>
                      </div>
                      <div className="p-4 space-y-3">
@@ -188,7 +188,7 @@ const RecursosAscensoPage = () => {
                                     {sub.recurso?.pdf ? (
                                        <button
                                           onClick={() => window.open(sub.recurso?.pdf, '_blank')}
-                                          className="flex items-center gap-2 px-4 py-2 bg-white border border-primary text-primary text-sm font-bold rounded-lg hover:bg-blue-50 transition-colors"
+                                          className="flex items-center gap-2 px-4 py-2 bg-white border border-[#3B82F6] text-[#3B82F6] text-sm font-bold rounded-lg hover:bg-blue-50 transition-colors"
                                        >
                                           <EyeIcon className="h-4 w-4" />
                                           Ver Recurso
