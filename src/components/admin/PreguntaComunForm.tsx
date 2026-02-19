@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/outline';
 
 import { preguntaService } from '../../services/preguntaService';
+import { subPreguntaService } from '../../services/subPreguntaService';
 import { clasificacionService, Clasificacion } from '../../services/clasificacionService';
 import { uploadService } from '../../services/uploadService';
 
@@ -26,9 +27,8 @@ interface ContentBlock {
 
 interface SubPregunta {
   tempId: string;
-  numero: number | string;
   clasificacionId: number;
-  specificStatement: ContentBlock[]; // Changed to blocks
+  specificStatement: ContentBlock[];
   alternatives: { id: string; contenido: string; esCorrecta: boolean }[];
   sustento: string;
   isExpanded: boolean;
@@ -53,7 +53,6 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   const [subQuestions, setSubQuestions] = useState<SubPregunta[]>([
     {
       tempId: Math.random().toString(36).substr(2, 9),
-      numero: '',
       clasificacionId: defaultClasificacionId || 0,
       specificStatement: [],
       alternatives: [
@@ -193,10 +192,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
   const addSubQuestion = () => {
     setSubQuestions(prev => [
-      ...prev.map(q => ({ ...q, isExpanded: false })), // Collapse others
+      ...prev.map(q => ({ ...q, isExpanded: false })),
       {
         tempId: Math.random().toString(36).substr(2, 9),
-        numero: '',
         clasificacionId: defaultClasificacionId || 0,
         specificStatement: [],
         alternatives: [
@@ -252,32 +250,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     }));
   };
 
-  const removeAlternative = (subQId: string, altId: string) => {
-      setSubQuestions(prev => prev.map(q => {
-            if (q.tempId !== subQId) return q;
-            if (q.alternatives.length <= 2) {
-                alert("Mínimo 2 alternativas.");
-                return q;
-            }
-            return {
-                ...q,
-                alternatives: q.alternatives.filter(a => a.id !== altId)
-            };
-      }));
-  };
 
-  const addAlternative = (subQId: string) => {
-      setSubQuestions(prev => prev.map(q => {
-            if (q.tempId !== subQId) return q;
-            return {
-                ...q,
-                alternatives: [
-                    ...q.alternatives,
-                    { id: Math.random().toString(36), contenido: '', esCorrecta: false }
-                ]
-            };
-      }));
-  };
 
   // --- SAVE LOGIC ---
 
@@ -290,19 +263,18 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   };
 
   const handleSaveAll = async () => {
-    // Validation
+    // --- VALIDACIÓN ---
     if (commonStatement.length === 0) {
       alert("El enunciado común está vacío. Añade texto o imagen.");
       return;
     }
 
-    const commonHtml = serializeBlocks(commonStatement);
-
     for (let i = 0; i < subQuestions.length; i++) {
         const q = subQuestions[i];
         if (!q) continue; 
         
-        if (!q.alternatives.find(a => a.esCorrecta)) {
+        const correctIndex = q.alternatives.findIndex(a => a.esCorrecta);
+        if (correctIndex === -1) {
             alert(`La pregunta #${i+1} no tiene respuesta marcada.`);
             return;
         }
@@ -313,62 +285,89 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         }
     }
 
-    // RESOLVE EXAMEN ID DYNAMICALLY (same as individual question logic)
+    // RESOLVER EXAMEN ID
     const examenId = await resolveExamenId();
     if (!examenId) {
         alert("No se pudo determinar el examen. Asegúrate de tener todos los filtros (incluido Año) seleccionados.");
         return;
     }
 
-    console.log('=== GUARDANDO PREGUNTAS GRUPALES ===');
+    const commonHtml = serializeBlocks(commonStatement);
+
+    console.log('=== GUARDANDO PREGUNTA AGRUPADA (PADRE-HIJOS) ===');
     console.log('Examen ID resuelto:', examenId);
 
     setSaving(true);
 
     try {
-      // Create payloads
-      const payloads = subQuestions.map(q => {
-          const specificHtml = serializeBlocks(q.specificStatement);
-          
-          const finalEnunciado = `
-            <div class="common-context">${commonHtml}</div>
-            <div class="separator" style="margin: 20px 0; border-top: 1px dashed #ccc;"></div>
-            <div class="specific-question">${specificHtml}</div>
-          `;
+      // === PASO 1: Crear PADRE ===
+      const parentPayload = {
+          enunciado: commonHtml,
+          examenId: examenId,
+          tipoPreguntaId: 2,
+          clasificacionId: subQuestions[0]?.clasificacionId || 0,
+          sustento: '',
+          imagen: '',
+          alternativaA: '',
+          alternativaB: '',
+          alternativaC: '',
+          alternativaD: '',
+          respuesta: '',
+      };
 
-          const correctAlt = q.alternatives.find(a => a.esCorrecta);
-          const respuestaChar = correctAlt 
-              ? ['A','B','C','D','E','F'][q.alternatives.indexOf(correctAlt)]
-              : '';
+      console.log('Enviando Padre...', parentPayload);
+      const parentResponse = await preguntaService.createSingle(parentPayload);
+      const parentId = parentResponse.id;
+      console.log(`Padre creado con ID: ${parentId}`);
 
-          return {
-              enunciado: finalEnunciado, 
-              alternativaA: q.alternatives[0]?.contenido || '',
-              alternativaB: q.alternatives[1]?.contenido || '',
-              alternativaC: q.alternatives[2]?.contenido || '',
-              alternativaD: q.alternatives[3]?.contenido || '',
-              respuesta: respuestaChar,
-              sustento: q.sustento,
-              examenId: examenId,
-              clasificacionId: q.clasificacionId,
-              tipoPreguntaId: 2, 
-              imagen: '', 
-          };
-      });
+      try {
+        // === PASO 2: Crear HIJOS en paralelo ===
+        const childPayloads = subQuestions.map((q, index) => {
+            const correctIndex = q.alternatives.findIndex(a => a.esCorrecta);
+            const respuestaChar = correctIndex !== -1 
+                ? ['A','B','C','D'][correctIndex] || ''
+                : '';
 
-      const createdQuestions = await preguntaService.createForExamen(examenId, payloads);
-      
-      console.log('=== PREGUNTAS GRUPALES CREADAS ===');
-      console.log('Examen ID:', examenId);
-      console.log('IDs de preguntas:', createdQuestions.map(q => q.id));
-      console.log('Detalles:', createdQuestions);
-      
-      alert(`${subQuestions.length} preguntas guardadas correctamente.\nExamen ID: ${examenId}\nIDs: ${createdQuestions.map(q => q.id).join(', ')}`);
-      onSuccess();
+            return {
+                examenId: examenId,
+                preguntaId: parentId,
+                numero: index + 1,
+                enunciado: serializeBlocks(q.specificStatement),
+                alternativaA: q.alternatives[0]?.contenido || '',
+                alternativaB: q.alternatives[1]?.contenido || '',
+                alternativaC: q.alternatives[2]?.contenido || '',
+                alternativaD: q.alternatives[3]?.contenido || '',
+                respuestaCorrecta: respuestaChar,
+                sustento: q.sustento || '',
+                clasificacionId: q.clasificacionId,
+                imagen: '',
+            };
+        });
 
-    } catch (error) {
-        console.error("Error saving group questions", error);
-        alert("Error al guardar preguntas. Intente nuevamente.");
+        console.log(`Enviando ${childPayloads.length} Hijos...`, childPayloads);
+        await subPreguntaService.createBatch(childPayloads);
+
+        console.log('=== PREGUNTA AGRUPADA GUARDADA EXITOSAMENTE ===');
+        console.log('Padre ID:', parentId, '| Hijos:', childPayloads.length);
+        
+        alert(`Pregunta agrupada guardada correctamente.\nPadre ID: ${parentId}\nSub-preguntas: ${subQuestions.length}`);
+        onSuccess();
+
+      } catch (childError) {
+        // === ROLLBACK: Eliminar Padre si fallan los Hijos ===
+        console.error('Error creando hijos, ejecutando rollback del padre...', childError);
+        try {
+          await preguntaService.delete(parentId);
+          console.log('Rollback exitoso: Padre eliminado.');
+        } catch (rollbackError) {
+          console.error('Error en rollback (no se pudo eliminar el padre):', rollbackError);
+        }
+        alert("Error al guardar las sub-preguntas. Se canceló la operación completa.");
+      }
+
+    } catch (parentError) {
+        console.error("Error creando pregunta padre:", parentError);
+        alert("Error al guardar el enunciado principal. Intente nuevamente.");
     } finally {
         setSaving(false);
     }
@@ -512,12 +511,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                                         <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
                                            Número
                                         </label>
-                                        <input 
-                                            type="number" 
-                                            className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:border-primary outline-none transition-all bg-white"
-                                            value={q.numero}
-                                            onChange={(e) => updateSubQuestionField(q.tempId, 'numero', e.target.value)}
-                                        />
+                                        <div className="w-full border border-gray-300 rounded px-3 py-2 text-gray-500 bg-gray-100 cursor-not-allowed">
+                                            {index + 1}
+                                        </div>
                                     </div>
                                     <div className="w-full md:w-3/4">
                                         <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
@@ -578,22 +574,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                                                 {alt.esCorrecta ? "Correcta" : "Marcar"}
                                             </button>
 
-                                            <button
-                                                onClick={() => removeAlternative(q.tempId, alt.id)}
-                                                className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50"
-                                                title="Eliminar opción"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
                                         </div>
                                     ))}
                                 </div>
-                                <button
-                                    onClick={() => addAlternative(q.tempId)}
-                                    className="mt-4 text-primary text-sm font-bold flex items-center gap-2 hover:underline"
-                                >
-                                    <PlusIcon className="w-4 h-4" /> Añadir Alternativa
-                                </button>
                             </div>
 
                              {/* Sustento */}

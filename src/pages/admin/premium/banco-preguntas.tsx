@@ -27,6 +27,7 @@ import {
   preguntaService,
   Pregunta,
 } from '../../../services/preguntaService';
+import { subPreguntaService, SubPreguntaResponse } from '../../../services/subPreguntaService';
 import { clasificacionService, Clasificacion } from '../../../services/clasificacionService';
 import { tipoPreguntaService, TipoPregunta } from '../../../services/tipoPreguntaService';
 import { uploadService } from '../../../services/uploadService';
@@ -183,21 +184,60 @@ const Recursos = () => {
 
   // --- DATA FETCHING (See below for implementation) ---
 
+  // --- SUB-PREGUNTAS STATE (Lazy Loading) ---
+  const [expandedParentIds, setExpandedParentIds] = useState<Set<number>>(new Set());
+  const [subQuestionsMap, setSubQuestionsMap] = useState<Record<number, SubPreguntaResponse[]>>({});
+  const [loadingSubIds, setLoadingSubIds] = useState<Set<number>>(new Set());
+  const [subCountsMap, setSubCountsMap] = useState<Record<number, number>>({});
 
+  // Fetch sub-question counts for parent questions when items change
+  useEffect(() => {
+    const parentItems = items.filter(q => q.tipoPreguntaId === 2);
+    if (parentItems.length === 0) return;
 
-  // --- FILTRADO DE ITEMS (CORRECCIÓN 2: useMemo) ---
-  const filteredItems = useMemo(() => {
-    return items.filter((_) => {
-      // Filtramos solo si hay una sección seleccionada
-      // Adjusted logic: Filter by examenId if selected, or other properties if available
-      // For now, if no filters map directly to 'Pregunta' properties intuitively without more backend context, 
-      // we might just list them all or filter by 'examenId' if 'selectedFuente' represents it.
-      // Assuming 'selectedFuente' might map to 'examenId' in previous logic or similar.
-      // Let's keep it simple: Show all if no filter, or filter if we can identify the field.
-      // The original code was `item.id === Number(selectedFuente)` which suggests 'Fuente' was the parent ID? 
-      // Let's return all items for now to ensure data visibility, then refine.
-      return true; 
+    parentItems.forEach(async (parent) => {
+      try {
+        const count = await subPreguntaService.getCount(parent.examenId, parent.id);
+        setSubCountsMap(prev => ({ ...prev, [parent.id]: count }));
+      } catch {
+        setSubCountsMap(prev => ({ ...prev, [parent.id]: 0 }));
+      }
     });
+  }, [items]);
+
+  const toggleSubPreguntas = async (parentId: number, examenId: number) => {
+    const newExpanded = new Set(expandedParentIds);
+    if (newExpanded.has(parentId)) {
+      newExpanded.delete(parentId);
+      setExpandedParentIds(newExpanded);
+      return;
+    }
+
+    // Expand and fetch if not cached
+    newExpanded.add(parentId);
+    setExpandedParentIds(newExpanded);
+
+    if (!subQuestionsMap[parentId]) {
+      setLoadingSubIds(prev => new Set(prev).add(parentId));
+      try {
+        const subs = await subPreguntaService.getByPreguntaId(examenId, parentId);
+        setSubQuestionsMap(prev => ({ ...prev, [parentId]: subs }));
+      } catch (err) {
+        console.error('Error fetching sub-preguntas:', err);
+        setSubQuestionsMap(prev => ({ ...prev, [parentId]: [] }));
+      } finally {
+        setLoadingSubIds(prev => {
+          const next = new Set(prev);
+          next.delete(parentId);
+          return next;
+        });
+      }
+    }
+  };
+
+  // --- FILTRADO DE ITEMS ---
+  const filteredItems = useMemo(() => {
+    return items.filter(() => true);
   }, [items, selectedFuente]);
 
   // --- CASCADING LOGIC ---
@@ -1363,130 +1403,190 @@ const Recursos = () => {
           </div>
         ) : (
           <div className="space-y-6 mt-6">
-            {currentItems.map((item, index) => (
+            {currentItems.map((item, index) => {
+              const isParent = item.tipoPreguntaId === 2;
+              const isExpanded = expandedParentIds.has(item.id);
+              const isLoadingSubs = loadingSubIds.has(item.id);
+              const subs = subQuestionsMap[item.id] || [];
+              const subCount = subCountsMap[item.id] ?? 0;
+
+              return (
               <div
                 key={item.id}
-                className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 relative"
+                className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-hidden"
               >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
+                {/* --- HEADER --- */}
+                <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 font-bold text-gray-700">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
                       {indexOfFirstItem + index + 1}
                     </span>
-                    <h3 className="font-bold text-lg text-gray-900">
-                      {item.tipoPreguntaId === 2 
-                        ? 'Comprensión Lectora' 
-                        : 'Pregunta Individual'
-                      }
-                    </h3>
+                    <div className="flex flex-col">
+                        <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                        {isParent ? 'Comprensión Lectora' : 'Pregunta Individual'}
+                        </h3>
+                        <span className="text-xs text-gray-500 font-medium mt-1">
+                            ID: {item.id} {isParent ? `• ${subCount} sub-preguntas` : '• Simple'}
+                        </span>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Badge */}
-                    {item.tipoPreguntaId === 2 ? (
-                      <span className="bg-blue-100 text-primary text-xs px-2 py-1 rounded font-bold border border-primary">
-                         Comprensión
-                      </span>
-                    ) : (
-                      <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded font-bold border border-yellow-200">
-                         CCP
-                      </span>
-                    )}
-
+                     <span className={`text-xs px-2 py-1 rounded font-bold border ${isParent 
+                        ? 'bg-indigo-100 text-indigo-700 border-indigo-200' 
+                        : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                        {isParent ? 'AGRUPADA' : 'INDIVIDUAL'}
+                     </span>
+                    
                     <button
                       onClick={() => handleEdit(item)}
-                      className="text-primary hover:text-primary bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded border border-primary flex items-center gap-1 text-sm font-medium transition-colors"
+                      className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
                     >
-                      <PencilIcon className="w-4 h-4" /> Editar
+                      <PencilIcon className="w-3 h-3" /> Editar
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded border border-red-200 flex items-center gap-1 text-sm font-medium transition-colors"
+                      className="text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
                     >
-                      <TrashIcon className="w-4 h-4" /> Eliminar
+                      <TrashIcon className="w-3 h-3" /> Eliminar
                     </button>
                   </div>
                 </div>
 
-                {/* Enunciado */}
-                <div className="mb-6 text-gray-800 prose max-w-none">
-                  <HtmlMathRenderer html={item.enunciado} />
-                </div>
+                {/* --- CONTENIDO PRINCIPAL --- */}
+                <div className="p-6">
+                    {/* Enunciado */}
+                    <div className="mb-6 prose max-w-none text-gray-800 bg-blue-50/30 p-4 rounded-lg border border-blue-100">
+                         <div className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-wider">
+                            {isParent ? 'Lectura / Contexto' : 'Enunciado'}
+                         </div>
+                         <HtmlMathRenderer html={item.enunciado} />
+                         
+                         {item.imagen && (
+                            <div className="mt-4">
+                                <img src={item.imagen} alt="Imagen pregunta" className="max-h-60 rounded border shadow-sm" />
+                            </div>
+                         )}
+                    </div>
 
-                {/* Image if exists */}
-                {item.imagen && (
-                  <div className="mb-4">
-                    <img
-                      src={item.imagen}
-                      alt="Pregunta"
-                      className="max-w-full h-auto rounded border border-gray-200"
-                    />
-                    <a
-                      href={item.imagen}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline mt-1 block"
-                    >
-                      Ver imagen original
-                    </a>
-                  </div>
-                )}
+                    {/* --- CASO 1: PREGUNTA AGRUPADA (Desplegable de Sub-Preguntas) --- */}
+                    {isParent && (
+                      <div>
+                        <button
+                          onClick={() => toggleSubPreguntas(item.id, item.examenId)}
+                          className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all font-bold text-sm ${
+                            isExpanded 
+                              ? 'bg-indigo-50 border-indigo-300 text-indigo-800' 
+                              : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-indigo-200 hover:bg-indigo-50/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <DocumentTextIcon className="w-5 h-5" />
+                            <span>Ver Sub-Preguntas ({subCount})</span>
+                          </div>
+                          <ChevronDownIcon className={`w-5 h-5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
 
-                {/* Alternativas */}
-                <div className="grid grid-cols-1 gap-4 mb-6">
-                  {['A', 'B', 'C', 'D'].map((opt) => {
-                    const altText =
-                      opt === 'A'
-                        ? item.alternativaA
-                        : opt === 'B'
-                        ? item.alternativaB
-                        : opt === 'C'
-                        ? item.alternativaC
-                        : item.alternativaD;
+                        {/* Contenido expandible */}
+                        {isExpanded && (
+                          <div className="mt-4 space-y-4 pl-4 border-l-2 border-indigo-200 animate-fadeIn">
+                            {isLoadingSubs ? (
+                              <div className="flex items-center justify-center p-8 text-indigo-500">
+                                <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                </svg>
+                                <span className="font-medium">Cargando sub-preguntas...</span>
+                              </div>
+                            ) : subs.length === 0 ? (
+                              <div className="text-center p-6 text-gray-400 italic">
+                                No se encontraron sub-preguntas.
+                              </div>
+                            ) : (
+                              subs.map((sub, idx) => (
+                                <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                    {/* Header mini */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
+                                        {sub.numero || idx + 1}
+                                      </span>
+                                      <span className="text-xs font-bold text-gray-500">Sub-Pregunta {sub.numero || idx + 1}</span>
+                                    </div>
 
-                    if (!altText) return null;
-                    const isCorrect = item.respuesta === opt;
+                                    {/* Enunciado */}
+                                    <div className="mb-4 text-sm text-gray-800 prose max-w-none">
+                                      <HtmlMathRenderer html={sub.enunciado} />
+                                    </div>
 
-                    return (
-                      <div
-                        key={opt}
-                        className={`p-4 rounded-lg border transition-all ${
-                          isCorrect
-                            ? 'bg-green-50 border-green-500 shadow-sm'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <span
-                            className={`font-bold ${
-                              isCorrect ? 'text-green-700' : 'text-gray-500'
-                            }`}
-                          >
-                            {opt})
-                          </span>
-                          <HtmlMathRenderer html={altText} className="text-gray-800" />
-                        </div>
+                                    {/* Imagen */}
+                                    {sub.imagen && (
+                                      <div className="mb-3">
+                                        <img src={sub.imagen} alt="Pregunta" className="max-w-full h-auto rounded border border-gray-200 max-h-48" />
+                                      </div>
+                                    )}
+
+                                    {/* Alternativas - mismo grid que individual pero un poco más chico */}
+                                    <div className="grid grid-cols-1 gap-2 mb-4">
+                                      {['A', 'B', 'C', 'D'].map((opt) => {
+                                        const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
+                                        const isCorrect = sub.respuestaCorrecta === opt;
+                                        return (
+                                          <div key={opt} className={`p-3 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                            <div className="flex items-start gap-2">
+                                              <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
+                                              <span className="text-sm"><HtmlMathRenderer html={altText || ''} /></span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Sustento */}
+                                    <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
+                                      <span className="font-bold text-gray-700 block mb-1">Sustento:</span>
+                                      <div className="italic">
+                                        {sub.sustento ? <HtmlMathRenderer html={sub.sustento} /> : 'Sin sustento disponible'}
+                                      </div>
+                                    </div>
+                                </div>
+                              ))
+
+                            )}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* Sustento */}
-                <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
-                  <span className="font-bold text-gray-700 block mb-1">
-                    Sustento :
-                  </span>
-                  <div className="italic">
-                    {item.sustento ? (
-                      <HtmlMathRenderer html={item.sustento} />
-                    ) : (
-                      'Sin sustento disponible'
                     )}
-                  </div>
+
+                    {/* --- CASO 2: PREGUNTA INDIVIDUAL --- */}
+                    {!isParent && (
+                        <div>
+                             <div className="grid grid-cols-1 gap-3 mb-4">
+                                {['A', 'B', 'C', 'D'].map((opt) => {
+                                    const altText = opt === 'A' ? item.alternativaA : opt === 'B' ? item.alternativaB : opt === 'C' ? item.alternativaC : item.alternativaD;
+                                    const isCorrect = item.respuesta === opt;
+                                    return (
+                                        <div key={opt} className={`p-4 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                            <div className="flex items-start gap-3">
+                                                <span className={`font-bold ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
+                                                <HtmlMathRenderer html={altText} className="text-gray-800" />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
+                                <span className="font-bold text-gray-700 block mb-1">Sustento:</span>
+                                <div className="italic">
+                                    {item.sustento ? <HtmlMathRenderer html={item.sustento} /> : 'Sin sustento disponible'}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {/* Pagination */}
             {totalPages > 1 && (

@@ -14,6 +14,8 @@ export interface Pregunta {
   clasificacionId: number;
   imagen: string;
   tipoPreguntaId: number;
+  preguntaId?: number; // ID del Padre (si existe)
+  numero?: number;     // Orden de la sub-pregunta
 }
 
 const API_URL = `${API_BASE_URL}/Preguntas`;
@@ -94,6 +96,29 @@ export const preguntaService = {
       if (!response.ok) {
         throw new Error('Error al eliminar la pregunta');
       }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Crear una sola pregunta (Padre) y retornar el objeto con ID
+   */
+  createSingle: async (item: Partial<Pregunta>): Promise<Pregunta> => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Error al crear pregunta padre: ${err}`);
+      }
+      return await response.json();
     } catch (error) {
       throw error;
     }
