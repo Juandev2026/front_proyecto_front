@@ -32,6 +32,21 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ExamenLogin {
+  id: number;
+  tipoExamenId: number;
+  tipoExamenNombre: string;
+  fuenteId: number;
+  fuenteNombre: string;
+  modalidadId: number;
+  modalidadNombre: string;
+  nivelId: number;
+  nivelNombre: string;
+  especialidadId: number;
+  especialidadNombre: string;
+  year: string;
+}
+
 export interface LoginResponse {
   token: string;
   fullName: string;
@@ -39,10 +54,16 @@ export interface LoginResponse {
   role: string;
   id: number;
   nivelId: number | null;
+  modalidadId?: number | null;
   especialidad?: string;
   especialidadId?: number | null;
   accesoIds?: number[];
   accesoNombres?: string[];
+}
+
+export interface LoginApiResponse {
+  user: LoginResponse;
+  examenes: ExamenLogin[];
 }
 
 

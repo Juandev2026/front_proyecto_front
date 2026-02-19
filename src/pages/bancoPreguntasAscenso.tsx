@@ -10,20 +10,25 @@ import {
 
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
-import { estructuraAcademicaService, Modalidad } from '../services/estructuraAcademicaService';
+import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { ExamenLogin } from '../services/authService';
+
+// ----- Types derived from login examenes -----
+interface FilterOption { id: number; nombre: string; }
 
 const BancoPreguntasAscensoPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
+  // Examenes from login response
+  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
+
   // Form State
-  // Form State
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  const [selectedModalidadId, setSelectedModalidadId] = useState<number | ''>(26); // default EBR
+  const [selectedModalidadId, setSelectedModalidadId] = useState<number | ''>('');
   const [selectedNivelId, setSelectedNivelId] = useState<number | ''>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] = useState<number | ''>('');
   const [anio, setAnio] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   
   const [tiposPregunta, setTiposPregunta] = useState({
     comprension: true,
@@ -39,27 +44,64 @@ const BancoPreguntasAscensoPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
+  // Load examenes from localStorage (saved during login)
   useEffect(() => {
-    const fetchData = async () => {
-       try {
-         setIsLoading(true);
-         const data = await estructuraAcademicaService.getAgrupados();
-         setModalidades(data);
-       } catch (error) {
-         console.error("Error loading filters:", error);
-       } finally {
-         setIsLoading(false);
-       }
-    };
     if (isAuthenticated) {
-      fetchData();
+      const stored = localStorage.getItem('loginExamenes');
+      if (stored) {
+        try {
+          const parsed: ExamenLogin[] = JSON.parse(stored);
+          setLoginExamenes(parsed);
+          
+          // Set default Modalidad if only one exists or default to EBR (26) if available
+          const modalities = Array.from(new Map(parsed.map(e => [e.modalidadId, e.modalidadId])).values());
+          if (modalities.length === 1) {
+            setSelectedModalidadId(modalities[0] ?? '');
+          } else if (modalities.includes(26)) {
+             setSelectedModalidadId(26);
+          }
+        } catch (e) {
+          console.error('Error parsing loginExamenes from localStorage:', e);
+        }
+      }
     }
   }, [isAuthenticated]);
 
-  const modalidadesData = modalidades;
-  const nivelesData = selectedModalidadId ? modalidades.find(m => m.id === selectedModalidadId)?.niveles || [] : [];
-  const especialidadesData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.especialidades || [] : [];
-  const aniosData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.anios || [] : [];
+  // ---------- Derived filter options from loginExamenes ----------
+  const modalidadesData: FilterOption[] = Array.from(
+     new Map(loginExamenes.map(e => [e.modalidadId, { id: e.modalidadId, nombre: e.modalidadNombre }])).values()
+  );
+
+  const nivelesData: FilterOption[] = Array.from(
+     new Map(
+        loginExamenes
+           .filter(e => !selectedModalidadId || e.modalidadId === selectedModalidadId)
+           .map(e => [e.nivelId, { id: e.nivelId, nombre: e.nivelNombre }])
+     ).values()
+  );
+
+  const especialidadesData: FilterOption[] = Array.from(
+     new Map(
+        loginExamenes
+           .filter(e =>
+              (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
+              (!selectedNivelId || e.nivelId === selectedNivelId)
+           )
+           .map(e => [e.especialidadId, { id: e.especialidadId, nombre: e.especialidadNombre }])
+     ).values()
+  );
+
+  const aniosData: string[] = Array.from(
+     new Set(
+        loginExamenes
+           .filter(e =>
+              (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
+              (!selectedNivelId || e.nivelId === selectedNivelId) &&
+              (!selectedEspecialidadId || e.especialidadId === selectedEspecialidadId)
+           )
+           .map(e => e.year)
+     )
+  ).sort((a, b) => Number(b) - Number(a));
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -98,7 +140,7 @@ const BancoPreguntasAscensoPage = () => {
   }
 
   const handleClear = () => {
-    setSelectedModalidadId(26);
+    setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
     setAnio('');
@@ -159,7 +201,7 @@ const BancoPreguntasAscensoPage = () => {
                     setSelectedEspecialidadId('');
                     setAnio(''); // Clear year when level changes
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 disabled={!selectedModalidadId}
               >
                  <option value="">Seleccionar nivel</option>
@@ -180,9 +222,10 @@ const BancoPreguntasAscensoPage = () => {
                 onChange={(e) => {
                     const id = e.target.value === '' ? '' : Number(e.target.value);
                     setSelectedEspecialidadId(id);
+                    setAnio(''); // Clear year if specialty changes
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                disabled={!selectedNivelId}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                disabled={!selectedNivelId || especialidadesData.length === 0}
               >
                  <option value="">Selecciona Especialidad</option>
                  {especialidadesData.map(e => (
@@ -200,8 +243,8 @@ const BancoPreguntasAscensoPage = () => {
               <select 
                 value={anio}
                 onChange={(e) => setAnio(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                disabled={!selectedNivelId || aniosData.length === 0}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                disabled={!selectedEspecialidadId || aniosData.length === 0}
               >
                  <option value="">Selecciona Año</option>
                  {aniosData.map(year => (
@@ -211,7 +254,7 @@ const BancoPreguntasAscensoPage = () => {
            </div>
 
            {/* Tipos de Pregunta */}
-           <div className="border border-cyan-400 rounded-lg p-6 bg-white shadow-sm">
+           <div className={`border border-cyan-400 rounded-lg p-6 bg-white shadow-sm transition-opacity duration-300 ${!anio ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                <div className="flex items-center gap-2 mb-6 text-[#002B6B] font-bold border-b pb-2">
                   <FilterIcon className="h-5 w-5" />
                   <span>Tipos de Pregunta*</span>

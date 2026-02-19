@@ -20,33 +20,27 @@ import {
 
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
-import { estructuraAcademicaService, Modalidad } from '../services/estructuraAcademicaService';
-// We'll use dynamic years instead of a static constant
-// const YEARS = Array.from({ length: 8 }, (_, i) => (2018 + i).toString()).reverse();
+import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { ExamenLogin } from '../services/authService';
+
+// ----- Types derived from login examenes -----
+interface FilterOption { id: number; nombre: string; }
 
 const BancoPreguntasPage = () => {
    const { isAuthenticated, loading } = useAuth();
    const router = useRouter();
 
-   // --- Current Selection State ---
-   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+   // Examenes from login response
+   const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
+
+   // Current Selection State
    const [selectedModalidadId, setSelectedModalidadId] = useState<number | ''>('');
    const [selectedNivelId, setSelectedNivelId] = useState<number | ''>('');
    const [selectedEspecialidadId, setSelectedEspecialidadId] = useState<number | ''>('');
    const [selectedYear, setSelectedYear] = useState<string>('');
-   const [isLoading, setIsLoading] = useState(true);
+   const [isLoading, setIsLoading] = useState(false);
    const [conteoPreguntas, setConteoPreguntas] = useState<{ [key: string]: number }>({});
    const [isCounting, setIsCounting] = useState(false);
-
-   /* 
-     --- FUTURE API STATES ---
-     const [groupedData, setGroupedData] = useState<ExamenFlat[]>([]);
-     const [fuentes, setFuentes] = useState<PremiumContent[]>([]);
-     const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-     const [niveles, setNiveles] = useState<Nivel[]>([]);
-     const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
-     const [isLoadingData, setIsLoadingData] = useState(true);
-   */
 
    // Checkbox State 
    const [tiposPregunta, setTiposPregunta] = useState({
@@ -61,28 +55,58 @@ const BancoPreguntasPage = () => {
       }
    }, [loading, isAuthenticated, router]);
 
+   // Load examenes from localStorage (saved during login)
    useEffect(() => {
-      const fetchData = async () => {
-         try {
-            setIsLoading(true);
-            const data = await estructuraAcademicaService.getAgrupados();
-            setModalidades(data);
-         } catch (error) {
-            console.error("Error loading filters:", error);
-         } finally {
-            setIsLoading(false);
-         }
-      };
       if (isAuthenticated) {
-         fetchData();
+         const stored = localStorage.getItem('loginExamenes');
+         if (stored) {
+            try {
+               const parsed: ExamenLogin[] = JSON.parse(stored);
+               setLoginExamenes(parsed);
+            } catch (e) {
+               console.error('Error parsing loginExamenes from localStorage:', e);
+            }
+         }
       }
    }, [isAuthenticated]);
 
-   const modalidadesData = modalidades;
-   const nivelesData = selectedModalidadId ? modalidades.find(m => m.id === selectedModalidadId)?.niveles || [] : [];
-   const especialidadesData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.especialidades || [] : [];
-   const aniosData = selectedNivelId ? nivelesData.find(n => n.id === selectedNivelId)?.anios || [] : [];
+   // ---------- Derived filter options from loginExamenes ----------
+   const modalidadesData: FilterOption[] = Array.from(
+      new Map(loginExamenes.map(e => [e.modalidadId, { id: e.modalidadId, nombre: e.modalidadNombre }])).values()
+   );
 
+   const nivelesData: FilterOption[] = Array.from(
+      new Map(
+         loginExamenes
+            .filter(e => !selectedModalidadId || e.modalidadId === selectedModalidadId)
+            .map(e => [e.nivelId, { id: e.nivelId, nombre: e.nivelNombre }])
+      ).values()
+   );
+
+   const especialidadesData: FilterOption[] = Array.from(
+      new Map(
+         loginExamenes
+            .filter(e =>
+               (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
+               (!selectedNivelId || e.nivelId === selectedNivelId)
+            )
+            .map(e => [e.especialidadId, { id: e.especialidadId, nombre: e.especialidadNombre }])
+      ).values()
+   );
+
+   const aniosData: string[] = Array.from(
+      new Set(
+         loginExamenes
+            .filter(e =>
+               (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
+               (!selectedNivelId || e.nivelId === selectedNivelId) &&
+               (!selectedEspecialidadId || e.especialidadId === selectedEspecialidadId)
+            )
+            .map(e => e.year)
+      )
+   ).sort((a, b) => Number(b) - Number(a));
+
+   // Fetch question counts when year is selected
    useEffect(() => {
       const fetchCounts = async () => {
          if (selectedModalidadId && selectedNivelId && selectedYear) {
@@ -93,7 +117,6 @@ const BancoPreguntasPage = () => {
                   Number(selectedNivelId),
                   selectedYear
                );
-               // Assuming counts is an array of { tipoPregunta: string, cantidad: number }
                const countMap: { [key: string]: number } = {};
                counts.forEach((item: any) => {
                   countMap[item.tipoPregunta.toLowerCase()] = item.cantidad;
@@ -111,26 +134,6 @@ const BancoPreguntasPage = () => {
       };
       fetchCounts();
    }, [selectedModalidadId, selectedNivelId, selectedYear]);
-
-   /* 
-     --- FUTURE API EFFECT ---
-     useEffect(() => {
-       const fetchAllData = async () => {
-         try {
-           setIsLoadingData(true);
-           const [grouped, fuentesData, modalidadesData, nivelesData, especialidadesData] = await Promise.all([
-             examenService.getGrouped(),
-             premiumService.getAll(),
-             modalidadService.getAll(),
-             nivelService.getAll(),
-             especialidadesService.getAll()
-           ]);
-           // ... logic to flatten and set state
-         } catch (error) { console.error(error); } finally { setIsLoadingData(false); }
-       };
-       if (isAuthenticated) fetchAllData();
-     }, [isAuthenticated]);
-   */
 
    // --- Handlers ---
    const handleClear = () => {

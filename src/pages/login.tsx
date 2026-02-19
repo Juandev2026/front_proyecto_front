@@ -34,16 +34,29 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await authService.login({
+      const rawResponse = await authService.login({
         email: formData.email,
         password: formData.password,
       });
 
+      // The API may return {user: {...}, examenes: [...]} or a flat LoginResponse
+      let response: any;
+      let examenes: any[] = [];
+
+      if ((rawResponse as any).user) {
+        // New wrapped format: { user: {...}, examenes: [...] }
+        response = (rawResponse as any).user;
+        examenes = (rawResponse as any).examenes || [];
+      } else {
+        // Old flat format
+        response = rawResponse;
+      }
+
       // Handle potential case sensitivity or missing property
       const fullName =
         response.fullName ||
-        (response as any).FullName ||
-        (response as any).fullname ||
+        response.FullName ||
+        response.fullname ||
         response.email;
 
       localStorage.setItem('token', response.token);
@@ -55,6 +68,9 @@ const Login = () => {
       }
       if (response.nivelId) {
         localStorage.setItem('nivelId', String(response.nivelId));
+      }
+      if (response.modalidadId) {
+        localStorage.setItem('modalidadId', String(response.modalidadId));
       }
       // Save role safely handling null/undefined
       if (response.role) {
@@ -74,6 +90,12 @@ const Login = () => {
         localStorage.setItem('especialidadId', String(response.especialidadId));
       }
 
+      // Save examenes from login response for use in Banco de Preguntas
+      if (examenes.length > 0) {
+        localStorage.setItem('loginExamenes', JSON.stringify(examenes));
+      } else {
+        localStorage.removeItem('loginExamenes');
+      }
 
       if (
         response.role?.toUpperCase() === 'ADMIN' ||
