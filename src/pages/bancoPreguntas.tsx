@@ -40,7 +40,6 @@ const BancoPreguntasPage = () => {
    const [selectedYear, setSelectedYear] = useState<string>('');
    const [isLoading, setIsLoading] = useState(false);
    const [conteoPreguntas, setConteoPreguntas] = useState<{ [key: string]: number }>({});
-   const [isCounting, setIsCounting] = useState(false);
 
    // Checkbox State 
    const [tiposPregunta, setTiposPregunta] = useState({
@@ -108,32 +107,37 @@ const BancoPreguntasPage = () => {
 
    // Fetch question counts when year is selected
    useEffect(() => {
-      const fetchCounts = async () => {
-         if (selectedModalidadId && selectedNivelId && selectedYear) {
-            try {
-               setIsCounting(true);
-               const counts = await estructuraAcademicaService.getConteoPreguntas(
-                  Number(selectedModalidadId),
-                  Number(selectedNivelId),
-                  selectedYear
-               );
+      const updateCounts = () => {
+         if (selectedModalidadId && selectedNivelId && selectedEspecialidadId && selectedYear) {
+            // Find the specific exam matching all filters
+            const exam = loginExamenes.find(e =>
+               e.modalidadId === selectedModalidadId &&
+               e.nivelId === selectedNivelId &&
+               e.especialidadId === selectedEspecialidadId &&
+               e.year === selectedYear
+            );
+
+            if (exam && exam.clasificaciones) {
                const countMap: { [key: string]: number } = {};
-               counts.forEach((item: any) => {
-                  countMap[item.tipoPregunta.toLowerCase()] = item.cantidad;
+               exam.clasificaciones.forEach((item) => {
+                  let key = item.clasificacionNombre.toLowerCase();
+                  // Map common abbreviations to the UI keys
+                  if (key === 'ccp') key = 'conocimientos pedagógicos';
+                  if (key === 'cl') key = 'comprensión lectora';
+                  if (key === 'rl') key = 'razonamiento lógico';
+                  
+                  countMap[key] = item.cantidadPreguntas;
                });
                setConteoPreguntas(countMap);
-            } catch (error) {
-               console.error("Error fetching counts:", error);
+            } else {
                setConteoPreguntas({});
-            } finally {
-               setIsCounting(false);
             }
          } else {
             setConteoPreguntas({});
          }
       };
-      fetchCounts();
-   }, [selectedModalidadId, selectedNivelId, selectedYear]);
+      updateCounts();
+   }, [selectedModalidadId, selectedNivelId, selectedEspecialidadId, selectedYear, loginExamenes]);
 
    // --- Handlers ---
    const handleClear = () => {
@@ -309,7 +313,7 @@ const BancoPreguntasPage = () => {
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
                            <span className="text-[#05CD99] text-sm font-medium">
-                              {isCounting ? 'Cargando...' : `${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
+                              {`${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
                            </span>
                         </div>
                      </div>
@@ -327,7 +331,7 @@ const BancoPreguntasPage = () => {
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
                            <span className="text-[#05CD99] text-sm font-medium">
-                              {isCounting ? 'Cargando...' : `${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
+                              {`${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
                            </span>
                         </div>
                      </div>
@@ -345,7 +349,7 @@ const BancoPreguntasPage = () => {
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
                            <span className="text-[#05CD99] text-sm font-medium">
-                              {isCounting ? 'Cargando...' : `${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
+                              {`${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
                            </span>
                         </div>
                      </div>

@@ -32,6 +32,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ClasificacionExamen {
+  clasificacionId: number;
+  clasificacionNombre: string;
+  cantidadPreguntas: number;
+}
+
 export interface ExamenLogin {
   id: number;
   tipoExamenId: number;
@@ -45,6 +51,8 @@ export interface ExamenLogin {
   especialidadId: number;
   especialidadNombre: string;
   year: string;
+  cantidadPreguntas: number;
+  clasificaciones: ClasificacionExamen[];
 }
 
 export interface LoginResponse {

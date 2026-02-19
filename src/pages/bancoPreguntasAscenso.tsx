@@ -36,7 +36,6 @@ const BancoPreguntasAscensoPage = () => {
     conocimientos: true
   });
   const [conteoPreguntas, setConteoPreguntas] = useState<{[key: string]: number}>({});
-  const [isCounting, setIsCounting] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -104,32 +103,37 @@ const BancoPreguntasAscensoPage = () => {
   ).sort((a, b) => Number(b) - Number(a));
 
   useEffect(() => {
-    const fetchCounts = async () => {
-      if (selectedModalidadId && selectedNivelId && anio) {
-        try {
-          setIsCounting(true);
-          const counts = await estructuraAcademicaService.getConteoPreguntas(
-            Number(selectedModalidadId),
-            Number(selectedNivelId),
-            anio
-          );
+    const updateCounts = () => {
+      if (selectedModalidadId && selectedNivelId && selectedEspecialidadId && anio) {
+        // Find the specific exam matching all filters
+        const exam = loginExamenes.find(e => 
+          e.modalidadId === selectedModalidadId &&
+          e.nivelId === selectedNivelId &&
+          e.especialidadId === selectedEspecialidadId &&
+          e.year === anio
+        );
+
+        if (exam && exam.clasificaciones) {
           const countMap: {[key: string]: number} = {};
-          counts.forEach((item: any) => {
-            countMap[item.tipoPregunta.toLowerCase()] = item.cantidad;
+          exam.clasificaciones.forEach((item) => {
+            let key = item.clasificacionNombre.toLowerCase();
+            // Map common abbreviations to the UI keys
+            if (key === 'ccp') key = 'conocimientos pedagógicos';
+            if (key === 'cl') key = 'comprensión lectora';
+            if (key === 'rl') key = 'razonamiento lógico';
+            
+            countMap[key] = item.cantidadPreguntas;
           });
           setConteoPreguntas(countMap);
-        } catch (error) {
-          console.error("Error fetching counts:", error);
+        } else {
           setConteoPreguntas({});
-        } finally {
-          setIsCounting(false);
         }
       } else {
         setConteoPreguntas({});
       }
     };
-    fetchCounts();
-  }, [selectedModalidadId, selectedNivelId, anio]);
+    updateCounts();
+  }, [selectedModalidadId, selectedNivelId, selectedEspecialidadId, anio, loginExamenes]);
 
   if (loading || !isAuthenticated) {
     return (
@@ -273,7 +277,7 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
                               <span className="text-[#05CD99] text-sm font-medium">
-                                {isCounting ? 'Cargando...' : `${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
+                                {`${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
                               </span>
                            </div>
                         </div>
@@ -291,7 +295,7 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
                               <span className="text-[#05CD99] text-sm font-medium">
-                                {isCounting ? 'Cargando...' : `${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
+                                {`${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
                               </span>
                            </div>
                         </div>
@@ -309,7 +313,7 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
                               <span className="text-[#05CD99] text-sm font-medium">
-                                {isCounting ? 'Cargando...' : `${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
+                                {`${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
                               </span>
                            </div>
                         </div>

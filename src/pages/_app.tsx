@@ -8,9 +8,11 @@ import '../styles/tiptap-editor.css';
 import 'katex/dist/katex.min.css';
 import WhatsAppWidget from '../components/WhatsAppWidget';
 import { GA_MEASUREMENT_ID, trackPageView } from '../lib/analytics';
+import { useAuth } from '../hooks/useAuth';
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Track pageview on route change
@@ -25,7 +27,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, [router.events]);
 
   // Check if current path is an admin page or banco preguntas area
-  const showWhatsApp = !router.pathname.startsWith('/admin') && !router.pathname.startsWith('/bancoPreguntas');
+  // ALSO hide if user is authenticated (Aula Virtual)
+  const showWhatsApp = !isAuthenticated && !router.pathname.startsWith('/admin') && !router.pathname.startsWith('/bancoPreguntas');
 
   return (
     <>

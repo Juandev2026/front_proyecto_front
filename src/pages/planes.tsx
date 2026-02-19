@@ -3,72 +3,86 @@ import { Disclosure } from '@headlessui/react';
 import { CheckIcon } from '@heroicons/react/outline';
 import { ChevronUpIcon } from '@heroicons/react/solid';
 import MainLayout from '../components/MainLayout';
-import { open } from 'fs';
+
 
 interface Plan {
   id: string;
   name: string;
-  type: 'mensual' | 'semestral' | 'anual';
+  subtitle?: string;
+  type: 'gratuito' | 'mensual' | 'semestral' | 'anual';
   price: number;
   originalPrice?: number;
+  duration: string;
   description: string;
   features: string[];
+  extraBenefits?: string[];
   highlighted?: boolean;
   discount?: string;
+  ctaText: string;
 }
 
 const planes: Plan[] = [
   {
-    id: 'mensual',
-    name: 'Plan Mensual',
-    type: 'mensual',
-    price: 59,
-    originalPrice: 99,
-    description: 'Acceso completo para potenciar tu enseñanza mes a mes',
-    discount: '40% OFF',
+    id: 'gratuito',
+    name: 'PLAN GRATUITO',
+    subtitle: 'Explora AVEND ESCALA',
+    type: 'gratuito',
+    price: 0,
+    duration: 'por 7 días',
+    description: 'Acceso inicial para conocer la plataforma y empezar a practicar.',
+    ctaText: 'Comenzar Gratis',
     features: [
-      'Acceso ilimitado a todos los cursos',
-      'Material descargable premium',
-      'Certificados oficiales',
-      'Soporte prioritario',
-      'Acceso a webinars en vivo',
+      'Banco de preguntas MINEDU (acceso limitado)',
+      'Simulacros con exámenes de MINEDU',
+      'Práctica con tus respuestas erradas',
+      'Visualización básica de resultados',
     ],
   },
   {
     id: 'semestral',
-    name: 'Plan Semestral',
+    name: 'PLAN SEMESTRAL',
+    subtitle: 'Impulsa tu Nombramiento y Ascenso',
     type: 'semestral',
-    price: 299,
-    originalPrice: 594,
-    description: '6 meses de aprendizaje continuo con ahorro significativo',
-    highlighted: true,
-    discount: '50% OFF',
+    price: 35,
+    duration: 'por 6 meses',
+    description: 'Preparación estratégica durante 6 meses para avanzar con enfoque.',
+    ctaText: 'Comenzar Ahora',
     features: [
-      'Todo lo del Plan Mensual',
-      'Ahorra 2 meses de suscripción',
-      'Acceso anticipado a nuevos cursos',
-      '3 sesiones de mentoría grupales',
-      'Certificación semestral',
-      'Acceso de por vida a cursos completados',
+      'Nombramiento',
+      'Ascenso',
+      'Banco de preguntas MINEDU',
+      'Simulacros MINEDU',
+      'Práctica con tus respuestas erradas',
+      'Estadísticas de rendimiento',
+      'Seguimiento de progreso',
     ],
   },
   {
     id: 'anual',
-    name: 'Plan Anual',
+    name: 'PLAN ANUAL',
+    subtitle: 'Acceso Total AVEND ESCALA',
     type: 'anual',
-    price: 499,
-    originalPrice: 1188,
-    description: 'La máxima inversión en tu carrera docente',
+    price: 49,
+    originalPrice: 499,
+    duration: 'por 12 meses',
+    description: 'Preparación integral durante todo el año en todos los procesos.',
     highlighted: true,
-    discount: '58% OFF',
+    discount: '🔥 Más elegido',
+    ctaText: 'Acceso Total Ahora',
     features: [
-      'Todo lo del Plan Semestral',
-      'Ahorra 7 meses de suscripción',
-      'Acceso VIP a eventos presenciales',
-      '6 sesiones de mentoría personalizadas',
-      'Certificación anual avanzada',
-      'Material físico exclusivo (envío incluido)',
-      'Networking con expertos del sector',
+      'Nombramiento',
+      'Ascenso',
+      'Directivos',
+      'Banco de preguntas MINEDU',
+      'Simulacros tipo MINEDU completos',
+      'Práctica con tus respuestas erradas',
+      'Estadísticas avanzadas de rendimiento',
+      'Seguimiento y progreso acumulado',
+    ],
+    extraBenefits: [
+      'Resolución en video de cada pregunta para Nombramiento y Ascenso, iniciando con Inicial y Primaria y contenido completo en abril, con explicación estratégica paso a paso para comprender cómo llegar a la respuesta correcta',
+      'Simulacros mensuales de Ascenso (Inicial y Primaria) desde mayo hasta un mes antes del examen',
+      'Herramientas avanzadas',
     ],
   },
 ];
@@ -105,12 +119,17 @@ const Planes = () => {
 
               <div className="p-8">
                 {/* Plan Name */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
                   {plan.name}
                 </h3>
+                {plan.subtitle && (
+                  <p className="text-sm font-bold text-blue-600 mb-2 uppercase tracking-wide">
+                    {plan.subtitle}
+                  </p>
+                )}
                 
                 {/* Description */}
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-6 text-sm">
                   {plan.description}
                 </p>
 
@@ -126,10 +145,8 @@ const Planes = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-500 mt-1">
-                    {plan.type === 'mensual' && 'por mes'}
-                    {plan.type === 'semestral' && 'por 6 meses'}
-                    {plan.type === 'anual' && 'por año'}
+                  <p className="text-gray-500 mt-1 font-medium">
+                    {plan.duration}
                   </p>
                 </div>
 
@@ -141,21 +158,40 @@ const Planes = () => {
                   className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
                   style={{ backgroundColor: '#2b7fff' }}
                 >
-                  Comenzar Ahora
+                  {plan.ctaText}
                 </a>
 
                 {/* Features */}
                 <div className="space-y-3">
                   <p className="text-sm font-semibold text-gray-900 mb-3">
-                    Incluye:
+                    Incluye acceso a:
                   </p>
-                  {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-sm">{feature}</span>
-                    </div>
-                  ))}
+                  <div className="space-y-2">
+                    {plan.features.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
+                        <span className="text-gray-700 text-sm leading-tight">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Extra Benefits */}
+                {plan.extraBenefits && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
+                      Beneficios exclusivos del Plan Anual:
+                    </p>
+                    <div className="space-y-3">
+                      {plan.extraBenefits.map((benefit, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <CheckIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
+                          <span className="text-gray-700 text-xs leading-normal">{benefit}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -185,23 +221,7 @@ const Planes = () => {
               )}
             </Disclosure>
 
-            <Disclosure as="div" className="mt-2">
-              {({ open }) => (
-                <>
-                  <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
-                    <span>¿Los cursos tienen certificación oficial?</span>
-                    <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-6 h-6 text-blue-500`}
-                    />
-                  </Disclosure.Button>
-                  <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
-                    Sí, todos nuestros cursos y especializaciones incluyen certificación válida para el escalafón docente. Dependiendo de tu plan (Semestral o Anual), puedes acceder a certificaciones avanzadas con mayor carga horaria.
-                  </Disclosure.Panel>
-                </>
-              )}
-            </Disclosure>
+
 
             <Disclosure as="div" className="mt-2">
               {({ open }) => (
