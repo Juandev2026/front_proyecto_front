@@ -66,7 +66,9 @@ const BancoPreguntasPage = () => {
          if (stored) {
             try {
                const parsed: ExamenLogin[] = JSON.parse(stored);
-               setLoginExamenes(parsed);
+               // Filter for Nombramiento (tipoExamenId: 3)
+               const filtered = parsed.filter(e => e.tipoExamenId === 3);
+               setLoginExamenes(filtered);
             } catch (e) {
                console.error('Error parsing loginExamenes from localStorage:', e);
             }

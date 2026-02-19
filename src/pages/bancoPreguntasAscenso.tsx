@@ -55,7 +55,9 @@ const BancoPreguntasAscensoPage = () => {
       if (stored) {
         try {
           const parsed: ExamenLogin[] = JSON.parse(stored);
-          setLoginExamenes(parsed);
+          // Filter specifically for Ascenso (tipoExamenId: 1)
+          const filtered = parsed.filter(e => e.tipoExamenId === 1);
+          setLoginExamenes(filtered);
           
           // Set default Modalidad if only one exists or default to EBR (26) if available
           const modalities = Array.from(new Map(parsed.map(e => [e.modalidadId, e.modalidadId])).values());
