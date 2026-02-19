@@ -48,6 +48,7 @@ const ExamenPage = () => {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [showQuestionPanel, setShowQuestionPanel] = useState(true);
 
   // Auth Guard & Data Loading
   useEffect(() => {
@@ -145,8 +146,11 @@ const ExamenPage = () => {
   };
 
   const handleRegenerate = () => {
-    // Logic to go back or clear and fetch again could go here
-    router.push('/bancoPreguntas');
+    setSeconds(0);
+    setCurrentIndex(0);
+    setUserAnswers({});
+    window.speechSynthesis.cancel();
+    setIsReading(false);
   };
 
   const stats = useMemo(() => {
@@ -250,28 +254,26 @@ const ExamenPage = () => {
                </button>
                
                <button 
-                 onClick={() => {
-                   document.getElementById('question-panel')?.scrollIntoView({ behavior: 'smooth' });
-                 }}
-                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 font-bold transition-colors"
-               >
-                   <ViewGridIcon className="h-4 w-4" />
-                   Panel de Preguntas
-               </button>
+                  onClick={() => setShowQuestionPanel(!showQuestionPanel)}
+                  className={`flex items-center gap-2 px-3 py-2 border rounded-md text-sm font-bold transition-all ${showQuestionPanel ? 'bg-[#002B6B] text-white border-[#002B6B]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                >
+                    <ViewGridIcon className="h-4 w-4" />
+                    {showQuestionPanel ? 'Ocultar Panel' : 'Panel de Preguntas'}
+                </button>
                
                <button 
-                 onClick={() => {
-                   if (!document.fullscreenElement) {
-                     document.documentElement.requestFullscreen();
-                   } else {
-                     document.exitFullscreen();
-                   }
-                 }}
-                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-               >
-                   <ArrowsExpandIcon className="h-4 w-4" />
-                   Pantalla completa
-               </button>
+                  onClick={() => {
+                    if (!document.fullscreenElement) {
+                      document.documentElement.requestFullscreen();
+                    } else {
+                      document.exitFullscreen();
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                    <ArrowsExpandIcon className="h-4 w-4" />
+                    Pantalla completa
+                </button>
             </div>
 
             {/* Badges Section */}
@@ -381,8 +383,9 @@ const ExamenPage = () => {
             </div>
          </div>
 
-         {/* Summary Panel (Right) */}
-         <div className="w-full lg:w-80 space-y-6 font-sans">
+         {/* Summary Panel (Right) - Conditionally Rendered */}
+         {showQuestionPanel && (
+           <div className="w-full lg:w-80 space-y-6 font-sans animate-in fade-in slide-in-from-right-4 duration-300">
             
             {/* Stats Summary Card */}
             <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-50">
@@ -466,8 +469,8 @@ const ExamenPage = () => {
                    </div>
                 </div>
              </div>
-
-         </div>
+          </div>
+         )}
 
       </div>
 
