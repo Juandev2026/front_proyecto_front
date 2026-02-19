@@ -22,6 +22,13 @@ export interface Seccion {
 export interface CreateSeccionRequest {
   nombre: string;
   descripcion: string;
+  tipoExamenId: number;
+  modalidadId: number;
+  nivelId: number;
+  especialidadId: number;
+  esVisible: boolean;
+  esDefault: boolean;
+  categoriasIds: number[];
 }
 
 export const seccionesService = {

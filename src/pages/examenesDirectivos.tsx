@@ -67,12 +67,12 @@ const ExamenesDirectivosPage = () => {
         {/* Accordions List */}
         <div className="space-y-3">
            {exams.map((exam) => (
-             <div key={exam.id} className="border border-cyan-400 rounded-lg bg-white overflow-hidden">
+             <div key={exam.id} className="border border-primary rounded-lg bg-white overflow-hidden">
                 <button 
                   onClick={() => toggleAccordion(exam.id)}
                   className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors"
                 >
-                   <div className="flex items-center gap-3 text-[#002B6B] font-bold">
+                   <div className="flex items-center gap-3 text-primary font-bold">
                       <FolderIcon className="h-6 w-6" />
                       <span>{exam.title} ({exam.count})</span>
                    </div>
@@ -94,8 +94,8 @@ const ExamenesDirectivosPage = () => {
         </div>
 
         {/* Resumen de selección */}
-        <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px] mt-6">
-           <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+        <div className="border border-primary rounded-lg p-4 bg-white min-h-[100px] mt-6">
+           <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <AcademicCapIcon className="h-5 w-5" />
               <span>Resumen de selección</span>
            </div>
@@ -112,7 +112,7 @@ const ExamenesDirectivosPage = () => {
               <XIcon className="h-4 w-4" />
               Limpiar
            </button>
-           <button className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md">
+           <button className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors font-medium shadow-md">
               Confirmar selección
            </button>
         </div>
