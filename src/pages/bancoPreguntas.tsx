@@ -39,7 +39,12 @@ const BancoPreguntasPage = () => {
    const [selectedEspecialidadId, setSelectedEspecialidadId] = useState<number | ''>('');
    const [selectedYear, setSelectedYear] = useState<string>('');
    const [isLoading, setIsLoading] = useState(false);
-   const [conteoPreguntas, setConteoPreguntas] = useState<{ [key: string]: number }>({});
+   const [conteoPreguntas, setConteoPreguntas] = useState<{ [key: string]: {
+      cantidad: number;
+      puntos: number;
+      tiempoPregunta: number;
+      minimo: number;
+   } }>({});
 
    // Checkbox State 
    const [tiposPregunta, setTiposPregunta] = useState({
@@ -118,7 +123,7 @@ const BancoPreguntasPage = () => {
             );
 
             if (exam && exam.clasificaciones) {
-               const countMap: { [key: string]: number } = {};
+               const countMap: { [key: string]: { cantidad: number; puntos: number; tiempoPregunta: number; minimo: number; } } = {};
                exam.clasificaciones.forEach((item) => {
                   const name = item.clasificacionNombre.toLowerCase();
                   let key = '';
@@ -133,18 +138,23 @@ const BancoPreguntasPage = () => {
                   } else {
                      key = name; // Fallback to raw name if no match
                   }
-                  
+
                   if (key) {
-                     countMap[key] = (countMap[key] || 0) + item.cantidadPreguntas;
+                     countMap[key] = {
+                        cantidad: (countMap[key]?.cantidad || 0) + item.cantidadPreguntas,
+                        puntos: item.puntos || countMap[key]?.puntos || 0,
+                        tiempoPregunta: item.tiempoPregunta || countMap[key]?.tiempoPregunta || 0,
+                        minimo: item.minimo || countMap[key]?.minimo || 0
+                     };
                   }
                });
                setConteoPreguntas(countMap);
 
                // Auto-uncheck categories if they have 0 questions
                setTiposPregunta(prev => ({
-                  comprension: (countMap['comprensión lectora'] || 0) > 0 ? prev.comprension : false,
-                  razonamiento: (countMap['razonamiento lógico'] || 0) > 0 ? prev.razonamiento : false,
-                  conocimientos: (countMap['conocimientos pedagógicos'] || 0) > 0 ? prev.conocimientos : false
+                  comprension: (countMap['comprensión lectora']?.cantidad || 0) > 0 ? prev.comprension : false,
+                  razonamiento: (countMap['razonamiento lógico']?.cantidad || 0) > 0 ? prev.razonamiento : false,
+                  conocimientos: (countMap['conocimientos pedagógicos']?.cantidad || 0) > 0 ? prev.conocimientos : false
                }));
             } else {
                setConteoPreguntas({});
@@ -322,7 +332,7 @@ const BancoPreguntasPage = () => {
 
                   {/* Card 1 */}
                   <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                     (conteoPreguntas['comprensión lectora'] || 0) > 0 
+                     (conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 
                         ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.comprension ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                         : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                   }`}>
@@ -331,14 +341,14 @@ const BancoPreguntasPage = () => {
                            type="checkbox"
                            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.comprension}
-                           disabled={(conteoPreguntas['comprensión lectora'] || 0) === 0}
+                           disabled={(conteoPreguntas['comprensión lectora']?.cantidad || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, comprension: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
-                           <span className={`${(conteoPreguntas['comprensión lectora'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                              {(conteoPreguntas['comprensión lectora'] || 0) > 0 
-                                 ? `${conteoPreguntas['comprensión lectora']} preguntas`
+                           <span className={`${(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 
+                                 ? `${conteoPreguntas['comprensión lectora']?.cantidad} preguntas`
                                  : '0 preguntas (no disponible)'}
                            </span>
                         </div>
@@ -347,7 +357,7 @@ const BancoPreguntasPage = () => {
 
                   {/* Card 2 */}
                   <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                     (conteoPreguntas['razonamiento lógico'] || 0) > 0 
+                     (conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 
                         ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.razonamiento ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                         : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                   }`}>
@@ -356,14 +366,14 @@ const BancoPreguntasPage = () => {
                            type="checkbox"
                            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.razonamiento}
-                           disabled={(conteoPreguntas['razonamiento lógico'] || 0) === 0}
+                           disabled={(conteoPreguntas['razonamiento lógico']?.cantidad || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, razonamiento: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
-                           <span className={`${(conteoPreguntas['razonamiento lógico'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                              {(conteoPreguntas['razonamiento lógico'] || 0) > 0 
-                                 ? `${conteoPreguntas['razonamiento lógico']} preguntas`
+                           <span className={`${(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 
+                                 ? `${conteoPreguntas['razonamiento lógico']?.cantidad} preguntas`
                                  : '0 preguntas (no disponible)'}
                            </span>
                         </div>
@@ -372,7 +382,7 @@ const BancoPreguntasPage = () => {
 
                   {/* Card 3 */}
                   <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                     (conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
+                     (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 
                         ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.conocimientos ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                         : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                   }`}>
@@ -381,14 +391,14 @@ const BancoPreguntasPage = () => {
                            type="checkbox"
                            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.conocimientos}
-                           disabled={(conteoPreguntas['conocimientos pedagógicos'] || 0) === 0}
+                           disabled={(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, conocimientos: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
-                           <span className={`${(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                              {(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
-                                 ? `${conteoPreguntas['conocimientos pedagógicos']} preguntas`
+                           <span className={`${(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 
+                                 ? `${conteoPreguntas['conocimientos pedagógicos']?.cantidad} preguntas`
                                  : '0 preguntas (no disponible)'}
                            </span>
                         </div>
@@ -410,22 +420,22 @@ const BancoPreguntasPage = () => {
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
-                                       {conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas
+                                       {conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0} preguntas
                                     </span>
                                     <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> 3 pts/correcta
+                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['conocimientos pedagógicos']?.puntos || 0} pts/correcta
                                     </span>
                                     <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: 120 pts
+                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} pts
                                     </span>
                                     <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: 90 pts
+                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['conocimientos pedagógicos']?.minimo || 0} pts
                                     </span>
                                     <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> 3 min/pregunta
+                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0} min/pregunta
                                     </span>
                                     <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: 120min
+                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
@@ -442,22 +452,22 @@ const BancoPreguntasPage = () => {
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
-                                       {conteoPreguntas['razonamiento lógico'] || 0} preguntas
+                                       {conteoPreguntas['razonamiento lógico']?.cantidad || 0} preguntas
                                     </span>
                                     <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> 2 pts/correcta
+                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['razonamiento lógico']?.puntos || 0} pts/correcta
                                     </span>
                                     <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: 50 pts
+                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} pts
                                     </span>
                                     <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: 16 pts
+                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['razonamiento lógico']?.minimo || 0} pts
                                     </span>
                                     <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> 3 min/pregunta
+                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0} min/pregunta
                                     </span>
                                     <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: 75min
+                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
@@ -474,22 +484,22 @@ const BancoPreguntasPage = () => {
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
-                                       {conteoPreguntas['comprensión lectora'] || 0} preguntas
+                                       {conteoPreguntas['comprensión lectora']?.cantidad || 0} preguntas
                                     </span>
                                     <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> 2 pts/correcta
+                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['comprensión lectora']?.puntos || 0} pts/correcta
                                     </span>
                                     <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: 50 pts
+                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} pts
                                     </span>
                                     <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: 14 pts
+                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['comprensión lectora']?.minimo || 0} pts
                                     </span>
                                     <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> 3 min/pregunta
+                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0} min/pregunta
                                     </span>
                                     <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: 75min
+                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
@@ -510,43 +520,43 @@ const BancoPreguntasPage = () => {
                            <div className="bg-[#4FACFE] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
                               <div className="bg-white/30 p-1.5 rounded">
                                  <Library className="w-4 h-4" />
-                              </div>
-                              <span>{
-                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos'] || 0) : 0) +
-                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico'] || 0) : 0) +
-                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora'] || 0) : 0)
-                              } preguntas totales</span>
-                           </div>
-                           <div className="bg-[#05CD99] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                              <div className="bg-white/30 p-1.5 rounded">
-                                 <Clock className="w-4 h-4" />
-                              </div>
-                              <span>{
-                                 (tiposPregunta.conocimientos ? 120 : 0) +
-                                 (tiposPregunta.razonamiento ? 75 : 0) +
-                                 (tiposPregunta.comprension ? 75 : 0)
-                              } min totales</span>
-                           </div>
-                           <div className="bg-[#6B4BFF] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                              <div className="bg-white/30 p-1.5 rounded">
-                                 <Target className="w-4 h-4" />
-                              </div>
-                              <span>{
-                                 (tiposPregunta.conocimientos ? 120 : 0) +
-                                 (tiposPregunta.razonamiento ? 50 : 0) +
-                                 (tiposPregunta.comprension ? 50 : 0)
-                              } pts máximo</span>
-                           </div>
-                           <div className="bg-[#F6AD55] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                              <div className="bg-white/30 p-1.5 rounded">
-                                 <CheckCircle className="w-4 h-4" />
-                              </div>
-                              <span>{
-                                 (tiposPregunta.conocimientos ? 90 : 0) +
-                                 (tiposPregunta.razonamiento ? 16 : 0) +
-                                 (tiposPregunta.comprension ? 14 : 0)
-                              } pts mínimo</span>
-                           </div>
+                               </div>
+                               <span>{
+                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                               } preguntas totales</span>
+                            </div>
+                            <div className="bg-[#05CD99] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
+                               <div className="bg-white/30 p-1.5 rounded">
+                                  <Clock className="w-4 h-4" />
+                               </div>
+                               <span>{
+                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                               } min totales</span>
+                            </div>
+                            <div className="bg-[#6B4BFF] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
+                               <div className="bg-white/30 p-1.5 rounded">
+                                  <Target className="w-4 h-4" />
+                               </div>
+                               <span>{
+                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                               } pts máximo</span>
+                            </div>
+                            <div className="bg-[#F6AD55] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
+                               <div className="bg-white/30 p-1.5 rounded">
+                                  <CheckCircle className="w-4 h-4" />
+                               </div>
+                               <span>{
+                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.minimo || 0) : 0) +
+                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.minimo || 0) : 0) +
+                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.minimo || 0) : 0)
+                               } pts mínimo</span>
+                            </div>
                         </div>
                      </div>
                   </div>

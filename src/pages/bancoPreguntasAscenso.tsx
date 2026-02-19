@@ -35,7 +35,12 @@ const BancoPreguntasAscensoPage = () => {
     razonamiento: true,
     conocimientos: true
   });
-  const [conteoPreguntas, setConteoPreguntas] = useState<{[key: string]: number}>({});
+  const [conteoPreguntas, setConteoPreguntas] = useState<{ [key: string]: {
+    cantidad: number;
+    puntos: number;
+    tiempoPregunta: number;
+    minimo: number;
+  } }>({});
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -114,7 +119,7 @@ const BancoPreguntasAscensoPage = () => {
         );
 
         if (exam && exam.clasificaciones) {
-          const countMap: {[key: string]: number} = {};
+          const countMap: { [key: string]: { cantidad: number; puntos: number; tiempoPregunta: number; minimo: number; } } = {};
           exam.clasificaciones.forEach((item) => {
             const name = item.clasificacionNombre.toLowerCase();
             let key = '';
@@ -131,16 +136,21 @@ const BancoPreguntasAscensoPage = () => {
             }
             
             if (key) {
-               countMap[key] = (countMap[key] || 0) + item.cantidadPreguntas;
+               countMap[key] = {
+                  cantidad: (countMap[key]?.cantidad || 0) + item.cantidadPreguntas,
+                  puntos: item.puntos || countMap[key]?.puntos || 0,
+                  tiempoPregunta: item.tiempoPregunta || countMap[key]?.tiempoPregunta || 0,
+                  minimo: item.minimo || countMap[key]?.minimo || 0
+               };
             }
           });
           setConteoPreguntas(countMap);
 
           // Auto-uncheck categories if they have 0 questions
           setTiposPregunta(prev => ({
-            comprension: (countMap['comprensión lectora'] || 0) > 0 ? prev.comprension : false,
-            razonamiento: (countMap['razonamiento lógico'] || 0) > 0 ? prev.razonamiento : false,
-            conocimientos: (countMap['conocimientos pedagógicos'] || 0) > 0 ? prev.conocimientos : false
+            comprension: (countMap['comprensión lectora']?.cantidad || 0) > 0 ? prev.comprension : false,
+            razonamiento: (countMap['razonamiento lógico']?.cantidad || 0) > 0 ? prev.razonamiento : false,
+            conocimientos: (countMap['conocimientos pedagógicos']?.cantidad || 0) > 0 ? prev.conocimientos : false
           }));
         } else {
           setConteoPreguntas({});
@@ -286,7 +296,7 @@ const BancoPreguntasAscensoPage = () => {
                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      {/* Card 1 */}
                      <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                        (conteoPreguntas['comprensión lectora'] || 0) > 0 
+                        (conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 
                           ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.comprension ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                           : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                       }`}>
@@ -295,14 +305,14 @@ const BancoPreguntasAscensoPage = () => {
                              type="checkbox" 
                              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                              checked={tiposPregunta.comprension}
-                             disabled={(conteoPreguntas['comprensión lectora'] || 0) === 0}
+                             disabled={(conteoPreguntas['comprensión lectora']?.cantidad || 0) === 0}
                              onChange={(e) => setTiposPregunta({...tiposPregunta, comprension: e.target.checked})}
                            />
                             <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
-                              <span className={`${(conteoPreguntas['comprensión lectora'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                                {(conteoPreguntas['comprensión lectora'] || 0) > 0 
-                                  ? `${conteoPreguntas['comprensión lectora']} preguntas`
+                              <span className={`${(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                                {(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 
+                                  ? `${conteoPreguntas['comprensión lectora']?.cantidad} preguntas`
                                   : '0 preguntas (no disponible)'}
                               </span>
                             </div>
@@ -311,7 +321,7 @@ const BancoPreguntasAscensoPage = () => {
 
                      {/* Card 2 */}
                      <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                        (conteoPreguntas['razonamiento lógico'] || 0) > 0 
+                        (conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 
                           ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.razonamiento ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                           : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                       }`}>
@@ -320,14 +330,14 @@ const BancoPreguntasAscensoPage = () => {
                              type="checkbox" 
                              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                              checked={tiposPregunta.razonamiento}
-                             disabled={(conteoPreguntas['razonamiento lógico'] || 0) === 0}
+                             disabled={(conteoPreguntas['razonamiento lógico']?.cantidad || 0) === 0}
                              onChange={(e) => setTiposPregunta({...tiposPregunta, razonamiento: e.target.checked})}
                            />
                             <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
-                              <span className={`${(conteoPreguntas['razonamiento lógico'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                                {(conteoPreguntas['razonamiento lógico'] || 0) > 0 
-                                  ? `${conteoPreguntas['razonamiento lógico']} preguntas`
+                              <span className={`${(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                                {(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 
+                                  ? `${conteoPreguntas['razonamiento lógico']?.cantidad} preguntas`
                                   : '0 preguntas (no disponible)'}
                               </span>
                             </div>
@@ -336,7 +346,7 @@ const BancoPreguntasAscensoPage = () => {
 
                      {/* Card 3 */}
                      <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                        (conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
+                        (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 
                           ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.conocimientos ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
                           : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
                       }`}>
@@ -345,14 +355,14 @@ const BancoPreguntasAscensoPage = () => {
                              type="checkbox" 
                              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                              checked={tiposPregunta.conocimientos}
-                             disabled={(conteoPreguntas['conocimientos pedagógicos'] || 0) === 0}
+                             disabled={(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) === 0}
                              onChange={(e) => setTiposPregunta({...tiposPregunta, conocimientos: e.target.checked})}
                            />
                             <div className="flex flex-col">
                               <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
-                              <span className={`${(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
-                                {(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
-                                  ? `${conteoPreguntas['conocimientos pedagógicos']} preguntas`
+                              <span className={`${(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                                {(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 
+                                  ? `${conteoPreguntas['conocimientos pedagógicos']?.cantidad} preguntas`
                                   : '0 preguntas (no disponible)'}
                               </span>
                             </div>
@@ -373,24 +383,24 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col z-10">
                               <span className="text-[#2B3674] font-extrabold text-lg">Conocimientos Curriculares y Pedagógicos</span>
                               <div className="flex flex-wrap gap-2 mt-3">
-                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
+                                  <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
                                     <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
-                                    {conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas
+                                    {conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⭐</span> 3 pts/correcta
+                                    <span className="text-base">⭐</span> {conteoPreguntas['conocimientos pedagógicos']?.puntos || 0} pts/correcta
                                  </span>
                                  <span className="bg-[#FFE5E5] text-[#FF0000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🎯</span> Máx: 120 pts
+                                    <span className="text-base">🎯</span> Máx: {(conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} pts
                                  </span>
                                  <span className="bg-[#FFF4D1] text-[#B8860B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">✅</span> Mínimo: 90 pts
+                                    <span className="text-base">✅</span> Mínimo: {conteoPreguntas['conocimientos pedagógicos']?.minimo || 0} pts
                                  </span>
                                  <span className="bg-[#FFF9C4] text-[#856404] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⏱️</span> 3 min/pregunta
+                                    <span className="text-base">⏱️</span> {conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0} min/pregunta
                                  </span>
                                  <span className="bg-[#FDE2E2] text-[#E53E3E] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🕒</span> Total: 120min
+                                    <span className="text-base">🕒</span> Total: {(conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} min
                                  </span>
                               </div>
                            </div>
@@ -405,24 +415,24 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col z-10">
                               <span className="text-[#2B3674] font-extrabold text-lg">Razonamiento Lógico</span>
                               <div className="flex flex-wrap gap-2 mt-3">
-                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
+                                  <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
                                     <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
-                                    {conteoPreguntas['razonamiento lógico'] || 0} preguntas
+                                    {conteoPreguntas['razonamiento lógico']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⭐</span> 2 pts/correcta
+                                    <span className="text-base">⭐</span> {conteoPreguntas['razonamiento lógico']?.puntos || 0} pts/correcta
                                  </span>
                                  <span className="bg-[#FFE5E5] text-[#FF0000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🎯</span> Máx: 50 pts
+                                    <span className="text-base">🎯</span> Máx: {(conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} pts
                                  </span>
                                  <span className="bg-[#FFF4D1] text-[#B8860B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">✅</span> Mínimo: 16 pts
+                                    <span className="text-base">✅</span> Mínimo: {conteoPreguntas['razonamiento lógico']?.minimo || 0} pts
                                  </span>
                                  <span className="bg-[#FFF9C4] text-[#856404] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⏱️</span> 3 min/pregunta
+                                    <span className="text-base">⏱️</span> {conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0} min/pregunta
                                  </span>
                                  <span className="bg-[#FDE2E2] text-[#E53E3E] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🕒</span> Total: 75min
+                                    <span className="text-base">🕒</span> Total: {(conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} min
                                  </span>
                               </div>
                            </div>
@@ -437,24 +447,24 @@ const BancoPreguntasAscensoPage = () => {
                            <div className="flex flex-col z-10">
                               <span className="text-[#2B3674] font-extrabold text-lg">Comprensión Lectora</span>
                               <div className="flex flex-wrap gap-2 mt-3">
-                                 <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
+                                  <span className="bg-[#D1E9FF] text-[#002B6B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
                                     <div className="bg-[#002B6B] w-5 h-5 rounded flex items-center justify-center text-[11px] text-white">Q</div>
-                                    {conteoPreguntas['comprensión lectora'] || 0} preguntas
+                                    {conteoPreguntas['comprensión lectora']?.cantidad || 0} preguntas
                                  </span>
                                  <span className="bg-[#D6FFD8] text-[#008000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⭐</span> 2 pts/correcta
+                                    <span className="text-base">⭐</span> {conteoPreguntas['comprensión lectora']?.puntos || 0} pts/correcta
                                  </span>
                                  <span className="bg-[#FFE5E5] text-[#FF0000] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🎯</span> Máx: 50 pts
+                                    <span className="text-base">🎯</span> Máx: {(conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} pts
                                  </span>
                                  <span className="bg-[#FFF4D1] text-[#B8860B] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">✅</span> Mínimo: 14 pts
+                                    <span className="text-base">✅</span> Mínimo: {conteoPreguntas['comprensión lectora']?.minimo || 0} pts
                                  </span>
                                  <span className="bg-[#FFF9C4] text-[#856404] px-4 py-1.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-                                    <span className="text-base">⏱️</span> 3 min/pregunta
+                                    <span className="text-base">⏱️</span> {conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0} min/pregunta
                                  </span>
                                  <span className="bg-[#FDE2E2] text-[#E53E3E] px-4 py-1.5 rounded-full text-[11px] font-bold flex items-center gap-2">
-                                    <span className="text-base">🕒</span> Total: 75min
+                                    <span className="text-base">🕒</span> Total: {(conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} min
                                  </span>
                               </div>
                            </div>
@@ -475,10 +485,10 @@ const BancoPreguntasAscensoPage = () => {
                         <div className="bg-[#4FACFE] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
                            <div className="bg-white/25 p-2 rounded-lg flex items-center justify-center w-10 h-10 text-xl">📚</div>
                            <div className="flex flex-col">
-                              <span className="text-2xl leading-none">{
-                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos'] || 0) : 0) +
-                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico'] || 0) : 0) +
-                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora'] || 0) : 0)
+                               <span className="text-2xl leading-none">{
+                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">preguntas totales</span>
                            </div>
@@ -486,10 +496,10 @@ const BancoPreguntasAscensoPage = () => {
                         <div className="bg-[#05CD99] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
                            <div className="bg-white/25 p-2 rounded-lg flex items-center justify-center w-10 h-10 text-xl">🕒</div>
                            <div className="flex flex-col">
-                              <span className="text-2xl leading-none">{
-                                 (tiposPregunta.conocimientos ? 120 : 0) +
-                                 (tiposPregunta.razonamiento ? 75 : 0) +
-                                 (tiposPregunta.comprension ? 75 : 0)
+                               <span className="text-2xl leading-none">{
+                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">min totales</span>
                            </div>
@@ -497,10 +507,10 @@ const BancoPreguntasAscensoPage = () => {
                         <div className="bg-[#6B4BFF] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
                            <div className="bg-white/25 p-2 rounded-lg flex items-center justify-center w-10 h-10 text-xl">🎯</div>
                            <div className="flex flex-col">
-                              <span className="text-2xl leading-none">{
-                                 (tiposPregunta.conocimientos ? 120 : 0) +
-                                 (tiposPregunta.razonamiento ? 50 : 0) +
-                                 (tiposPregunta.comprension ? 50 : 0)
+                               <span className="text-2xl leading-none">{
+                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts máximo</span>
                            </div>
@@ -508,10 +518,10 @@ const BancoPreguntasAscensoPage = () => {
                         <div className="bg-[#F6AD55] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
                            <div className="bg-white/25 p-2 rounded-lg flex items-center justify-center w-10 h-10 text-xl">✅</div>
                            <div className="flex flex-col">
-                              <span className="text-2xl leading-none">{
-                                 (tiposPregunta.conocimientos ? 90 : 0) +
-                                 (tiposPregunta.razonamiento ? 16 : 0) +
-                                 (tiposPregunta.comprension ? 14 : 0)
+                               <span className="text-2xl leading-none">{
+                                 (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.minimo || 0) : 0) +
+                                 (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.minimo || 0) : 0) +
+                                 (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.minimo || 0) : 0)
                               }</span>
                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts mínimo</span>
                            </div>

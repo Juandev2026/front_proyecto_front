@@ -36,6 +36,9 @@ export interface ClasificacionExamen {
   clasificacionId: number;
   clasificacionNombre: string;
   cantidadPreguntas: number;
+  puntos?: number;
+  tiempoPregunta?: number;
+  minimo?: number;
 }
 
 export interface ExamenLogin {
