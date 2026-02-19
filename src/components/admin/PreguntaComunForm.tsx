@@ -35,6 +35,8 @@ interface SubPregunta {
 }
 
 interface PreguntaComunFormProps {
+  initialParent?: any;
+  initialSubQuestions?: any[];
   resolveExamenId: () => Promise<number | null>;
   defaultClasificacionId: number;
   onSuccess: () => void;
@@ -42,29 +44,80 @@ interface PreguntaComunFormProps {
 }
 
 const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
+  initialParent,
+  initialSubQuestions,
   resolveExamenId,
   defaultClasificacionId,
   onSuccess,
   onCancel
 }) => {
+  // --- HELPERS ---
+  const parseHtmlToBlocks = (html: string): ContentBlock[] => {
+      if (!html) return [];
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      
+      const blocks: ContentBlock[] = [];
+      const children = Array.from(div.childNodes);
+      
+      children.forEach((node) => {
+          if (node.nodeName === 'IMG') {
+              blocks.push({
+                  id: Math.random().toString(36).substr(2, 9),
+                  type: 'image',
+                  content: (node as HTMLImageElement).src
+              });
+          } else if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) {
+              const content = (node as HTMLElement).outerHTML || node.textContent || '';
+              if (content.trim()) {
+                  blocks.push({
+                      id: Math.random().toString(36).substr(2, 9),
+                      type: 'text',
+                      content: content
+                  });
+              }
+          }
+      });
+      return blocks;
+  };
+
   // --- STATE ---
-  const [commonStatement, setCommonStatement] = useState<ContentBlock[]>([]);
+  const [commonStatement, setCommonStatement] = useState<ContentBlock[]>(
+      initialParent ? parseHtmlToBlocks(initialParent.enunciado) : []
+  );
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
-  const [subQuestions, setSubQuestions] = useState<SubPregunta[]>([
-    {
-      tempId: Math.random().toString(36).substr(2, 9),
-      clasificacionId: defaultClasificacionId || 0,
-      specificStatement: [],
-      alternatives: [
-        { id: Math.random().toString(36), contenido: '', esCorrecta: false },
-        { id: Math.random().toString(36), contenido: '', esCorrecta: false },
-        { id: Math.random().toString(36), contenido: '', esCorrecta: false },
-        { id: Math.random().toString(36), contenido: '', esCorrecta: false },
-      ],
-      sustento: '',
-      isExpanded: true
-    }
-  ]);
+  const [subQuestions, setSubQuestions] = useState<SubPregunta[]>(
+      initialSubQuestions && initialSubQuestions.length > 0
+      ? initialSubQuestions.map(s => ({
+          tempId: s.id?.toString() || Math.random().toString(36).substr(2, 9),
+          id: s.id, // Keep the real ID
+          clasificacionId: s.clasificacionId,
+          specificStatement: parseHtmlToBlocks(s.enunciado),
+          alternatives: [
+              { id: 'A', contenido: s.alternativaA, esCorrecta: s.respuestaCorrecta === 'A' },
+              { id: 'B', contenido: s.alternativaB, esCorrecta: s.respuestaCorrecta === 'B' },
+              { id: 'C', contenido: s.alternativaC, esCorrecta: s.respuestaCorrecta === 'C' },
+              { id: 'D', contenido: s.alternativaD, esCorrecta: s.respuestaCorrecta === 'D' },
+          ],
+          sustento: s.sustento || '',
+          isExpanded: false
+      }))
+      : [
+          {
+            tempId: Math.random().toString(36).substr(2, 9),
+            clasificacionId: defaultClasificacionId || 0,
+            specificStatement: [],
+            alternatives: [
+              { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+              { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+              { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+              { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+            ],
+            sustento: '',
+            isExpanded: true
+          }
+      ]
+  );
   const [saving, setSaving] = useState(false);
 
   // Hidden file input for images
@@ -315,10 +368,13 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           respuesta: '',
       };
 
-      console.log('Enviando Padre...', parentPayload);
-      const parentResponse = await preguntaService.createSingle(parentPayload);
-      const parentId = parentResponse.id;
-      console.log(`Padre creado con ID: ${parentId}`);
+      console.log(initialParent ? 'Editando Padre...' : 'Enviando Padre...', parentPayload);
+      const parentResponse = initialParent 
+          ? await preguntaService.update(initialParent.id, parentPayload)
+          : await preguntaService.createSingle(parentPayload);
+      
+      const parentId = initialParent ? initialParent.id : parentResponse.id;
+      console.log(`Padre ${initialParent ? 'actualizado' : 'creado'} con ID: ${parentId}`);
 
       try {
         // === PASO 2: Crear HIJOS en paralelo ===
@@ -345,12 +401,24 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         });
 
         console.log(`Enviando ${childPayloads.length} Hijos...`, childPayloads);
-        await subPreguntaService.createBatch(childPayloads);
+        
+        // If editing, we use update for existing ones and create for new ones
+        const promises = childPayloads.map(async (payload, idx) => {
+            const original = subQuestions[idx];
+            // @ts-ignore - check if it has a real database ID
+            if (original && original.id) {
+                return subPreguntaService.update(payload.examenId, payload.preguntaId, payload.numero, payload);
+            } else {
+                return subPreguntaService.create(payload);
+            }
+        });
+
+        await Promise.all(promises);
 
         console.log('=== PREGUNTA AGRUPADA GUARDADA EXITOSAMENTE ===');
         console.log('Padre ID:', parentId, '| Hijos:', childPayloads.length);
         
-        alert(`Pregunta agrupada guardada correctamente.\nPadre ID: ${parentId}\nSub-preguntas: ${subQuestions.length}`);
+        alert(`Pregunta agrupada ${initialParent ? 'actualizada' : 'guardada'} correctamente.\nPadre ID: ${parentId}\nSub-preguntas: ${subQuestions.length}`);
         onSuccess();
 
       } catch (childError) {
@@ -551,9 +619,11 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                                 <label className="block text-xs font-bold text-gray-600 mb-4 uppercase">Alternativas</label>
                                 <div className="space-y-4">
                                     {q.alternatives.map((alt, i) => (
-                                        <div key={alt.id} className="flex gap-4 items-center">
-                                            <span className="font-bold text-gray-400 w-6">{['A','B','C','D','E','F'][i]})</span>
-                                            <div className="flex-1">
+                                        <div key={alt.id} className="flex flex-col md:flex-row gap-2 md:gap-4 md:items-center">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-gray-400 w-6">{['A','B','C','D','E','F'][i]})</span>
+                                            </div>
+                                            <div className="flex-1 w-full overflow-hidden">
                                                 <TiptapEditor 
                                                     value={alt.contenido}
                                                     onChange={(val) => updateAlternative(q.tempId, i, 'contenido', val)}
@@ -565,7 +635,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => updateAlternative(q.tempId, i, 'esCorrecta', true)}
-                                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm shrink-0 uppercase
+                                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm shrink-0 uppercase self-end md:self-center
                                                     ${alt.esCorrecta 
                                                     ? 'bg-green-100 text-green-700 hover:bg-green-200' 
                                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'

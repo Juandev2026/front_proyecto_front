@@ -150,22 +150,22 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
       <Divider />
 
       {/* Group 3: Color + Highlight */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-gray-500 font-medium">Color:</span>
+      <div className="flex items-center gap-1 md:gap-1.5">
+        <span className="hidden sm:inline text-[10px] md:text-xs text-gray-500 font-medium">Color:</span>
         <input
           type="color"
-          className="w-6 h-6 border border-gray-300 rounded cursor-pointer p-0"
+          className="w-5 h-5 md:w-6 md:h-6 border border-gray-300 rounded cursor-pointer p-0"
           onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
           defaultValue="#000000"
           title="Color de texto"
         />
       </div>
-      <div className="flex items-center gap-1.5 ml-1">
-        <span className="text-xs text-gray-500 font-medium">Resaltar:</span>
+      <div className="flex items-center gap-1 md:gap-1.5 ml-0.5 md:ml-1">
+        <span className="hidden sm:inline text-[10px] md:text-xs text-gray-500 font-medium">Resaltar:</span>
         <label className="flex items-center cursor-pointer" title="Resaltado">
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400 cursor-pointer"
+            className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400 cursor-pointer"
             checked={editor.isActive('highlight')}
             onChange={() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run()}
           />

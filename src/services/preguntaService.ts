@@ -18,6 +18,15 @@ export interface Pregunta {
   numero?: number;     // Orden de la sub-pregunta
 }
 
+export interface ExamenFilterRequest {
+  tipoExamenId?: number;
+  fuenteId?: number;
+  modalidadId?: number;
+  nivelId?: number;
+  especialidadId?: number;
+  year?: string;
+}
+
 const API_URL = `${API_BASE_URL}/Preguntas`;
 
 export const preguntaService = {
@@ -165,5 +174,25 @@ export const preguntaService = {
      } catch (error) {
         throw error;
      }
+  },
+
+  examenFilter: async (filter: ExamenFilterRequest): Promise<Pregunta[]> => {
+    try {
+      const response = await fetch(`${API_URL}/examen-filter`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filter),
+      });
+      if (!response.ok) {
+        throw new Error('Error filtering questions');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error in examenFilter:", error);
+      return [];
+    }
   }
 };

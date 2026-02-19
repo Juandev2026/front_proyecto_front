@@ -9,16 +9,13 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   SparklesIcon,
-  FolderIcon,
   ChevronDownIcon,
-  CheckCircleIcon,
   PhotographIcon,
   MenuAlt2Icon
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 
 import AdminLayout from '../../../components/AdminLayout';
-import { estadoService, Estado } from '../../../services/estadoService';
 import {
   examenService,
   ExamenGrouped,
@@ -57,6 +54,7 @@ const Recursos = () => {
   const [tipoPreguntas, setTipoPreguntas] = useState<TipoPregunta[]>([]);
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
 
 
@@ -66,9 +64,6 @@ const Recursos = () => {
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [showResults, setShowResults] = useState(false);   // New state for toggling views
 
-  // View Modal State (Keep for "Visualizar" if needed, or refactor to page too)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<Pregunta | null>(null);
 
   // AI Modal State
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -287,18 +282,78 @@ const Recursos = () => {
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
-    if (window.confirm('¿Estás seguro de eliminar esta pregunta?')) {
-      try {
-        await preguntaService.delete(id);
-        fetchData();
-      } catch (err) {
-        alert('Error eliminando contenido');
-      }
+    if (!window.confirm('¿Estás seguro de eliminar esta pregunta?')) return;
+    
+    setDeletingIds(prev => new Set(prev).add(id));
+    try {
+      await preguntaService.delete(id);
+      // Optimistic update for UI feel, followed by refresh
+      setItems(prev => prev.filter(item => item.id !== id));
+      alert('Pregunta eliminada con éxito');
+      fetchData();
+    } catch (err) {
+      alert('Error eliminando la pregunta');
+    } finally {
+      setDeletingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
-  const handleEdit = (item: Pregunta) => {
+  const handleDeleteSub = async (examenId: number, parentId: number, numero: number) => {
+      if (!window.confirm('¿Estás seguro de eliminar esta sub-pregunta?')) return;
+      
+      const uniqueKey = `${examenId}-${parentId}-${numero}`;
+      // @ts-ignore - use numero as temporary ID for the deleting set
+      setDeletingIds(prev => new Set(prev).add(uniqueKey));
+      try {
+          await subPreguntaService.delete(examenId, parentId, numero);
+          // Update the sub-questions map locally
+          setSubQuestionsMap(prev => ({
+              ...prev,
+              [parentId]: prev[parentId]?.filter((s: any) => s.numero !== numero) || []
+          }));
+          // Update count
+          setSubCountsMap(prev => ({
+              ...prev,
+              [parentId]: Math.max(0, (prev[parentId] || 0) - 1)
+          }));
+          alert('Sub-pregunta eliminada con éxito');
+      } catch (err) {
+          alert('Error eliminando la sub-pregunta');
+      } finally {
+          setDeletingIds(prev => {
+              const next = new Set(prev);
+              // @ts-ignore
+              next.delete(uniqueKey);
+              return next;
+          });
+      }
+  };
+
+  const handleEdit = async (item: Pregunta) => {
     setEditingId(item.id);
+    
+    // If it's a grouped question, we might need to fetch sub-questions if they aren't loaded
+    if (item.tipoPreguntaId === 2) {
+        let subs = subQuestionsMap[item.id];
+        if (!subs) {
+            setLoading(true);
+            try {
+                const loadedSubs = await subPreguntaService.getByPreguntaId(item.examenId, item.id);
+                subs = loadedSubs;
+                setSubQuestionsMap(prev => ({ ...prev, [item.id]: loadedSubs }));
+            } catch (err) {
+                console.error("Error loading subs for edit:", err);
+                subs = [];
+            } finally {
+                setLoading(false);
+            }
+        }
+    }
+
     setNewItem({
       enunciado: item.enunciado,
       respuesta: item.respuesta,
@@ -309,7 +364,7 @@ const Recursos = () => {
       tipoPreguntaId: item.tipoPreguntaId
     });
     
-    // Map existing alternatives to dynamic state
+    // ... existing logic ...
     setAlternatives([
       { id: 'A', contenido: item.alternativaA, esCorrecta: item.respuesta === 'A' },
       { id: 'B', contenido: item.alternativaB, esCorrecta: item.respuesta === 'B' },
@@ -349,10 +404,6 @@ const Recursos = () => {
     setViewMode('edit');
   };
 
-  const handleView = (item: Pregunta) => {
-    setViewingItem(item);
-    setIsViewModalOpen(true);
-  };
 
   const resetForm = () => {
     setEditingId(null);
@@ -558,24 +609,25 @@ const Recursos = () => {
           }
       }
       
-      // 2. Load Questions - ONLY if we can resolve an Exam ID
-      // If we don't have filters selected, we might clear the list or show nothing?
-      // Attempt to resolve ID from current state
-      const examenId = await resolveCurrentExamenId();
-
-      if (examenId) {
+      // 2. Load Questions - Use the new filter API
+      if (selectedTipo || selectedFuente || selectedModalidad || selectedNivel || selectedEspecialidad || selectedYear) {
           try {
-             const data = await preguntaService.getByExamenId(examenId);
+             const filterData = {
+                tipoExamenId: selectedTipo ? Number(selectedTipo) : undefined,
+                fuenteId: selectedFuente ? Number(selectedFuente) : undefined,
+                modalidadId: selectedModalidad ? Number(selectedModalidad) : undefined,
+                nivelId: selectedNivel ? Number(selectedNivel) : undefined,
+                especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : undefined,
+                year: selectedYear || undefined
+             };
+             
+             const data = await preguntaService.examenFilter(filterData);
              setItems(data.sort((a, b) => b.id - a.id));
           } catch (err) {
-             console.error('Error fetching questions for exam:', err);
+             console.error('Error fetching questions with filter:', err);
              setItems([]);
           }
       } else {
-         // If no full exam selected, maybe we clear items? 
-         // Or do we want to support "Generic" view? 
-         // For now, let's clear to avoid confusion, or keep previous logic if "getAll" is valid.
-         // Given the new API direction, "getAll" might be heavy. Let's clear.
          setItems([]);
       }
 
@@ -664,26 +716,31 @@ const Recursos = () => {
         respuesta: newItem.tipoPreguntaId === 1 ? (['A', 'B', 'C', 'D'][safeAlts.findIndex(a => a.esCorrecta)] || '') : ''
       };
 
-      const itemData = {
-        ...newItem,
-        ...mappedAlts,
-        id: editingId || 0,
-        examenId: targetExamenId, // Use resolved ID
-        imagen: finalUrl,
+      const payload = {
+        enunciado: newItem.enunciado,
+        alternativaA: mappedAlts.alternativaA,
+        alternativaB: mappedAlts.alternativaB,
+        alternativaC: mappedAlts.alternativaC,
+        alternativaD: mappedAlts.alternativaD,
+        respuesta: mappedAlts.respuesta,
         sustento: serializeJustification(),
+        examenId: targetExamenId,
+        clasificacionId: Number(newItem.clasificacionId),
+        imagen: finalUrl,
+        tipoPreguntaId: Number(newItem.tipoPreguntaId)
       };
 
       if (editingId) {
         // UPDATE Logic (remains same? Or new endpoint?)
         // Assuming update endpoint is standard PUT /api/Preguntas/{id}
-        const updated = await preguntaService.update(editingId, itemData);
+        const updated = await preguntaService.update(editingId, payload);
         
         // Optimistic Update
         setItems(prev => prev.map(p => p.id === editingId ? updated : p));
         alert('Pregunta actualizada con éxito');
       } else {
         // Note: New endpoint expects Array
-        const createdArray = await preguntaService.createForExamen(targetExamenId, [itemData]);
+        const createdArray = await preguntaService.createForExamen(targetExamenId, [payload]);
         
         if (createdArray && createdArray.length > 0) {
             const newItem = createdArray[0];
@@ -741,19 +798,19 @@ const Recursos = () => {
       <AdminLayout>
         <div className="space-y-6 pb-20"> {/* pb-20 para dar espacio al footer flotante si lo hubiera */}
           
-          {/* 1. HEADER AZUL OSCURO (Como en la imagen) */}
-          <div className="w-full bg-[#002B6B] py-3 px-6 shadow-md flex justify-between items-center sticky top-0 z-10">
+          {/* 1. HEADER CELESTE (Como en la imagen) */}
+          <div className="w-full bg-[#4a90f9] py-3 px-6 shadow-md flex justify-between items-center">
             <div className="flex items-center gap-4">
                <button 
                  onClick={() => setViewMode('list')}
-                 className="text-white hover:text-gray-200 flex items-center text-sm font-medium"
+                 className="text-white hover:text-gray-100 flex items-center text-sm font-medium"
                >
                  <ChevronLeftIcon className="w-5 h-5 mr-1" />
                  Volver
                </button>
             </div>
             <h1 className="text-lg font-bold text-white text-center flex-1">
-              Añadir preguntas
+              {editingId ? 'Editar pregunta' : 'Añadir preguntas'}
             </h1>
             <div className="w-20"></div> {/* Espaciador para centrar el título */}
           </div>
@@ -786,6 +843,8 @@ const Recursos = () => {
             {newItem.tipoPreguntaId === 2 ? (
                 /* --- FORMULARIO DE PREGUNTA COMÚN (Grupal) --- */
                 <PreguntaComunForm 
+                    initialParent={editingId ? items.find(i => i.id === editingId) : undefined}
+                    initialSubQuestions={editingId ? subQuestionsMap[editingId] : undefined}
                     resolveExamenId={resolveCurrentExamenId}
                     defaultClasificacionId={Number(newItem.clasificacionId) || 0}
                     onSuccess={() => {
@@ -878,20 +937,17 @@ const Recursos = () => {
                 )}
             </div>
 
-            {/* 5. SECCIÓN ALTERNATIVAS (Diseño Corregido) */}
-            <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
-               <h3 className="text-gray-700 font-medium text-sm mb-4">Alternativas</h3>
-{/* 5. SECCIÓN ALTERNATIVAS (Diseño Idéntico a la imagen) */}
-            <div className="space-y-6">
+            {/* 5. SECCIÓN ALTERNATIVAS (Diseño Idéntico a la imagen) */}
+            <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm space-y-6">
                <h3 className="text-gray-700 font-medium text-sm">Alternativas</h3>
                
                <div className="space-y-6">
                  {alternatives.map((alt, index) => (
-                   /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha) */
-                   <div key={alt.id} className="flex gap-4 items-center">
+                   /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha/Abajo en móvil) */
+                   <div key={alt.id} className="flex flex-col md:flex-row gap-4 md:items-center">
                      
                      {/* IZQUIERDA: EDITOR (Tiptap Math Editor) */}
-                      <div className="flex-1">
+                      <div className="flex-1 w-full overflow-hidden">
                          <TiptapEditor
                             value={alt.contenido}
                             onChange={(val: string) => {
@@ -905,8 +961,8 @@ const Recursos = () => {
                          />
                       </div>
 
-                     {/* DERECHA: BOTONES DE ACCIÓN (Centrados verticalmente) */}
-                     <div className="flex items-center gap-3 shrink-0">
+                     {/* DERECHA: BOTONES DE ACCIÓN (Centrados verticalmente en desktop, fila en móvil) */}
+                     <div className="flex items-center gap-3 shrink-0 justify-end md:justify-start">
                         {/* Botón MARCAR (Estilo Píldora Gris/Verde) */}
                         <button
                           type="button"
@@ -1024,18 +1080,18 @@ const Recursos = () => {
                </div>
             </div>
             
-            </div>
+
 
                     {/* 6. FOOTER ACTIONS */}
                     <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex justify-end gap-4 md:px-10">
                          <button 
                             onClick={handleSubmit}
-                            className="bg-[#002B6B] text-white px-6 py-2 rounded shadow hover:bg-blue-900 font-medium transition-colors"
+                            className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors"
                          >
                             Guardar Pregunta
                          </button>
                          <button 
-                            className="bg-white text-[#002B6B] border border-[#002B6B] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors"
+                            className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors"
                          >
                             Guardar y Añadir otra
                          </button>
@@ -1203,7 +1259,7 @@ const Recursos = () => {
             )}
 
             {/* 6. Año */}
-            {selectedEspecialidad && (
+            {(selectedEspecialidad || (selectedNivel && (availableEspecialidades.length === 0 || (availableEspecialidades.length === 1 && !availableEspecialidades[0]?.especialidadId))) || (selectedModalidad && availableNiveles.length === 0)) && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
                   Año
@@ -1225,7 +1281,7 @@ const Recursos = () => {
           </div>
 
           {/* New Row for Year Management */}
-          {selectedEspecialidad && (
+          {(selectedEspecialidad || (selectedNivel && (availableEspecialidades.length === 0 || (availableEspecialidades.length === 1 && !availableEspecialidades[0]?.especialidadId))) || (selectedModalidad && availableNiveles.length === 0)) && (
              <div className="flex items-end gap-2 mt-4">
                  <input 
                      type="text"
@@ -1368,6 +1424,9 @@ const Recursos = () => {
                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                      <div className="flex flex-wrap gap-2 items-center">
                          <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
+                         <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
+                             {filteredItems.length} {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
+                         </span>
                          {/* Display Selected Criteria as Pills */}
                          {groupedData.find(t => t.tipoExamenId === selectedTipo) && (
                             <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
@@ -1446,9 +1505,15 @@ const Recursos = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
+                      disabled={deletingIds.has(item.id)}
+                      className="text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
                     >
-                      <TrashIcon className="w-3 h-3" /> Eliminar
+                      {deletingIds.has(item.id) ? (
+                          <span className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
+                      ) : (
+                          <TrashIcon className="w-3 h-3" />
+                      )}
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -1511,6 +1576,16 @@ const Recursos = () => {
                                         {sub.numero || idx + 1}
                                       </span>
                                       <span className="text-xs font-bold text-gray-500">Sub-Pregunta {sub.numero || idx + 1}</span>
+                                      
+                                      <div className="ml-auto flex gap-2">
+                                          <button 
+                                            onClick={() => handleDeleteSub(sub.examenId, sub.preguntaId, sub.numero)}
+                                            disabled={deletingIds.has(`${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any)}
+                                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                          >
+                                              <TrashIcon className="w-4 h-4" />
+                                          </button>
+                                      </div>
                                     </div>
 
                                     {/* Enunciado */}
@@ -1686,25 +1761,6 @@ const Recursos = () => {
       </div>
 
 
-      {/* VIEW MODAL (Optional if user still wants "View" as modal, or we can refactor this too later) */}
-      {isViewModalOpen && viewingItem && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-           {/* Keep existing view modal logic or simplify */}
-           <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
-              <h3 className="text-xl font-bold mb-4">Visualizar Pregunta</h3>
-              <div dangerouslySetInnerHTML={{ __html: viewingItem.enunciado }} className="mb-4" />
-              <div className="grid grid-cols-2 gap-4">
-                 <div className={`p-2 border rounded ${viewingItem.respuesta === 'A' ? 'bg-green-100 border-green-500' : ''}`}>A: <span dangerouslySetInnerHTML={{__html: viewingItem.alternativaA}} /></div>
-                 <div className={`p-2 border rounded ${viewingItem.respuesta === 'B' ? 'bg-green-100 border-green-500' : ''}`}>B: <span dangerouslySetInnerHTML={{__html: viewingItem.alternativaB}} /></div>
-                 <div className={`p-2 border rounded ${viewingItem.respuesta === 'C' ? 'bg-green-100 border-green-500' : ''}`}>C: <span dangerouslySetInnerHTML={{__html: viewingItem.alternativaC}} /></div>
-                 <div className={`p-2 border rounded ${viewingItem.respuesta === 'D' ? 'bg-green-100 border-green-500' : ''}`}>D: <span dangerouslySetInnerHTML={{__html: viewingItem.alternativaD}} /></div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                 <button onClick={() => setIsViewModalOpen(false)} className="bg-blue-500 text-white px-4 py-2 rounded">Cerrar</button>
-              </div>
-           </div>
-         </div>
-       )}
 
        {/* AI MODAL */}
        {isAiModalOpen && (
