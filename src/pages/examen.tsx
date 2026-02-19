@@ -307,7 +307,30 @@ const ExamenPage = () => {
                      </span>
                   </div>
                   <div className="flex gap-2 font-sans">
-                     <span className="bg-pink-50 text-pink-600 text-[11px] font-extrabold px-3 py-1.5 rounded-lg border border-pink-100 shadow-sm">CL</span>
+                     {(() => {
+                        const name = currentQuestion?.clasificacionNombre?.toLowerCase() || '';
+                        let code = '';
+                        let classes = '';
+
+                        if (name === 'cl' || name.includes('comprensión')) {
+                           code = 'CL';
+                           classes = 'bg-pink-50 text-pink-600 border-pink-100';
+                        } else if (name === 'rl' || name.includes('razonamiento')) {
+                           code = 'RL';
+                           classes = 'bg-amber-50 text-amber-600 border-amber-100';
+                        } else if (name === 'ccp' || name.includes('pedagógico') || name.includes('conocimientos') || name.includes('curricular')) {
+                           code = 'CCP';
+                           classes = 'bg-blue-50 text-blue-600 border-blue-100';
+                        }
+
+                        if (!code) return null;
+
+                        return (
+                           <span className={`${classes} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}>
+                              {code}
+                           </span>
+                        );
+                     })()}
                      <span className={`${(currentQuestion && userAnswers[currentQuestion.id]) ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-100 text-gray-500 border-gray-200'} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}>
                         {(currentQuestion && userAnswers[currentQuestion.id]) ? 'Respondida' : 'Sin responder'}
                      </span>

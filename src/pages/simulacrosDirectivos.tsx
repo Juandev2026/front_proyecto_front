@@ -47,7 +47,16 @@ const SimulacrosDirectivosPage = () => {
         }
         
         console.log("Total fetched questions (Directivos):", allQuestions.length);
+        
+        const metadata = {
+          modalidad: modalidades.find(m => m.id === Number(selectedModalidadId))?.nombre,
+          nivel: nivelesData.find(n => n.id === Number(selectedNivelId))?.nombre,
+          especialidad: especialidadesData.find(e => e.id === Number(selectedEspecialidadId))?.nombre,
+          year: selectedYearsList.join(', ')
+        };
+
         localStorage.setItem('currentQuestions', JSON.stringify(allQuestions));
+        localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
         router.push('/examen');
       } catch (error) {
         console.error("Error fetching simulation questions:", error);
