@@ -69,7 +69,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
   const allMenuItems = [
     {
       name: 'Nombramiento',
-      href: '/premium',
+      href: '/bancoPreguntas',
       icon: AcademicCapIcon,
       children: [
         { name: 'Banco de Preguntas', href: '/bancoPreguntas', icon: CollectionIcon },

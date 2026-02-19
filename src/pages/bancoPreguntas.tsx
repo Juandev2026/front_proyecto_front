@@ -120,20 +120,39 @@ const BancoPreguntasPage = () => {
             if (exam && exam.clasificaciones) {
                const countMap: { [key: string]: number } = {};
                exam.clasificaciones.forEach((item) => {
-                  let key = item.clasificacionNombre.toLowerCase();
-                  // Map common abbreviations to the UI keys
-                  if (key === 'ccp') key = 'conocimientos pedagógicos';
-                  if (key === 'cl') key = 'comprensión lectora';
-                  if (key === 'rl') key = 'razonamiento lógico';
+                  const name = item.clasificacionNombre.toLowerCase();
+                  let key = '';
+
+                  // Robust mapping for classifications
+                  if (name === 'ccp' || name.includes('pedagógico') || name.includes('curricular')) {
+                     key = 'conocimientos pedagógicos';
+                  } else if (name === 'cl' || name.includes('comprensión')) {
+                     key = 'comprensión lectora';
+                  } else if (name === 'rl' || name.includes('razonamiento')) {
+                     key = 'razonamiento lógico';
+                  } else {
+                     key = name; // Fallback to raw name if no match
+                  }
                   
-                  countMap[key] = item.cantidadPreguntas;
+                  if (key) {
+                     countMap[key] = (countMap[key] || 0) + item.cantidadPreguntas;
+                  }
                });
                setConteoPreguntas(countMap);
+
+               // Auto-uncheck categories if they have 0 questions
+               setTiposPregunta(prev => ({
+                  comprension: (countMap['comprensión lectora'] || 0) > 0 ? prev.comprension : false,
+                  razonamiento: (countMap['razonamiento lógico'] || 0) > 0 ? prev.razonamiento : false,
+                  conocimientos: (countMap['conocimientos pedagógicos'] || 0) > 0 ? prev.conocimientos : false
+               }));
             } else {
                setConteoPreguntas({});
+               setTiposPregunta({ comprension: false, razonamiento: false, conocimientos: false });
             }
          } else {
             setConteoPreguntas({});
+            setTiposPregunta({ comprension: false, razonamiento: false, conocimientos: false });
          }
       };
       updateCounts();
@@ -302,54 +321,75 @@ const BancoPreguntasPage = () => {
                   </div>
 
                   {/* Card 1 */}
-                  <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.comprension ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                  <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                     (conteoPreguntas['comprensión lectora'] || 0) > 0 
+                        ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.comprension ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
+                        : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                  }`}>
                      <div className="flex items-start gap-2">
                         <input
                            type="checkbox"
-                           className="mt-1"
+                           className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.comprension}
+                           disabled={(conteoPreguntas['comprensión lectora'] || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, comprension: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
-                           <span className="text-[#05CD99] text-sm font-medium">
-                              {`${conteoPreguntas['comprensión lectora'] || 0} preguntas`}
+                           <span className={`${(conteoPreguntas['comprensión lectora'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['comprensión lectora'] || 0) > 0 
+                                 ? `${conteoPreguntas['comprensión lectora']} preguntas`
+                                 : '0 preguntas (no disponible)'}
                            </span>
                         </div>
                      </div>
                   </label>
 
                   {/* Card 2 */}
-                  <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.razonamiento ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                  <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                     (conteoPreguntas['razonamiento lógico'] || 0) > 0 
+                        ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.razonamiento ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
+                        : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                  }`}>
                      <div className="flex items-start gap-2">
                         <input
                            type="checkbox"
-                           className="mt-1"
+                           className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.razonamiento}
+                           disabled={(conteoPreguntas['razonamiento lógico'] || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, razonamiento: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
-                           <span className="text-[#05CD99] text-sm font-medium">
-                              {`${conteoPreguntas['razonamiento lógico'] || 0} preguntas`}
+                           <span className={`${(conteoPreguntas['razonamiento lógico'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['razonamiento lógico'] || 0) > 0 
+                                 ? `${conteoPreguntas['razonamiento lógico']} preguntas`
+                                 : '0 preguntas (no disponible)'}
                            </span>
                         </div>
                      </div>
                   </label>
 
                   {/* Card 3 */}
-                  <label className={`border rounded-lg p-4 flex flex-col gap-2 cursor-pointer transition-colors ${tiposPregunta.conocimientos ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-blue-50'}`}>
+                  <label className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                     (conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
+                        ? 'cursor-pointer hover:bg-gray-50 ' + (tiposPregunta.conocimientos ? 'border-primary bg-blue-50 ring-1 ring-primary' : 'border-gray-200')
+                        : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                  }`}>
                      <div className="flex items-start gap-2">
                         <input
                            type="checkbox"
-                           className="mt-1"
+                           className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                            checked={tiposPregunta.conocimientos}
+                           disabled={(conteoPreguntas['conocimientos pedagógicos'] || 0) === 0}
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, conocimientos: e.target.checked })}
                         />
                         <div className="flex flex-col">
                            <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
-                           <span className="text-[#05CD99] text-sm font-medium">
-                              {`${conteoPreguntas['conocimientos pedagógicos'] || 0} preguntas`}
+                           <span className={`${(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
+                              {(conteoPreguntas['conocimientos pedagógicos'] || 0) > 0 
+                                 ? `${conteoPreguntas['conocimientos pedagógicos']} preguntas`
+                                 : '0 preguntas (no disponible)'}
                            </span>
                         </div>
                      </div>

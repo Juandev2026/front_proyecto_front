@@ -103,7 +103,7 @@ const Login = () => {
       ) {
         router.push('/admin/');
       } else {
-        router.push('/'); // Redirect to home or dashboard
+        router.push('/bancoPreguntas'); // Redirect to Banco de Preguntas instead of home
       }
     } catch (err: any) {
       setError(
