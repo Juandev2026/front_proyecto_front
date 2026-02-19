@@ -63,7 +63,7 @@ const planes: Plan[] = [
     subtitle: 'Acceso Total AVEND ESCALA',
     type: 'anual',
     price: 49,
-    originalPrice: 499,
+    originalPrice: 70,
     duration: 'por 12 meses',
     description: 'Preparación integral durante todo el año en todos los procesos.',
     highlighted: true,
