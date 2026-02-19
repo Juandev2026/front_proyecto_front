@@ -15,31 +15,25 @@ import {
 import PremiumLayout from '../layouts/PremiumLayout';
 import { useAuth } from '../hooks/useAuth';
 
-interface Question {
-  id: number;
-  enunciado: string;
-  alternativaA: string;
-  alternativaB: string;
-  alternativaC: string;
-  alternativaD: string;
-  respuesta: string;
-  sustento: string;
-  examenId: number;
-  clasificacionId: number;
-  imagen: string;
-  tipoPreguntaId: number;
-  clasificacionNombre?: string;
-}
+import { evaluacionService } from '../services/evaluacionService';
+import { PreguntaExamen, ResultadoExamenResponse, SubPreguntaExamen } from '../types/examen';
 
 const ExamenPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   // Data State
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<PreguntaExamen[]>([]);
   const [metadata, setMetadata] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<{ [key: number]: string }>({}); // questionId -> selectedOption (A, B, C, D)
+  
+  // { examenId: { preguntaId: "Alternativa" } }
+  // { examenId: { "preguntaId" o "preguntaId-numero": "Alternativa" } }
+  const [userAnswers, setUserAnswers] = useState<Record<number, Record<string, string>>>({});
+  
+  // Results State
+  const [examResult, setExamResult] = useState<ResultadoExamenResponse | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Timer State
   const [seconds, setSeconds] = useState(0);
@@ -61,7 +55,17 @@ const ExamenPage = () => {
     const savedMetadata = localStorage.getItem('currentExamMetadata');
 
     if (savedQuestions) {
-      setQuestions(JSON.parse(savedQuestions));
+      const parsedQuestions = JSON.parse(savedQuestions);
+      console.log('Loaded questions:', parsedQuestions);
+      
+      const ids = parsedQuestions.map((q: any) => q.id);
+      const uniqueIds = new Set(ids);
+      if (ids.length !== uniqueIds.size) {
+        console.warn('DUPLICATE QUESTION IDS FOUND!', ids);
+        // Alert removed to allow user to continue despite bad data
+      }
+      
+      setQuestions(parsedQuestions);
     }
     if (savedMetadata) {
       setMetadata(JSON.parse(savedMetadata));
@@ -129,11 +133,23 @@ const ExamenPage = () => {
     }
   };
 
-  const handleSelectOption = (option: string) => {
+  const handleSelectOption = (option: string, subQuestionNumber?: number) => {
     if (!currentQuestion) return;
+    if (examResult) return; // Disable changes if exam is finished
+
+    // Use currentIndex to ensure uniqueness even if question IDs are duplicated
+    const uniqueKey = subQuestionNumber 
+        ? `${currentQuestion.id}-${subQuestionNumber}-${currentIndex}` 
+        : `${currentQuestion.id}-main-${currentIndex}`;
+
+    console.log(`Setting answer for Examen ${currentQuestion.examenId}, UniqueKey ${uniqueKey}: ${option}`);
+    
     setUserAnswers(prev => ({
       ...prev,
-      [currentQuestion.id]: option
+      [currentQuestion.examenId]: {
+        ...(prev[currentQuestion.examenId] || {}),
+        [uniqueKey]: option
+      }
     }));
   };
 
@@ -146,41 +162,109 @@ const ExamenPage = () => {
   };
 
   const handleRegenerate = () => {
-    setSeconds(0);
-    setCurrentIndex(0);
-    setUserAnswers({});
-    window.speechSynthesis.cancel();
-    setIsReading(false);
+     if (confirm('¿Estás seguro de reiniciar el examen? Perderás todo el progreso.')) {
+        setSeconds(0);
+        setCurrentIndex(0);
+        setUserAnswers({});
+        setExamResult(null);
+        window.speechSynthesis.cancel();
+        setIsReading(false);
+     }
+  };
+
+  const handleFinishExam = async () => {
+    console.log('--- handleFinishExam initiated ---');
+    console.log('Current User Answers:', userAnswers);
+    
+    if (!confirm('¿Estás seguro de finalizar el examen?')) {
+       console.log('User cancelled exam finish.');
+       return;
+    }
+
+    try {
+      console.log('Setting isSubmitting to true...');
+      setIsSubmitting(true);
+      window.speechSynthesis.cancel();
+      
+      const examenesPayload = Object.entries(userAnswers).map(([examenId, respuestasMap]) => ({
+             examenId: Number(examenId),
+             respuestas: Object.entries(respuestasMap).map(([key, alternativa]) => {
+                const parts = key.split('-');
+                // Format: "{id}-{subNum}-{index}" or "{id}-main-{index}"
+                const pId = Number(parts[0]);
+                
+                let subNum: number | undefined = undefined;
+                if (parts.length >= 2 && parts[1] !== 'main') {
+                    subNum = Number(parts[1]);
+                }
+                
+                return {
+                   preguntaId: pId,
+                   numeroSubPregunta: subNum,
+                   alternativaMarcada: alternativa
+                };
+             })
+      }));
+
+      const payload = { examenes: examenesPayload };
+      console.log('Payload prepared:', JSON.stringify(payload, null, 2));
+
+      if (examenesPayload.length === 0) {
+         console.warn('Payload is empty! No answers recorded?');
+         alert('Advertencia: No se han registrado respuestas. ¿Estás seguro de que marcaste alguna alternativa?');
+      }
+
+      console.log('Calling evaluacionService.calificar...');
+      const result = await evaluacionService.calificar(payload);
+      console.log('Service returned result:', result);
+      
+      setExamResult(result);
+      console.log('State examResult updated.');
+      
+      alert('¡Examen calificado exitosamente!');
+
+    } catch (error: any) {
+       console.error('Error in handleFinishExam:', error);
+       const errorMessage = error instanceof Error ? error.message : String(error);
+       alert(`Error al calificar el examen: ${errorMessage}`);
+    } finally {
+       console.log('Setting isSubmitting to false.');
+       setIsSubmitting(false);
+    }
   };
 
   const stats = useMemo(() => {
     const total = questions.length;
-    const answeredCount = Object.keys(userAnswers).length;
-    const percentage = total > 0 ? (answeredCount / total) * 100 : 0;
+    let answeredCount = 0;
     
-    let correct = 0;
-    let incorrect = 0;
-    
-    Object.entries(userAnswers).forEach(([id, answer]) => {
-      const q = questions.find(q => q.id === Number(id));
-      if (q) {
-        if (q.respuesta.trim().toUpperCase() === answer.trim().toUpperCase()) {
-          correct++;
-        } else {
-          incorrect++;
-        }
-      }
+    Object.values(userAnswers).forEach(examAnswers => {
+       answeredCount += Object.keys(examAnswers).length;
     });
 
+    const percentage = total > 0 ? (answeredCount / total) * 100 : 0;
+    
     return {
       total,
       answered: answeredCount,
       unanswered: total - answeredCount,
-      correct,
-      incorrect,
       percentage
     };
   }, [questions, userAnswers]);
+
+  // Helper to check if a question is correct/incorrect based on results
+  const getQuestionStatus = (examenId: number, questionId: number, subQuestionNumber?: number) => {
+     if (!examResult) return null;
+     const result = examResult.resultados.find(r => r.examenId === examenId);
+     if (!result) return null;
+     
+     // Backend returns IDs like "100" or "100-1"
+     const key = subQuestionNumber ? `${questionId}-${subQuestionNumber}` : `${questionId}`;
+
+     if (result.idsCorrectas.includes(key) || result.idsCorrectas.includes(String(questionId))) return 'correct';
+     if (result.idsIncorrectas.includes(key) || result.idsIncorrectas.includes(String(questionId))) return 'incorrect';
+     if (result.idsOmitidas.includes(key) || result.idsOmitidas.includes(String(questionId))) return 'omitted';
+     return null;
+  };
 
   if (loading || !isAuthenticated || questions.length === 0) {
     return (
@@ -232,8 +316,8 @@ const ExamenPage = () => {
                      }}
                   >
                      {voices.length === 0 && <option>Cargando voces...</option>}
-                     {voices.map(voice => (
-                        <option key={voice.name} value={voice.name} title={voice.name}>
+                     {voices.map((voice, idx) => (
+                        <option key={`${voice.name}-${idx}`} value={voice.name} title={voice.name}>
                            {voice.name.replace('Microsoft ', '').split(' - ')[0]}
                         </option>
                      ))}
@@ -252,6 +336,20 @@ const ExamenPage = () => {
                   <RefreshIcon className="h-4 w-4" />
                   Generar de nuevo
                </button>
+
+               {!examResult && (
+                  <button 
+                     onClick={() => {
+                        console.log('Botón Finalizar Examen clickeado');
+                        handleFinishExam();
+                     }}
+                     disabled={isSubmitting}
+                     className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 font-bold transition-colors shadow-md disabled:opacity-70"
+                  >
+                     <CheckCircleIcon className="h-4 w-4" />
+                     {isSubmitting ? 'Calificando...' : 'Finalizar Examen'}
+                  </button>
+               )}
                
                <button 
                   onClick={() => setShowQuestionPanel(!showQuestionPanel)}
@@ -331,8 +429,8 @@ const ExamenPage = () => {
                            </span>
                         );
                      })()}
-                     <span className={`${(currentQuestion && userAnswers[currentQuestion.id]) ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-100 text-gray-500 border-gray-200'} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}>
-                        {(currentQuestion && userAnswers[currentQuestion.id]) ? 'Respondida' : 'Sin responder'}
+                     <span className={`${(currentQuestion && userAnswers[currentQuestion.examenId]?.[currentQuestion.id]) ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-100 text-gray-500 border-gray-200'} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}>
+                        {(currentQuestion && userAnswers[currentQuestion.examenId]?.[currentQuestion.id]) ? 'Respondida' : 'Sin responder'}
                      </span>
                   </div>
                </div>
@@ -349,30 +447,118 @@ const ExamenPage = () => {
                {/* Alternatives Area */}
                <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 font-sans shadow-inner">
                   <div className="space-y-3">
-                    {currentQuestion && ['A', 'B', 'C'].map((opt) => {
-                      const optKey = `alternativa${opt}` as keyof Question;
-                      const content = currentQuestion[optKey] as string;
-                      if (!content) return null;
 
-                      return (
-                        <button 
-                          key={opt}
-                          onClick={() => handleSelectOption(opt)}
-                          className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group
-                            ${userAnswers[currentQuestion.id] === opt 
-                              ? 'bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5' 
-                              : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30'}`}
-                        >
-                          <div className={`w-10 h-10 flex items-center justify-center border rounded-lg font-bold text-lg flex-shrink-0 transition-colors
-                            ${userAnswers[currentQuestion.id] === opt 
-                              ? 'bg-white/20 border-white/40 text-white' 
-                              : 'bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500'}`}>
-                            {opt}
-                          </div>
-                          <span className="font-medium text-base flex-1">{content}</span>
-                        </button>
-                      );
-                    })}
+                  {currentQuestion && (
+                     <>
+                        {/* Case 1: Sub-questions exist */}
+                        {currentQuestion.subPreguntas && currentQuestion.subPreguntas.length > 0 ? (
+                           <div className="space-y-8">
+                              {currentQuestion.subPreguntas.map((sub) => (
+                                 <div key={sub.numero} className="bg-white rounded-xl p-4 border border-gray-200">
+                                    <div className="mb-4">
+                                       <span className="bg-blue-100 text-[#002B6B] text-xs font-bold px-2 py-1 rounded mb-2 inline-block">Pregunta {sub.numero}</span>
+                                       <div dangerouslySetInnerHTML={{ __html: sub.enunciado }} className="text-gray-800 font-serif" />
+                                       {sub.imagen && (
+                                          <img src={sub.imagen} alt={`Imagen sub-pregunta ${sub.numero}`} className="mt-2 rounded-lg max-w-full h-auto" />
+                                       )}
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                       {['A', 'B', 'C', 'D'].map((opt) => {
+                                          const optKey = `alternativa${opt}` as keyof SubPreguntaExamen;
+                                          const content = sub[optKey] as string;
+                                          if (!content) return null;
+
+                                          const answerKey = `${currentQuestion.id}-${sub.numero}-${currentIndex}`;
+                                          const isSelected = userAnswers[currentQuestion.examenId]?.[answerKey] === opt;
+                                          const status = getQuestionStatus(currentQuestion.examenId, currentQuestion.id, sub.numero);
+                                          
+                                          let containerClass = "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30";
+                                          let letterClass = "bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500";
+                                          
+                                          if (isSelected) {
+                                             containerClass = "bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5";
+                                             letterClass = "bg-white/20 border-white/40 text-white";
+                                          }
+
+                                          if (examResult && status) {
+                                             if (status === 'correct' && isSelected) {
+                                                containerClass = "bg-green-600 border-green-600 text-white";
+                                                letterClass = "bg-white/20 border-white/40 text-white";
+                                             } else if (status === 'incorrect' && isSelected) {
+                                                containerClass = "bg-red-500 border-red-500 text-white";
+                                                letterClass = "bg-white/20 border-white/40 text-white";
+                                             }
+                                          }
+
+                                          return (
+                                             <button 
+                                                key={`${currentQuestion.id}-${sub.numero}-${opt}`}
+                                                onClick={() => handleSelectOption(opt, sub.numero)}
+                                                disabled={!!examResult}
+                                                className={`w-full flex items-center gap-4 p-3 border rounded-lg transition-all duration-200 text-left group ${containerClass}`}
+                                             >
+                                                <div className={`w-8 h-8 flex items-center justify-center border rounded font-bold text-sm flex-shrink-0 transition-colors ${letterClass}`}>
+                                                   {opt}
+                                                </div>
+                                                <span className="font-medium text-sm flex-1">{content}</span>
+                                                {examResult && isSelected && status === 'correct' && <CheckCircleIcon className="w-5 h-5 text-white" />}
+                                             </button>
+                                          );
+                                       })}
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        ) : (
+                           /* Case 2: Standard Question */
+                           ['A', 'B', 'C', 'D'].map((opt) => {
+                             const optKey = `alternativa${opt}` as keyof PreguntaExamen;
+                             const content = currentQuestion[optKey] as string;
+                             if (!content) return null;
+   
+                             const answerKey = `${currentQuestion.id}-main-${currentIndex}`;
+                             const isSelected = userAnswers[currentQuestion.examenId]?.[answerKey] === opt;
+                             const status = getQuestionStatus(currentQuestion.examenId, currentQuestion.id);
+                             
+                             let containerClass = "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30";
+                             let letterClass = "bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500";
+                             
+                             if (isSelected) {
+                                containerClass = "bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5";
+                                letterClass = "bg-white/20 border-white/40 text-white";
+                             }
+   
+                             // Apply result styling
+                             if (examResult && status) {
+                                if (status === 'correct' && isSelected) {
+                                   containerClass = "bg-green-600 border-green-600 text-white";
+                                   letterClass = "bg-white/20 border-white/40 text-white";
+                                } else if (status === 'incorrect' && isSelected) {
+                                   containerClass = "bg-red-500 border-red-500 text-white";
+                                   letterClass = "bg-white/20 border-white/40 text-white";
+                                }
+                             }
+   
+                             return (
+                               <button 
+                                 key={`${currentQuestion.id}-${opt}`}
+                                 onClick={() => handleSelectOption(opt)}
+                                 disabled={!!examResult}
+                                 className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group ${containerClass}`}
+                               >
+                                 <div className={`w-10 h-10 flex items-center justify-center border rounded-lg font-bold text-lg flex-shrink-0 transition-colors ${letterClass}`}>
+                                   {opt}
+                                 </div>
+                                 <span className="font-medium text-base flex-1">{content}</span>
+                                 {/* Icons for results */}
+                                 {examResult && isSelected && status === 'correct' && <CheckCircleIcon className="w-6 h-6 text-white" />}
+                               </button>
+                             );
+                           })
+                        )}
+                     </>
+                  )}
                   </div>
 
                   <div className="mt-8 flex items-center justify-between gap-4">
@@ -384,13 +570,23 @@ const ExamenPage = () => {
                       Anterior
                     </button>
                     
-                    <button 
-                      onClick={handleNext}
-                      disabled={currentIndex === questions.length - 1}
-                      className="flex-1 bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      Siguiente
-                    </button>
+                    {currentIndex === questions.length - 1 ? (
+                        <button 
+                           onClick={handleFinishExam}
+                           disabled={isSubmitting || !!examResult}
+                           className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                        >
+                           <CheckCircleIcon className="w-5 h-5" />
+                           {isSubmitting ? 'Calificando...' : 'Finalizar Examen'}
+                        </button>
+                     ) : (
+                        <button 
+                           onClick={handleNext}
+                           className="flex-1 bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        >
+                           Siguiente
+                        </button>
+                     )}
                   </div>
                   
                   {/* Brand Signature */}
@@ -443,10 +639,36 @@ const ExamenPage = () => {
                   </div>
 
                   <div className="pt-2">
-                    <div className="flex items-center gap-3 text-sm text-[#2B3674] font-medium bg-blue-50/50 p-2.5 rounded-xl border border-blue-50">
-                       <Star className="w-4 h-4 text-orange-400" />
-                       <span>{stats.correct} respuestas correctas (est. temporal)</span>
-                    </div>
+                    {examResult ? (
+                       <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-3 text-sm text-[#2B3674] font-medium bg-green-50/50 p-2.5 rounded-xl border border-green-50">
+                             <Star className="w-4 h-4 text-green-500" />
+                             <span className="font-bold">Puntaje Global: {examResult.puntajeGlobal} pts</span>
+                          </div>
+
+                          <div className="flex flex-col gap-2 mt-2">
+                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Detalle por Examen</span>
+                             {examResult.resultados.map(r => (
+                                <div key={r.examenId} className="bg-gray-50 p-2 rounded-lg border border-gray-100 text-xs">
+                                   <div className="flex justify-between items-center mb-1">
+                                      <span className="font-bold text-[#2B3674]">Examen #{r.examenId}</span>
+                                      <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">{r.puntajeTotal} pts</span>
+                                   </div>
+                                   <div className="flex gap-2 text-[10px] text-gray-500">
+                                      <span className="text-green-600 font-bold">{r.cantidadCorrectas} correctas</span>
+                                      <span className="text-red-500 font-bold">{r.cantidadIncorrectas} incorrectas</span>
+                                      <span className="text-orange-500 font-bold">{r.cantidadOmitidas} omitidas</span>
+                                   </div>
+                                </div>
+                             ))}
+                          </div>
+                       </div>
+                    ) : (
+                       <div className="flex items-center gap-3 text-sm text-[#2B3674] font-medium bg-blue-50/50 p-2.5 rounded-xl border border-blue-50">
+                          <ClockIcon className="w-4 h-4 text-primary" />
+                          <span>En curso...</span>
+                       </div>
+                    )}
                   </div>
                </div>
             </div>
@@ -459,27 +681,38 @@ const ExamenPage = () => {
                 </div>
                 
                 <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                   {questions.map((q, i) => (
-                      <button 
-                         key={q.id}
-                         onClick={() => {
-                           setCurrentIndex(i);
-                           window.speechSynthesis.cancel();
-                           setIsReading(false);
-                         }}
-                         className={`
-                            h-10 w-full rounded-xl flex items-center justify-center text-sm font-black transition-all duration-200 border-2
-                            ${currentIndex === i 
-                               ? 'bg-[#002B6B] border-[#002B6B] text-white shadow-lg scale-110 z-10' 
-                               : userAnswers[q.id]
-                                  ? 'bg-blue-50 border-blue-200 text-[#002B6B] hover:border-blue-400'
-                                  : 'bg-white border-gray-100 text-gray-400 hover:border-gray-300 hover:bg-gray-50'}
-                         `}
-                      >
-                         {i + 1}
-                      </button>
-                   ))}
-                </div>
+                   {questions.map((q, i) => {
+                      const status = getQuestionStatus(q.examenId, q.id);
+                      const isAnswered = Object.keys(userAnswers[q.examenId] || {}).some(k => k.includes(`-${i}`));
+                      
+                      let btnClass = 'bg-white border-gray-100 text-gray-400 hover:border-gray-300 hover:bg-gray-50';
+                      if (currentIndex === i) {
+                         btnClass = 'bg-[#002B6B] border-[#002B6B] text-white shadow-lg scale-110 z-10';
+                      } else if (status === 'correct') {
+                         btnClass = 'bg-green-100 border-green-300 text-green-700';
+                      } else if (status === 'incorrect') {
+                         btnClass = 'bg-red-100 border-red-300 text-red-700';
+                      } else if (isAnswered) {
+                         btnClass = 'bg-blue-50 border-blue-200 text-[#002B6B] hover:border-blue-400';
+                      }
+
+                      return (
+                       <button 
+                          key={q.id}
+                          onClick={() => {
+                            setCurrentIndex(i);
+                            window.speechSynthesis.cancel();
+                            setIsReading(false);
+                          }}
+                          className={`
+                             h-10 w-full rounded-xl flex items-center justify-center text-sm font-black transition-all duration-200 border-2
+                             ${btnClass}
+                          `}
+                       >
+                          {i + 1}
+                       </button>
+                    )})}
+                 </div>
 
                 <div className="mt-6 pt-5 border-t border-gray-50 flex items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest justify-center">
                    <div className="flex items-center gap-1">

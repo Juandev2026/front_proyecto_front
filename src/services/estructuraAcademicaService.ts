@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
+import { PreguntaExamen } from '../types/examen';
 
 export interface Especialidad {
   id: number;
@@ -60,7 +61,7 @@ export const estructuraAcademicaService = {
     }
   },
 
-  getPreguntas: async (modalidadId: number, nivelId: number, year: string, especialidadId?: number, clasificacionIds?: number[]): Promise<any[]> => {
+  getPreguntas: async (modalidadId: number, nivelId: number, year: string, especialidadId?: number, clasificacionIds?: number[]): Promise<PreguntaExamen[]> => {
     try {
       let url = `${API_BASE_URL}/FiltrosEstructura/preguntas?modalidadId=${modalidadId}&nivelId=${nivelId}&year=${year}`;
       if (especialidadId) {
