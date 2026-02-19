@@ -64,6 +64,15 @@ const Login = () => {
       if (response.accesoNombres) {
         localStorage.setItem('accesoNombres', JSON.stringify(response.accesoNombres));
       }
+      if (response.accesoIds) {
+        localStorage.setItem('accesoIds', JSON.stringify(response.accesoIds));
+      }
+      if (response.especialidad) {
+        localStorage.setItem('especialidad', response.especialidad);
+      }
+      if (response.especialidadId) {
+        localStorage.setItem('especialidadId', String(response.especialidadId));
+      }
 
 
       if (

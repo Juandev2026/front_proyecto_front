@@ -8,6 +8,9 @@ export const useAuth = () => {
     nivelId?: number;
     role?: string;
     accesoNombres?: string[];
+    accesoIds?: number[];
+    especialidad?: string;
+    especialidadId?: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,12 +20,16 @@ export const useAuth = () => {
     let userId = localStorage.getItem('userId');
     let nivelId = localStorage.getItem('nivelId');
     let role = localStorage.getItem('role');
+    let especialidad = localStorage.getItem('especialidad');
+    let especialidadId = localStorage.getItem('especialidadId');
     let accesoNombresRaw = localStorage.getItem('accesoNombres');
+    let accesoIdsRaw = localStorage.getItem('accesoIds');
 
 
     // Clean up invalid strings
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') userId = null;
     if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN') nivelId = null;
+    if (especialidadId === 'undefined' || especialidadId === 'null' || especialidadId === 'NaN') especialidadId = null;
     if (role === 'undefined' || role === 'null') role = null;
 
     if (token) {
@@ -64,6 +71,7 @@ export const useAuth = () => {
       // Always set user object if we have at least partial info
       const parsedId = userId ? Number(userId) : undefined;
       const parsedNivelId = nivelId ? Number(nivelId) : undefined;
+      const parsedEspecialidadId = especialidadId ? Number(especialidadId) : undefined;
       
       let accesoNombres: string[] = [];
       if (accesoNombresRaw) {
@@ -74,12 +82,24 @@ export const useAuth = () => {
         }
       }
 
+      let accesoIds: number[] = [];
+      if (accesoIdsRaw) {
+        try {
+          accesoIds = JSON.parse(accesoIdsRaw);
+        } catch (e) {
+          console.error("Error parsing accesoIds from localStorage:", e);
+        }
+      }
+
       setUser({
         name: fullName || 'Usuario', // Fallback to avoid null
         id: !isNaN(parsedId!) ? parsedId : undefined,
         nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
         role: role || undefined,
         accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
+        accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
+        especialidad: especialidad || undefined,
+        especialidadId: !isNaN(parsedEspecialidadId!) ? parsedEspecialidadId : undefined,
       });
     } else {
       setIsAuthenticated(false);

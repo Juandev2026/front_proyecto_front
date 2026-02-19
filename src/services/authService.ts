@@ -38,7 +38,9 @@ export interface LoginResponse {
   email: string;
   role: string;
   id: number;
-  nivelId: number;
+  nivelId: number | null;
+  especialidad?: string;
+  especialidadId?: number | null;
   accesoIds?: number[];
   accesoNombres?: string[];
 }
