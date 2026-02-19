@@ -308,7 +308,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F4F7FE]">
 
         {/* Top Header (Desktop & Mobile) */}
-        <header className="bg-white/50 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6 py-4 shadow-sm md:shadow-none md:bg-transparent">
+        <header className="bg-white flex items-center justify-between px-6 py-4 border-b border-gray-100 md:bg-transparent md:border-none md:shadow-none">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}

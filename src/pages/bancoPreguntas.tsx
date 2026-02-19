@@ -185,21 +185,60 @@ const BancoPreguntasPage = () => {
       if (selectedModalidadId && selectedNivelId && selectedYear) {
          try {
             setIsLoading(true);
-            // Map types to IDs (Assuming IDs for now, should ideally come from API)
-            const tipoPreguntaIds: number[] = [];
-            if (tiposPregunta.comprension) tipoPreguntaIds.push(1);
-            if (tiposPregunta.razonamiento) tipoPreguntaIds.push(2);
-            if (tiposPregunta.conocimientos) tipoPreguntaIds.push(3);
+            
+            // Find the filtered exam to get actual classification IDs
+            const exams = JSON.parse(localStorage.getItem('loginExamenes') || '[]') as any[];
+            const exam = exams.find(e => 
+               e.modalidadId === Number(selectedModalidadId) && 
+               e.nivelId === Number(selectedNivelId) && 
+               e.year === selectedYear &&
+               (selectedEspecialidadId ? e.especialidadId === Number(selectedEspecialidadId) : true)
+            );
+
+            console.log("Debug - Found Exam:", exam);
+            console.log("Debug - Selected Filters:", {
+               modalidad: selectedModalidadId,
+               nivel: selectedNivelId,
+               year: selectedYear,
+               especialidad: selectedEspecialidadId,
+               tipos: tiposPregunta
+            });
+
+            const clasificacionIds: number[] = [];
+            if (exam && exam.clasificaciones) {
+               exam.clasificaciones.forEach((c: any) => {
+                  const name = c.clasificacionNombre.toLowerCase();
+                  const isConocimientos = name === 'ccp' || name.includes('pedagógico') || name.includes('conocimientos') || name.includes('curricular');
+                  const isComprension = name === 'cl' || name.includes('comprensión');
+                  const isRazonamiento = name === 'rl' || name.includes('razonamiento');
+
+                  if (isComprension && tiposPregunta.comprension) clasificacionIds.push(c.clasificacionId);
+                  else if (isRazonamiento && tiposPregunta.razonamiento) clasificacionIds.push(c.clasificacionId);
+                  else if (isConocimientos && tiposPregunta.conocimientos) clasificacionIds.push(c.clasificacionId);
+               });
+            }
+
+            console.log("Debug - Final ClasificacionIds:", clasificacionIds);
 
             const questions = await estructuraAcademicaService.getPreguntas(
                Number(selectedModalidadId),
                Number(selectedNivelId),
                selectedYear,
-               tipoPreguntaIds
+               selectedEspecialidadId ? Number(selectedEspecialidadId) : undefined,
+               clasificacionIds
             );
-            console.log("Fetched questions:", questions);
-            // Store in localStorage or state management to be used in /examen
+            
+            // Save metadata for badges in examen.tsx
+            const metadata = {
+               modalidad: modalidadesData.find(m => m.id === Number(selectedModalidadId))?.nombre,
+               nivel: nivelesData.find(n => n.id === Number(selectedNivelId))?.nombre,
+               especialidad: especialidadesData.find(e => e.id === Number(selectedEspecialidadId))?.nombre,
+               year: selectedYear
+            };
+            
             localStorage.setItem('currentQuestions', JSON.stringify(questions));
+            localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
+            
             router.push('/examen');
          } catch (error) {
             console.error("Error confirming selection:", error);

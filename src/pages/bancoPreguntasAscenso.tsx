@@ -490,7 +490,7 @@ const BancoPreguntasAscensoPage = () => {
                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
-                              <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">preguntas totales</span>
+                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">preguntas totales</span>
                            </div>
                         </div>
                         <div className="bg-[#05CD99] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
@@ -501,7 +501,7 @@ const BancoPreguntasAscensoPage = () => {
                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
-                              <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">min totales</span>
+                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">min totales</span>
                            </div>
                         </div>
                         <div className="bg-[#6B4BFF] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
@@ -512,7 +512,7 @@ const BancoPreguntasAscensoPage = () => {
                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
                               }</span>
-                              <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts máximo</span>
+                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts máximo</span>
                            </div>
                         </div>
                         <div className="bg-[#F6AD55] text-white px-5 py-4 rounded-2xl flex items-center gap-3 font-extrabold shadow-md transform hover:scale-[1.02] transition-transform">
@@ -523,7 +523,7 @@ const BancoPreguntasAscensoPage = () => {
                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.minimo || 0) : 0) +
                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.minimo || 0) : 0)
                               }</span>
-                              <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts mínimo</span>
+                               <span className="text-[10px] uppercase tracking-wider opacity-80 mt-1">pts mínimo</span>
                            </div>
                         </div>
                      </div>
@@ -545,18 +545,60 @@ const BancoPreguntasAscensoPage = () => {
                       if (selectedModalidadId && selectedNivelId && anio) {
                         try {
                            setIsLoading(true);
-                           const tipoPreguntaIds: number[] = [];
-                           if (tiposPregunta.comprension) tipoPreguntaIds.push(1);
-                           if (tiposPregunta.razonamiento) tipoPreguntaIds.push(2);
-                           if (tiposPregunta.conocimientos) tipoPreguntaIds.push(3);
+                           
+                           // Find the filtered exam to get actual classification IDs
+                           const exams = JSON.parse(localStorage.getItem('loginExamenes') || '[]') as any[];
+                           const exam = exams.find(e => 
+                              e.modalidadId === Number(selectedModalidadId) && 
+                              e.nivelId === Number(selectedNivelId) && 
+                              e.year === anio &&
+                              (selectedEspecialidadId ? e.especialidadId === Number(selectedEspecialidadId) : true)
+                           );
+
+                           console.log("Debug - Found Exam:", exam);
+                           console.log("Debug - Selected Filters:", {
+                              modalidad: selectedModalidadId,
+                              nivel: selectedNivelId,
+                              year: anio,
+                              especialidad: selectedEspecialidadId,
+                              tipos: tiposPregunta
+                           });
+
+                           const clasificacionIds: number[] = [];
+                           if (exam && exam.clasificaciones) {
+                              exam.clasificaciones.forEach((c: any) => {
+                                 const name = c.clasificacionNombre.toLowerCase();
+                                 const isConocimientos = name === 'ccp' || name.includes('pedagógico') || name.includes('conocimientos') || name.includes('curricular');
+                                 const isComprension = name === 'cl' || name.includes('comprensión');
+                                 const isRazonamiento = name === 'rl' || name.includes('razonamiento');
+
+                                 if (isComprension && tiposPregunta.comprension) clasificacionIds.push(c.clasificacionId);
+                                 else if (isRazonamiento && tiposPregunta.razonamiento) clasificacionIds.push(c.clasificacionId);
+                                 else if (isConocimientos && tiposPregunta.conocimientos) clasificacionIds.push(c.clasificacionId);
+                              });
+                           }
+
+                           console.log("Debug - Final ClasificacionIds:", clasificacionIds);
 
                            const questions = await estructuraAcademicaService.getPreguntas(
                              Number(selectedModalidadId),
                              Number(selectedNivelId),
                              anio,
-                             tipoPreguntaIds
+                             selectedEspecialidadId ? Number(selectedEspecialidadId) : undefined,
+                             clasificacionIds
                            );
+
+                           // Save metadata for badges in examen.tsx
+                           const metadata = {
+                              modalidad: modalidadesData.find(m => m.id === Number(selectedModalidadId))?.nombre,
+                              nivel: nivelesData.find(n => n.id === Number(selectedNivelId))?.nombre,
+                              especialidad: especialidadesData.find(e => e.id === Number(selectedEspecialidadId))?.nombre,
+                              year: anio
+                           };
+
                            localStorage.setItem('currentQuestions', JSON.stringify(questions));
+                           localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
+                           
                            router.push('/examen');
                         } catch (error) {
                            console.error("Error confirming selection:", error);

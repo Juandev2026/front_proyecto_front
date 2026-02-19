@@ -60,11 +60,16 @@ export const estructuraAcademicaService = {
     }
   },
 
-  getPreguntas: async (modalidadId: number, nivelId: number, year: string, tipoPreguntaIds?: number[]): Promise<any[]> => {
+  getPreguntas: async (modalidadId: number, nivelId: number, year: string, especialidadId?: number, clasificacionIds?: number[]): Promise<any[]> => {
     try {
       let url = `${API_BASE_URL}/FiltrosEstructura/preguntas?modalidadId=${modalidadId}&nivelId=${nivelId}&year=${year}`;
-      if (tipoPreguntaIds && tipoPreguntaIds.length > 0) {
-        url += `&tipoPreguntaIds=${tipoPreguntaIds.join(',')}`;
+      if (especialidadId) {
+        url += `&especialidadId=${especialidadId}`;
+      }
+      if (clasificacionIds && clasificacionIds.length > 0) {
+        clasificacionIds.forEach(id => {
+          url += `&clasificacionIds=${id}`;
+        });
       }
       const response = await fetch(url, {
         headers: getAuthHeaders(),
