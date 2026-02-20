@@ -76,7 +76,21 @@ export const estructuraAcademicaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener preguntas');
-      return await response.json();
+      const data = await response.json() as PreguntaExamen[];
+      
+      // Deduplicar: Si una pregunta aparece tanto en el nivel superior como en el arreglo de subPreguntas
+      // de otra pregunta (común en situaciones), la filtramos del nivel superior para evitar
+      // duplicidad de pantallas y de conteos de puntos/tiempo.
+      const subEnunciados = new Set<string>();
+      data.forEach(q => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          q.subPreguntas.forEach(sub => {
+            if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
+          });
+        }
+      });
+
+      return data.filter(q => !subEnunciados.has(q.enunciado?.trim()));
     } catch (error) {
       console.error('Error fetching questions:', error);
       throw error;

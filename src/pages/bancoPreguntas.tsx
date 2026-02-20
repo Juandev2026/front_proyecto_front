@@ -509,149 +509,162 @@ const BancoPreguntasPage = () => {
 
                      <div className="space-y-3">
                         {tiposPregunta.conocimientos && (
-                           <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
-                              <div className="flex flex-col">
-                                 <span className="text-[#4790FD] font-bold text-base">Conocimientos Curriculares y Pedagógicos</span>
-                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                           <div className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-[#4790FD]">
+                              <div className="flex flex-col z-10 w-full">
+                                 <span className="text-[#4790FD] font-bold text-lg">Conocimientos Curriculares y Pedagógicos</span>
+                                 <div className="flex flex-wrap gap-3 mt-4">
+                                    <span className="bg-gray-50 text-[#4790FD] px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <div className="bg-[#4790FD]/10 w-6 h-6 rounded flex items-center justify-center text-[11px] text-[#4790FD]">Q</div>
                                        {conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0} preguntas
                                     </span>
-                                    <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['conocimientos pedagógicos']?.puntos || 0} pts/correcta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Star className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['conocimientos pedagógicos']?.puntos || 0} pts/correcta
                                     </span>
-                                    <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Target className="w-4 h-4 text-[#4790FD]" /> Máx: {(conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} pts
                                     </span>
-                                    <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['conocimientos pedagógicos']?.minimo || 0} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <CheckCircle className="w-4 h-4 text-[#4790FD]" /> Mínimo: {conteoPreguntas['conocimientos pedagógicos']?.minimo || 0} pts
                                     </span>
-                                    <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0} min/pregunta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Timer className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0} min/pregunta
                                     </span>
-                                    <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} min
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Clock className="w-4 h-4 text-[#4790FD]" /> Total: {(conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
-                                 <div className="bg-[#6B4BFF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">CCP</div>
+                              <div className="hidden md:flex items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                 <div className="text-[#4790FD] text-[10px] font-bold uppercase">CCP</div>
                               </div>
                            </div>
                         )}
 
                         {tiposPregunta.razonamiento && (
-                           <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
-                              <div className="flex flex-col">
-                                 <span className="text-[#4790FD] font-bold text-base">Razonamiento Lógico</span>
-                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                           <div className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-[#4790FD]">
+                              <div className="flex flex-col z-10 w-full">
+                                 <span className="text-[#4790FD] font-bold text-lg">Razonamiento Lógico</span>
+                                 <div className="flex flex-wrap gap-3 mt-4">
+                                    <span className="bg-gray-50 text-[#4790FD] px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <div className="bg-[#4790FD]/10 w-6 h-6 rounded flex items-center justify-center text-[11px] text-[#4790FD]">Q</div>
                                        {conteoPreguntas['razonamiento lógico']?.cantidad || 0} preguntas
                                     </span>
-                                    <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['razonamiento lógico']?.puntos || 0} pts/correcta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Star className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['razonamiento lógico']?.puntos || 0} pts/correcta
                                     </span>
-                                    <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Target className="w-4 h-4 text-[#4790FD]" /> Máx: {(conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} pts
                                     </span>
-                                    <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['razonamiento lógico']?.minimo || 0} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <CheckCircle className="w-4 h-4 text-[#4790FD]" /> Mínimo: {conteoPreguntas['razonamiento lógico']?.minimo || 0} pts
                                     </span>
-                                    <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0} min/pregunta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Timer className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0} min/pregunta
                                     </span>
-                                    <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} min
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Clock className="w-4 h-4 text-[#4790FD]" /> Total: {(conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
-                                 <div className="bg-[#4318FF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">RL</div>
+                              <div className="hidden md:flex items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                 <div className="text-[#4790FD] text-[10px] font-bold uppercase">RL</div>
                               </div>
                            </div>
                         )}
 
                         {tiposPregunta.comprension && (
-                           <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
-                              <div className="flex flex-col">
-                                 <span className="text-[#4790FD] font-bold text-base">Comprensión Lectora</span>
-                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
+                           <div className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-[#4790FD]">
+                              <div className="flex flex-col z-10 w-full">
+                                 <span className="text-[#4790FD] font-bold text-lg">Comprensión Lectora</span>
+                                 <div className="flex flex-wrap gap-3 mt-4">
+                                    <span className="bg-gray-50 text-[#4790FD] px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <div className="bg-[#4790FD]/10 w-6 h-6 rounded flex items-center justify-center text-[11px] text-[#4790FD]">Q</div>
                                        {conteoPreguntas['comprensión lectora']?.cantidad || 0} preguntas
                                     </span>
-                                    <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Star className="w-3.5 h-3.5" /> {conteoPreguntas['comprensión lectora']?.puntos || 0} pts/correcta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Star className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['comprensión lectora']?.puntos || 0} pts/correcta
                                     </span>
-                                    <span className="bg-[#FFE5E5] text-[#FF0000] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Target className="w-3.5 h-3.5" /> Máx: {(conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Target className="w-4 h-4 text-[#4790FD]" /> Máx: {(conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} pts
                                     </span>
-                                    <span className="bg-[#FFF4D1] text-[#B8860B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <CheckCircle className="w-3.5 h-3.5" /> Mínimo: {conteoPreguntas['comprensión lectora']?.minimo || 0} pts
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <CheckCircle className="w-4 h-4 text-[#4790FD]" /> Mínimo: {conteoPreguntas['comprensión lectora']?.minimo || 0} pts
                                     </span>
-                                    <span className="bg-[#FFF9C4] text-[#856404] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Timer className="w-3.5 h-3.5" /> {conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0} min/pregunta
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Timer className="w-4 h-4 text-[#4790FD]" /> {conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0} min/pregunta
                                     </span>
-                                    <span className="bg-[#FDE2E2] text-[#E53E3E] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                       <Clock className="w-3.5 h-3.5" /> Total: {(conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} min
+                                    <span className="bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-[13px] font-bold flex items-center gap-2 border border-gray-100">
+                                       <Clock className="w-4 h-4 text-[#4790FD]" /> Total: {(conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0)} min
                                     </span>
                                  </div>
                               </div>
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
-                                 <div className="bg-[#01B9FF] text-white text-[10px] font-bold rounded-lg px-2 py-1 uppercase">CL</div>
+                              <div className="hidden md:flex items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                 <div className="text-[#4790FD] text-[10px] font-bold uppercase">CL</div>
                               </div>
                            </div>
                         )}
                      </div>
 
-                     {/* New Row: Resumen Total */}
-                     <div className="bg-[#F8F9FA] border border-gray-200 rounded-xl p-4 mt-6">
-                        <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
-                           <BarChart3 className="w-5 h-5 text-primary" />
-                           <span>Resumen Total</span>
+                     <div className="bg-white border border-gray-100 rounded-3xl p-8 mt-12 shadow-sm border-t-8 border-t-[#4790FD]">
+                        <div className="flex items-center gap-4 mb-8 text-[#4790FD] font-black pb-4 border-b border-gray-50">
+                           <div className="bg-[#4790FD]/10 p-3 rounded-2xl flex items-center justify-center text-3xl">
+                              <BarChart3 className="w-8 h-8" />
+                           </div>
+                           <h4 className="text-2xl tracking-tight">Resumen Total de Evaluación</h4>
                         </div>
-                        <div className="flex flex-wrap gap-4">
-                           <div className="bg-[#4FACFE] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                              <div className="bg-white/30 p-1.5 rounded">
-                                 <Library className="w-4 h-4" />
-                               </div>
-                               <span>{
-                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
-                               } preguntas totales</span>
-                            </div>
-                            <div className="bg-[#05CD99] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                               <div className="bg-white/30 p-1.5 rounded">
-                                  <Clock className="w-4 h-4" />
-                               </div>
-                               <span>{
-                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
-                               } min totales</span>
-                            </div>
-                            <div className="bg-[#6B4BFF] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                               <div className="bg-white/30 p-1.5 rounded">
-                                  <Target className="w-4 h-4" />
-                               </div>
-                               <span>{
-                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
-                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
-                               } pts máximo</span>
-                            </div>
-                            <div className="bg-[#F6AD55] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold shadow-sm transition-transform hover:scale-105">
-                               <div className="bg-white/30 p-1.5 rounded">
-                                  <CheckCircle className="w-4 h-4" />
-                               </div>
-                               <span>{
-                                  (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.minimo || 0) : 0) +
-                                  (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.minimo || 0) : 0) +
-                                  (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.minimo || 0) : 0)
-                               } pts mínimo</span>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                           <div className="bg-gray-50 border border-gray-100 p-6 rounded-2xl flex items-center gap-4 hover:bg-white hover:shadow-md transition-all group">
+                              <div className="bg-[#4FACFE]/10 p-4 rounded-xl flex items-center justify-center w-14 h-14 text-[#4FACFE] group-hover:bg-[#4FACFE] group-hover:text-white transition-colors">
+                                 <Library className="w-7 h-7" />
+                              </div>
+                              <div className="flex flex-col">
+                                  <span className="text-3xl font-black text-[#2B3674] leading-none">{
+                                     (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                                  }</span>
+                                  <span className="text-[11px] font-bold text-[#A3AED0] uppercase tracking-widest mt-2">preguntas totales</span>
+                              </div>
+                           </div>
+                           <div className="bg-gray-50 border border-gray-100 p-6 rounded-2xl flex items-center gap-4 hover:bg-white hover:shadow-md transition-all group">
+                              <div className="bg-[#05CD99]/10 p-4 rounded-xl flex items-center justify-center w-14 h-14 text-[#05CD99] group-hover:bg-[#05CD99] group-hover:text-white transition-colors">
+                                 <Clock className="w-7 h-7" />
+                              </div>
+                              <div className="flex flex-col">
+                                  <span className="text-3xl font-black text-[#2B3674] leading-none">{
+                                     (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.tiempoPregunta || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.tiempoPregunta || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.tiempoPregunta || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                                  }</span>
+                                  <span className="text-[11px] font-bold text-[#A3AED0] uppercase tracking-widest mt-2">min totales</span>
+                              </div>
+                           </div>
+                           <div className="bg-gray-50 border border-gray-100 p-6 rounded-2xl flex items-center gap-4 hover:bg-white hover:shadow-md transition-all group">
+                              <div className="bg-[#6B4BFF]/10 p-4 rounded-xl flex items-center justify-center w-14 h-14 text-[#6B4BFF] group-hover:bg-[#6B4BFF] group-hover:text-white transition-colors">
+                                 <Target className="w-7 h-7" />
+                              </div>
+                              <div className="flex flex-col">
+                                  <span className="text-3xl font-black text-[#2B3674] leading-none">{
+                                     (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.puntos || 0) * (conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.puntos || 0) * (conteoPreguntas['razonamiento lógico']?.cantidad || 0) : 0) +
+                                     (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.puntos || 0) * (conteoPreguntas['comprensión lectora']?.cantidad || 0) : 0)
+                                  }</span>
+                                  <span className="text-[11px] font-bold text-[#A3AED0] uppercase tracking-widest mt-2">pts máximo</span>
+                              </div>
+                           </div>
+                           <div className="bg-gray-50 border border-gray-100 p-6 rounded-2xl flex items-center gap-4 hover:bg-white hover:shadow-md transition-all group">
+                              <div className="bg-[#F6AD55]/10 p-4 rounded-xl flex items-center justify-center w-14 h-14 text-[#F6AD55] group-hover:bg-[#F6AD55] group-hover:text-white transition-colors">
+                                 <CheckCircle className="w-7 h-7" />
+                              </div>
+                              <div className="flex flex-col">
+                                  <span className="text-3xl font-black text-[#2B3674] leading-none">{
+                                     (tiposPregunta.conocimientos ? (conteoPreguntas['conocimientos pedagógicos']?.minimo || 0) : 0) +
+                                     (tiposPregunta.razonamiento ? (conteoPreguntas['razonamiento lógico']?.minimo || 0) : 0) +
+                                     (tiposPregunta.comprension ? (conteoPreguntas['comprensión lectora']?.minimo || 0) : 0)
+                                  }</span>
+                                  <span className="text-[11px] font-bold text-[#A3AED0] uppercase tracking-widest mt-2">pts mínimo</span>
+                              </div>
+                           </div>
                         </div>
                      </div>
                   </div>
@@ -669,7 +682,7 @@ const BancoPreguntasPage = () => {
                   <button
                      onClick={handleConfirm}
                      disabled={!selectedModalidadId || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId) || (aniosData.length > 0 && !selectedYear)}
-                     className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                     className="flex items-center gap-2 px-6 py-2 bg-[#4790FD] text-white rounded-md hover:bg-[#357abd] transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                      Confirmar selección
                   </button>

@@ -234,7 +234,15 @@ const ExamenPage = () => {
   };
 
   const stats = useMemo(() => {
-    const total = questions.length;
+    // El total debe ser la suma de todas las preguntas individuales (incluyendo subpreguntas)
+    const totalIndividualQuestions = questions.reduce((acc, q) => {
+      if (q.subPreguntas && q.subPreguntas.length > 0) {
+        return acc + q.subPreguntas.length;
+      }
+      return acc + 1;
+    }, 0);
+
+    const total = totalIndividualQuestions;
     let answeredCount = 0;
     
     Object.values(userAnswers).forEach(examAnswers => {
@@ -246,7 +254,7 @@ const ExamenPage = () => {
     return {
       total,
       answered: answeredCount,
-      unanswered: total - answeredCount,
+      unanswered: Math.max(0, total - answeredCount),
       percentage
     };
   }, [questions, userAnswers]);
