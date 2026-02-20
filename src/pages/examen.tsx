@@ -435,7 +435,7 @@ const ExamenPage = () => {
                   </div>
                </div>
 
-               <div className="space-y-6 text-justify mb-8 font-serif text-lg leading-relaxed text-[#2B3674]">
+               <div className="space-y-6 text-justify mb-8 font-serif text-lg leading-relaxed text-[#4790FD]">
                   {currentQuestion?.imagen && (
                     <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-md">
                       <img src={currentQuestion.imagen} alt="Imagen de la pregunta" className="w-full h-auto object-contain" />
@@ -592,7 +592,7 @@ const ExamenPage = () => {
                   {/* Brand Signature */}
                   <div className="flex justify-end mt-6">
                       <div className="flex flex-col items-end opacity-70">
-                        <span className="font-handwriting text-3xl text-[#2B3674] transform -rotate-2">Juan Avendaño</span>
+                        <span className="font-handwriting text-3xl text-[#4790FD] transform -rotate-2">Juan Avendaño</span>
                          <div className="bg-[#1DA1F2] text-white p-1 rounded-full w-6 h-6 flex items-center justify-center mt-1 shadow-sm">
                             <span className="text-[12px] font-bold">t</span>
                          </div>
@@ -627,7 +627,7 @@ const ExamenPage = () => {
                <div className="space-y-4">
                   <div>
                      <div className="flex justify-between text-sm mb-2 px-1">
-                        <span className="text-[#2B3674] font-bold">Progreso del examen</span>
+                        <span className="text-[#4790FD] font-bold">Progreso del examen</span>
                         <span className="text-gray-500 font-bold">{stats.answered}/{stats.total}</span>
                      </div>
                      <div className="w-full bg-gray-100 rounded-full h-3 border border-gray-50 shadow-inner overflow-hidden">
@@ -641,7 +641,7 @@ const ExamenPage = () => {
                   <div className="pt-2">
                     {examResult ? (
                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3 text-sm text-[#2B3674] font-medium bg-green-50/50 p-2.5 rounded-xl border border-green-50">
+                          <div className="flex items-center gap-3 text-sm text-[#4790FD] font-medium bg-green-50/50 p-2.5 rounded-xl border border-green-50">
                              <Star className="w-4 h-4 text-green-500" />
                              <span className="font-bold">Puntaje Global: {examResult.puntajeGlobal} pts</span>
                           </div>
@@ -651,7 +651,7 @@ const ExamenPage = () => {
                              {examResult.resultados.map(r => (
                                 <div key={r.examenId} className="bg-gray-50 p-2 rounded-lg border border-gray-100 text-xs">
                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="font-bold text-[#2B3674]">Examen #{r.examenId}</span>
+                                      <span className="font-bold text-[#4790FD]">Examen #{r.examenId}</span>
                                       <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">{r.puntajeTotal} pts</span>
                                    </div>
                                    <div className="flex gap-2 text-[10px] text-gray-500">
@@ -664,7 +664,7 @@ const ExamenPage = () => {
                           </div>
                        </div>
                     ) : (
-                       <div className="flex items-center gap-3 text-sm text-[#2B3674] font-medium bg-blue-50/50 p-2.5 rounded-xl border border-blue-50">
+                       <div className="flex items-center gap-3 text-sm text-[#4790FD] font-medium bg-blue-50/50 p-2.5 rounded-xl border border-blue-50">
                           <ClockIcon className="w-4 h-4 text-primary" />
                           <span>En curso...</span>
                        </div>

@@ -153,7 +153,7 @@ const BancoPreguntasPage = () => {
 
                   if (!countMap[key]) {
                      // Try to find matching classification in meta for 'minimo' and 'tiempoPregunta' base
-                     const metaClass = examMeta?.clasificaciones?.find(c => c.clasificacionNombre.toLowerCase().includes(name.split(' ')[0]));
+                     const metaClass = examMeta?.clasificaciones?.find(c => c.clasificacionNombre.toLowerCase().includes(name.split(' ')[0] || ''));
                      countMap[key] = {
                         cantidad: 0,
                         puntos: 0,
@@ -322,7 +322,7 @@ const BancoPreguntasPage = () => {
 
             {/* Title and subtitle */}
             <div className="text-center py-4">
-               <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
+               <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">Selecciona tus preferencias</h3>
                <p className="text-[#A3AED0] text-base mt-1 font-medium">Filtra paso a paso para encontrar el examen deseado</p>
             </div>
 
@@ -331,7 +331,7 @@ const BancoPreguntasPage = () => {
 
                {/* 1. Modalidad */}
                <div className="border border-primary rounded-lg p-4 bg-white">
-                  <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                      <AcademicCapIcon className="h-5 w-5" />
                      <span>Modalidad habilitada</span>
                   </div>
@@ -355,7 +355,7 @@ const BancoPreguntasPage = () => {
 
                {/* 2. Nivel */}
                <div className="border border-primary rounded-lg p-4 bg-white">
-                  <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                      <FilterIcon className="h-5 w-5" />
                      <span>Nivel</span>
                   </div>
@@ -379,7 +379,7 @@ const BancoPreguntasPage = () => {
 
                {/* 3. Especialidad */}
                <div className="border border-primary rounded-lg p-4 bg-white">
-                  <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                      <AcademicCapIcon className="h-5 w-5" />
                      <span>Especialidad</span>
                   </div>
@@ -401,7 +401,7 @@ const BancoPreguntasPage = () => {
 
                {/* 3. Año */}
                <div className="border border-primary rounded-lg p-4 bg-white">
-                  <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                      <CalendarIcon className="h-5 w-5" />
                      <span>Elige un año</span>
                   </div>
@@ -420,7 +420,7 @@ const BancoPreguntasPage = () => {
 
                {/* Tipos de Pregunta */}
                <div className="border border-primary rounded-lg p-4 bg-white">
-                  <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                      <QuestionMarkCircleIcon className="h-5 w-5" />
                      <span>Tipos de Pregunta*</span>
                   </div>
@@ -440,7 +440,7 @@ const BancoPreguntasPage = () => {
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, comprension: e.target.checked })}
                         />
                         <div className="flex flex-col">
-                           <span className="text-[#2B3674] font-bold text-lg">Comprensión Lectora</span>
+                           <span className="text-[#4790FD] font-bold text-lg">Comprensión Lectora</span>
                            <span className={`${(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
                               {(conteoPreguntas['comprensión lectora']?.cantidad || 0) > 0 
                                  ? `${conteoPreguntas['comprensión lectora']?.cantidad} preguntas`
@@ -465,7 +465,7 @@ const BancoPreguntasPage = () => {
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, razonamiento: e.target.checked })}
                         />
                         <div className="flex flex-col">
-                           <span className="text-[#2B3674] font-bold text-lg">Razonamiento Lógico</span>
+                           <span className="text-[#4790FD] font-bold text-lg">Razonamiento Lógico</span>
                            <span className={`${(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
                               {(conteoPreguntas['razonamiento lógico']?.cantidad || 0) > 0 
                                  ? `${conteoPreguntas['razonamiento lógico']?.cantidad} preguntas`
@@ -490,7 +490,7 @@ const BancoPreguntasPage = () => {
                            onChange={(e) => setTiposPregunta({ ...tiposPregunta, conocimientos: e.target.checked })}
                         />
                         <div className="flex flex-col">
-                           <span className="text-[#2B3674] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
+                           <span className="text-[#4790FD] font-bold uppercase text-sm">Conocimientos Curriculares y Pedagógicos</span>
                            <span className={`${(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 ? 'text-[#05CD99]' : 'text-gray-400'} text-sm font-medium`}>
                               {(conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0) > 0 
                                  ? `${conteoPreguntas['conocimientos pedagógicos']?.cantidad} preguntas`
@@ -505,13 +505,13 @@ const BancoPreguntasPage = () => {
                {/* Tipos de Pregunta Seleccionados */}
                {(tiposPregunta.comprension || tiposPregunta.razonamiento || tiposPregunta.conocimientos) && (
                   <div className="mt-8 space-y-4">
-                     <h3 className="text-[#2B3674] font-bold text-xl">Tipos de Pregunta Seleccionados</h3>
+                     <h3 className="text-[#4790FD] font-bold text-xl">Tipos de Pregunta Seleccionados</h3>
 
                      <div className="space-y-3">
                         {tiposPregunta.conocimientos && (
                            <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
                               <div className="flex flex-col">
-                                 <span className="text-[#2B3674] font-bold text-base">Conocimientos Curriculares y Pedagógicos</span>
+                                 <span className="text-[#4790FD] font-bold text-base">Conocimientos Curriculares y Pedagógicos</span>
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
@@ -543,7 +543,7 @@ const BancoPreguntasPage = () => {
                         {tiposPregunta.razonamiento && (
                            <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
                               <div className="flex flex-col">
-                                 <span className="text-[#2B3674] font-bold text-base">Razonamiento Lógico</span>
+                                 <span className="text-[#4790FD] font-bold text-base">Razonamiento Lógico</span>
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
@@ -575,7 +575,7 @@ const BancoPreguntasPage = () => {
                         {tiposPregunta.comprension && (
                            <div className="bg-[#EFEEFF] border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
                               <div className="flex flex-col">
-                                 <span className="text-[#2B3674] font-bold text-base">Comprensión Lectora</span>
+                                 <span className="text-[#4790FD] font-bold text-base">Comprensión Lectora</span>
                                  <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="bg-[#D1E9FF] text-[#002B6B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                        <div className="bg-[#002B6B] w-4 h-4 rounded flex items-center justify-center text-[10px] text-white">Q</div>
@@ -607,7 +607,7 @@ const BancoPreguntasPage = () => {
 
                      {/* New Row: Resumen Total */}
                      <div className="bg-[#F8F9FA] border border-gray-200 rounded-xl p-4 mt-6">
-                        <div className="flex items-center gap-2 mb-3 text-[#2B3674] font-bold">
+                        <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                            <BarChart3 className="w-5 h-5 text-primary" />
                            <span>Resumen Total</span>
                         </div>

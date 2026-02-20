@@ -117,7 +117,7 @@ const SimulacroExamenAscensoPage = () => {
         
         {/* Title and subtitle */}
         <div className="text-center py-4">
-           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
+           <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">Selecciona tus preferencias</h3>
            <p className="text-[#A3AED0] text-base mt-1 font-medium">Puedes elegir los exámenes que consideres para poder practicar ahora</p>
            <p className="text-[#A3AED0] text-xs mt-1">Debes seleccionar al menos 2 exámenes entre Bloque I y Bloque II</p>
         </div>
@@ -126,15 +126,15 @@ const SimulacroExamenAscensoPage = () => {
         <div className="space-y-4">
            
            {/* Bloque I Container */}
-           <div className="border border-cyan-400 rounded-lg p-6 bg-white relative mt-6">
-              <div className=" bg-white px-4 py-1 text-[#002B6B] font-bold">
+           <div className="border border-[#4790FD] rounded-lg p-6 bg-white relative mt-6">
+              <div className=" bg-white px-4 py-1 text-[#4790FD] font-bold">
                  <span className="text-xl">Bloque I - Exámenes MINEDU</span>
               </div>
 
               <div className="mt-2 space-y-4">
                   {/* Modalidad Habilitada */}
-                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                  <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Modalidad habilitada</span>
                       </div>
@@ -146,7 +146,7 @@ const SimulacroExamenAscensoPage = () => {
                             setSelectedNivelId('');
                             setSelectedEspecialidadId('');
                         }}
-                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
                         disabled={isLoading}
                       >
                          <option value="">Selecciona Modalidad</option>
@@ -157,8 +157,8 @@ const SimulacroExamenAscensoPage = () => {
                   </div>
 
                   {/* Nivel */}
-                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                  <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <FilterIcon className="h-4 w-4" />
                         <span>Nivel</span>
                       </div>
@@ -170,7 +170,7 @@ const SimulacroExamenAscensoPage = () => {
                             setSelectedEspecialidadId('');
                             setSelectedYears([]); // Clear selected years when level changes
                         }}
-                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
                         disabled={!selectedModalidadId}
                       >
                         <option value="">Seleccionar nivel</option>
@@ -181,8 +181,8 @@ const SimulacroExamenAscensoPage = () => {
                   </div>
 
                   {/* Especialidad */}
-                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                  <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Especialidad</span>
                       </div>
@@ -192,7 +192,7 @@ const SimulacroExamenAscensoPage = () => {
                             const id = e.target.value === '' ? '' : Number(e.target.value);
                             setSelectedEspecialidadId(id);
                         }}
-                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
                         disabled={!selectedNivelId}
                       >
                         <option value="">Seleccionar especialidad</option>
@@ -203,8 +203,8 @@ const SimulacroExamenAscensoPage = () => {
                   </div>
 
                   {/* Selecciona mínimo dos años */}
-                  <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold text-sm">
+                  <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
+                      <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Selecciona mínimo dos años*</span>
                       </div>
@@ -216,7 +216,7 @@ const SimulacroExamenAscensoPage = () => {
                                   type="checkbox" 
                                   checked={selectedYears.includes(year)}
                                   onChange={() => handleYearChange(year)}
-                                  className="rounded text-blue-600 focus:ring-2 focus:ring-blue-500 h-4 w-4"
+                                  className="rounded text-[#4790FD] focus:ring-2 focus:ring-[#4790FD] h-4 w-4"
                                 />
                                 <span className="text-gray-700 text-sm">{year}</span>
                              </label>
@@ -233,14 +233,14 @@ const SimulacroExamenAscensoPage = () => {
            </div>
 
            {/* Resumen de selección */}
-           <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px]">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="border border-[#4790FD] rounded-lg p-4 bg-white min-h-[100px]">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Resumen de selección</span>
               </div>
               <div className="text-gray-500 text-sm">
                  <div className="flex flex-col gap-1">
-                      <div className="inline-block px-3 py-1 border border-blue-200 bg-blue-50 text-blue-800 rounded-md text-sm mb-2 w-max">
+                      <div className="inline-block px-3 py-1 border border-sky-200 bg-sky-50 text-sky-800 rounded-md text-sm mb-2 w-max">
                         {modalidades.find(m => m.id === selectedModalidadId)?.nombre || 'None'}
                       </div>
 
@@ -278,7 +278,7 @@ const SimulacroExamenAscensoPage = () => {
                 <button 
                    onClick={handleConfirm}
                    disabled={selectedYearsList.length < 2 || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId)}
-                   className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                   className="flex items-center gap-2 px-6 py-2 bg-[#4790FD] text-white rounded-md hover:bg-blue-600 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
                 >
                    Confirmar selección
                 </button>

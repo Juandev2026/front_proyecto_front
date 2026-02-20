@@ -150,17 +150,17 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
       `}>
         {/* Logo Area */}
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-24 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-40 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}>
           {!isCollapsed && (
             <Link href="/">
               <a className="flex items-center gap-2 group">
-                <span className="text-2xl font-extrabold text-[#2B3674] tracking-tight whitespace-nowrap">AVENDOCENTE</span>
+                <img src="/assets/images/logo_principal1.png" alt="Avendo" className="h-32 w-auto object-contain" />
               </a>
             </Link>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:block text-gray-400 hover:text-[#2B3674] transition-colors focus:outline-none"
+            className="hidden md:block text-gray-400 hover:text-[#4790FD] transition-colors focus:outline-none"
           >
             {isCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6" /> : <ChevronDoubleLeftIcon className="h-6 w-6" />}
           </button>
@@ -190,8 +190,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                     className={`
                       w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                       ${isExpanded
-                        ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg'
-                        : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
+                        ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                        : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'}
                     `}
                     title={isCollapsed ? item.name : ''}
                   >
@@ -199,7 +199,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                       <item.icon
                         className={`
                           h-6 w-6 flex-shrink-0 transition-colors
-                          ${isExpanded ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
+                          ${isExpanded ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#4790FD]'}
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
                         `}
                       />
@@ -223,8 +223,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                       className={`
                         group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                         ${isActive
-                          ? 'bg-[#3B82F6] text-white shadow-blue-200 shadow-lg'
-                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]'}
+                          ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'}
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
                       title={isCollapsed ? item.name : ''}
@@ -232,7 +232,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                       <item.icon
                         className={`
                            flex-shrink-0 transition-colors
-                          ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#2B3674]'}
+                          ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#4790FD]'}
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
                         `}
                       />
@@ -244,26 +244,31 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                 {/* Sub-menu Items */}
                 {hasChildren && isExpanded && !isCollapsed && (
                   <div className="mt-2 space-y-1 pl-4 pr-2">
-                    {item.children.map((child: any) => (
-                      <Link key={child.name} href={child.href}>
-                        <a className={`
-                            flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                            ${child.locked
-                            ? 'text-gray-400 cursor-not-allowed opacity-75'
-                            : 'text-[#A3AED0] hover:text-[#2B3674] hover:bg-gray-50'}
-                         `}>
-                          <div className="flex items-center">
-                            {child.icon && (
-                              <child.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                    {item.children.map((child: any) => {
+                      const isChildActive = router.pathname === child.href;
+                      return (
+                        <Link key={child.name} href={child.href}>
+                          <a className={`
+                              flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200
+                              ${child.locked
+                                ? 'text-gray-400 cursor-not-allowed opacity-75'
+                                : isChildActive 
+                                  ? 'bg-blue-50 text-[#4790FD] shadow-sm' 
+                                  : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'}
+                           `}>
+                            <div className="flex items-center">
+                              {child.icon && (
+                                <child.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${isChildActive ? 'text-[#4790FD]' : 'text-[#A3AED0]'}`} />
+                              )}
+                              {child.name}
+                            </div>
+                            {child.locked && (
+                              <LockClosedIcon className="h-4 w-4 ml-2" />
                             )}
-                            {child.name}
-                          </div>
-                          {child.locked && (
-                            <LockClosedIcon className="h-4 w-4 ml-2" />
-                          )}
-                        </a>
-                      </Link>
-                    ))}
+                          </a>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -276,8 +281,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
           {!isCollapsed ? (
             <>
               <Link href="/">
-                <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#2B3674] transition-colors">
-                  <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#2B3674]" />
+                <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors">
+                  <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
                   Volver a Inicio
                 </a>
               </Link>
@@ -292,7 +297,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
           ) : (
             <div className="flex flex-col gap-2 items-center">
               <Link href="/">
-                <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#2B3674]" title="Volver a Inicio">
+                <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]" title="Volver a Inicio">
                   <HomeIcon className="h-6 w-6" />
                 </a>
               </Link>
@@ -320,14 +325,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
             {/* Breadcrumb / Page Title Placeholder */}
             <div className="hidden md:block">
               <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
-              <h1 className="text-2xl font-bold text-[#2B3674] mt-1">{title}</h1>
+              <h1 className="text-2xl font-bold text-[#4790FD] mt-1">{title}</h1>
             </div>
           </div>
 
           {/* Right Side: Profile & Actions */}
           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
             <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-sm font-bold text-[#2B3674] leading-tight">{user?.name || 'Usuario'}</span>
+              <span className="text-sm font-bold text-[#4790FD] leading-tight">{user?.name || 'Usuario'}</span>
               <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
             </div>
             <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">

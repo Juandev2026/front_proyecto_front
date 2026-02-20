@@ -45,7 +45,7 @@ const ExamenesDirectivosPage = () => {
   if (loading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
@@ -60,7 +60,7 @@ const ExamenesDirectivosPage = () => {
         
         {/* Title and subtitle */}
         <div className="text-center py-4">
-           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
+           <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">Selecciona tus preferencias</h3>
            <p className="text-[#A3AED0] text-base mt-1 font-medium">Selecciona el/los exámenes que deseas resolver ahora</p>
         </div>
 
@@ -72,7 +72,7 @@ const ExamenesDirectivosPage = () => {
                   onClick={() => toggleAccordion(exam.id)}
                   className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors"
                 >
-                   <div className="flex items-center gap-3 text-[#002B6B] font-bold">
+                   <div className="flex items-center gap-3 text-[#4790FD] font-bold">
                       <FolderIcon className="h-6 w-6" />
                       <span>{exam.title} ({exam.count})</span>
                    </div>
@@ -95,7 +95,7 @@ const ExamenesDirectivosPage = () => {
 
         {/* Resumen de selección */}
         <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px] mt-6">
-           <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+           <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
               <AcademicCapIcon className="h-5 w-5" />
               <span>Resumen de selección</span>
            </div>
@@ -112,7 +112,7 @@ const ExamenesDirectivosPage = () => {
               <XIcon className="h-4 w-4" />
               Limpiar
            </button>
-           <button className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md">
+           <button className="flex items-center gap-2 px-6 py-2 bg-[#4790FD] text-white rounded-md hover:bg-[#3b7ddb] transition-colors font-medium shadow-md">
               Confirmar selección
            </button>
         </div>

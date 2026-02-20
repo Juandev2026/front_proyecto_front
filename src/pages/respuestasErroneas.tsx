@@ -47,7 +47,7 @@ const RespuestasErroneasPage = () => {
   if (loading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
@@ -151,7 +151,7 @@ const RespuestasErroneasPage = () => {
 
            {/* Right Panel: Statistics (White) */}
            <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm">
-              <div className="flex items-center gap-2 mb-6 text-[#002B6B]">
+              <div className="flex items-center gap-2 mb-6 text-[#4790FD]">
                  <ChartBarIcon className="h-5 w-5" />
                  <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
               </div>
@@ -192,7 +192,7 @@ const RespuestasErroneasPage = () => {
 
         {/* Bottom Section: History */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-           <div className="flex items-center gap-2 mb-2 text-[#002B6B]">
+           <div className="flex items-center gap-2 mb-2 text-[#4790FD]">
               <ClockIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Historial de Preguntas Erróneas</h2>
            </div>
@@ -235,14 +235,14 @@ const RespuestasErroneasPage = () => {
                       onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                       className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${expandedIndex === index ? 'border-cyan-400 bg-gray-50 shadow-sm' : 'border-gray-100 hover:bg-gray-50'}`}
                     >
-                       <span className="font-bold text-[#002B6B] text-sm md:text-base">Errores - {item.date}</span>
+                       <span className="font-bold text-[#4790FD] text-sm md:text-base">Errores - {item.date}</span>
                        
                        <div className="flex items-center gap-4">
                           <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
                              <span className="text-base leading-none font-bold">!</span> {item.errors} {item.errors === 1 ? 'error' : 'errores'}
                           </span>
                           <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">{item.points} pts</span>
-                          <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${expandedIndex === index ? 'rotate-180 text-[#002B6B]' : 'group-hover:text-gray-600'}`} />
+                          <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${expandedIndex === index ? 'rotate-180 text-[#4790FD]' : 'group-hover:text-gray-600'}`} />
                        </div>
                     </div>
 
@@ -256,11 +256,11 @@ const RespuestasErroneasPage = () => {
                                    <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
                                       {q.id}
                                    </div>
-                                   <span className="font-bold text-[#2B3674] text-lg">{q.type}</span>
+                                   <span className="font-bold text-[#4790FD] text-lg">{q.type}</span>
                                 </div>
 
                                 {/* Question Body */}
-                                <div className="space-y-4 text-[#2B3674] font-medium">
+                                <div className="space-y-4 text-[#4790FD] font-medium">
                                    <p>{q.text}</p>
                                    
                                    {/* Comment Box */}

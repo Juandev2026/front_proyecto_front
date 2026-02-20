@@ -329,14 +329,20 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="h-screen bg-blue-100 flex overflow-hidden">
+    <div className="h-screen bg-white flex overflow-hidden">
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
-        <div className={`flex items-center h-16 border-b border-gray-200 flex-shrink-0 transition-all ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
-          {!isCollapsed && <span className="text-2xl font-bold text-primary">AdminPanel</span>}
+        <div className={`flex items-center h-40 border-b border-gray-100 flex-shrink-0 transition-all ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
+          {!isCollapsed && (
+            <Link href="/admin">
+              <a className="flex items-center">
+                <img src="/assets/images/logo_principal1.png" alt="Avendo" className="h-28 w-auto object-contain" />
+              </a>
+            </Link>
+          )}
 
           {/* Toggle Button for Desktop */}
           <button
@@ -488,7 +494,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-blue-100 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white p-6">
           {children}
         </main>
       </div>

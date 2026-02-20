@@ -91,7 +91,7 @@ const SimulacrosDirectivosPage = () => {
   if (loading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
@@ -116,7 +116,7 @@ const SimulacrosDirectivosPage = () => {
         
         {/* Title and subtitle */}
         <div className="text-center py-4">
-           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">Selecciona tus preferencias</h3>
+           <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">Selecciona tus preferencias</h3>
            <p className="text-[#A3AED0] text-base mt-1 font-medium">Puedes elegir los exámenes que consideres para poder practicar ahora</p>
            <p className="text-[#A3AED0] text-xs mt-1">Debes seleccionar al menos 2 exámenes entre Bloque I y Bloque II</p>
         </div>
@@ -126,14 +126,14 @@ const SimulacrosDirectivosPage = () => {
            
            {/* Bloque I Container */}
            <div className="border border-cyan-400 rounded-lg p-6 bg-white relative mt-6">
-              <div className="absolute -top-4 left-4 bg-white px-4 py-1 text-[#002B6B] font-bold">
+              <div className="absolute -top-4 left-4 bg-white px-4 py-1 text-[#4790FD] font-bold">
                  <span className="text-xl">Bloque I - Exámenes MINEDU</span>
               </div>
 
               <div className="mt-2 space-y-4">
                   {/* Modalidad Habilitada */}
                   <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Modalidad habilitada</span>
                       </div>
@@ -157,7 +157,7 @@ const SimulacrosDirectivosPage = () => {
 
                   {/* Nivel */}
                   <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <FilterIcon className="h-4 w-4" />
                         <span>Nivel</span>
                       </div>
@@ -181,7 +181,7 @@ const SimulacrosDirectivosPage = () => {
 
                   {/* Especialidad */}
                   <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-2 text-[#002B6B] font-bold text-sm">
+                      <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Especialidad</span>
                       </div>
@@ -203,7 +203,7 @@ const SimulacrosDirectivosPage = () => {
 
                   {/* Selecciona mínimo dos años */}
                   <div className="border border-cyan-400 rounded-lg p-3 bg-white">
-                      <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold text-sm">
+                      <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold text-sm">
                         <AcademicCapIcon className="h-4 w-4" />
                         <span>Selecciona mínimo dos años*</span>
                       </div>
@@ -233,7 +233,7 @@ const SimulacrosDirectivosPage = () => {
 
            {/* Resumen de selección */}
            <div className="border border-cyan-400 rounded-lg p-4 bg-white min-h-[100px]">
-              <div className="flex items-center gap-2 mb-3 text-[#002B6B] font-bold">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                  <AcademicCapIcon className="h-5 w-5" />
                  <span>Resumen de selección</span>
               </div>
@@ -277,7 +277,7 @@ const SimulacrosDirectivosPage = () => {
                 <button 
                    onClick={handleConfirm}
                    disabled={selectedYearsList.length < 2 || (nivelesData.length > 0 && !selectedNivelId) || (especialidadesData.length > 0 && !selectedEspecialidadId)}
-                   className="flex items-center gap-2 px-6 py-2 bg-[#002B6B] text-white rounded-md hover:bg-blue-900 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                   className="flex items-center gap-2 px-6 py-2 bg-[#4790FD] text-white rounded-md hover:bg-[#3b7ddb] transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
                 >
                    Confirmar selección
                 </button>

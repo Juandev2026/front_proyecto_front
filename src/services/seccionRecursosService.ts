@@ -25,7 +25,7 @@ export interface SubSeccionAnidada {
   id: number;
   nombre: string;
   descripcion: string;
-  recurso: RecursoAnidado | null;
+  recurso: RecursoAnidado[];
 }
 
 export interface SeccionAnidada {

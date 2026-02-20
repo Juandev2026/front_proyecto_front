@@ -28,7 +28,15 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
   // Check if current path is an admin page or banco preguntas area
   // ALSO hide if user is authenticated (Aula Virtual)
-  const showWhatsApp = !isAuthenticated && !router.pathname.startsWith('/admin') && !router.pathname.startsWith('/bancoPreguntas');
+  const isExcludedPath = router.pathname.startsWith('/admin') || 
+                         router.pathname.startsWith('/bancoPreguntas') || 
+                         router.pathname.startsWith('/bancoPreguntasAscenso') ||
+                         router.pathname.startsWith('/recursosAscenso') ||
+                         router.pathname.startsWith('/examen') ||
+                         router.pathname.startsWith('/simulacroExamen') ||
+                         router.pathname.startsWith('/respuestasErroneas');
+
+  const showWhatsApp = !isAuthenticated && !isExcludedPath;
 
   return (
     <>
