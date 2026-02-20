@@ -180,55 +180,44 @@ const Recursos = () => {
   // --- DATA FETCHING (See below for implementation) ---
 
   // --- SUB-PREGUNTAS STATE (Lazy Loading) ---
-  const [expandedParentIds, setExpandedParentIds] = useState<Set<number>>(new Set());
   const [subQuestionsMap, setSubQuestionsMap] = useState<Record<number, SubPreguntaResponse[]>>({});
   const [loadingSubIds, setLoadingSubIds] = useState<Set<number>>(new Set());
   const [subCountsMap, setSubCountsMap] = useState<Record<number, number>>({});
 
-  // Fetch sub-question counts for parent questions when items change
+  // Fetch sub-question counts and details for parent questions when items change
   useEffect(() => {
     const parentItems = items.filter(q => q.tipoPreguntaId === 2);
     if (parentItems.length === 0) return;
 
     parentItems.forEach(async (parent) => {
+      // 1. Fetch count
       try {
         const count = await subPreguntaService.getCount(parent.examenId, parent.id);
         setSubCountsMap(prev => ({ ...prev, [parent.id]: count }));
       } catch {
         setSubCountsMap(prev => ({ ...prev, [parent.id]: 0 }));
       }
+
+      // 2. Fetch full details immediately for display
+      if (!subQuestionsMap[parent.id]) {
+        setLoadingSubIds(prev => new Set(prev).add(parent.id));
+        try {
+          const subs = await subPreguntaService.getByPreguntaId(parent.examenId, parent.id);
+          setSubQuestionsMap(prev => ({ ...prev, [parent.id]: subs }));
+        } catch (err) {
+          console.error('Error fetching sub-preguntas automatically:', err);
+          setSubQuestionsMap(prev => ({ ...prev, [parent.id]: [] }));
+        } finally {
+          setLoadingSubIds(prev => {
+            const next = new Set(prev);
+            next.delete(parent.id);
+            return next;
+          });
+        }
+      }
     });
   }, [items]);
 
-  const toggleSubPreguntas = async (parentId: number, examenId: number) => {
-    const newExpanded = new Set(expandedParentIds);
-    if (newExpanded.has(parentId)) {
-      newExpanded.delete(parentId);
-      setExpandedParentIds(newExpanded);
-      return;
-    }
-
-    // Expand and fetch if not cached
-    newExpanded.add(parentId);
-    setExpandedParentIds(newExpanded);
-
-    if (!subQuestionsMap[parentId]) {
-      setLoadingSubIds(prev => new Set(prev).add(parentId));
-      try {
-        const subs = await subPreguntaService.getByPreguntaId(examenId, parentId);
-        setSubQuestionsMap(prev => ({ ...prev, [parentId]: subs }));
-      } catch (err) {
-        console.error('Error fetching sub-preguntas:', err);
-        setSubQuestionsMap(prev => ({ ...prev, [parentId]: [] }));
-      } finally {
-        setLoadingSubIds(prev => {
-          const next = new Set(prev);
-          next.delete(parentId);
-          return next;
-        });
-      }
-    }
-  };
 
   // --- FILTRADO DE ITEMS ---
   const filteredItems = useMemo(() => {
@@ -733,7 +722,7 @@ const Recursos = () => {
       if (editingId) {
         // UPDATE Logic (remains same? Or new endpoint?)
         // Assuming update endpoint is standard PUT /api/Preguntas/{id}
-        const updated = await preguntaService.update(editingId, payload);
+        const updated = await preguntaService.update(payload.examenId, editingId, payload);
         
         // Optimistic Update
         setItems(prev => prev.map(p => p.id === editingId ? updated : p));
@@ -1464,7 +1453,6 @@ const Recursos = () => {
           <div className="space-y-6 mt-6">
             {currentItems.map((item, index) => {
               const isParent = item.tipoPreguntaId === 2;
-              const isExpanded = expandedParentIds.has(item.id);
               const isLoadingSubs = loadingSubIds.has(item.id);
               const subs = subQuestionsMap[item.id] || [];
               const subCount = subCountsMap[item.id] ?? 0;
@@ -1534,101 +1522,87 @@ const Recursos = () => {
                          )}
                     </div>
 
-                    {/* --- CASO 1: PREGUNTA AGRUPADA (Desplegable de Sub-Preguntas) --- */}
+                    {/* --- CASO 1: PREGUNTA AGRUPADA (Sub-Preguntas mostradas inmediatamente) --- */}
                     {isParent && (
                       <div>
-                        <button
-                          onClick={() => toggleSubPreguntas(item.id, item.examenId)}
-                          className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all font-bold text-sm ${
-                            isExpanded 
-                              ? 'bg-indigo-50 border-indigo-300 text-indigo-800' 
-                              : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-indigo-200 hover:bg-indigo-50/50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-4 p-3 bg-indigo-50 text-indigo-800 rounded-lg border border-indigo-200 font-bold text-sm uppercase tracking-wide">
                             <DocumentTextIcon className="w-5 h-5" />
-                            <span>Ver Sub-Preguntas ({subCount})</span>
-                          </div>
-                          <ChevronDownIcon className={`w-5 h-5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
+                            <span>Sub-Preguntas ({subCount})</span>
+                        </div>
 
-                        {/* Contenido expandible */}
-                        {isExpanded && (
-                          <div className="mt-4 space-y-4 pl-4 border-l-2 border-indigo-200 animate-fadeIn">
-                            {isLoadingSubs ? (
-                              <div className="flex items-center justify-center p-8 text-indigo-500">
-                                <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                <span className="font-medium">Cargando sub-preguntas...</span>
-                              </div>
-                            ) : subs.length === 0 ? (
-                              <div className="text-center p-6 text-gray-400 italic">
-                                No se encontraron sub-preguntas.
-                              </div>
-                            ) : (
-                              subs.map((sub, idx) => (
-                                <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                                    {/* Header mini */}
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                        {sub.numero || idx + 1}
-                                      </span>
-                                      <span className="text-xs font-bold text-gray-500">Sub-Pregunta {sub.numero || idx + 1}</span>
-                                      
-                                      <div className="ml-auto flex gap-2">
-                                          <button 
-                                            onClick={() => handleDeleteSub(sub.examenId, sub.preguntaId, sub.numero)}
-                                            disabled={deletingIds.has(`${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any)}
-                                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-                                          >
-                                              <TrashIcon className="w-4 h-4" />
-                                          </button>
-                                      </div>
+                        <div className="space-y-4 pl-4 border-l-2 border-indigo-200">
+                          {isLoadingSubs ? (
+                            <div className="flex items-center justify-center p-8 text-indigo-500">
+                              <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              <span className="font-medium">Cargando sub-preguntas...</span>
+                            </div>
+                          ) : subs.length === 0 ? (
+                            <div className="text-center p-6 text-gray-400 italic">
+                               No se encontraron sub-preguntas.
+                            </div>
+                          ) : (
+                            subs.map((sub, idx) => (
+                              <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                  {/* Header mini */}
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
+                                      {sub.numero || idx + 1}
+                                    </span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase">Sub-Pregunta {sub.numero || idx + 1}</span>
+                                    
+                                    <div className="ml-auto flex gap-2">
+                                        <button 
+                                          onClick={() => handleDeleteSub(sub.examenId, sub.preguntaId, sub.numero)}
+                                          disabled={deletingIds.has(`${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any)}
+                                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                        >
+                                            <TrashIcon className="w-4 h-4" />
+                                        </button>
                                     </div>
+                                  </div>
 
-                                    {/* Enunciado */}
-                                    <div className="mb-4 text-sm text-gray-800 prose max-w-none">
-                                      <HtmlMathRenderer html={sub.enunciado} />
+                                  {/* Enunciado */}
+                                  <div className="mb-4 text-sm text-gray-800 prose max-w-none">
+                                    <HtmlMathRenderer html={sub.enunciado} />
+                                  </div>
+
+                                  {/* Imagen */}
+                                  {sub.imagen && (
+                                    <div className="mb-3">
+                                      <img src={sub.imagen} alt="Pregunta" className="max-w-full h-auto rounded border border-gray-200 max-h-48" />
                                     </div>
+                                  )}
 
-                                    {/* Imagen */}
-                                    {sub.imagen && (
-                                      <div className="mb-3">
-                                        <img src={sub.imagen} alt="Pregunta" className="max-w-full h-auto rounded border border-gray-200 max-h-48" />
-                                      </div>
-                                    )}
-
-                                    {/* Alternativas - mismo grid que individual pero un poco más chico */}
-                                    <div className="grid grid-cols-1 gap-2 mb-4">
-                                      {['A', 'B', 'C', 'D'].map((opt) => {
-                                        const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
-                                        const isCorrect = sub.respuestaCorrecta === opt;
-                                        return (
-                                          <div key={opt} className={`p-3 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                            <div className="flex items-start gap-2">
-                                              <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
-                                              <span className="text-sm"><HtmlMathRenderer html={altText || ''} /></span>
-                                            </div>
+                                  {/* Alternativas - mismo grid que individual pero un poco más chico */}
+                                  <div className="grid grid-cols-1 gap-2 mb-4">
+                                    {['A', 'B', 'C', 'D'].map((opt) => {
+                                      const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
+                                      const isCorrect = sub.respuestaCorrecta === opt;
+                                      return (
+                                        <div key={opt} className={`p-3 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                          <div className="flex items-start gap-2">
+                                            <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
+                                            <span className="text-sm"><HtmlMathRenderer html={altText || ''} /></span>
                                           </div>
-                                        );
-                                      })}
-                                    </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
 
-                                    {/* Sustento */}
-                                    <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
-                                      <span className="font-bold text-gray-700 block mb-1">Sustento:</span>
-                                      <div className="italic">
-                                        {sub.sustento ? <HtmlMathRenderer html={sub.sustento} /> : 'Sin sustento disponible'}
-                                      </div>
+                                  {/* Sustento */}
+                                  <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
+                                    <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">Sustento:</span>
+                                    <div className="italic">
+                                      {sub.sustento ? <HtmlMathRenderer html={sub.sustento} /> : 'Sin sustento disponible'}
                                     </div>
-                                </div>
-                              ))
-
-                            )}
-                          </div>
-                        )}
+                                  </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     )}
 

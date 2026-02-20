@@ -370,7 +370,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
       console.log(initialParent ? 'Editando Padre...' : 'Enviando Padre...', parentPayload);
       const parentResponse = initialParent 
-          ? await preguntaService.update(initialParent.id, parentPayload)
+          ? await preguntaService.update(examenId, initialParent.id, parentPayload)
           : await preguntaService.createSingle(parentPayload);
       
       const parentId = initialParent ? initialParent.id : parentResponse.id;

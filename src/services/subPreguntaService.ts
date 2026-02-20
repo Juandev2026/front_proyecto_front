@@ -88,7 +88,8 @@ export const subPreguntaService = {
           const err = await res.text();
           throw new Error(`Error en sub-pregunta #${dto.numero}: ${err}`);
         }
-        return res.json() as Promise<SubPreguntaResponse>;
+        const text = await res.text();
+        return (text ? JSON.parse(text) : dto) as SubPreguntaResponse;
       })
     );
     return Promise.all(promises);
@@ -115,7 +116,8 @@ export const subPreguntaService = {
       const err = await response.text();
       throw new Error(`Error al actualizar sub-pregunta: ${err}`);
     }
-    return await response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : dto as SubPreguntaResponse;
   },
 
   /**

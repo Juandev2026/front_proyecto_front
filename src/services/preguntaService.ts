@@ -77,20 +77,28 @@ export const preguntaService = {
     }
   },
 
-  update: async (id: number, item: Partial<Pregunta>): Promise<Pregunta> => {
+  update: async (examenId: number, id: number, item: Partial<Pregunta>): Promise<Pregunta> => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      // Stripping 'id' from the body as per the provided API schema
+      const { id: _ignoredId, ...payload } = item;
+      
+      const response = await fetch(`${API_URL}/${examenId}/${id}`, {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(item),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la pregunta');
       }
-      return await response.json();
+      
+      const text = await response.text();
+      const updatedData = text ? JSON.parse(text) : payload;
+      
+      // Ensure the returned object has the ID so UI components can update correctly
+      return { ...updatedData, id } as Pregunta;
     } catch (error) {
       throw error;
     }
