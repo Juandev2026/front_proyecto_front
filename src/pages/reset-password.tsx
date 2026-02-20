@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { useRouter } from 'next/router';
 
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import CommunitySection from '../components/CommunitySection';
@@ -16,6 +17,14 @@ const ResetPassword = () => {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    special: false,
+  });
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -24,11 +33,27 @@ const ResetPassword = () => {
   // If we wanted to validate token presence immediately, we could do it here,
   // but typically we let the user fill the form and API will reject if token is invalid/missing.
 
+  const validatePassword = (password: string) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
+    };
+    setPasswordRequirements(requirements);
+    return Object.values(requirements).every((req) => req);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    if (name === 'newPassword') {
+      validatePassword(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,10 +69,10 @@ const ResetPassword = () => {
       return;
     }
 
-    if (formData.newPassword.length < 6) {
+    if (!validatePassword(formData.newPassword)) {
       setMessage({
         type: 'error',
-        text: 'La contraseña debe tener al menos 6 caracteres.',
+        text: 'La contraseña no cumple con todos los requisitos de seguridad.',
       });
       return;
     }
@@ -177,13 +202,177 @@ const ResetPassword = () => {
                   <input
                     id="newPassword"
                     name="newPassword"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={formData.newPassword}
                     onChange={handleChange}
-                    className="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200"
+                    className="block w-full pl-3 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Password Requirements */}
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs font-medium text-gray-700">
+                    La contraseña debe contener:
+                  </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-xs">
+                      {passwordRequirements.length ? (
+                        <svg
+                          className="w-4 h-4 text-green-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4 text-red-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span
+                        className={
+                          passwordRequirements.length
+                            ? 'text-green-700'
+                            : 'text-gray-600'
+                        }
+                      >
+                        Mínimo 8 caracteres
+                      </span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      {passwordRequirements.uppercase ? (
+                        <svg
+                          className="w-4 h-4 text-green-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4 text-red-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span
+                        className={
+                          passwordRequirements.uppercase
+                            ? 'text-green-700'
+                            : 'text-gray-600'
+                        }
+                      >
+                        Al menos una letra mayúscula (A-Z)
+                      </span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      {passwordRequirements.number ? (
+                        <svg
+                          className="w-4 h-4 text-green-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4 text-red-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span
+                        className={
+                          passwordRequirements.number
+                            ? 'text-green-700'
+                            : 'text-gray-600'
+                        }
+                      >
+                        Al menos un número (0-9)
+                      </span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      {passwordRequirements.special ? (
+                        <svg
+                          className="w-4 h-4 text-green-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4 text-red-500 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span
+                        className={
+                          passwordRequirements.special
+                            ? 'text-green-700'
+                            : 'text-gray-600'
+                        }
+                      >
+                        Al menos un símbolo (!@#$%^&*)
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -198,13 +387,24 @@ const ResetPassword = () => {
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200"
+                    className="block w-full pl-3 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOffIcon className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
                 </div>
               </div>
 

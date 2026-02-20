@@ -112,44 +112,96 @@ const BancoPreguntasPage = () => {
       )
    ).sort((a, b) => Number(b) - Number(a));
 
-   // Fetch question counts when year is selected
+   // Fetch question counts when filters are selected
    useEffect(() => {
-      const updateCounts = () => {
+      const updateCounts = async () => {
          if (selectedModalidadId && selectedNivelId && selectedEspecialidadId && selectedYear) {
-            // Find the specific exam matching all filters
-            const exam = loginExamenes.find(e =>
+            
+            // Find metadata from login array for fallback values like 'minimo'
+            const examMeta = loginExamenes.find(e =>
                e.modalidadId === selectedModalidadId &&
                e.nivelId === selectedNivelId &&
                e.especialidadId === selectedEspecialidadId &&
                e.year === selectedYear
             );
 
-            if (exam && exam.clasificaciones) {
+            // Fetch actual questions to get accurate counts (including sub-questions)
+            try {
+               const questions = await estructuraAcademicaService.getPreguntas(
+                  Number(selectedModalidadId),
+                  Number(selectedNivelId),
+                  selectedYear,
+                  Number(selectedEspecialidadId)
+               );
+
                const countMap: { [key: string]: { cantidad: number; puntos: number; tiempoPregunta: number; minimo: number; } } = {};
-               exam.clasificaciones.forEach((item) => {
-                  const name = item.clasificacionNombre.toLowerCase();
+
+               questions.forEach((q) => {
+                  const name = (q.clasificacionNombre || '').toLowerCase();
                   let key = '';
 
                   // Robust mapping for classifications
-                  if (name === 'ccp' || name.includes('pedagógico') || name.includes('curricular')) {
+                  if (name === 'ccp' || name.includes('pedagógico') || name.includes('conocimientos') || name.includes('curricular')) {
                      key = 'conocimientos pedagógicos';
                   } else if (name === 'cl' || name.includes('comprensión')) {
                      key = 'comprensión lectora';
                   } else if (name === 'rl' || name.includes('razonamiento')) {
                      key = 'razonamiento lógico';
                   } else {
-                     key = name; // Fallback to raw name if no match
+                     key = name || 'otros'; 
                   }
 
-                  if (key) {
+                  if (!countMap[key]) {
+                     // Try to find matching classification in meta for 'minimo' and 'tiempoPregunta' base
+                     const metaClass = examMeta?.clasificaciones?.find(c => c.clasificacionNombre.toLowerCase().includes(name.split(' ')[0]));
                      countMap[key] = {
-                        cantidad: (countMap[key]?.cantidad || 0) + item.cantidadPreguntas,
-                        puntos: item.puntos || countMap[key]?.puntos || 0,
-                        tiempoPregunta: item.tiempoPregunta || countMap[key]?.tiempoPregunta || 0,
-                        minimo: item.minimo || countMap[key]?.minimo || 0
+                        cantidad: 0,
+                        puntos: 0,
+                        tiempoPregunta: metaClass?.tiempoPregunta || 2, // Default 2 min if missing
+                        minimo: metaClass?.minimo || 0 // Default 0
                      };
                   }
+                  
+                  const entry = countMap[key];
+                  // Count items (Subquestions or single question)
+                  if (entry) {
+                      if (q.subPreguntas && q.subPreguntas.length > 0) {
+                         entry.cantidad += q.subPreguntas.length;
+                         const subPoints = q.subPreguntas.reduce((acc, sub) => acc + (sub.puntos || 0), 0);
+                         entry.puntos += subPoints;
+                      } else {
+                         entry.cantidad += 1;
+                         entry.puntos += (q.puntos || 0);
+                      }
+                  }
                });
+
+               // Calculate average time per question for display if needed, or keep metadata time
+               // The UI displays "min/pregunta" and "Total min".
+               // Total min = min/pregunta * cantidad. 
+               // If we have varied times, this might be tricky. 
+               // Let's rely on the metadata 'tiempoPregunta' for the rate, but use the new 'cantidad' for the total.
+
+
+               // Sanity check: Ensure we have at least defaults
+               ['conocimientos pedagógicos', 'comprensión lectora', 'razonamiento lógico'].forEach(k => {
+                   const countEntry = countMap[k];
+                   if (countEntry) {
+                       // Fix average points per question for display (puntos / cantidad)
+                       // distinct from total points.
+                       // The UI shows: "{puntos} pts/correcta". 
+                       // We can average it or use metadata. 
+                       // Let's use metadata Puntos if available, else average.
+                       if (countEntry.cantidad > 0) {
+                           const avg = countEntry.puntos / countEntry.cantidad;
+                           // Store AVERAGE in 'puntos' field because UI multiplies it by quantity for Max.
+                           // Wait, UI does: `puntos * cantidad`. 
+                           // So 'puntos' in state should be "points per question".
+                           countEntry.puntos = parseFloat(avg.toFixed(2));
+                       }
+                   }
+               });
+
                setConteoPreguntas(countMap);
 
                // Auto-uncheck categories if they have 0 questions
@@ -158,15 +210,17 @@ const BancoPreguntasPage = () => {
                   razonamiento: (countMap['razonamiento lógico']?.cantidad || 0) > 0 ? prev.razonamiento : false,
                   conocimientos: (countMap['conocimientos pedagógicos']?.cantidad || 0) > 0 ? prev.conocimientos : false
                }));
-            } else {
+
+            } catch (error) {
+               console.error("Error fetching question counts:", error);
                setConteoPreguntas({});
-               setTiposPregunta({ comprension: false, razonamiento: false, conocimientos: false });
             }
          } else {
             setConteoPreguntas({});
             setTiposPregunta({ comprension: false, razonamiento: false, conocimientos: false });
          }
       };
+
       updateCounts();
    }, [selectedModalidadId, selectedNivelId, selectedEspecialidadId, selectedYear, loginExamenes]);
 
