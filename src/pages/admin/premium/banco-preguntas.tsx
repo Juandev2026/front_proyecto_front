@@ -84,6 +84,7 @@ const Recursos = () => {
   const [selectedEspecialidad, setSelectedEspecialidad] = useState<number | ''>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [newYearInput, setNewYearInput] = useState<string>(''); // State for input field
+  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // Número de la pregunta
 
   // Form State
   const [newItem, setNewItem] = useState({
@@ -398,6 +399,7 @@ const Recursos = () => {
     setEditingId(null);
     setJustificationBlocks([]);
     setImageFile(null);
+    setNumeroPregunta('');
     setNewItem({
       enunciado: '',
       respuesta: '',
@@ -536,15 +538,24 @@ const Recursos = () => {
       
       try {
           setLoading(true);
-          // 1. Find the ID. We'll use getAll and find.
+          // Determine effective IDs (same logic as resolveCurrentExamenId)
+          const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
+          const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
+          let effEspecialidadId = 0;
+          if (selectedEspecialidad) {
+            effEspecialidadId = Number(selectedEspecialidad);
+          } else if (availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId || availableEspecialidades[0].especialidadId === 0)) {
+            effEspecialidadId = 0;
+          }
+
           const allExams = await examenService.getAll();
-          const targetExam = allExams.find((e: any) => 
+          const targetExam = allExams.find((e: any) =>
               e.year === selectedYear &&
               e.tipoExamenId === Number(selectedTipo) &&
               e.fuenteId === Number(selectedFuente) &&
-              e.modalidadId === Number(selectedModalidad) &&
-              e.nivelId === Number(selectedNivel) &&
-              e.especialidadId === Number(selectedEspecialidad)
+              (effModalidadId === 0 ? (!e.modalidadId || e.modalidadId === 0) : e.modalidadId === effModalidadId) &&
+              (effNivelId === 0 ? (!e.nivelId || e.nivelId === 0) : e.nivelId === effNivelId) &&
+              (effEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effEspecialidadId)
           );
 
           if (!targetExam) {
@@ -635,21 +646,43 @@ const Recursos = () => {
 
   // --- HELPER TO RESOLVE EXAMEN ID ---
   const resolveCurrentExamenId = async (): Promise<number | null> => {
-    if (!selectedTipo || !selectedFuente || !selectedModalidad || !selectedNivel || !selectedEspecialidad || !selectedYear) {
+    // Minimum required: tipo, fuente, and year
+    if (!selectedTipo || !selectedFuente || !selectedYear) {
       return null;
     }
 
+    // Determine the effective especialidadId:
+    // If user explicitly selected one, use it.
+    // If there's only one specialty and it has no real ID (null/0), treat as 0.
+    // Otherwise (specialties exist but none selected), we can't resolve.
+    let effectiveEspecialidadId: number | null = null;
+    if (selectedEspecialidad) {
+      effectiveEspecialidadId = Number(selectedEspecialidad);
+    } else if (availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId || availableEspecialidades[0].especialidadId === 0)) {
+      effectiveEspecialidadId = 0; // single null specialty, auto-resolved
+    } else if (availableEspecialidades.length === 0) {
+      effectiveEspecialidadId = 0; // no specialties at all
+    } else {
+      // Multiple specialties but none chosen – cannot resolve
+      return null;
+    }
+
+    // Determine effective nivelId (0 if none available/needed)
+    const effectiveNivelId = selectedNivel ? Number(selectedNivel) : (availableNiveles.length === 0 ? 0 : null);
+    if (effectiveNivelId === null) return null; // niveles exist but none chosen
+
+    // Determine effective modalidadId (0 if none available/needed)
+    const effectiveModalidadId = selectedModalidad ? Number(selectedModalidad) : (availableModalidades.length === 0 ? 0 : null);
+    if (effectiveModalidadId === null) return null;
+
     try {
-      // Optimisation: If we already have the ID logic somewhere? 
-      // For now, let's rely on getAll() find. 
-      // TODO: If this is slow, backend should provide a better way to get ID from params.
       const allExams = await examenService.getAll();
-      const target = allExams.find(e => 
+      const target = allExams.find(e =>
         e.tipoExamenId === Number(selectedTipo) &&
         e.fuenteId === Number(selectedFuente) &&
-        e.modalidadId === Number(selectedModalidad) &&
-        e.nivelId === Number(selectedNivel) &&
-        e.especialidadId === Number(selectedEspecialidad) &&
+        (effectiveModalidadId === 0 ? (!e.modalidadId || e.modalidadId === 0) : e.modalidadId === effectiveModalidadId) &&
+        (effectiveNivelId === 0 ? (!e.nivelId || e.nivelId === 0) : e.nivelId === effectiveNivelId) &&
+        (effectiveEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effectiveEspecialidadId) &&
         e.year === selectedYear
       );
       return target ? target.id : null;
@@ -661,6 +694,19 @@ const Recursos = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar Tipo de Pregunta
+    if (!newItem.tipoPreguntaId) {
+      alert('El tipo de pregunta es obligatorio');
+      return;
+    }
+
+    // Validar Número de Pregunta
+    const numPreguntaParsed = parseInt(numeroPregunta, 10);
+    if (!numeroPregunta.trim() || isNaN(numPreguntaParsed) || numPreguntaParsed <= 0) {
+      alert('El número de la pregunta es obligatorio y debe ser mayor a 0');
+      return;
+    }
 
     if (!newItem.enunciado.trim()) {
       // eslint-disable-next-line no-alert
@@ -728,17 +774,11 @@ const Recursos = () => {
         setItems(prev => prev.map(p => p.id === editingId ? updated : p));
         alert('Pregunta actualizada con éxito');
       } else {
-        // Note: New endpoint expects Array
-        const createdArray = await preguntaService.createForExamen(targetExamenId, [payload]);
-        
-        if (createdArray && createdArray.length > 0) {
-            const newItem = createdArray[0];
-            if (newItem) {
-               // Optimistic Add
-               setItems(prev => [newItem, ...prev]);
-               console.log('Pregunta creada:', newItem, 'ExamenID:', targetExamenId);
-               alert(`Pregunta creada con éxito. ID: ${newItem.id} (Examen: ${targetExamenId})`);
-            }
+        // POST /api/Preguntas — examenId va dentro del body
+        const created = await preguntaService.create(payload as Omit<Pregunta, 'id'>);
+        if (created) {
+          setItems(prev => [created, ...prev]);
+          alert('Pregunta creada con éxito');
         }
       }
 
@@ -852,12 +892,19 @@ const Recursos = () => {
                     {/* Número */}
                     <div className="w-full md:w-1/4">
                         <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                           Número de la pregunta
+                           Número de la pregunta <span className="text-red-500">*</span>
                         </label>
                         <input 
                             type="number" 
-                            className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:border-[#4790FD] focus:ring-1 focus:ring-[#4790FD] outline-none transition-all"
-                            placeholder="0"
+                            className={`w-full border rounded px-3 py-2 text-gray-700 focus:ring-1 outline-none transition-all ${
+                              !numeroPregunta.trim() || isNaN(parseInt(numeroPregunta, 10)) || parseInt(numeroPregunta, 10) <= 0
+                                ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
+                                : 'border-[#4790FD] focus:border-[#4790FD] focus:ring-[#4790FD]'
+                            }`}
+                            placeholder="Requerido"
+                            min="1"
+                            value={numeroPregunta}
+                            onChange={(e) => setNumeroPregunta(e.target.value)}
                         />
                     </div>
                     

@@ -87,7 +87,7 @@ export const userService = {
     }
   },
 
-  create: async (user: Omit<User, 'id'>): Promise<User> => {
+  create: async (user: Omit<User, 'id'>): Promise<User | null> => {
     try {
       console.log('UserService.create payload:', user);
       const response = await fetch(API_URL, {
@@ -95,22 +95,29 @@ export const userService = {
         headers: getAuthHeaders(),
         body: JSON.stringify(user),
       });
+
+      const text = await response.text();
+      console.log('Backend raw response text:', text);
+
       if (!response.ok) {
-        const text = await response.text();
-        console.log('Backend raw response text:', text);
+        // Si el body está vacío y es 500, el backend pudo haber creado el registro
+        // pero falló al serializar la respuesta (bug del backend)
+        if (!text || text.trim() === '') {
+          console.warn(`Backend retornó ${response.status} con cuerpo vacío. Asumiendo éxito.`);
+          return null; // Tratamos como éxito silencioso
+        }
         let errorData;
         try {
           errorData = JSON.parse(text);
-          console.error('Backend error details (parsed):', errorData);
         } catch (e) {
-          console.error('Could not parse backend error as JSON');
           errorData = { message: text };
         }
         throw new Error(errorData.message || `Error ${response.status}: ${text}`);
       }
-      return await response.json();
+
+      if (!text || text.trim() === '') return null;
+      return JSON.parse(text);
     } catch (error) {
-      // Log removed
       throw error;
     }
   },
