@@ -9,6 +9,19 @@ import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
 import { exportToExcel } from '../../utils/excelUtils';
+import {
+  TrashIcon,
+  EyeIcon,
+  XIcon
+} from '@heroicons/react/outline';
+import {
+  UserIcon,
+  AcademicCapIcon,
+  LockClosedIcon,
+  CalendarIcon
+} from '@heroicons/react/solid';
+
+interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId: number; }
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -49,15 +62,10 @@ const UsersPage = () => {
   const [viewingUser, setViewingUser] = useState<User | null>(null);
 
   const [expirationMode, setExpirationMode] = useState<'1year' | '5months' | '10months' | 'custom'>('custom');
+  const [userExamenes, setUserExamenes] = useState<AcademicAccess[]>([]);
 
-  const handleExpirationChange = (mode: '1year' | '5months' | '10months' | 'custom') => {
+  const handleExpirationPresetChange = (mode: '1year' | '5months' | '10months') => {
     setExpirationMode(mode);
-    
-    if (mode === 'custom') {
-       // Keep existing or empty if switching to custom
-       return;
-    }
-
     const today = new Date();
     let newDate = new Date(today);
 
@@ -92,6 +100,7 @@ const UsersPage = () => {
       observaciones: '',
     });
     setExpirationMode('custom');
+    setUserExamenes([]);
   };
 
   const loadUsersOnly = async () => {
@@ -187,13 +196,20 @@ const UsersPage = () => {
         payload.accesoIds = [];
       }
 
+      if (payload.role === 'Premium') {
+        payload.userExamenes = userExamenes;
+      }
+
       // Cleanup payload for backend
       delete payload.passwordHash;
-      delete payload.fechaExpiracion;
       delete payload.region;
       delete payload.modalidad;
       delete payload.nivel;
       delete payload.especialidad;
+
+      if (editingUser && !payload.password) {
+        delete payload.password;
+      }
 
       console.log("Payload final que se enviará al Backend:", payload);
 
@@ -230,6 +246,19 @@ const UsersPage = () => {
       fechaExpiracion: user.fechaExpiracion,
       accesoIds: user.accesoIds || [],
     });
+
+    // Populate userExamenes
+    if (user.role === 'Premium') {
+      const apiExamenes = (user as any).userExamenes || [];
+      setUserExamenes(apiExamenes.map((e: any) => ({
+        modalidadId: e.modalidadId || 0,
+        nivelId: e.nivelId || 0,
+        especialidadId: e.especialidadId || 0,
+      })));
+    } else {
+      setUserExamenes([]);
+    }
+
     setExpirationMode('custom'); // Default to custom when editing, or we could check if it matches a preset
     setIsModalOpen(true);
   };
@@ -516,125 +545,31 @@ const UsersPage = () => {
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6">
-          <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-lg bg-white shadow-lg my-8">
-            <div className="flex items-center justify-between rounded-t border-b p-4 shrink-0">
-              <h3 className="text-xl font-semibold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
+          <div className="relative w-full max-w-lg max-h-[95vh] flex flex-col rounded-2xl bg-white shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900">
                 {editingUser ? 'Editar Usuario' : 'Crear Usuario'}
               </h3>
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900"
+                onClick={() => { setIsModalOpen(false); resetForm(); }}
+                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full p-1 transition-colors"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
+                <XIcon className="h-5 w-5" />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto">
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Nombre Completo
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombreCompleto}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        nombreCompleto: e.target.value,
-                      })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                    required
-                  />
-                </div>
-                {!editingUser && (
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium text-gray-900">
-                      Contraseña
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 pr-10 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showPassword ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                          </svg>
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Celular
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.celular}
-                    onChange={(e) =>
-                      setFormData({ ...formData, celular: e.target.value })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Rol
-                  </label>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* Role Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
                   <select
-                    value={formData.role ?? 'User'}
-                    onChange={(e) => {
-                      const newRole = e.target.value;
-                      setFormData({ ...formData, role: newRole });
-                      // Reset expiration if not Premium (optional, or keep it)
-                      if (newRole !== 'Premium') {
-                         setExpirationMode('custom'); // or reset logic
-                      }
-                    }}
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+                    value={formData.role ?? 'Client'}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
@@ -642,259 +577,330 @@ const UsersPage = () => {
                   </select>
                 </div>
 
-                {formData.role === 'Premium' && (
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium text-gray-900">
-                      Accesos
+                {/* === SECCIÓN 1: INFORMACIÓN PERSONAL === */}
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <UserIcon className="w-5 h-5 text-[#002B6B]" />
+                    <h4 className="font-bold text-[#002B6B]">Información personal</h4>
+                  </div>
+
+                  {/* Nombre completo */}
+                  <div className="mb-3">
+                    <label className="block text-sm text-gray-700 mb-1">Nombre completo*</label>
+                    <input
+                      type="text"
+                      placeholder="Nombre completo"
+                      value={formData.nombreCompleto}
+                      onChange={(e) => setFormData({ ...formData, nombreCompleto: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      required
+                    />
+                  </div>
+                  {/* Correo + Celular */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Correo*</label>
+                      <input
+                        type="email"
+                        placeholder="Correo"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Celular</label>
+                      <input
+                        type="text"
+                        placeholder="Teléfono"
+                        value={formData.celular}
+                        onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contraseña */}
+                  <div className="mb-3">
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Contraseña{!editingUser ? '*' : ' (Opcional)'}
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 border border-gray-300 rounded-lg p-3 bg-gray-50">
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder={editingUser ? "Dejar en blanco para no cambiar" : "Contraseña"}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] pr-10"
+                        required={!editingUser}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                         {showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5 opacity-50" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Región */}
+                  <div className="mb-3">
+                    <label className="block text-sm text-gray-700 mb-1">Región</label>
+                    <select
+                      value={formData.regionId ?? 0}
+                      onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                    >
+                      <option value={0}>Seleccionar región</option>
+                      {regions.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                    </select>
+                  </div>
+
+                  {/* IE (Solo Premium) */}
+                  {formData.role === 'Premium' && (
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">Institución Educativa</label>
+                      <input
+                        type="text"
+                        placeholder="Institución Educativa"
+                        value={formData.ie}
+                        onChange={(e) => setFormData({ ...formData, ie: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      />
+                    </div>
+                  )}
+
+                  {/* Observaciones (Solo Premium) */}
+                  {formData.role === 'Premium' && (
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Observaciones</label>
+                      <textarea
+                        placeholder="Observaciones"
+                        value={formData.observaciones}
+                        onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+                        rows={3}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] resize-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Solo Premium) === */}
+                {formData.role === 'Premium' && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <AcademicCapIcon className="w-5 h-5 text-[#002B6B]" />
+                      <h4 className="font-bold text-[#002B6B]">Información Académica</h4>
+                    </div>
+
+                    {/* Modalidad */}
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">Modalidad</label>
+                      <select
+                        value={formData.modalidadId ?? 0}
+                        onChange={(e) => setFormData({ ...formData, modalidadId: Number(e.target.value), nivelId: 0, especialidadId: 0 })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                      >
+                        <option value={0}>Seleccionar Modalidad</option>
+                        {modalidades.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Nivel */}
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">Nivel</label>
+                      <select
+                        value={formData.nivelId ?? 0}
+                        onChange={(e) => setFormData({ ...formData, nivelId: Number(e.target.value), especialidadId: 0 })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                        disabled={!formData.modalidadId}
+                      >
+                        <option value={0}>Seleccionar Nivel</option>
+                        {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Especialidad */}
+                    <div className="mb-4">
+                      <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
+                      <select
+                        value={formData.especialidadId ?? 0}
+                        onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                        disabled={!formData.nivelId}
+                      >
+                        <option value={0}>Seleccionar especialidad</option>
+                        {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Botones académicos */}
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!formData.modalidadId || !formData.nivelId) return;
+                          const espsToAdd = filteredEspecialidades.length > 0
+                            ? filteredEspecialidades.map(e => ({ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: e.id }))
+                            : [{ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: 0 }];
+                          
+                          // Evitar duplicados
+                          setUserExamenes(prev => {
+                            const newAccesos = [...prev];
+                            espsToAdd.forEach(acc => {
+                              if (!newAccesos.some(a => a.modalidadId === acc.modalidadId && a.nivelId === acc.nivelId && a.especialidadId === acc.especialidadId)) {
+                                newAccesos.push(acc);
+                              }
+                            });
+                            return newAccesos;
+                          });
+                        }}
+                        className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors bg-[#f59e0b] hover:bg-amber-600"
+                      >
+                        Añadir todas las especialidades
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!formData.modalidadId) return;
+                          const acceso = {
+                            modalidadId: Number(formData.modalidadId),
+                            nivelId: Number(formData.nivelId) || 0,
+                            especialidadId: Number(formData.especialidadId) || 0,
+                          };
+                          // Evitar duplicados
+                          setUserExamenes(prev => {
+                            if (prev.some(a => a.modalidadId === acceso.modalidadId && a.nivelId === acceso.nivelId && a.especialidadId === acceso.especialidadId)) {
+                              return prev;
+                            }
+                            return [...prev, acceso];
+                          });
+                        }}
+                        className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors bg-[#10b981] hover:bg-emerald-600"
+                      >
+                        Agregar acceso
+                      </button>
+                    </div>
+
+                    {/* Lista de accesos añadidos */}
+                    {userExamenes.length > 0 && (
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-semibold text-gray-700">Accesos agregados:</span>
+                          <button
+                            type="button"
+                            onClick={() => setUserExamenes([])}
+                            className="text-xs text-red-500 hover:text-red-700 underline"
+                          >
+                            Limpiar todo
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {userExamenes.map((ex, idx) => {
+                            const mod = modalidades.find(m => m.id === ex.modalidadId);
+                            const niv = niveles.find(n => n.id === ex.nivelId);
+                            const esp = especialidades.find(e => e.id === ex.especialidadId);
+                            return (
+                              <div key={idx} className="flex items-start justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-gray-700">
+                                  {mod?.nombre || '?'} | {niv?.nombre || '?'} | {esp?.nombre || 'General'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
+                                  className="text-red-400 hover:text-red-600 ml-3"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* === SECCIÓN 3: TIPO DE ACCESO (Solo Premium) === */}
+                {formData.role === 'Premium' && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <LockClosedIcon className="w-5 h-5 text-[#002B6B]" />
+                      <h4 className="font-bold text-[#002B6B]">Tipo de Acceso*</h4>
+                    </div>
+                    <div className="space-y-2">
                       {tiposAcceso.map((tipo) => (
-                        <label key={tipo.id} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={tipo.id} className="flex items-center gap-3 cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={formData.accesoIds?.includes(tipo.id) || false}
+                            checked={formData.accesoIds?.map(Number).includes(Number(tipo.id))}
                             onChange={(e) => {
-                              const checked = e.target.checked;
-                              setFormData(prev => {
-                                const current = prev.accesoIds || [];
-                                if (checked) return { ...prev, accesoIds: [...current, tipo.id] };
-                                else return { ...prev, accesoIds: current.filter(id => id !== tipo.id) };
-                              });
+                              const currentIds = formData.accesoIds || [];
+                              const id = Number(tipo.id);
+                              if (e.target.checked) {
+                                setFormData({ ...formData, accesoIds: [...currentIds.map(Number), id] });
+                              } else {
+                                setFormData({ ...formData, accesoIds: currentIds.map(Number).filter(cid => cid !== id) });
+                              }
                             }}
-                            className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                            className="w-4 h-4 accent-red-500 rounded"
                           />
-                          <span className="text-sm text-gray-700">{tipo.descripcion}</span>
+                          <span className="text-sm text-gray-800">{tipo.descripcion}</span>
                         </label>
                       ))}
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">* Selecciona al menos un tipo de acceso</p>
                   </div>
                 )}
 
+                {/* === SECCIÓN 4: FECHA EXPIRACIÓN (Solo Premium) === */}
                 {formData.role === 'Premium' && (
-                  <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-gray-900">
-                        Institución Educativa (IE)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.ie || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ie: e.target.value })
-                        }
-                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                      />
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CalendarIcon className="w-5 h-5 text-[#002B6B]" />
+                      <h4 className="font-bold text-[#002B6B]">Fecha de expiración</h4>
                     </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-gray-900">
-                        Observaciones
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.observaciones || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, observaciones: e.target.value })
-                        }
-                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                      />
+                    <div className="space-y-2">
+                       {[
+                        { key: '1year', label: '1 año desde hoy' },
+                        { key: '5months', label: '5 meses desde hoy' },
+                        { key: '10months', label: '10 meses desde hoy' },
+                        { key: 'custom', label: 'Elegir fecha específica' },
+                      ].map(({ key, label }) => (
+                        <label key={key} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="expiration-preset"
+                            checked={expirationMode === key}
+                            onChange={() => {
+                              if (key === 'custom') { setExpirationMode('custom'); }
+                              else { handleExpirationPresetChange(key as any); }
+                            }}
+                            className="w-4 h-4 accent-[#002B6B]"
+                          />
+                          <span className="text-sm text-gray-800">{label}</span>
+                        </label>
+                      ))}
                     </div>
+                    {expirationMode === 'custom' && (
+                      <input
+                        type="datetime-local"
+                        value={formData.fechaExpiracion ? new Date(formData.fechaExpiracion).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => setFormData({ ...formData, fechaExpiracion: e.target.value ? new Date(e.target.value).toISOString() : '' })}
+                        className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      />
+                    )}
                   </div>
                 )}
 
-                {formData.role === 'Premium' && (
-                  <div className="col-span-1 md:col-span-2 rounded-lg border border-gray-200 p-4">
-                    <h4 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      Fecha de expiración
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                       {/* 1 Año */}
-                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
-                        <input
-                          type="radio"
-                          name="expirationMode"
-                          value="1year"
-                          checked={expirationMode === '1year'}
-                          onChange={() => handleExpirationChange('1year')}
-                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm text-gray-700">1 año desde hoy</span>
-                      </label>
-
-                       {/* 5 Meses */}
-                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
-                        <input
-                          type="radio"
-                          name="expirationMode"
-                          value="5months"
-                          checked={expirationMode === '5months'}
-                          onChange={() => handleExpirationChange('5months')}
-                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm text-gray-700">5 meses desde hoy</span>
-                      </label>
-
-                       {/* 10 Meses */}
-                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
-                        <input
-                          type="radio"
-                          name="expirationMode"
-                          value="10months"
-                          checked={expirationMode === '10months'}
-                          onChange={() => handleExpirationChange('10months')}
-                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm text-gray-700">10 meses desde hoy</span>
-                      </label>
-
-                       {/* Custom */}
-                      <label className="flex items-center space-x-3 rounded-md border border-gray-100 p-2 hover:bg-gray-50 cursor-pointer transition-colors">
-                        <input
-                          type="radio"
-                          name="expirationMode"
-                          value="custom"
-                          checked={expirationMode === 'custom'}
-                          onChange={() => handleExpirationChange('custom')}
-                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm text-gray-700">Elegir fecha específica</span>
-                      </label>
-                    </div>
-
-                    {/* Date Picker for Custom or Display for others */}
-                    <div className="mt-3">
-                       <input
-                          type="datetime-local"
-                          value={formData.fechaExpiracion ? new Date(formData.fechaExpiracion).toISOString().slice(0, 16) : ''}
-                          onChange={(e) => {
-                             setExpirationMode('custom');
-                             setFormData({ ...formData, fechaExpiracion: new Date(e.target.value).toISOString() });
-                          }}
-                          disabled={expirationMode !== 'custom'}
-                          className={`block w-full rounded-lg border p-2.5 text-sm ${
-                            expirationMode !== 'custom'
-                              ? 'bg-gray-100 text-gray-500 border-gray-200'
-                              : 'bg-gray-50 text-gray-900 border-gray-300 focus:border-primary focus:ring-primary'
-                          }`}
-                        />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Región
-                  </label>
-                  <select
-                    value={formData.regionId ?? 0}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        regionId: Number(e.target.value),
-                      })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                  >
-                    <option value={0}>Seleccionar Región</option>
-                    {regions.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Modalidad
-                  </label>
-                  <select
-                    value={formData.modalidadId ?? 0}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        modalidadId: Number(e.target.value),
-
-                        nivelId: 0, // Reset nivel
-                        especialidadId: 0, // Reset especialidad
-                      })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                  >
-                    <option value={0}>Seleccionar Modalidad</option>
-                    {modalidades.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Nivel
-                  </label>
-                  <select
-                    value={formData.nivelId ?? 0}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        nivelId: Number(e.target.value),
-                        especialidadId: 0, // Reset especialidad
-                      })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                  >
-                    <option value={0}>Seleccionar Nivel</option>
-                    {filteredNiveles.map((n) => (
-                      <option key={n.id} value={n.id}>
-                        {n.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-1 md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Especialidad
-                  </label>
-                  <select
-                    value={formData.especialidadId ?? 0}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        especialidadId: Number(e.target.value),
-                      })
-                    }
-                    className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary focus:ring-primary"
-                  >
-                    <option value={0}>Seleccionar Especialidad</option>
-                    {filteredEspecialidades.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+                {/* === BOTÓN GUARDAR === */}
                 <button
                   type="submit"
-                  className="col-span-1 md:col-span-2 w-full rounded-lg bg-primary px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  className="w-full bg-[#002B6B] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
                 >
-                  {editingUser ? 'Actualizar' : 'Crear'}
+                  {editingUser ? 'Actualizar usuario' : 'Guardar usuario'}
                 </button>
               </form>
             </div>

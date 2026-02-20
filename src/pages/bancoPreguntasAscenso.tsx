@@ -142,7 +142,7 @@ const BancoPreguntasAscensoPage = () => {
                     setSelectedNivelId('');
                     setSelectedEspecialidadId('');
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 disabled={isLoading}
               >
                  <option value="">Selecciona Modalidad</option>
@@ -166,7 +166,7 @@ const BancoPreguntasAscensoPage = () => {
                     setSelectedEspecialidadId('');
                     setAnio(''); // Clear year when level changes
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 disabled={!selectedModalidadId}
               >
                  <option value="">Seleccionar nivel</option>
@@ -189,7 +189,7 @@ const BancoPreguntasAscensoPage = () => {
                     setSelectedEspecialidadId(id);
                     setAnio(''); // Clear year if specialty changes
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 disabled={!selectedNivelId || especialidadesData.length === 0}
               >
                  <option value="">Selecciona Especialidad</option>
@@ -208,7 +208,7 @@ const BancoPreguntasAscensoPage = () => {
               <select 
                 value={anio}
                 onChange={(e) => setAnio(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 disabled={!selectedEspecialidadId || aniosData.length === 0}
               >
                  <option value="">Selecciona Año</option>

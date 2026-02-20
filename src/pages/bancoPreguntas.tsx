@@ -343,7 +343,7 @@ const BancoPreguntasPage = () => {
                         setSelectedNivelId('');
                         setSelectedEspecialidadId('');
                      }}
-                     className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                     className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                      disabled={isLoading}
                   >
                      <option value="">Selecciona Modalidad</option>
@@ -367,7 +367,7 @@ const BancoPreguntasPage = () => {
                         setSelectedEspecialidadId('');
                         setSelectedYear(''); // Clear year when level changes
                      }}
-                     className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                     className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                      disabled={!selectedModalidadId}
                   >
                      <option value="">Selecciona Nivel</option>
@@ -389,7 +389,7 @@ const BancoPreguntasPage = () => {
                         const id = e.target.value === '' ? '' : Number(e.target.value);
                         setSelectedEspecialidadId(id);
                      }}
-                     className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                     className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                      disabled={!selectedNivelId}
                   >
                      <option value="">Selecciona Especialidad</option>
@@ -408,7 +408,7 @@ const BancoPreguntasPage = () => {
                   <select
                      value={selectedYear}
                      onChange={(e) => setSelectedYear(e.target.value)}
-                     className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                     className="w-full max-w-full truncate border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                      disabled={!selectedNivelId || aniosData.length === 0}
                   >
                      <option value="">Selecciona Año</option>
