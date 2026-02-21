@@ -1010,55 +1010,57 @@ const AdminPremiumDocentes = () => {
                   </div>
 
                   {/* Nivel */}
-                  <div className="mb-3">
-                    <label className="block text-sm text-gray-700 mb-1">Nivel</label>
-                    <div className="relative">
-                      <select
-                        value={formData.nivelId ?? 0}
-                        onChange={(e) => setFormData({ ...formData, nivelId: Number(e.target.value), especialidadId: 0 })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
-                        disabled={!formData.modalidadId}
-                      >
-                        <option value={0}>Seleccionar Nivel</option>
-                        {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
-                      </select>
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
+                  {!!formData.modalidadId && filteredNiveles.length > 0 && (
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">Nivel</label>
+                      <div className="relative">
+                        <select
+                          value={formData.nivelId ?? 0}
+                          onChange={(e) => setFormData({ ...formData, nivelId: Number(e.target.value), especialidadId: 0 })}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                        >
+                          <option value={0}>Seleccionar Nivel</option>
+                          {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Especialidad */}
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
-                    <div className="relative">
-                      <select
-                        value={formData.especialidadId ?? 0}
-                        onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
-                        disabled={!formData.nivelId}
-                      >
-                        <option value={0}>Seleccionar especialidad</option>
-                        {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                      </select>
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
+                  {!!formData.nivelId && filteredEspecialidades.length > 0 && (
+                    <div className="mb-4">
+                      <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
+                      <div className="relative">
+                        <select
+                          value={formData.especialidadId ?? 0}
+                          onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                        >
+                          <option value={0}>Seleccionar especialidad</option>
+                          {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Botones académicos */}
                   <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!formData.modalidadId || !formData.nivelId) return;
-                        const espsToAdd = filteredEspecialidades.length > 0
-                          ? filteredEspecialidades.map(e => ({ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: e.id }))
-                          : [{ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: 0 }];
-                        setUserExamenes(prev => [...prev, ...espsToAdd]);
-                      }}
-                      style={{ backgroundColor: '#f59e0b' }}
-                      className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors hover:opacity-90"
-                    >
-                      Añadir todas las especialidades
-                    </button>
+                    {filteredEspecialidades.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!formData.modalidadId || !formData.nivelId) return;
+                          const espsToAdd = filteredEspecialidades.map(e => ({ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: e.id }));
+                          setUserExamenes(prev => [...prev, ...espsToAdd]);
+                        }}
+                        style={{ backgroundColor: '#f59e0b' }}
+                        className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors hover:opacity-90"
+                      >
+                        Añadir todas las especialidades
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {

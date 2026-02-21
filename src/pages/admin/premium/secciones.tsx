@@ -620,7 +620,7 @@ const AdminPremiumSecciones = () => {
                             </div>
 
                             {/* Nivel (Depends on Modalidad) */}
-                            {newSection.modalidadId && (
+                            {!!newSection.modalidadId && (modalidades.find(m => m.id === newSection.modalidadId)?.niveles.length || 0) > 0 && (
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Nivel</label>
                                     <select 
@@ -640,7 +640,7 @@ const AdminPremiumSecciones = () => {
                             )}
 
                             {/* Especialidad (Depends on Nivel) */}
-                            {newSection.nivelId && (
+                            {!!newSection.nivelId && (modalidades.find(m => m.id === newSection.modalidadId)?.niveles.find(n => n.id === newSection.nivelId)?.especialidades.length || 0) > 0 && (
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Especialidad</label>
                                     <select 
@@ -777,7 +777,7 @@ const AdminPremiumSecciones = () => {
                             </div>
 
                             {/* Nivel */}
-                            {editingSection.modalidadId && (
+                            {!!editingSection.modalidadId && (modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.length || 0) > 0 && (
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Nivel</label>
                                     <select 
@@ -797,7 +797,7 @@ const AdminPremiumSecciones = () => {
                             )}
 
                             {/* Especialidad */}
-                            {editingSection.nivelId && (
+                            {!!editingSection.nivelId && (modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.find(n => n.id === editingSection.nivelId)?.especialidades.length || 0) > 0 && (
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Especialidad</label>
                                     <select 
