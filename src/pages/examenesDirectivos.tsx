@@ -53,7 +53,7 @@ const ExamenesDirectivosPage = () => {
   return (
     <PremiumLayout title="Exámenes MINEDU y Simulacros" breadcrumb="Pages / Exámenes MINEDU y Simulacros">
       <Head>
-        <title>Exámenes MINEDU y Simulacros - AVENDOCENTE</title>
+        <title>Exámenes MINEDU y Simulacros - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

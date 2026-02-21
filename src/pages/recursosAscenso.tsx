@@ -98,7 +98,7 @@ const RecursosAscensoPage = () => {
       <>
          <PremiumLayout title="Recursos Ascenso" breadcrumb="Pages / Recursos Ascenso">
          <Head>
-            <title>Recursos Ascenso - AVENDOCENTE</title>
+            <title>Recursos Ascenso - Avendocente</title>
          </Head>
 
          <div className="w-full space-y-6">

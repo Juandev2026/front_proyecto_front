@@ -288,7 +288,7 @@ const ExamenPage = () => {
   return (
     <PremiumLayout title="Examen" breadcrumb="Pages / Examen">
       <Head>
-        <title>Examen - AVENDOCENTE</title>
+        <title>Examen - Avendocente</title>
       </Head>
 
       {/* Top Bar Controls */}

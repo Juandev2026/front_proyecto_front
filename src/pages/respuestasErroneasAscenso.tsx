@@ -37,7 +37,7 @@ const RespuestasErroneasAscensoPage = () => {
   return (
     <PremiumLayout title="Respuestas Erróneas Ascenso" breadcrumb="Pages / Respuestas Erróneas Ascenso">
       <Head>
-        <title>Respuestas Erróneas Ascenso - AVENDOCENTE</title>
+        <title>Respuestas Erróneas Ascenso - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

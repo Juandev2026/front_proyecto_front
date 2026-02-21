@@ -55,7 +55,7 @@ const PremiumPage = () => {
   return (
     <PremiumLayout title="Banco de preguntas" breadcrumb="Pages / Banco de preguntas">
       <Head>
-        <title>Banco de Preguntas - AVENDOCENTE</title>
+        <title>Banco de Preguntas - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

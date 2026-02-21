@@ -118,7 +118,7 @@ const SimulacroExamenPage = () => {
   return (
     <PremiumLayout title="Simulacro de Examen" breadcrumb="Pages / Simulacro de Examen">
       <Head>
-        <title>Simulacro de Examen - AVENDOCENTE</title>
+        <title>Simulacro de Examen - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

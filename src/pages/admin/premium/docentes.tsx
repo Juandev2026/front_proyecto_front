@@ -582,7 +582,7 @@ const AdminPremiumDocentes = () => {
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         {/* Controls Row */}
         <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center">
-          <div className="flex gap-4 w-full md:w-auto flex-1">
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-1">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -598,9 +598,9 @@ const AdminPremiumDocentes = () => {
             </div>
 
             {/* Dropdown Filter */}
-            <div className="relative w-48">
+            <div className="relative w-full md:w-48">
               <select
-                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white"
                 value={filterOption}
                 onChange={(e) => setFilterOption(e.target.value)}
               >
@@ -671,7 +671,7 @@ const AdminPremiumDocentes = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
                   Modalidad/Nivel
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
+                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
                   Estado
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider font-bold">
@@ -756,8 +756,8 @@ const AdminPremiumDocentes = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px - 2 inline - flex text - xs leading - 5 font - semibold rounded - full ${getStatusColor(docente.estado)} `}>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className={`px-2 inline-flex text-sm leading-5 font-semibold rounded-full ${getStatusColor(docente.estado)}`}>
                         {docente.estado}
                       </span>
                     </td>
@@ -772,7 +772,7 @@ const AdminPremiumDocentes = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {docente.fechaExpiracion !== '-' ? (
-                        <span className={`text - xs px - 2 py - 1 rounded - full font - semibold ${new Date(docente.fechaExpiracion) < new Date()
+                        <span className={`text-sm px-2 py-1 rounded-full font-semibold ${new Date(docente.fechaExpiracion) < new Date()
                           ? 'bg-red-100 text-red-800'
                           : 'bg-blue-100 text-blue-800'
                           } `}>

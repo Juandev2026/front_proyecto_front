@@ -54,6 +54,7 @@ const Recursos = () => {
   const [tipoPreguntas, setTipoPreguntas] = useState<TipoPregunta[]>([]);
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [itemsLoading, setItemsLoading] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
 
@@ -577,9 +578,10 @@ const Recursos = () => {
   // --- DATA FETCHING ---
   const fetchData = async () => {
     try {
-      setLoading(true);
-
       // 1. Load Filters (Examen Grouped & Tipos) - Only if not loaded? 
+      if (groupedData.length === 0 || tipoPreguntas.length === 0 || clasificaciones.length === 0) {
+        setLoading(true);
+      }
       // Actually we need them to populate dropdowns.
       // Maybe we can split this? For now, keep loading controls.
       if (groupedData.length === 0) {
@@ -612,6 +614,7 @@ const Recursos = () => {
       // 2. Load Questions - Use the new filter API
       if (selectedTipo || selectedFuente || selectedModalidad || selectedNivel || selectedEspecialidad || selectedYear) {
           try {
+             setItemsLoading(true);
              const filterData = {
                 tipoExamenId: selectedTipo ? Number(selectedTipo) : undefined,
                 fuenteId: selectedFuente ? Number(selectedFuente) : undefined,
@@ -635,6 +638,7 @@ const Recursos = () => {
       console.error('Unexpected Error:', err);
     } finally {
       setLoading(false);
+      setItemsLoading(false);
     }
   };
 
@@ -810,7 +814,7 @@ const Recursos = () => {
   );
 
   // --- RENDER ---
-  if (loading)
+  if (loading && groupedData.length === 0)
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-64">
@@ -1378,11 +1382,15 @@ const Recursos = () => {
             </button>
 
             <button
-               disabled={!selectedTipo} 
+               disabled={!selectedTipo || itemsLoading} 
                onClick={() => setShowResults(true)}
                className="bg-white text-primary border border-primary px-4 py-2 rounded-lg flex items-center hover:bg-blue-50 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-               <EyeIcon className="w-4 h-4 mr-2" />
+               {itemsLoading ? (
+                 <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2"></span>
+               ) : (
+                 <EyeIcon className="w-4 h-4 mr-2" />
+               )}
                Visualizar Preguntas
             </button>
 
@@ -1492,7 +1500,12 @@ const Recursos = () => {
                      </button>
                  </div>
             </div>
-        {currentItems.length === 0 ? (
+        {itemsLoading ? (
+          <div className="bg-white rounded-lg p-12 text-center text-primary border border-gray-200 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
+            <p className="font-medium">Cargando preguntas...</p>
+          </div>
+        ) : currentItems.length === 0 ? (
           <div className="bg-white rounded-lg p-12 text-center text-gray-500 border border-gray-200">
             No se encontraron preguntas.
           </div>

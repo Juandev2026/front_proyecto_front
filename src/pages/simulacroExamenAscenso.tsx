@@ -110,7 +110,7 @@ const SimulacroExamenAscensoPage = () => {
   return (
     <PremiumLayout title="Simulacro de Examen Ascenso" breadcrumb="Pages / Simulacro de Examen Ascenso">
       <Head>
-        <title>Simulacro de Examen Ascenso - AVENDOCENTE</title>
+        <title>Simulacro de Examen Ascenso - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

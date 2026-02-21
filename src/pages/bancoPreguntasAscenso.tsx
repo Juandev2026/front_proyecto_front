@@ -114,7 +114,7 @@ const BancoPreguntasAscensoPage = () => {
   return (
     <PremiumLayout title="Banco de preguntas Ascenso" breadcrumb="Pages / Banco de preguntas Ascenso">
       <Head>
-        <title>Banco de Preguntas Ascenso - AVENDOCENTE</title>
+        <title>Banco de Preguntas Ascenso - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

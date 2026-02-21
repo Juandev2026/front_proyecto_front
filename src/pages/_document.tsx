@@ -15,10 +15,10 @@ class MyDocument extends Document {
               __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'EducationalOrganization',
-                name: 'AVENDOCENTE',
+                name: 'Avendocente',
                 description: 'Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato.',
-                url: 'https://tudominio.com',
-                logo: 'https://tudominio.com/assets/images/logo.png',
+                url: 'https://www.Avendocente.com',
+                logo: 'https://www.Avendocente.com/assets/images/logo_principal.png',
                 sameAs: [
                   'https://www.facebook.com/tuacademia',
                   'https://www.youtube.com/@tuacademia',

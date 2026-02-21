@@ -13,9 +13,9 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = 'COMUNIDAD de docentes del Perú',
+  title = 'Avendocente - Comunidad de docentes del Perú',
   description = 'Plataforma educativa con cursos, noticias y recursos para docentes, auxiliares y estudiantes. Preparación para nombramiento, ascenso y contrato.',
-  image = '/apple-touch-icon.png',
+  image = '/assets/images/logo_principal.png',
   article = false,
   publishedTime,
   modifiedTime,
@@ -42,7 +42,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImageUrl} />
-      <meta property="og:site_name" content="COMUNIDAD de docentes del Perú" />
+      <meta property="og:site_name" content="Avendocente" />
       <meta property="og:locale" content="es_ES" />
 
       {article && publishedTime && (
@@ -64,7 +64,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="robots" content="index, follow" />
       <meta name="language" content="Spanish" />
       <meta name="revisit-after" content="7 days" />
-      <meta name="author" content="AVEND DOCENTE" />
+      <meta name="author" content="Avendocente" />
 
       {/* Favicon */}
       <link rel="icon" href="/favicon.ico" />

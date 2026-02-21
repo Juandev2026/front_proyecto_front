@@ -84,12 +84,12 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
       <Head>
-        <title>{stripHtml(course.nombre)} | AVEND DOCENTE</title>
+        <title>{stripHtml(course.nombre)} | Avendocente</title>
         <meta name="description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta name="keywords" content={`${stripHtml(course.nombre)}, curso online, capacitación docente, educación`} />
         
         {/* Open Graph */}
-        <meta property="og:title" content={`${stripHtml(course.nombre)} | AVEND DOCENTE`} />
+        <meta property="og:title" content={`${stripHtml(course.nombre)} | Avendocente`} />
         <meta property="og:description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta property="og:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
         <meta property="og:type" content="product" />
@@ -97,7 +97,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${stripHtml(course.nombre)} | AVEND DOCENTE`} />
+        <meta name="twitter:title" content={`${stripHtml(course.nombre)} | Avendocente`} />
         <meta name="twitter:description" content={stripHtml(course.descripcion).substring(0, 160)} />
         <meta name="twitter:image" content={course.imagenUrl || '/assets/images/product1.jpg'} />
         
@@ -112,7 +112,7 @@ const CourseDetail = ({ course, error, url }: CourseDetailProps) => {
               description: stripHtml(course.descripcion),
               provider: {
                 '@type': 'Organization',
-                name: 'AVEND DOCENTE',
+                name: 'Avendocente',
               },
               image: course.imagenUrl || '/assets/images/product1.jpg',
               offers: {
