@@ -456,16 +456,19 @@ const AdminPremiumDocentes = () => {
       premiumUsers.forEach((u) => {
         const estado = calculateUserStatus(u.fechaExpiracion);
 
-        const subActivas = u.accesoIds && u.accesoIds.length > 0
-          ? u.accesoIds
-            .map(id => {
-              const tipo = tiposAcceso.find(t => Number(t.id) === Number(id));
-              const expDate = u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-';
-              return tipo ? `${tipo.descripcion}: ${expDate}` : '';
-            })
-            .filter(Boolean)
-            .join('; ')
-          : 'Todas expiradas';
+        // Map ACTIVE subscriptions using names from API if available
+        const subActivas = u.accesoNombres && u.accesoNombres.length > 0
+          ? u.accesoNombres.join(', ')
+          : (u.accesoIds && u.accesoIds.length > 0
+            ? u.accesoIds
+              .map(id => {
+                const tipo = tiposAcceso.find(t => Number(t.id) === Number(id));
+                const expDate = u.fechaExpiracion ? new Date(u.fechaExpiracion).toLocaleDateString() : '-';
+                return tipo ? `${tipo.descripcion}: ${expDate}` : '';
+              })
+              .filter(Boolean)
+              .join('; ')
+            : 'Todas expiradas');
 
         const rowValues = [
           u.id,
@@ -475,11 +478,11 @@ const AdminPremiumDocentes = () => {
           estado,
           u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
           subActivas,
-          u.modalidad?.nombre || '-',
-          u.nivel?.nombre || '-',
-          u.especialidad?.nombre || '-', // DATOS DE ESPECIALIDAD
+          u.modalidadNombres && u.modalidadNombres.length > 0 ? u.modalidadNombres.join(', ') : (u.modalidad?.nombre || '-'),
+          u.nivelNombres && u.nivelNombres.length > 0 ? u.nivelNombres.join(', ') : (u.nivel?.nombre || '-'),
+          u.especialidadNombres && u.especialidadNombres.length > 0 ? u.especialidadNombres.join(', ') : (u.especialidad?.nombre || '-'),
           u.region?.nombre || '-',
-          u.ie || '-',                   // DATOS DE IE
+          u.ie || '-',
           u.observaciones || '-'
         ];
 

@@ -54,6 +54,11 @@ export interface User {
   observaciones?: string;
   tiempo?: number;
   accesoIds?: number[];
+  accesoNombres?: string[];
+  modalidadNombres?: string[];
+  nivelNombres?: string[];
+  especialidadNombres?: string[];
+  userExamenes?: any[]; // For detailed data if needed
 }
 
 export const userService = {
