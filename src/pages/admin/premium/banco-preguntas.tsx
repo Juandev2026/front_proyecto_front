@@ -155,6 +155,14 @@ const Recursos = () => {
   };
 
   // --- UTILS ---
+  const selectedTipoNombre = useMemo(() => {
+    return groupedData.find(t => t.tipoExamenId === Number(selectedTipo))?.tipoExamenNombre || '';
+  }, [groupedData, selectedTipo]);
+
+  const isDirectivo = useMemo(() => {
+    return selectedTipoNombre.toLowerCase().includes('directivo');
+  }, [selectedTipoNombre]);
+
   const stripHtml = (html: string) => {
     if (!html) return '';
     if (typeof window === 'undefined') return html;
@@ -1223,7 +1231,7 @@ const Recursos = () => {
             {/* 3. Modalidad */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                Modalidad
+                {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1249,7 +1257,7 @@ const Recursos = () => {
             {availableNiveles.length > 0 && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Nivel
+                  {isDirectivo ? 'Examen Directivo' : 'Nivel'}
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1393,6 +1401,25 @@ const Recursos = () => {
                )}
                Visualizar Preguntas
             </button>
+
+            {isDirectivo && (
+              <>
+                <a
+                  href="/admin/premium/secciones"
+                  className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
+                >
+                  <MenuAlt2Icon className="w-4 h-4 mr-2" />
+                  Gestión de Secciones
+                </a>
+                <button
+                  className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
+                  onClick={() => alert("Módulo de gestión de exámenes en desarrollo")}
+                >
+                  <DocumentTextIcon className="w-4 h-4 mr-2" />
+                  Gestión de Exámenes
+                </button>
+              </>
+            )}
 
 
           </div>

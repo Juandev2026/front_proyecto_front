@@ -1290,11 +1290,21 @@ const AdminPremiumDocentes = () => {
                 <div className="flex justify-between px-8 text-center">
                   <div>
                     <p className="text-[#002B6B] font-bold text-sm mb-1">Modalidad</p>
-                    <p className="text-blue-600 font-bold">{selectedUserDetail.modalidad?.nombre || '-'}</p>
+                    <p className="text-blue-600 font-bold">
+                      {selectedUserDetail.modalidad?.nombre || 
+                       (selectedUserDetail as any).userExamenes?.[0]?.modalidadNombre || 
+                       modalidades.find(m => m.id === selectedUserDetail.modalidadId)?.nombre || 
+                       '-'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[#002B6B] font-bold text-sm mb-1">Nivel</p>
-                    <p className="text-blue-600 font-bold">{selectedUserDetail.nivel?.nombre || '-'}</p>
+                    <p className="text-blue-600 font-bold">
+                      {selectedUserDetail.nivel?.nombre || 
+                       (selectedUserDetail as any).userExamenes?.[0]?.nivelNombre || 
+                       niveles.find(n => n.id === selectedUserDetail.nivelId)?.nombre || 
+                       '-'}
+                    </p>
                   </div>
                 </div>
               </div>
