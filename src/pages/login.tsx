@@ -39,25 +39,12 @@ const Login = () => {
         password: formData.password,
       });
 
-      // The API may return {user: {...}, examenes: [...]} or a flat LoginResponse
-      let response: any;
-      let examenes: any[] = [];
+      // The API now returns {user: {...}, examenes: [...]}
+      const response = rawResponse.user;
+      const examenes = rawResponse.examenes || [];
 
-      if ((rawResponse as any).user) {
-        // New wrapped format: { user: {...}, examenes: [...] }
-        response = (rawResponse as any).user;
-        examenes = (rawResponse as any).examenes || [];
-      } else {
-        // Old flat format
-        response = rawResponse;
-      }
-
-      // Handle potential case sensitivity or missing property
-      const fullName =
-        response.fullName ||
-        response.FullName ||
-        response.fullname ||
-        response.email;
+      // Use fullName from response
+      const fullName = response.fullName || response.email;
 
       localStorage.setItem('token', response.token);
       if (fullName) {

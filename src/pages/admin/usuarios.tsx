@@ -20,6 +20,7 @@ import {
   LockClosedIcon,
   CalendarIcon
 } from '@heroicons/react/solid';
+import { formatDateForInput, parseInputDateToISO } from '../../utils/dateUtils';
 
 interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId: number; }
 
@@ -887,8 +888,8 @@ const UsersPage = () => {
                     {expirationMode === 'custom' && (
                       <input
                         type="datetime-local"
-                        value={formData.fechaExpiracion ? new Date(formData.fechaExpiracion).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => setFormData({ ...formData, fechaExpiracion: e.target.value ? new Date(e.target.value).toISOString() : '' })}
+                        value={formatDateForInput(formData.fechaExpiracion)}
+                        onChange={(e) => setFormData({ ...formData, fechaExpiracion: parseInputDateToISO(e.target.value) })}
                         className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       />
                     )}

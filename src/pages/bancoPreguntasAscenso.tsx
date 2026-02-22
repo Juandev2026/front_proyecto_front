@@ -92,7 +92,7 @@ const BancoPreguntasAscensoPage = () => {
               (!selectedNivelId || e.nivelId === selectedNivelId) &&
               (!selectedEspecialidadId || e.especialidadId === selectedEspecialidadId)
            )
-           .map(e => e.year)
+           .flatMap(e => (e.years || []).map(String))
      )
   ).sort((a, b) => Number(b) - Number(a));
 
@@ -288,7 +288,7 @@ const BancoPreguntasAscensoPage = () => {
                            const matchingExams = exams.filter(e => 
                               e.modalidadId === Number(selectedModalidadId) && 
                               e.nivelId === Number(selectedNivelId) && 
-                              e.year === anio &&
+                              (e.years || []).includes(Number(anio)) &&
                               (selectedEspecialidadId ? e.especialidadId === Number(selectedEspecialidadId) : true)
                            );
 

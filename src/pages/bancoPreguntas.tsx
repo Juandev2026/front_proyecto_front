@@ -108,7 +108,7 @@ const BancoPreguntasPage = () => {
                (!selectedNivelId || e.nivelId === selectedNivelId) &&
                (!selectedEspecialidadId || e.especialidadId === selectedEspecialidadId)
             )
-            .map(e => e.year)
+            .flatMap(e => (e.years || []).map(String))
       )
    ).sort((a, b) => Number(b) - Number(a));
 
@@ -122,7 +122,7 @@ const BancoPreguntasPage = () => {
                e.modalidadId === selectedModalidadId &&
                e.nivelId === selectedNivelId &&
                e.especialidadId === selectedEspecialidadId &&
-               e.year === selectedYear
+               (e.years || []).includes(Number(selectedYear))
             );
 
             // Fetch actual questions to get accurate counts (including sub-questions)
@@ -247,7 +247,7 @@ const BancoPreguntasPage = () => {
             const exam = exams.find(e => 
                e.modalidadId === Number(selectedModalidadId) && 
                e.nivelId === Number(selectedNivelId) && 
-               e.year === selectedYear &&
+               (e.years || []).includes(Number(selectedYear)) &&
                (selectedEspecialidadId ? e.especialidadId === Number(selectedEspecialidadId) : true)
             );
 

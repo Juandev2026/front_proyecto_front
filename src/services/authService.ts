@@ -53,7 +53,7 @@ export interface ExamenLogin {
   nivelNombre: string;
   especialidadId: number;
   especialidadNombre: string;
-  year: string;
+  years: number[];
   cantidadPreguntas: number;
   clasificaciones: ClasificacionExamen[];
 }
@@ -131,7 +131,7 @@ export const authService = {
     }
   },
 
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
+  login: async (data: LoginRequest): Promise<LoginApiResponse> => {
     try {
       const response = await fetch(`${apiAuth}/login`, {
         method: 'POST',
