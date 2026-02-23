@@ -89,8 +89,10 @@ const Login = () => {
         response.role?.toUpperCase() === 'SUBADMIN'
       ) {
         router.push('/admin/');
+      } else if (response.role?.toUpperCase() === 'PREMIUM') {
+        router.push('/');
       } else {
-        router.push('/bancoPreguntas'); // Redirect to Banco de Preguntas instead of home
+        router.push('/'); // Redirect to home instead of protected area
       }
     } catch (err: any) {
       setError(

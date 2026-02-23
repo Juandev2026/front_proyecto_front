@@ -197,4 +197,26 @@ export const authService = {
       throw error;
     }
   },
+
+  checkStatus: async (): Promise<LoginResponse> => {
+    try {
+      const response = await fetch(`${apiAuth}/status`, {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error al verificar el estado');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
 };

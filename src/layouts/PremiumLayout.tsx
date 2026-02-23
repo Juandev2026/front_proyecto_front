@@ -32,10 +32,24 @@ interface PremiumLayoutProps {
 const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashboard', breadcrumb = 'Pages / Dashboard' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Redirection logic for non-premium users
+  useEffect(() => {
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.push('/login');
+      } else {
+        const role = user?.role?.toUpperCase();
+        if (role !== 'PREMIUM' && role !== 'ADMIN' && role !== 'SUBADMIN') {
+          router.push('/');
+        }
+      }
+    }
+  }, [loading, isAuthenticated, user, router]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -333,7 +347,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
             <div className="hidden md:flex flex-col items-end mr-2">
               <span className="text-sm font-bold text-[#4790FD] leading-tight">{user?.name || 'Usuario'}</span>
-              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">PREMIUM</span>
+              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">{user?.role?.toUpperCase()}</span>
             </div>
             <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
               {(user?.name || 'U').charAt(0).toUpperCase()}

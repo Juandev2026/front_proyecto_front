@@ -139,11 +139,15 @@ const Menu = () => {
               })}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  <Link href="/bancoPreguntas">
-                    <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
-                      Aula Virtual
-                    </a>
-                  </Link>
+                  {(user?.role?.toUpperCase() === 'PREMIUM' || 
+                    user?.role?.toUpperCase() === 'ADMIN' || 
+                    user?.role?.toUpperCase() === 'SUBADMIN') && (
+                    <Link href="/bancoPreguntas">
+                      <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
+                        Aula Virtual
+                      </a>
+                    </Link>
+                  )}
                   {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">
@@ -257,11 +261,15 @@ const Menu = () => {
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
                     Hola, {user?.name?.split(' ')[0]}
                   </div>
-                  <Link href="/bancoPreguntas">
-                    <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
-                      Aula Virtual
-                    </a>
-                  </Link>
+                  {(user?.role?.toUpperCase() === 'PREMIUM' || 
+                    user?.role?.toUpperCase() === 'ADMIN' || 
+                    user?.role?.toUpperCase() === 'SUBADMIN') && (
+                    <Link href="/bancoPreguntas">
+                      <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
+                        Aula Virtual
+                      </a>
+                    </Link>
+                  )}
                   {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="block w-full px-5 py-3 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-full transition-colors shadow-md">

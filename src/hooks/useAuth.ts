@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { authService } from '../services/authService';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,7 +25,6 @@ export const useAuth = () => {
     let especialidadId = localStorage.getItem('especialidadId');
     let accesoNombresRaw = localStorage.getItem('accesoNombres');
     let accesoIdsRaw = localStorage.getItem('accesoIds');
-
 
     // Clean up invalid strings
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') userId = null;
@@ -68,7 +68,7 @@ export const useAuth = () => {
 
       setIsAuthenticated(true);
       
-      // Always set user object if we have at least partial info
+      // Initial user object from localStorage
       const parsedId = userId ? Number(userId) : undefined;
       const parsedNivelId = nivelId ? Number(nivelId) : undefined;
       const parsedEspecialidadId = especialidadId ? Number(especialidadId) : undefined;
@@ -91,8 +91,8 @@ export const useAuth = () => {
         }
       }
 
-      setUser({
-        name: fullName || 'Usuario', // Fallback to avoid null
+      const initialUser = {
+        name: fullName || 'Usuario',
         id: !isNaN(parsedId!) ? parsedId : undefined,
         nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
         role: role || undefined,
@@ -100,12 +100,33 @@ export const useAuth = () => {
         accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
         especialidad: especialidad || undefined,
         especialidadId: !isNaN(parsedEspecialidadId!) ? parsedEspecialidadId : undefined,
-      });
+      };
+
+      setUser(initialUser);
+
+      // Verify status with backend to check for expiration
+      const verifyStatus = async () => {
+        try {
+          const status = await authService.checkStatus();
+          // If role changed (e.g., Premium -> Client due to expiration)
+          if (status.role && status.role !== role) {
+            localStorage.setItem('role', status.role);
+            setUser(prev => prev ? { ...prev, role: status.role } : null);
+          }
+        } catch (error) {
+          // If status fails, maybe token is expired/invalid
+          // console.error("Session verification failed", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      verifyStatus();
     } else {
       setIsAuthenticated(false);
       setUser(null);
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   return { isAuthenticated, user, loading };
