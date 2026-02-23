@@ -130,17 +130,15 @@ export const userService = {
   update: async (id: number, user: Partial<User>): Promise<void> => {
     try {
       // Create a shallow copy to modify payload
-      const payload = { ...user, id };
+      const payload = { ...user };
 
-      // Remove password if it is empty string or undefined, so backend doesn't try to hash an empty password
-      if (!payload.password) {
-        delete payload.password;
-      }
-
-      // Log removed // Debugging
+      // Remove sensitive or redundant fields for PATCH
+      delete payload.id;
+      delete payload.password;
+      delete payload.passwordHash;
 
       const response = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
       });
