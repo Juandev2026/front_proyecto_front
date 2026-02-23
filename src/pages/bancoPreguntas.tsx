@@ -66,8 +66,8 @@ const BancoPreguntasPage = () => {
          if (stored) {
             try {
                const parsed: ExamenLogin[] = JSON.parse(stored);
-               // Filter for Nombramiento (tipoExamenId: 3)
-               const filtered = parsed.filter(e => e.tipoExamenId === 3);
+               // Filter for Nombramiento (tipoExamenId: 2)
+               const filtered = parsed.filter(e => e.tipoExamenId === 2);
                setLoginExamenes(filtered);
             } catch (e) {
                console.error('Error parsing loginExamenes from localStorage:', e);
@@ -245,6 +245,7 @@ const BancoPreguntasPage = () => {
             // Find the filtered exam to get actual classification IDs
             const exams = JSON.parse(localStorage.getItem('loginExamenes') || '[]') as any[];
             const exam = exams.find(e => 
+               e.tipoExamenId === 2 &&
                e.modalidadId === Number(selectedModalidadId) && 
                e.nivelId === Number(selectedNivelId) && 
                (e.years || []).includes(Number(selectedYear)) &&

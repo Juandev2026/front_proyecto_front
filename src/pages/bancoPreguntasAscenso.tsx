@@ -286,6 +286,7 @@ const BancoPreguntasAscensoPage = () => {
                            // Find exams matching criteria
                            const exams = JSON.parse(localStorage.getItem('loginExamenes') || '[]') as any[];
                            const matchingExams = exams.filter(e => 
+                              e.tipoExamenId === 1 &&
                               e.modalidadId === Number(selectedModalidadId) && 
                               e.nivelId === Number(selectedNivelId) && 
                               (e.years || []).includes(Number(anio)) &&
