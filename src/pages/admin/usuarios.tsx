@@ -350,7 +350,7 @@ const UsersPage = () => {
         'Nombre Completo': u.nombreCompleto,
         'Teléfono': u.celular || '-',
         'Email': u.email,
-        'Rol': getEffectiveRole(u),
+        'Rol': u.role + (getEffectiveRole(u) === 'Client' && u.role?.toUpperCase() === 'PREMIUM' ? ' (Expirado)' : ''),
         'Estado': u.estado || 'Activo',
         'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
         'Suscripciones Activas': u.accesoNombres && u.accesoNombres.length > 0 ? u.accesoNombres.join(', ') : '-',
@@ -469,7 +469,12 @@ const UsersPage = () => {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {getEffectiveRole(user)}
+                      {user.role}
+                      {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
+                        <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
+                          Expirado
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {regionName}

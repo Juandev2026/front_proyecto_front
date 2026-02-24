@@ -35,7 +35,7 @@ a:hover {
 }
 
 /* Line Clamp Utilities */
-/*! autoprefixer: off */
+/* autoprefixer: off */
 .line-clamp-1 {
   overflow: hidden;
   display: -webkit-box;
@@ -56,4 +56,4 @@ a:hover {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
-/*! autoprefixer: on */
+/* autoprefixer: on */
