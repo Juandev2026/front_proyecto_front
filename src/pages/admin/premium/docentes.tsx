@@ -584,9 +584,10 @@ const AdminPremiumDocentes = () => {
         <h1 className="text-2xl font-bold">Administrar docentes</h1>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+      {/* Sticky Filters & Controls */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 sticky top-[-24px] z-30 mb-6">
         {/* Controls Row */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-1">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -636,6 +637,10 @@ const AdminPremiumDocentes = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Stats and Table Container */}
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -723,35 +728,77 @@ const AdminPremiumDocentes = () => {
                           <button
                             type="button"
                             onClick={() => setOpenPopoverId(openPopoverId === docente.id ? null : docente.id)}
-                            className="text-blue-600 hover:text-blue-800 underline text-sm"
+                            className="text-blue-600 hover:text-blue-800 underline text-sm font-semibold"
                           >
                             Ver accesos ({docente.userExamenes.length})
                           </button>
                           {openPopoverId === docente.id && (
-                            <div className="absolute z-50 left-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[220px]">
-                              <div className="space-y-1">
-                                {docente.userExamenes.map((ex, i) => {
-                                  const mod = ex.modalidadNombre
-                                    ? ex.modalidadNombre.substring(0, 3).toUpperCase()
-                                    : '?';
-                                  return (
-                                    <div key={i} className="text-sm text-gray-700">
-                                      <span className="font-semibold text-blue-700">{mod}</span>
-                                      {ex.nivelNombre ? ` - ${ex.nivelNombre.trim()}` : ''}
-                                      {ex.especialidadNombre ? ` - ${ex.especialidadNombre}` : ''}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <button
-                                type="button"
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
+                              <div 
+                                className="absolute inset-0" 
                                 onClick={() => setOpenPopoverId(null)}
-                                className="mt-2 text-xs text-gray-400 hover:text-gray-600"
-                              >
-                                Cerrar
-                              </button>
+                              ></div>
+                              <div className="relative bg-white border border-gray-100 rounded-2xl shadow-2xl p-6 w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                                {/* Modal Header */}
+                                <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                                  <div>
+                                    <h4 className="text-lg font-bold text-[#002B6B]">Accesos del Docente</h4>
+                                    <p className="text-xs text-gray-500 font-medium mt-0.5">{docente.nombre}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => setOpenPopoverId(null)} 
+                                    className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors flex items-center justify-center shadow-sm"
+                                  >
+                                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+
+                                {/* Modal Body (Scrollable) */}
+                                <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1 py-1">
+                                  {docente.userExamenes.map((ex, i) => (
+                                    <div key={i} className="flex items-start gap-4 p-4 bg-blue-50/40 rounded-2xl border border-blue-100 transition-all hover:bg-blue-50/80 hover:shadow-sm">
+                                      <div className="bg-blue-600 p-2.5 rounded-xl shadow-md text-white mt-1 group-hover:scale-110 transition-transform">
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                          </svg>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest mb-1 opacity-70">
+                                          {ex.modalidadNombre || 'MODALIDAD'}
+                                        </div>
+                                        <div className="text-base font-bold text-gray-800 truncate">
+                                          {ex.nivelNombre ? ex.nivelNombre.trim() : 'NIVEL NO ASIGNADO'}
+                                        </div>
+                                        {ex.especialidadNombre && (
+                                          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-blue-100 rounded-lg text-xs font-semibold text-gray-600 shadow-sm">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                            {ex.especialidadNombre}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Modal Footer */}
+                                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
+                                    Total: {docente.userExamenes.length} accesos
+                                  </span>
+                                  <button 
+                                    onClick={() => setOpenPopoverId(null)}
+                                    className="px-6 py-2 bg-[#002B6B] text-white text-xs font-bold rounded-xl hover:bg-blue-900 transition-colors shadow-lg shadow-blue-900/10"
+                                  >
+                                    Cerrar
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
+
+
                         </div>
                       )}
                     </td>
@@ -1010,6 +1057,58 @@ const AdminPremiumDocentes = () => {
                       <h4 className="font-bold text-[#002B6B]">Información Académica</h4>
                     </div>
 
+                    {/* Lista de accesos añadidos - MOVED TO TOP */}
+                    {userExamenes.length > 0 && (
+                      <div className="mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                            Accesos configurados ({userExamenes.length})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setUserExamenes([])}
+                            className="text-xs text-red-500 hover:text-red-700 font-bold bg-white px-2 py-1 rounded border border-red-100 shadow-sm transition-colors"
+                          >
+                            Limpiar todo
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
+                          {userExamenes.map((ex, idx) => {
+                            const mod = modalidades.find(m => m.id === ex.modalidadId);
+                            const niv = niveles.find(n => n.id === ex.nivelId);
+                            const esp = especialidades.find(e => e.id === ex.especialidadId);
+                            return (
+                              <div key={idx} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm group">
+                                <div className="flex flex-col">
+                                  <span className="text-[10px] font-bold text-blue-600 uppercase leading-none mb-1">
+                                    {mod?.nombre || '?'}
+                                  </span>
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {niv?.nombre || '?'} {esp ? ` - ${esp.nombre}` : ''}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
+                                  className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                  title="Eliminar"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+
                     {/* Modalidad */}
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">Modalidad</label>
@@ -1096,43 +1195,7 @@ const AdminPremiumDocentes = () => {
                       </button>
                     </div>
 
-                    {/* Lista de accesos añadidos */}
-                    {userExamenes.length > 0 && (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-gray-700">Accesos agregados:</span>
-                          <button
-                            type="button"
-                            onClick={() => setUserExamenes([])}
-                            className="text-xs text-red-500 hover:text-red-700 underline"
-                          >
-                            Limpiar todo
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          {userExamenes.map((ex, idx) => {
-                            const mod = modalidades.find(m => m.id === ex.modalidadId);
-                            const niv = niveles.find(n => n.id === ex.nivelId);
-                            const esp = especialidades.find(e => e.id === ex.especialidadId);
-                            return (
-                              <div key={idx} className="flex items-start justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                <span className="text-gray-700">
-                                  Modalidad: {mod?.nombre || '?'} | Nivel: {niv?.nombre || '?'} | Especialidad: {esp?.nombre || 'Todas'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
-                                  className="text-red-400 hover:text-red-600 ml-3 flex-shrink-0"
-                                  title="Eliminar"
-                                >
-                                  🗑
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 )}
 

@@ -716,6 +716,58 @@ const UsersPage = () => {
                       <h4 className="font-bold text-[#002B6B]">Información Académica</h4>
                     </div>
 
+                    {/* Lista de accesos añadidos - MOVED TO TOP */}
+                    {userExamenes.length > 0 && (
+                      <div className="mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                            Accesos configurados ({userExamenes.length})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setUserExamenes([])}
+                            className="text-xs text-red-500 hover:text-red-700 font-bold bg-white px-2 py-1 rounded border border-red-100 shadow-sm transition-colors"
+                          >
+                            Limpiar todo
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
+                          {userExamenes.map((ex, idx) => {
+                            const mod = modalidades.find(m => m.id === ex.modalidadId);
+                            const niv = niveles.find(n => n.id === ex.nivelId);
+                            const esp = especialidades.find(e => e.id === ex.especialidadId);
+                            return (
+                              <div key={idx} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm group">
+                                <div className="flex flex-col">
+                                  <span className="text-[10px] font-bold text-blue-600 uppercase leading-none mb-1">
+                                    {mod?.nombre || '?'}
+                                  </span>
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {niv?.nombre || '?'} {esp ? ` - ${esp.nombre}` : ''}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
+                                  className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                  title="Eliminar"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+
                     {/* Modalidad */}
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">Modalidad</label>

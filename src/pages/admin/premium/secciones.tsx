@@ -352,8 +352,8 @@ const AdminPremiumSecciones = () => {
         <p className="text-sm opacity-90">Exámenes Propios ED</p>
       </div>
 
-      {/* --- FILTERS & ACTIONS --- */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      {/* --- FILTERS & ACTIONS (Sticky for accessibility) --- */}
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6 sticky top-[-24px] z-30 border-b border-gray-100">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           
           {/* Search */}
@@ -601,6 +601,27 @@ const AdminPremiumSecciones = () => {
                         <h3 className="text-sm font-bold text-[#002B6B] mb-3">Categorías *</h3>
                         
                         <div className="space-y-4">
+                            {/* Categorías agregadas List (MOVED TO TOP) */}
+                            {newSection.categoriasList.length > 0 && (
+                                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="text-xs font-bold text-blue-700 uppercase mb-2">Categorías configuradas ({newSection.categoriasList.length})</h4>
+                                    <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
+                                        {newSection.categoriasList.map((cat) => (
+                                            <div key={cat.id} className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 shadow-sm transition-all hover:border-blue-300 group">
+                                                <span className="text-[11px] text-gray-700 font-medium truncate">{cat.nombre}</span>
+                                                <button 
+                                                    onClick={() => handleRemoveCategory(cat.id, false)}
+                                                    className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                    title="Eliminar categoría"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Tipo (Modalidad) */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
@@ -665,26 +686,7 @@ const AdminPremiumSecciones = () => {
                             Agregar Categoría
                         </button>
 
-                        {/* Categorías agregadas List (Inside Categorías section for better flow) */}
-                        {newSection.categoriasList.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <h4 className="text-sm font-bold text-gray-700 mb-2">Categorías agregadas:</h4>
-                                <div className="space-y-2">
-                                    {newSection.categoriasList.map((cat) => (
-                                        <div key={cat.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 group">
-                                            <span className="text-xs text-gray-700 font-medium">{cat.nombre}</span>
-                                            <button 
-                                                onClick={() => handleRemoveCategory(cat.id, false)}
-                                                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
-                                                title="Eliminar categoría"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 </div>
 
@@ -757,6 +759,27 @@ const AdminPremiumSecciones = () => {
                     <div className="pt-2 border-t border-gray-100">
                         <h3 className="text-sm font-bold text-[#002B6B] mb-3">Categorías *</h3>
                         
+                        {/* Categorías agregadas List (MOVED TO TOP) */}
+                        {editingSection.categorias.length > 0 && (
+                            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <h4 className="text-xs font-bold text-blue-700 uppercase mb-2">Categorías configuradas ({editingSection.categorias.length})</h4>
+                                <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
+                                    {editingSection.categorias.map((cat) => (
+                                        <div key={cat.id} className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 shadow-sm transition-all hover:border-blue-300 group">
+                                            <span className="text-[11px] text-gray-700 font-medium truncate">{cat.descripcion}</span>
+                                            <button 
+                                                onClick={() => handleRemoveCategory(cat.id, true)}
+                                                className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                title="Eliminar categoría"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="space-y-4">
                             {/* Tipo (Modalidad) */}
                             <div>
@@ -825,26 +848,7 @@ const AdminPremiumSecciones = () => {
                             Agregar Categoría
                         </button>
 
-                        {/* Categorías agregadas List */}
-                        {editingSection.categorias.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <h4 className="text-sm font-bold text-gray-700 mb-2">Categorías agregadas:</h4>
-                                <div className="space-y-2">
-                                    {editingSection.categorias.map((cat) => (
-                                        <div key={cat.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 group">
-                                            <span className="text-xs text-gray-700 font-medium">{cat.descripcion}</span>
-                                            <button 
-                                                onClick={() => handleRemoveCategory(cat.id, true)}
-                                                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
-                                                title="Eliminar categoría"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 </div>
 
