@@ -288,14 +288,26 @@ const UsersPage = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
+  const getEffectiveRole = (user: User) => {
+    if (user.role?.toUpperCase() === 'PREMIUM') {
+      if (!user.fechaExpiracion || user.fechaExpiracion === '-') return 'Client';
+      const expDate = new Date(user.fechaExpiracion);
+      if (expDate < new Date()) {
+        return 'Client';
+      }
+    }
+    return user.role;
+  };
+
   const filteredUsers = users.filter((user) => {
+    const effectiveRole = getEffectiveRole(user);
     const matchesSearch = 
       user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+      (effectiveRole || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     // Show ONLY 'Admin' and 'Client' roles as requested
-    const isAllowedRole = ['Admin', 'Client'].includes(user.role);
+    const isAllowedRole = ['Admin', 'Client'].includes(effectiveRole || '');
     
     return matchesSearch && isAllowedRole;
   });
@@ -338,7 +350,7 @@ const UsersPage = () => {
         'Nombre Completo': u.nombreCompleto,
         'Teléfono': u.celular || '-',
         'Email': u.email,
-        'Rol': u.role,
+        'Rol': getEffectiveRole(u),
         'Estado': u.estado || 'Activo',
         'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
         'Suscripciones Activas': u.accesoNombres && u.accesoNombres.length > 0 ? u.accesoNombres.join(', ') : '-',
@@ -457,7 +469,7 @@ const UsersPage = () => {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.role}
+                      {getEffectiveRole(user)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {regionName}

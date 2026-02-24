@@ -70,6 +70,7 @@ export interface LoginResponse {
   especialidadId?: number | null;
   accesoIds?: number[];
   accesoNombres?: string[];
+  fechaExpiracion?: string;
 }
 
 export interface LoginApiResponse {

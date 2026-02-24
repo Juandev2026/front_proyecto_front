@@ -148,6 +148,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">
+      {loading && (
+        <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-500 font-medium">Verificando acceso...</p>
+          </div>
+        </div>
+      )}
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div

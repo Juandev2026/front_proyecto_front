@@ -60,8 +60,20 @@ const Login = () => {
         localStorage.setItem('modalidadId', String(response.modalidadId));
       }
       // Save role safely handling null/undefined
-      if (response.role) {
-        localStorage.setItem('role', response.role);
+      let finalRole = response.role;
+      if (response.fechaExpiracion && response.fechaExpiracion !== '-' && finalRole?.toUpperCase() === 'PREMIUM') {
+        const expDate = new Date(response.fechaExpiracion);
+        if (expDate < new Date()) {
+          finalRole = 'Client';
+        }
+      }
+
+      if (finalRole) {
+        localStorage.setItem('role', finalRole);
+      }
+      
+      if (response.fechaExpiracion) {
+        localStorage.setItem('fechaExpiracion', response.fechaExpiracion);
       }
       
       if (response.accesoNombres) {
@@ -85,11 +97,11 @@ const Login = () => {
       }
 
       if (
-        response.role?.toUpperCase() === 'ADMIN' ||
-        response.role?.toUpperCase() === 'SUBADMIN'
+        finalRole?.toUpperCase() === 'ADMIN' ||
+        finalRole?.toUpperCase() === 'SUBADMIN'
       ) {
         router.push('/admin/');
-      } else if (response.role?.toUpperCase() === 'PREMIUM') {
+      } else if (finalRole?.toUpperCase() === 'PREMIUM') {
         router.push('/');
       } else {
         router.push('/'); // Redirect to home instead of protected area

@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 
 const Menu = () => {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const { navigation, company } = config;
   const { name: companyName } = company;
 
@@ -139,7 +139,8 @@ const Menu = () => {
               })}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  {(user?.role?.toUpperCase() === 'PREMIUM' || 
+                  {/* Aula Virtual logic - waits for loading */}
+                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' || 
                     user?.role?.toUpperCase() === 'ADMIN' || 
                     user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/bancoPreguntas">
@@ -148,7 +149,7 @@ const Menu = () => {
                       </a>
                     </Link>
                   )}
-                  {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
+                  {!loading && (user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">
                         Panel Admin
@@ -261,7 +262,7 @@ const Menu = () => {
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
                     Hola, {user?.name?.split(' ')[0]}
                   </div>
-                  {(user?.role?.toUpperCase() === 'PREMIUM' || 
+                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' || 
                     user?.role?.toUpperCase() === 'ADMIN' || 
                     user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/bancoPreguntas">
@@ -270,7 +271,7 @@ const Menu = () => {
                       </a>
                     </Link>
                   )}
-                  {(user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
+                  {!loading && (user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="block w-full px-5 py-3 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-full transition-colors shadow-md">
                         Panel Admin

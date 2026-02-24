@@ -25,6 +25,7 @@ export const useAuth = () => {
     let especialidadId = localStorage.getItem('especialidadId');
     let accesoNombresRaw = localStorage.getItem('accesoNombres');
     let accesoIdsRaw = localStorage.getItem('accesoIds');
+    let fechaExpiracion = localStorage.getItem('fechaExpiracion');
 
     // Clean up invalid strings
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN') userId = null;
@@ -91,11 +92,19 @@ export const useAuth = () => {
         }
       }
 
+      let finalInitialRole = role;
+      if (fechaExpiracion && fechaExpiracion !== '-' && role?.toUpperCase() === 'PREMIUM') {
+        const expDate = new Date(fechaExpiracion);
+        if (expDate < new Date()) {
+          finalInitialRole = 'Client';
+        }
+      }
+
       const initialUser = {
         name: fullName || 'Usuario',
         id: !isNaN(parsedId!) ? parsedId : undefined,
         nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
-        role: role || undefined,
+        role: finalInitialRole || undefined,
         accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
         accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
         especialidad: especialidad || undefined,
@@ -108,14 +117,46 @@ export const useAuth = () => {
       const verifyStatus = async () => {
         try {
           const status = await authService.checkStatus();
-          // If role changed (e.g., Premium -> Client due to expiration)
-          if (status.role && status.role !== role) {
-            localStorage.setItem('role', status.role);
-            setUser(prev => prev ? { ...prev, role: status.role } : null);
+          
+          // Full sync from backend status
+          if (status) {
+            // Update localStorage
+            if (status.role) localStorage.setItem('role', status.role);
+            if (status.fullName) localStorage.setItem('fullName', status.fullName);
+            if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
+            if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
+            if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
+            if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
+            if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
+            if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
+
+            // Role override logic: if expired, force Client in frontend
+            let currentRole = status.role || role;
+            if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
+              const expDate = new Date(status.fechaExpiracion);
+              if (expDate < new Date()) {
+                currentRole = 'Client';
+              }
+            }
+
+            // Update state
+            setUser({
+              name: status.fullName || fullName || 'Usuario',
+              id: status.id || parsedId,
+              nivelId: status.nivelId || parsedNivelId,
+              role: currentRole || undefined,
+              accesoNombres: status.accesoNombres || accesoNombres,
+              accesoIds: status.accesoIds || accesoIds,
+              especialidad: status.especialidad || especialidad || undefined,
+              especialidadId: status.especialidadId || parsedEspecialidadId,
+            });
           }
         } catch (error) {
-          // If status fails, maybe token is expired/invalid
-          // console.error("Session verification failed", error);
+          // If status fails, token might be invalid/expired
+          console.error("Session verification failed", error);
+          // Optional: clear session if 401/403
+          // localStorage.clear();
+          // setIsAuthenticated(false);
         } finally {
           setLoading(false);
         }
