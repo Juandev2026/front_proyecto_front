@@ -32,7 +32,7 @@ const UsersPage = () => {
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
-  
+
   const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
   const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
   const [showPassword, setShowPassword] = useState(false);
@@ -177,7 +177,7 @@ const UsersPage = () => {
     try {
       const payload: any = { ...formData };
       console.log("Payload original (pre-sanitización):", payload);
-      
+
       // Ensure IDs are numbers
       payload.regionId = Number(payload.regionId || 0);
       payload.modalidadId = Number(payload.modalidadId || 0);
@@ -221,7 +221,7 @@ const UsersPage = () => {
         delete payload.id;
         await userService.create(payload as User);
       }
-      
+
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
@@ -301,21 +301,21 @@ const UsersPage = () => {
 
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
-    const matchesSearch = 
+    const matchesSearch =
       user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (effectiveRole || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     // Show ONLY 'Admin' and 'Client' roles as requested
     const isAllowedRole = ['Admin', 'Client'].includes(effectiveRole || '');
-    
+
     return matchesSearch && isAllowedRole;
   });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
-  
+
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -344,7 +344,7 @@ const UsersPage = () => {
       const allUsers = await userService.getAll();
       // On this page we show Admin and Client, but maybe the export should include all or follow the same filter?
       // Usually export should match what's visible or all. I'll export all and let them filter in Excel.
-      
+
       const dataToExport = allUsers.map(u => ({
         'ID': u.id,
         'Nombre Completo': u.nombreCompleto,
@@ -371,9 +371,9 @@ const UsersPage = () => {
   };
 
   const handleCreateUser = () => {
-      setEditingUser(null);
-      resetForm();
-      setIsModalOpen(true);
+    setEditingUser(null);
+    resetForm();
+    setIsModalOpen(true);
   };
 
   return (
@@ -416,149 +416,149 @@ const UsersPage = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre Completo
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rol
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Región
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center">
-                  Cargando...
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre Completo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rol
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Región
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            ) : filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-4 text-center">
-                  No hay usuarios encontrados
-                </td>
-              </tr>
-            ) : (
-              currentItems.map((user) => {
-                const regionName = user.region?.nombre || user.regionId?.toString() || '-';
-                return (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.nombreCompleto}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.role}
-                      {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
-                        <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
-                          Expirado
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {regionName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-3">
-                        <button
-                          onClick={() => handleView(user.id)}
-                          className="text-blue-600 hover:text-blue-900 focus:outline-none"
-                          title="Ver Detalles"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center">
+                    Cargando...
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center">
+                    No hay usuarios encontrados
+                  </td>
+                </tr>
+              ) : (
+                currentItems.map((user) => {
+                  const regionName = user.region?.nombre || user.regionId?.toString() || '-';
+                  return (
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.nombreCompleto}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.role}
+                        {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
+                          <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
+                            Expirado
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {regionName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-3">
+                          <button
+                            onClick={() => handleView(user.id)}
+                            className="text-blue-600 hover:text-blue-900 focus:outline-none"
+                            title="Ver Detalles"
                           >
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path
-                              fillRule="evenodd"
-                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="text-green-600 hover:text-green-900 focus:outline-none"
-                          title="Editar"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path
+                                fillRule="evenodd"
+                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="text-green-600 hover:text-green-900 focus:outline-none"
+                            title="Editar"
                           >
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="text-red-600 hover:text-red-900 focus:outline-none"
-                          title="Eliminar"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-600 hover:text-red-900 focus:outline-none"
+                            title="Eliminar"
                           >
-                            <path
-                              fillRule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
-        
+
         {/* Pagination */}
         <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 bg-gray-50">
-            <button 
-                onClick={prevPage}
-                disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-                Anterior
-            </button>
-             <span className="text-sm text-gray-700">Page {currentPage} de {totalPages}</span>
-            <button 
-                onClick={nextPage}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-                Siguiente
-            </button>
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            Anterior
+          </button>
+          <span className="text-sm text-gray-700">Page {currentPage} de {totalPages}</span>
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
 
@@ -581,7 +581,7 @@ const UsersPage = () => {
 
             <div className="p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
-                
+
                 {/* Role Selection */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
@@ -660,7 +660,7 @@ const UsersPage = () => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                           {showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5 opacity-50" />}
+                          {showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5 opacity-50" />}
                         </button>
                       </div>
                     </div>
@@ -818,7 +818,7 @@ const UsersPage = () => {
                           const espsToAdd = filteredEspecialidades.length > 0
                             ? filteredEspecialidades.map(e => ({ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: e.id }))
                             : [{ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: 0 }];
-                          
+
                           // Evitar duplicados
                           setUserExamenes(prev => {
                             const newAccesos = [...prev];
@@ -936,7 +936,7 @@ const UsersPage = () => {
                       <h4 className="font-bold text-[#002B6B]">Fecha de expiración</h4>
                     </div>
                     <div className="space-y-2">
-                       {[
+                      {[
                         { key: '1year', label: '1 año desde hoy' },
                         { key: '5months', label: '5 meses desde hoy' },
                         { key: '10months', label: '10 meses desde hoy' },

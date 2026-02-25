@@ -71,11 +71,11 @@ const Login = () => {
       if (finalRole) {
         localStorage.setItem('role', finalRole);
       }
-      
+
       if (response.fechaExpiracion) {
         localStorage.setItem('fechaExpiracion', response.fechaExpiracion);
       }
-      
+
       if (response.accesoNombres) {
         localStorage.setItem('accesoNombres', JSON.stringify(response.accesoNombres));
       }
@@ -109,7 +109,7 @@ const Login = () => {
     } catch (err: any) {
       setError(
         err.message ||
-          'Error al iniciar sesión. Por favor verifique sus credenciales.'
+        'Error al iniciar sesión. Por favor verifique sus credenciales.'
       );
     } finally {
       setLoading(false);
@@ -131,10 +131,10 @@ const Login = () => {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                 Bienvenido de nuevo
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-base sm:text-lg text-gray-600">
                 ¿Aún no tienes una cuenta?{' '}
                 <Link href="/register">
-                  <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
+                  <a className="font-bold text-primary hover:text-secondary transition-colors duration-200 underline decoration-2 underline-offset-4">
                     Regístrate gratis aquí
                   </a>
                 </Link>
@@ -265,11 +265,10 @@ const Login = () => {
               <div>
                 <button
                   type="submit"
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${
-                    loading
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-primary hover:bg-secondary'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
+                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
                   disabled={loading}
                 >
                   <span className="absolute left-0 inset-y-0 flex items-center pl-3">

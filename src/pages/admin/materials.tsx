@@ -136,7 +136,7 @@ const AdminMaterials = () => {
       imageUrl: item.imageUrl || '',
       archivoUrl: item.archivoUrl || '',
       videoUrl: item.videoUrl || '',
-      categoriaId: item.categoriaId,
+      categoriaId: item.categoriaId || 0,
       estadoId: item.estadoId || 0,
       usuarioEdicionId:
         typeof window !== 'undefined'
@@ -223,10 +223,10 @@ const AdminMaterials = () => {
 
       if (imageFile) {
         try {
-            finalImageUrl = await uploadService.uploadImage(imageFile);
+          finalImageUrl = await uploadService.uploadImage(imageFile);
         } catch (uploadError) {
-             alert('Error al subir la imagen de portada.');
-             return;
+          alert('Error al subir la imagen de portada.');
+          return;
         }
       }
 
@@ -320,7 +320,7 @@ const AdminMaterials = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -369,7 +369,7 @@ const AdminMaterials = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {stripHtml(getCategoryName(item.categoriaId))}
+                        {stripHtml(getCategoryName(item.categoriaId || 0))}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -442,18 +442,16 @@ const AdminMaterials = () => {
             <button
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Anterior
             </button>
             <button
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Siguiente
             </button>
@@ -476,9 +474,8 @@ const AdminMaterials = () => {
                 <button
                   onClick={() => paginate(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Anterior</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -506,11 +503,10 @@ const AdminMaterials = () => {
                         <button
                           onClick={() => paginate(page)}
                           aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                          }`}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page
+                            ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                            }`}
                         >
                           {page}
                         </button>
@@ -520,9 +516,8 @@ const AdminMaterials = () => {
                 <button
                   onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Siguiente</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -596,7 +591,7 @@ const AdminMaterials = () => {
                         />
                       </div>
                     )}
-                    
+
                     <input
                       type="file"
                       accept="image/*"
@@ -621,7 +616,7 @@ const AdminMaterials = () => {
                       }}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                        O selecciona un archivo para subir (reemplazará la URL al guardar).
+                      O selecciona un archivo para subir (reemplazará la URL al guardar).
                     </p>
                   </div>
 
@@ -649,7 +644,7 @@ const AdminMaterials = () => {
                         ))}
                       </select>
                     </div>
-                      <div>
+                    <div>
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Estado
                       </label>
@@ -673,9 +668,9 @@ const AdminMaterials = () => {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
-                   <div>
+                    <div>
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Precio (S/)
                       </label>
@@ -803,19 +798,19 @@ const AdminMaterials = () => {
                         }
                       }}
                     />
-                     {file && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                              const url = URL.createObjectURL(file);
-                              window.open(url, '_blank');
-                          }}
-                          className="mt-3 bg-white text-primary border border-primary hover:bg-blue-50 font-bold py-2 px-4 rounded-lg flex items-center shadow-sm text-sm"
-                        >
-                          <EyeIcon className="w-4 h-4 mr-2" />
-                          Visualizar Archivo Seleccionado
-                        </button>
-                     )}
+                    {file && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = URL.createObjectURL(file);
+                          window.open(url, '_blank');
+                        }}
+                        className="mt-3 bg-white text-primary border border-primary hover:bg-blue-50 font-bold py-2 px-4 rounded-lg flex items-center shadow-sm text-sm"
+                      >
+                        <EyeIcon className="w-4 h-4 mr-2" />
+                        Visualizar Archivo Seleccionado
+                      </button>
+                    )}
                     <p className="text-xs text-gray-500 mt-2">
                       * Al subir un archivo, se generará una URL automática que
                       reemplazará la actual.
@@ -884,7 +879,7 @@ const AdminMaterials = () => {
                 <div className="space-y-6">
                   <div>
                     <span className="inline-block px-3 py-1 bg-blue-100 text-primary rounded-full text-xs font-bold uppercase mb-2">
-                      {getCategoryName(viewingItem.categoriaId)}
+                      {getCategoryName(viewingItem?.categoriaId || 0)}
                     </span>
                     <div
                       className="text-3xl font-bold text-gray-900 leading-tight mb-4"

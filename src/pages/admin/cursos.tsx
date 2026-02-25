@@ -141,7 +141,7 @@ const AdminCursos = () => {
       }
 
     } catch (error) {
-       console.error('Error in fetchData:', error);
+      console.error('Error in fetchData:', error);
     } finally {
       setLoading(false);
     }
@@ -246,22 +246,22 @@ const AdminCursos = () => {
 
       // Prepare course data (excluding topics for the main update)
       const courseData = { ...currentCourse };
-      
+
       let finalUrl = courseData.imagenUrl;
 
       if (selectedImage) {
-         try {
-           finalUrl = await uploadService.uploadImage(selectedImage);
-         } catch (error) {
-           // eslint-disable-next-line no-alert
-           alert('Error al subir la imagen del curso.');
-           return;
-         }
+        try {
+          finalUrl = await uploadService.uploadImage(selectedImage);
+        } catch (error) {
+          // eslint-disable-next-line no-alert
+          alert('Error al subir la imagen del curso.');
+          return;
+        }
       }
-      
+
       const dataToSend = {
-          ...courseData,
-          imagenUrl: finalUrl,
+        ...courseData,
+        imagenUrl: finalUrl,
       };
 
       if (editingId) {
@@ -365,7 +365,7 @@ const AdminCursos = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -448,18 +448,16 @@ const AdminCursos = () => {
             <button
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Anterior
             </button>
             <button
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Siguiente
             </button>
@@ -482,9 +480,8 @@ const AdminCursos = () => {
                 <button
                   onClick={() => paginate(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Anterior</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -512,11 +509,10 @@ const AdminCursos = () => {
                         <button
                           onClick={() => paginate(page)}
                           aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === page
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page
                               ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                               : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -526,9 +522,8 @@ const AdminCursos = () => {
                 <button
                   onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Siguiente</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

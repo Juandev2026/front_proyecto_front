@@ -21,7 +21,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
+    password: 'escala2025',
     celular: '',
     region: '',
     regionId: 0,
@@ -41,9 +41,9 @@ const Register = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
-    length: false,
+    length: true,
     uppercase: false,
-    number: false,
+    number: true,
     special: false,
   });
 
@@ -156,7 +156,7 @@ const Register = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     // Validate password in real-time
     if (name === 'password') {
       validatePassword(value);
@@ -457,7 +457,7 @@ const Register = () => {
                       )}
                     </button>
                   </div>
-                  
+
                   {/* Password Requirements */}
                   <div className="mt-3 space-y-2">
                     <p className="text-xs font-medium text-gray-700">La contraseña debe contener:</p>
@@ -526,11 +526,10 @@ const Register = () => {
               <div>
                 <button
                   type="submit"
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${
-                    loading
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-primary hover:bg-secondary'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
+                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
                   disabled={loading}
                 >
                   {loading ? 'Registrando...' : 'Crear cuenta'}

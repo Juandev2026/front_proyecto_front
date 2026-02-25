@@ -128,7 +128,7 @@ const AdminDashboard = () => {
         {stats.map((stat) => (
           <div
             key={stat.name}
-            className="bg-white rounded-xl shadow-sm p-6 flex items-center"
+            className="bg-white rounded-xl shadow-md border border-gray-100 p-6 flex items-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
             <div className={`p-4 rounded-lg ${stat.color} text-white mr-4`}>
               <svg
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Actividad Reciente
         </h2>
@@ -175,7 +175,7 @@ const AdminDashboard = () => {
                       <div>
                         <p className="text-sm text-gray-500">
                           {activity.action}{' '}
-                          <span 
+                          <span
                             className="font-medium text-gray-900"
                             dangerouslySetInnerHTML={{ __html: activity.title }}
                           />
