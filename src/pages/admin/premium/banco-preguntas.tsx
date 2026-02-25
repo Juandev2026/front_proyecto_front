@@ -19,6 +19,7 @@ import AdminLayout from '../../../components/AdminLayout';
 import {
   examenService,
   ExamenGrouped,
+  Examen,
 } from '../../../services/examenService';
 import {
   preguntaService,
@@ -50,7 +51,7 @@ const Recursos = () => {
   const [items, setItems] = useState<Pregunta[]>([]);
 
   const [groupedData, setGroupedData] = useState<ExamenGrouped[]>([]);
-  // const [allExams, setAllExams] = useState<Examen[]>([]); // Removed unused
+  const [allExams, setAllExams] = useState<Examen[]>([]);
   const [tipoPreguntas, setTipoPreguntas] = useState<TipoPregunta[]>([]);
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -264,19 +265,32 @@ const Recursos = () => {
   }, [availableNiveles, selectedNivel]);
 
   const availableYears = useMemo(() => {
-    // 1. If explicit specialty selected, use it
+    if (!selectedTipo || !selectedFuente) return [];
+
+    let effectiveEspecialidadId: number = 0;
     if (selectedEspecialidad) {
-      return availableEspecialidades.find(e => e.especialidadId === Number(selectedEspecialidad))?.years || [];
+      effectiveEspecialidadId = Number(selectedEspecialidad);
+    } else if (availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId || availableEspecialidades[0].especialidadId === 0)) {
+      effectiveEspecialidadId = 0;
+    } else if (availableEspecialidades.length > 0) {
+      return [];
     }
-    // 2. If single "null" specialty exists (no explicit ID), auto-select it for years
-    if (availableEspecialidades.length === 1) {
-      const onlySpec = availableEspecialidades[0];
-      if (onlySpec && (!onlySpec.especialidadId || onlySpec.especialidadId === 0)) {
-        return onlySpec.years || [];
-      }
-    }
-    return [];
-  }, [availableEspecialidades, selectedEspecialidad]);
+
+    const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
+    const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
+
+    const filtered = allExams.filter(e => 
+      e.tipoExamenId === Number(selectedTipo) &&
+      e.fuenteId === Number(selectedFuente) &&
+      (effModalidadId === 0 ? (!e.modalidadId || e.modalidadId === 0) : e.modalidadId === effModalidadId) &&
+      (effNivelId === 0 ? (!e.nivelId || e.nivelId === 0) : e.nivelId === effNivelId) &&
+      (effectiveEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effectiveEspecialidadId) &&
+      e.year
+    );
+
+    const yearsSet = Array.from(new Set(filtered.map(e => e.year)));
+    return yearsSet.sort().reverse().map(y => ({ year: y }));
+  }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, availableEspecialidades, allExams]);
 
   // --- PAGINATION LÓGICA ---
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -606,6 +620,15 @@ const Recursos = () => {
             setGroupedData(grouped);
           } catch (err: any) {
              console.error('Examen Service Error:', err);
+          }
+      }
+
+      if (allExams.length === 0) {
+          try {
+             const all = await examenService.getAll();
+             setAllExams(all);
+          } catch (e: any) {
+             console.error("All Exams Error", e);
           }
       }
 
@@ -1252,7 +1275,7 @@ const Recursos = () => {
                 }}
                 disabled={!selectedFuente || availableModalidades.length === 0}
               >
-                <option value="">Seleccionar Modalidad</option>
+                <option value="" disabled hidden>Seleccionar modalidad</option>
                 {availableModalidades.map((m) => (
                   <option key={m.modalidadId} value={m.modalidadId}>
                     {m.modalidadNombre}
@@ -1277,7 +1300,7 @@ const Recursos = () => {
                   }}
                   disabled={!selectedModalidad}
                 >
-                  <option value="">Seleccionar Nivel</option>
+                  <option value="" disabled hidden>Seleccionar nivel</option>
                   {availableNiveles.map((n) => (
                     <option key={n.nivelId} value={n.nivelId}>
                       {n.nivelNombre}
@@ -1304,10 +1327,10 @@ const Recursos = () => {
                   }}
                   disabled={!selectedNivel}
                 >
-                  <option value="">Seleccionar Especialidad</option>
-                  {availableEspecialidades.map((e) => (
-                    <option key={e.especialidadId} value={e.especialidadId}>
-                      {e.especialidadNombre}
+                  <option value="" disabled hidden>Seleccionar especialidad</option>
+                  {availableEspecialidades.map((e, idx) => (
+                    <option key={e.especialidadId !== null ? e.especialidadId : `null-${idx}`} value={e.especialidadId !== null ? e.especialidadId.toString() : ''}>
+                      {e.especialidadNombre ?? 'General'}
                     </option>
                   ))}
                 </select>
@@ -1326,9 +1349,9 @@ const Recursos = () => {
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
                   <option value="">Seleccionar Año</option>
-                  {availableYears.map((y) => (
+                  {availableYears.map((y: { year: string }) => (
                     <option key={y.year} value={y.year}>
-                      {y.year} ({y.count})
+                      {y.year}
                     </option>
                   ))}
                 </select>

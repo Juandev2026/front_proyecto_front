@@ -23,11 +23,56 @@ export interface Modalidad {
 export const estructuraAcademicaService = {
   getAll: async (): Promise<Modalidad[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/EstructuraAcademica`, {
+      const response = await fetch(`${API_BASE_URL}/Examenes/grouped-simple`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener estructura académica');
-      return await response.json();
+      const groupedData = await response.json();
+      
+      const modMap = new Map<number, Modalidad>();
+      
+      groupedData.forEach((tipo: any) => {
+        tipo.fuentes.forEach((fuente: any) => {
+          fuente.modalidades.forEach((m: any) => {
+            if (!modMap.has(m.modalidadId)) {
+              modMap.set(m.modalidadId, {
+                id: m.modalidadId,
+                nombre: m.modalidadNombre,
+                niveles: []
+              });
+            }
+            
+            const modEntry = modMap.get(m.modalidadId)!;
+            
+            m.niveles.forEach((n: any) => {
+              if (n.nivelNombre && n.nivelNombre.toUpperCase() === 'NINGUNO') return;
+              
+              let nivEntry = modEntry.niveles.find(nx => nx.id === n.nivelId);
+              if (!nivEntry) {
+                nivEntry = {
+                  id: n.nivelId,
+                  nombre: n.nivelNombre,
+                  especialidades: [],
+                  anios: []
+                };
+                modEntry.niveles.push(nivEntry);
+              }
+              
+              n.especialidades.forEach((e: any) => {
+                if (e.especialidadNombre && e.especialidadNombre.toUpperCase() === 'NINGUNO') return;
+                if (e.especialidadId !== null && !nivEntry!.especialidades.some(ex => ex.id === e.especialidadId)) {
+                  nivEntry!.especialidades.push({
+                    id: e.especialidadId,
+                    nombre: e.especialidadNombre || ''
+                  });
+                }
+              });
+            });
+          });
+        });
+      });
+      
+      return Array.from(modMap.values());
     } catch (error) {
       console.error('Error fetching estructura académica:', error);
       throw error;

@@ -674,7 +674,7 @@ const UsersPage = () => {
                       onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
                     >
-                      <option value={0}>Seleccionar región</option>
+                      <option value={0} disabled hidden>Seleccionar región</option>
                       {regions.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                     </select>
                   </div>
@@ -782,6 +782,7 @@ const UsersPage = () => {
                     </div>
 
                     {/* Nivel */}
+                    {!!formData.modalidadId && filteredNiveles.length > 0 && (
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">Nivel</label>
                       <select
@@ -794,8 +795,10 @@ const UsersPage = () => {
                         {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
                       </select>
                     </div>
+                    )}
 
                     {/* Especialidad */}
+                    {!!formData.nivelId && filteredEspecialidades.length > 0 && (
                     <div className="mb-4">
                       <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
                       <select
@@ -808,6 +811,7 @@ const UsersPage = () => {
                         {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
                       </select>
                     </div>
+                    )}
 
                     {/* Botones académicos */}
                     <div className="space-y-2">

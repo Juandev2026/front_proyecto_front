@@ -8,13 +8,8 @@ import Header from '../components/Header';
 
 import { authService } from '../services/authService';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import {
-  especialidadesService,
-  Especialidad,
-} from '../services/especialidadesService';
-import { modalidadService, Modalidad } from '../services/modalidadService';
-import { nivelService, Nivel } from '../services/nivelService';
 import { regionService, Region } from '../services/regionService';
+import { examenService } from '../services/examenService';
 
 const Register = () => {
   const router = useRouter();
@@ -31,11 +26,9 @@ const Register = () => {
   });
 
   const [regiones, setRegiones] = useState<Region[]>([]);
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  // Removed 'niveles' state as we fetch specific to modality
-  // Store all data
-  const [niveles, setNiveles] = useState<Nivel[]>([]);
-  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  const [modalidades, setModalidades] = useState<{ id: number; nombre: string; base?: number }[]>([]);
+  const [niveles, setNiveles] = useState<{ id: number; nombre: string; modalidadIds: number[] }[]>([]);
+  const [especialidades, setEspecialidades] = useState<{ id: number; nombre: string; nivelId: number }[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -58,25 +51,14 @@ const Register = () => {
       }
 
       try {
-        const modalitiesData = await modalidadService.getAll();
-        // Filter modalities to show only those with base === 1 and reverse order
-        setModalidades(modalitiesData.filter(m => m.base === 1).reverse());
+        const hierarchy = await examenService.getSimplifiedHierarchy();
+        // Option to filter base===1 if still needed, but relying on API returned values
+        // If API returns what we need, we show it directly:
+        setModalidades(hierarchy.modalidades.reverse());
+        setNiveles(hierarchy.niveles);
+        setEspecialidades(hierarchy.especialidades);
       } catch (err) {
-        console.error('Error loading modalities:', err);
-      }
-
-      try {
-        const nivelesData = await nivelService.getAll();
-        setNiveles(nivelesData);
-      } catch (err) {
-        console.error('Error loading niveles:', err);
-      }
-
-      try {
-        const especialidadesData = await especialidadesService.getAll();
-        setEspecialidades(especialidadesData);
-      } catch (err) {
-        console.error('Error loading especialidades:', err);
+        console.error('Error loading academic hierarchy:', err);
       }
     };
     fetchData();
@@ -86,11 +68,7 @@ const Register = () => {
   const getNivelesForModalidad = (modId: number) => {
     if (!modId) return niveles;
     return niveles.filter(n => {
-      // Handle both single number and array formats
-      if (typeof n.modalidadIds === 'number') {
-        return n.modalidadIds === modId;
-      }
-      return n.modalidadId === modId || (n.modalidadIds && n.modalidadIds.includes(modId));
+      return n.modalidadIds.includes(modId);
     });
   };
 
@@ -336,7 +314,7 @@ const Register = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
-                    <option value={0}>Seleccione una región</option>
+                    <option value={0} disabled hidden>Seleccionar región</option>
                     {regiones.map((region) => (
                       <option key={region.id} value={region.id}>
                         {region.nombre}
@@ -361,7 +339,7 @@ const Register = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
-                    <option value={0}>Seleccione una modalidad</option>
+                    <option value={0} disabled hidden>Seleccionar modalidad</option>
                     {modalidades && modalidades.length > 0 ? modalidades.map((mod) => (
                       <option key={mod.id} value={mod.id}>
                         {mod.nombre}
@@ -371,6 +349,7 @@ const Register = () => {
                 </div>
 
                 {/* Nivel */}
+                {displayedNiveles.length > 0 && (
                 <div>
                   <label
                     htmlFor="nivelId"
@@ -389,7 +368,7 @@ const Register = () => {
                       !formData.modalidadId ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
                     }`}
                   >
-                    <option value={0}>Seleccione un nivel</option>
+                    <option value={0} disabled hidden>Seleccionar nivel</option>
                     {displayedNiveles.map((nivel) => (
                       <option key={nivel.id} value={nivel.id}>
                         {nivel.nombre}
@@ -397,8 +376,10 @@ const Register = () => {
                     ))}
                   </select>
                 </div>
+                )}
 
                 {/* Especialidad */}
+                {displayedEspecialidades.length > 0 && (
                 <div>
                   <label
                     htmlFor="especialidadId"
@@ -419,8 +400,8 @@ const Register = () => {
                       !formData.nivelId || displayedEspecialidades.length === 0 ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
                     }`}
                   >
-                    <option value={0}>
-                      Seleccione una especialidad (Opcional)
+                    <option value={0} disabled hidden>
+                      Seleccionar especialidad
                     </option>
                     {displayedEspecialidades.map((esp) => (
                       <option key={esp.id} value={esp.id}>
@@ -429,6 +410,7 @@ const Register = () => {
                     ))}
                   </select>
                 </div>
+                )}
 
                 {/* Password */}
                 <div>

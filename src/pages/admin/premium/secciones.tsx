@@ -633,7 +633,7 @@ const AdminPremiumSecciones = () => {
                                         setNewSection({...newSection, modalidadId: val, nivelId: 0, especialidadId: 0});
                                     }}
                                 >
-                                    <option value="">Selecciona tipo</option>
+                                    <option value="" disabled hidden>Seleccionar modalidad</option>
                                     {modalidades.map(m => (
                                         <option key={m.id} value={m.id}>{m.nombre}</option>
                                     ))}
@@ -652,7 +652,7 @@ const AdminPremiumSecciones = () => {
                                             setNewSection({...newSection, nivelId: val, especialidadId: 0});
                                         }}
                                     >
-                                        <option value="">Selecciona nivel</option>
+                                        <option value="" disabled hidden>Seleccionar nivel</option>
                                         {modalidades.find(m => m.id === newSection.modalidadId)?.niveles.map(n => (
                                             <option key={n.id} value={n.id}>{n.nombre}</option>
                                         ))}
@@ -669,7 +669,7 @@ const AdminPremiumSecciones = () => {
                                         value={newSection.especialidadId || ''}
                                         onChange={(e) => setNewSection({...newSection, especialidadId: Number(e.target.value) || 0})}
                                     >
-                                        <option value="">Selecciona especialidad</option>
+                                        <option value="" disabled hidden>Seleccionar especialidad</option>
                                         {modalidades.find(m => m.id === newSection.modalidadId)?.niveles.find(n => n.id === newSection.nivelId)?.especialidades.map(esp => (
                                             <option key={esp.id} value={esp.id}>{esp.nombre}</option>
                                         ))}
@@ -792,7 +792,7 @@ const AdminPremiumSecciones = () => {
                                         setEditingSection(prev => prev ? {...prev, modalidadId: val, nivelId: 0, especialidadId: 0} : null);
                                     }}
                                 >
-                                    <option value="">Selecciona tipo</option>
+                                    <option value="" disabled hidden>Seleccionar modalidad</option>
                                     {modalidades.map(m => (
                                         <option key={m.id} value={m.id}>{m.nombre}</option>
                                     ))}
@@ -811,7 +811,7 @@ const AdminPremiumSecciones = () => {
                                             setEditingSection(prev => prev ? {...prev, nivelId: val, especialidadId: 0} : null);
                                         }}
                                     >
-                                        <option value="">Selecciona nivel</option>
+                                        <option value="" disabled hidden>Seleccionar nivel</option>
                                         {modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.map(n => (
                                             <option key={n.id} value={n.id}>{n.nombre}</option>
                                         ))}
@@ -831,7 +831,7 @@ const AdminPremiumSecciones = () => {
                                             setEditingSection(prev => prev ? {...prev, especialidadId: val} : null);
                                         }}
                                     >
-                                        <option value="">Selecciona especialidad</option>
+                                        <option value="" disabled hidden>Seleccionar especialidad</option>
                                         {modalidades.find(m => m.id === editingSection.modalidadId)?.niveles.find(n => n.id === editingSection.nivelId)?.especialidades.map(esp => (
                                             <option key={esp.id} value={esp.id}>{esp.nombre}</option>
                                         ))}
