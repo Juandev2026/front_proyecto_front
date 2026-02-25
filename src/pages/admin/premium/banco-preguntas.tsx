@@ -249,7 +249,8 @@ const Recursos = () => {
 
   const availableModalidades = useMemo(() => {
     if (!selectedFuente) return [];
-    return availableFuentes.find(f => f.fuenteId === Number(selectedFuente))?.modalidades || [];
+    const mods = availableFuentes.find(f => f.fuenteId === Number(selectedFuente))?.modalidades || [];
+    return [...mods].reverse();
   }, [availableFuentes, selectedFuente]);
 
   const availableNiveles = useMemo(() => {

@@ -79,7 +79,7 @@ const BancoPreguntasPage = () => {
    // ---------- Derived filter options from loginExamenes ----------
    const modalidadesData: FilterOption[] = Array.from(
       new Map(loginExamenes.map(e => [e.modalidadId, { id: e.modalidadId, nombre: e.modalidadNombre }])).values()
-   );
+   ).reverse();
 
    const nivelesData: FilterOption[] = Array.from(
       new Map(

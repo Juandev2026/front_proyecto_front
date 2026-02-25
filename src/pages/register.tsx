@@ -59,8 +59,8 @@ const Register = () => {
 
       try {
         const modalitiesData = await modalidadService.getAll();
-        // Filter modalities to show only those with base === 1
-        setModalidades(modalitiesData.filter(m => m.base === 1));
+        // Filter modalities to show only those with base === 1 and reverse order
+        setModalidades(modalitiesData.filter(m => m.base === 1).reverse());
       } catch (err) {
         console.error('Error loading modalities:', err);
       }
@@ -99,8 +99,8 @@ const Register = () => {
     return especialidades.filter(e => e.nivelId === nivId);
   };
 
-  const displayedNiveles = getNivelesForModalidad(Number(formData.modalidadId));
-  const displayedEspecialidades = getEspecialidadesForNivel(Number(formData.nivelId));
+  const displayedNiveles = formData.modalidadId ? getNivelesForModalidad(Number(formData.modalidadId)) : [];
+  const displayedEspecialidades = formData.nivelId ? getEspecialidadesForNivel(Number(formData.nivelId)) : [];
 
   // Validation Effect: Reset child fields if they become invalid for the selected parent
   useEffect(() => {
@@ -384,7 +384,10 @@ const Register = () => {
                     required
                     value={formData.nivelId}
                     onChange={handleChange}
-                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                    disabled={!formData.modalidadId}
+                    className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
+                      !formData.modalidadId ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
+                    }`}
                   >
                     <option value={0}>Seleccione un nivel</option>
                     {displayedNiveles.map((nivel) => (
@@ -411,7 +414,10 @@ const Register = () => {
                     name="especialidadId"
                     value={formData.especialidadId}
                     onChange={handleChange}
-                    className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                    disabled={!formData.nivelId || displayedEspecialidades.length === 0}
+                    className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
+                      !formData.nivelId || displayedEspecialidades.length === 0 ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
+                    }`}
                   >
                     <option value={0}>
                       Seleccione una especialidad (Opcional)

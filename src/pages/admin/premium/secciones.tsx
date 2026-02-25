@@ -105,7 +105,7 @@ const AdminPremiumSecciones = () => {
         estructuraAcademicaService.getAll()
       ]);
       setTiposAcceso(tipos);
-      setModalidades(modular);
+      setModalidades([...modular].reverse());
     } catch (error) {
       console.error("Error fetching supplemental API data:", error);
     }
