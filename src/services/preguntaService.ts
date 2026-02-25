@@ -1,21 +1,29 @@
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
 
+export interface EnunciadoItem {
+  id: number;
+  contenido: string;
+}
+
 export interface Pregunta {
   id: number;
-  enunciado: string;
-  alternativaA: string;
-  alternativaB: string;
-  alternativaC: string;
-  alternativaD: string;
-  respuesta: string;
-  sustento: string;
+  enunciado?: string;
+  alternativaA?: string;
+  alternativaB?: string;
+  alternativaC?: string;
+  alternativaD?: string;
+  respuesta?: string | number;
+  sustento?: string;
   examenId: number;
-  clasificacionId: number;
-  imagen: string;
+  clasificacionId?: number;
+  imagen?: string;
   tipoPreguntaId: number;
   preguntaId?: number; // ID del Padre (si existe)
   numero?: number;     // Orden de la sub-pregunta
+  year?: string;
+  enunciados?: EnunciadoItem[];
+  subPreguntas?: any[];
 }
 
 export interface ExamenFilterRequest {

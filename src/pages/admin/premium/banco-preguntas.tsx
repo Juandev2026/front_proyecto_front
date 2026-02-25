@@ -200,6 +200,13 @@ const Recursos = () => {
     if (parentItems.length === 0) return;
 
     parentItems.forEach(async (parent) => {
+      // Si el backend ya mandó las subPreguntas en el payload (nuevo formato):
+      if (parent.subPreguntas && parent.subPreguntas.length > 0) {
+          setSubCountsMap(prev => ({ ...prev, [parent.id]: parent.subPreguntas!.length }));
+          setSubQuestionsMap(prev => ({ ...prev, [parent.id]: parent.subPreguntas as any }));
+          return;
+      }
+
       // 1. Fetch count
       try {
         const count = await subPreguntaService.getCount(parent.examenId, parent.id);
@@ -354,21 +361,21 @@ const Recursos = () => {
     }
 
     setNewItem({
-      enunciado: item.enunciado,
-      respuesta: item.respuesta,
-      sustento: item.sustento,
+      enunciado: item.enunciados ? item.enunciados.map((e: any) => e.contenido).join('') : (item.enunciado || ''),
+      respuesta: item.respuesta?.toString() || '',
+      sustento: item.sustento || '',
       examenId: item.examenId,
-      clasificacionId: item.clasificacionId,
-      imagen: item.imagen,
+      clasificacionId: item.clasificacionId || 0,
+      imagen: item.imagen || '',
       tipoPreguntaId: item.tipoPreguntaId
     });
     
     // ... existing logic ...
     setAlternatives([
-      { id: 'A', contenido: item.alternativaA, esCorrecta: item.respuesta === 'A' },
-      { id: 'B', contenido: item.alternativaB, esCorrecta: item.respuesta === 'B' },
-      { id: 'C', contenido: item.alternativaC, esCorrecta: item.respuesta === 'C' },
-      { id: 'D', contenido: item.alternativaD, esCorrecta: item.respuesta === 'D' },
+      { id: '1', contenido: item.alternativaA || '', esCorrecta: item.respuesta === 'A' },
+      { id: '2', contenido: item.alternativaB || '', esCorrecta: item.respuesta === 'B' },
+      { id: '3', contenido: item.alternativaC || '', esCorrecta: item.respuesta === 'C' },
+      { id: '4', contenido: item.alternativaD || '', esCorrecta: item.respuesta === 'D' },
     ]);
 
     setImageFile(null);
@@ -1541,8 +1548,8 @@ const Recursos = () => {
             {currentItems.map((item, index) => {
               const isParent = item.tipoPreguntaId === 2;
               const isLoadingSubs = loadingSubIds.has(item.id);
-              const subs = subQuestionsMap[item.id] || [];
-              const subCount = subCountsMap[item.id] ?? 0;
+              const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
+              const subCount = item.subPreguntas ? item.subPreguntas.length : (subCountsMap[item.id] ?? 0);
 
               return (
               <div
@@ -1600,7 +1607,11 @@ const Recursos = () => {
                          <div className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-wider">
                             {isParent ? 'Lectura / Contexto' : 'Enunciado'}
                          </div>
-                         <HtmlMathRenderer html={item.enunciado} />
+                         {item.enunciados && item.enunciados.length > 0 ? (
+                             item.enunciados.map((e: any) => <HtmlMathRenderer key={e.id} html={e.contenido} />)
+                         ) : (
+                             <HtmlMathRenderer html={item.enunciado || ''} />
+                         )}
                          
                          {item.imagen && (
                             <div className="mt-4">
@@ -1653,7 +1664,11 @@ const Recursos = () => {
 
                                   {/* Enunciado */}
                                   <div className="mb-4 text-sm text-gray-800 prose max-w-none">
-                                    <HtmlMathRenderer html={sub.enunciado} />
+                                    {sub.enunciados && sub.enunciados.length > 0 ? (
+                                        sub.enunciados.map((e: any) => <HtmlMathRenderer key={e.id} html={e.contenido} />)
+                                    ) : (
+                                        <HtmlMathRenderer html={sub.enunciado || ''} />
+                                    )}
                                   </div>
 
                                   {/* Imagen */}
@@ -1665,9 +1680,14 @@ const Recursos = () => {
 
                                   {/* Alternativas - mismo grid que individual pero un poco más chico */}
                                   <div className="grid grid-cols-1 gap-2 mb-4">
-                                    {['A', 'B', 'C', 'D'].map((opt) => {
+                                    {['A', 'B', 'C', 'D'].map((opt, i) => {
                                       const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
-                                      const isCorrect = sub.respuestaCorrecta === opt;
+                                      const respString = sub.respuestaCorrecta?.toString();
+                                      const isCorrect = sub.respuestaCorrecta === opt || respString === (i + 1).toString();
+                                      
+                                      // Only render if there's alternative text, since new format may omit it
+                                      if (!altText && !isCorrect && sub.enunciados) return null;
+
                                       return (
                                         <div key={opt} className={`p-3 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
                                           <div className="flex items-start gap-2">
@@ -1697,14 +1717,19 @@ const Recursos = () => {
                     {!isParent && (
                         <div>
                              <div className="grid grid-cols-1 gap-3 mb-4">
-                                {['A', 'B', 'C', 'D'].map((opt) => {
+                                {['A', 'B', 'C', 'D'].map((opt, i) => {
                                     const altText = opt === 'A' ? item.alternativaA : opt === 'B' ? item.alternativaB : opt === 'C' ? item.alternativaC : item.alternativaD;
-                                    const isCorrect = item.respuesta === opt;
+                                    const respString = item.respuesta?.toString();
+                                    const isCorrect = item.respuesta === opt || respString === (i + 1).toString();
+                                    
+                                    // Skip empty alternatives to prevent rendering empty boxes if API didn't provide them
+                                    if (!altText && !isCorrect && item.enunciados) return null;
+
                                     return (
                                         <div key={opt} className={`p-4 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
                                             <div className="flex items-start gap-3">
                                                 <span className={`font-bold ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
-                                                <HtmlMathRenderer html={altText} className="text-gray-800" />
+                                                <HtmlMathRenderer html={altText || ''} className="text-gray-800" />
                                             </div>
                                         </div>
                                     );
