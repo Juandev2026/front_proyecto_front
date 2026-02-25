@@ -267,7 +267,7 @@ const AdminNews = () => {
     // Revoke blob URLs to prevent memory leak
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     if (previewArchivoUrl) URL.revokeObjectURL(previewArchivoUrl);
-    
+
     setIsModalOpen(false);
     setEditingId(null);
     setFormData({
@@ -446,115 +446,114 @@ const AdminNews = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Título
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoría
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Fecha
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Destacado
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Autor
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentItems.map((item) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {stripHtml(item.titulo)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {stripHtml(getCategoryName(item.categoriaId))}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(item.fecha).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {item.esDestacado ? (
-                    <span className="text-green-600 font-bold">Sí</span>
-                  ) : (
-                    <span className="text-gray-400">No</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {item.autor || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span
-                    className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    style={{
-                      backgroundColor: item.estado?.colorHex
-                        ? item.estado.colorHex + '20'
-                        : '#e5e7eb',
-                      color: item.estado?.colorHex || '#374151',
-                    }}
-                  >
-                    {item.estado?.nombre || 'Sin Estado'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleView(item)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                    title="Ver Detalles"
-                  >
-                    <EyeIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    title="Editar"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item)}
-                    className={`mr-4 ${
-                      user?.role?.toUpperCase() !== 'ADMIN' &&
-                      new Date().getTime() - new Date(item.fecha).getTime() >
-                        7 * 24 * 60 * 60 * 1000
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-red-600 hover:text-red-900'
-                    }`}
-                    title={
-                      user?.role?.toUpperCase() !== 'ADMIN' &&
-                      new Date().getTime() - new Date(item.fecha).getTime() >
-                        7 * 24 * 60 * 60 * 1000
-                        ? 'No se puede eliminar después de 7 días'
-                        : 'Eliminar'
-                    }
-                    disabled={
-                      user?.role?.toUpperCase() !== 'ADMIN' &&
-                      new Date().getTime() - new Date(item.fecha).getTime() >
-                        7 * 24 * 60 * 60 * 1000
-                    }
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
-                </td>
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Título
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Categoría
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fecha
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Destacado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Autor
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentItems.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {stripHtml(item.titulo)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {stripHtml(getCategoryName(item.categoriaId))}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(item.fecha).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.esDestacado ? (
+                      <span className="text-green-600 font-bold">Sí</span>
+                    ) : (
+                      <span className="text-gray-400">No</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.autor || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span
+                      className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                      style={{
+                        backgroundColor: item.estado?.colorHex
+                          ? item.estado.colorHex + '20'
+                          : '#e5e7eb',
+                        color: item.estado?.colorHex || '#374151',
+                      }}
+                    >
+                      {item.estado?.nombre || 'Sin Estado'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleView(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Ver Detalles"
+                    >
+                      <EyeIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="Editar"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className={`mr-4 ${user?.role?.toUpperCase() !== 'ADMIN' &&
+                          new Date().getTime() - new Date(item.fecha).getTime() >
+                          7 * 24 * 60 * 60 * 1000
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-900'
+                        }`}
+                      title={
+                        user?.role?.toUpperCase() !== 'ADMIN' &&
+                          new Date().getTime() - new Date(item.fecha).getTime() >
+                          7 * 24 * 60 * 60 * 1000
+                          ? 'No se puede eliminar después de 7 días'
+                          : 'Eliminar'
+                      }
+                      disabled={
+                        user?.role?.toUpperCase() !== 'ADMIN' &&
+                        new Date().getTime() - new Date(item.fecha).getTime() >
+                        7 * 24 * 60 * 60 * 1000
+                      }
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -565,18 +564,16 @@ const AdminNews = () => {
             <button
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Anterior
             </button>
             <button
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Siguiente
             </button>
@@ -599,9 +596,8 @@ const AdminNews = () => {
                 <button
                   onClick={() => paginate(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Anterior</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -617,12 +613,12 @@ const AdminNews = () => {
                     );
                   })
                   .map((page, index, array) => {
-                     // Add ellipsis if there are gaps
+                    // Add ellipsis if there are gaps
                     const prevPage = array[index - 1];
                     const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
                     return (
                       <React.Fragment key={page}>
-                         {showEllipsis && (
+                        {showEllipsis && (
                           <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
                             ...
                           </span>
@@ -630,11 +626,10 @@ const AdminNews = () => {
                         <button
                           onClick={() => paginate(page)}
                           aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === page
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page
                               ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                               : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -644,9 +639,8 @@ const AdminNews = () => {
                 <button
                   onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <span className="sr-only">Siguiente</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -713,11 +707,10 @@ const AdminNews = () => {
                   </div>
                   <div className="flex justify-end mb-4 -mt-6 mr-1">
                     <span
-                      className={`text-sm font-medium ${
-                        stripHtml(formData.descripcion || '').length > 800
+                      className={`text-sm font-medium ${stripHtml(formData.descripcion || '').length > 800
                           ? 'text-red-600'
                           : 'text-gray-500'
-                      }`}
+                        }`}
                     >
                       {stripHtml(formData.descripcion || '').length} / 800 caracteres
                     </span>
@@ -827,37 +820,37 @@ const AdminNews = () => {
                   </div>
 
                   <div>
-                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                       Precio (S/ - deje en 0 si es gratis)
-                     </label>
-                     <input
-                       type="number"
-                       step="0.01"
-                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       value={formData.precio || 0}
-                       onChange={(e) =>
-                         setFormData({
-                           ...formData,
-                           precio: parseFloat(e.target.value),
-                         })
-                       }
-                     />
-                   </div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Precio (S/ - deje en 0 si es gratis)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={formData.precio || 0}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          precio: parseFloat(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                       URL de Video (YouTube - Opcional)
+                      URL de Video (YouTube - Opcional)
                     </label>
                     <input
                       type="text"
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       value={formData.videoUrl || ''}
-                       onChange={(e) =>
+                      onChange={(e) =>
                         setFormData({ ...formData, videoUrl: e.target.value })
                       }
-                       placeholder="https://www.youtube.com/watch?v=..."
+                      placeholder="https://www.youtube.com/watch?v=..."
                     />
                   </div>
 
