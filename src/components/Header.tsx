@@ -18,11 +18,9 @@ const Menu = () => {
   return (
     <>
       <Popover className="bg-white/90 backdrop-filter backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300 border-b border-gray-100">
-        <div className="relative py-1 px-4 sm:px-6 lg:px-8">
-          <nav
-            className="relative flex items-center justify-between sm:h-auto"
-            aria-label="Global"
-          >
+        <div className="relative px-4 sm:px-6 lg:px-8">
+          {/* Top Row: Logo, Product Buttons, Auth */}
+          <div className="flex items-center justify-between py-2 border-b border-gray-50">
             <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0">
               <div className="flex items-center justify-between w-full md:w-auto">
                 {/* Mobile: Hamburger + Logo on Left */}
@@ -38,7 +36,7 @@ const Menu = () => {
                   <Link href="/">
                     <a>
                       <span className="sr-only">{companyName}</span>
-                      <img alt="logo" className="h-20 sm:h-28 w-auto" src="/assets/images/logo_principal1.png" />
+                      <img alt="logo" className="h-16 sm:h-20 w-auto" src="/assets/images/logo_principal1.png" />
                     </a>
                   </Link>
                 </div>
@@ -68,87 +66,61 @@ const Menu = () => {
                 </div>
               </div>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              {navigation.map((item: any) => {
-                // Check if item has dropdown
-                if (item.dropdown && item.dropdown.length > 0) {
-                  return (
-                    <Popover key={item.name} className="relative">
-                      {({ open }) => (
-                        <>
-                          <Popover.Button
-                            className={`text-base font-medium transition-colors hover:text-primary focus:outline-none ${router.pathname === item.href || router.pathname.startsWith(item.href)
-                                ? 'text-primary'
-                                : 'text-gray-500'
-                              }`}
-                          >
-                            <span className="flex items-center gap-1">
-                              {item.name}
-                              <svg
-                                className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </span>
-                          </Popover.Button>
-                          <Transition
-                            as={Fragment}
-                            enter="transition ease-out duration-200"
-                            enterFrom="opacity-0 translate-y-1"
-                            enterTo="opacity-100 translate-y-0"
-                            leave="transition ease-in duration-150"
-                            leaveFrom="opacity-100 translate-y-0"
-                            leaveTo="opacity-0 translate-y-1"
-                          >
-                            <Popover.Panel className="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
-                              <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
-                                <div className="relative bg-white py-2">
-                                  {item.dropdown.map((subItem: any) => (
-                                    <Link key={subItem.name} href={subItem.href}>
-                                      <a className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
-                                        {subItem.name}
-                                      </a>
-                                    </Link>
-                                  ))}
-                                </div>
-                              </div>
-                            </Popover.Panel>
-                          </Transition>
-                        </>
-                      )}
-                    </Popover>
-                  );
-                }
 
-                // Regular navigation item without dropdown
-                return (
-                  <Link key={item.name} href={item.href}>
-                    <a
-                      className={`text-base font-medium transition-colors hover:text-primary ${router.pathname === item.href
-                          ? 'text-primary'
-                          : 'text-gray-500'
-                        }`}
-                    >
-                      {item.name}
-                    </a>
-                  </Link>
-                );
-              })}
+            {/* Desktop Center: Product Buttons */}
+            <div className="hidden md:flex items-center justify-center flex-grow gap-2 lg:gap-4 px-4">
+              {/* AVEND ESCALA */}
+              <div className="relative group">
+                <Link href="/planes?showVideo=true">
+                  <a className="bg-blue-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all hover:scale-105 whitespace-nowrap">
+                    AVEND ESCALA
+                  </a>
+                </Link>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
+                  <div className="bg-gray-900 text-white text-[10px] lg:text-xs py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-gray-700">
+                    👉 "Practica con simulacros y preguntas tipo examen MINEDU"
+                  </div>
+                </div>
+              </div>
+
+              {/* AVEND PLANIFICA */}
+              <div className="relative group">
+                <div className="bg-purple-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-purple-700 transition-all hover:scale-105 cursor-default whitespace-nowrap">
+                  AVEND PLANIFICA
+                </div>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
+                  <div className="bg-gray-900 text-white text-[10px] lg:text-xs py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-gray-700">
+                    👉 "Muy pronto: planifica con IA"
+                  </div>
+                </div>
+              </div>
+
+              {/* AVEND IUS */}
+              <div className="relative group">
+                <div className="bg-[#1e293b] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#0f172a] transition-all hover:scale-105 cursor-default whitespace-nowrap">
+                  AVEND IUS
+                </div>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
+                  <div className="bg-gray-900 text-white text-[10px] lg:text-xs py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-gray-700">
+                    👉 "Muy pronto: normas, procesos y defensa docente"
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Right: Auth */}
+            <div className="hidden md:flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  {/* Aula Virtual logic - waits for loading */}
-                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' || 
-                    user?.role?.toUpperCase() === 'ADMIN' || 
+                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' ||
+                    user?.role?.toUpperCase() === 'ADMIN' ||
                     user?.role?.toUpperCase() === 'SUBADMIN') && (
-                    <Link href="/bancoPreguntas">
-                      <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
-                        Aula Virtual
-                      </a>
-                    </Link>
-                  )}
+                      <Link href="/bancoPreguntas">
+                        <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
+                          Aula Virtual
+                        </a>
+                      </Link>
+                    )}
                   {!loading && (user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">
@@ -156,38 +128,109 @@ const Menu = () => {
                       </a>
                     </Link>
                   )}
-                  <span className="text-gray-700 font-medium">
-                    Hola, {user?.name?.split(' ')[0]}
-                  </span>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('token');
-                      localStorage.removeItem('fullName');
-                      window.location.reload();
-                    }}
-                    className="text-sm text-red-500 hover:text-red-700 font-medium"
-                  >
-                    Cerrar Sesión
-                  </button>
+                  <div className="flex flex-col items-end">
+                    <span className="text-gray-700 font-medium text-xs lg:text-sm">
+                      Hola, {user?.name?.split(' ')[0]}
+                    </span>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('fullName');
+                        window.location.reload();
+                      }}
+                      className="text-[10px] text-red-500 hover:text-red-700 font-medium"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
                   <Link href="/login">
-                    <a className="text-base font-medium text-gray-500 hover:text-primary transition-colors">
+                    <a className="text-xs lg:text-sm font-medium text-gray-500 hover:text-primary transition-colors">
                       Iniciar Sesión
                     </a>
                   </Link>
                   <Link href="/register">
-                    <a className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-secondary transition-colors">
+                    <a className="inline-flex items-center justify-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-xs lg:text-sm font-bold text-white bg-primary hover:bg-secondary transition-colors">
                       Registrarse
                     </a>
                   </Link>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Bottom Row: Navigation Links */}
+          <nav className="hidden md:flex items-center justify-center py-2 space-x-8" aria-label="Global">
+            {navigation.map((item: any) => {
+              if (item.dropdown && item.dropdown.length > 0) {
+                return (
+                  <Popover key={item.name} className="relative">
+                    {({ open }) => (
+                      <>
+                        <Popover.Button
+                          className={`text-xs lg:text-sm font-medium transition-colors hover:text-primary focus:outline-none flex items-center gap-1 ${router.pathname === item.href || router.pathname.startsWith(item.href)
+                            ? 'text-primary'
+                            : 'text-gray-500'
+                            }`}
+                        >
+                          {item.name}
+                          <svg
+                            className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </Popover.Button>
+                        <Transition
+                          as={Fragment}
+                          enter="transition ease-out duration-200"
+                          enterFrom="opacity-0 translate-y-1"
+                          enterTo="opacity-100 translate-y-0"
+                          leave="transition ease-in duration-150"
+                          leaveFrom="opacity-100 translate-y-0"
+                          leaveTo="opacity-0 translate-y-1"
+                        >
+                          <Popover.Panel className="absolute z-50 left-1/2 transform -translate-x-1/2 mt-2 px-2 w-screen max-w-[200px] sm:px-0">
+                            <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                              <div className="relative bg-white py-1">
+                                {item.dropdown.map((subItem: any) => (
+                                  <Link key={subItem.name} href={subItem.href}>
+                                    <a className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
+                                      {subItem.name}
+                                    </a>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          </Popover.Panel>
+                        </Transition>
+                      </>
+                    )}
+                  </Popover>
+                );
+              }
+
+              return (
+                <Link key={item.name} href={item.href}>
+                  <a
+                    className={`text-xs lg:text-sm font-medium transition-colors hover:text-primary whitespace-nowrap ${router.pathname === item.href
+                      ? 'text-primary'
+                      : 'text-gray-500'
+                      }`}
+                  >
+                    {item.name}
+                  </a>
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
+        {/* Mobile menu */}
         <Transition
           as={Fragment}
           enter="duration-150 ease-out"
@@ -223,7 +266,6 @@ const Menu = () => {
               </div>
               <div className="px-2 pt-2 pb-3 space-y-1">
                 {navigation.map((item: any) => {
-                  // Check if item has dropdown
                   if (item.dropdown && item.dropdown.length > 0) {
                     return (
                       <div key={item.name}>
@@ -245,7 +287,6 @@ const Menu = () => {
                     );
                   }
 
-                  // Regular navigation item without dropdown
                   return (
                     <Link key={item.name} href={item.href}>
                       <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
@@ -256,21 +297,20 @@ const Menu = () => {
                 })}
               </div>
 
-
               {!isAuthenticated ? null : (
                 <div className="mt-6 px-5 space-y-4">
                   <div className="text-center font-medium text-gray-900 border-b border-gray-100 pb-2">
                     Hola, {user?.name?.split(' ')[0]}
                   </div>
-                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' || 
-                    user?.role?.toUpperCase() === 'ADMIN' || 
+                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' ||
+                    user?.role?.toUpperCase() === 'ADMIN' ||
                     user?.role?.toUpperCase() === 'SUBADMIN') && (
-                    <Link href="/bancoPreguntas">
-                      <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
-                        Aula Virtual
-                      </a>
-                    </Link>
-                  )}
+                      <Link href="/bancoPreguntas">
+                        <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
+                          Aula Virtual
+                        </a>
+                      </Link>
+                    )}
                   {!loading && (user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="block w-full px-5 py-3 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-full transition-colors shadow-md">
@@ -290,7 +330,6 @@ const Menu = () => {
                   </button>
                 </div>
               )}
-              <div className="mt-4 text-center"></div>
             </div>
           </Popover.Panel>
         </Transition>

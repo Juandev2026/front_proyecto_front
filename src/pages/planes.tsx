@@ -1,9 +1,9 @@
 import React from 'react';
 import { Disclosure } from '@headlessui/react';
-import { CheckIcon } from '@heroicons/react/outline';
+import { CheckIcon, XIcon } from '@heroicons/react/outline';
 import { ChevronUpIcon } from '@heroicons/react/solid';
 import MainLayout from '../components/MainLayout';
-
+import { useRouter } from 'next/router';
 
 interface Plan {
   id: string;
@@ -88,27 +88,66 @@ const planes: Plan[] = [
 ];
 
 const Planes = () => {
+  const router = useRouter();
+  const showVideo = router.query.showVideo === 'true';
+
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="max-w-7xl mx-auto text-center mb-16">
-          <h1 className="text-5xl font-extrabold text-gray-900 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
             Elige el Plan Perfecto para Ti
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             Invierte en tu desarrollo profesional con nuestros planes diseñados para docentes comprometidos
           </p>
         </div>
 
+        {/* Video Section (Conditional) */}
+        {showVideo && (
+          <div className="max-w-4xl mx-auto mb-16 animate-fade-in-down">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-100">
+              <div className="bg-blue-600 py-3 px-6 flex items-center justify-between">
+                <h2 className="text-white font-bold text-lg flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Recorrido por la Plataforma AVEND ESCALA
+                </h2>
+                <button
+                  onClick={() => router.push('/planes', undefined, { shallow: true })}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <XIcon className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+              <div className="p-4 bg-gray-50 border-t border-gray-100">
+                <p className="text-sm text-gray-600 font-medium text-center">
+                  Descubre todo lo que puedes lograr con AVEND ESCALA. Prepárate con simulacros reales y banco de preguntas actualizado.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Plans Grid */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {planes.map((plan) => (
+          {planes.map((plan: Plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
-                plan.highlighted ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
-              }`}
+              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.highlighted ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
+                }`}
             >
               {/* Discount Badge */}
               {plan.discount && (
@@ -127,7 +166,7 @@ const Planes = () => {
                     {plan.subtitle}
                   </p>
                 )}
-                
+
                 {/* Description */}
                 <p className="text-gray-600 mb-6 text-sm">
                   {plan.description}
@@ -167,7 +206,7 @@ const Planes = () => {
                     Incluye acceso a:
                   </p>
                   <div className="space-y-2">
-                    {plan.features.map((feature, index) => (
+                    {plan.features.map((feature: string, index: number) => (
                       <div key={index} className="flex items-start gap-3">
                         <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
                         <span className="text-gray-700 text-sm leading-tight">{feature}</span>
@@ -183,7 +222,7 @@ const Planes = () => {
                       Beneficios exclusivos del Plan Anual:
                     </p>
                     <div className="space-y-3">
-                      {plan.extraBenefits.map((benefit, index) => (
+                      {plan.extraBenefits.map((benefit: string, index: number) => (
                         <div key={index} className="flex items-start gap-3">
                           <CheckIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
                           <span className="text-gray-700 text-xs leading-normal">{benefit}</span>
@@ -204,14 +243,13 @@ const Planes = () => {
           </h2>
           <div className="space-y-4">
             <Disclosure as="div" className="mt-2">
-              {({ open }) => (
+              {({ open }: { open: boolean }) => (
                 <>
                   <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
                     <span>¿Cuáles son los métodos de pago aceptados?</span>
                     <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-6 h-6 text-blue-500`}
+                      className={`${open ? 'transform rotate-180' : ''
+                        } w-6 h-6 text-blue-500`}
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
@@ -221,17 +259,14 @@ const Planes = () => {
               )}
             </Disclosure>
 
-
-
             <Disclosure as="div" className="mt-2">
-              {({ open }) => (
+              {({ open }: { open: boolean }) => (
                 <>
                   <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
                     <span>¿Puedo acceder desde mi celular?</span>
                     <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-6 h-6 text-blue-500`}
+                      className={`${open ? 'transform rotate-180' : ''
+                        } w-6 h-6 text-blue-500`}
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
@@ -242,14 +277,13 @@ const Planes = () => {
             </Disclosure>
 
             <Disclosure as="div" className="mt-2">
-              {({ open }) => (
+              {({ open }: { open: boolean }) => (
                 <>
                   <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
                     <span>¿Qué incluye la mentoría personalizada?</span>
                     <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-6 h-6 text-blue-500`}
+                      className={`${open ? 'transform rotate-180' : ''
+                        } w-6 h-6 text-blue-500`}
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
@@ -260,14 +294,13 @@ const Planes = () => {
             </Disclosure>
 
             <Disclosure as="div" className="mt-2">
-              {({ open }) => (
+              {({ open }: { open: boolean }) => (
                 <>
                   <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
                     <span>¿Tengo garantía si no estoy satisfecho?</span>
                     <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-6 h-6 text-blue-500`}
+                      className={`${open ? 'transform rotate-180' : ''
+                        } w-6 h-6 text-blue-500`}
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
