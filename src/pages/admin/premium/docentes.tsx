@@ -198,11 +198,13 @@ const AdminPremiumDocentes = () => {
         observaciones: user.observaciones || '',
         tiempo: user.tiempo || 0,
         regionId: user.regionId || 0,
-        modalidadId: firstExamen?.modalidadId || 0,
-        nivelId: firstExamen?.nivelId || 0,
-        especialidadId: firstExamen?.especialidadId || 0,
+        modalidadId: firstExamen?.modalidadId || user.modalidadId || 0,
+        nivelId: firstExamen?.nivelId || user.nivelId || 0,
+        especialidadId: firstExamen?.especialidadId || user.especialidadId || 0,
         fechaExpiracion: user.fechaExpiracion,
-        accesoIds: Array.isArray(user.accesoIds) ? user.accesoIds.map(Number) : []
+        accesoIds: user.accesoIds && user.accesoIds.length > 0 
+          ? (Array.isArray(user.accesoIds) ? user.accesoIds.map(Number) : []) 
+          : tiposAcceso.map(t => Number(t.id))
       });
       setExpirationMode('custom');
       setIsModalOpen(true);
@@ -230,7 +232,7 @@ const AdminPremiumDocentes = () => {
       modalidadId: 0,
       nivelId: 0,
       especialidadId: 0,
-      accesoIds: [],
+      accesoIds: tiposAcceso.map(t => Number(t.id)),
     });
     setExpirationMode('custom');
   };

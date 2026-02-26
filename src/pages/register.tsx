@@ -23,6 +23,7 @@ const Register = () => {
     modalidadId: 0,
     nivelId: 0,
     especialidadId: 0,
+    ie: '',
   });
 
   const [regiones, setRegiones] = useState<Region[]>([]);
@@ -127,7 +128,7 @@ const Register = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -169,6 +170,7 @@ const Register = () => {
         modalidadId: Number(formData.modalidadId),
         nivelId: Number(formData.nivelId),
         especialidadId: Number(formData.especialidadId),
+        ie: formData.ie,
       });
       router.push('/login');
     } catch (err: any) {
@@ -411,6 +413,28 @@ const Register = () => {
                   </select>
                 </div>
                 )}
+
+                {/* Institución Educativa (IE) */}
+                <div>
+                  <label
+                    htmlFor="ie"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Institución Educativa{' '}
+                    <span className="text-gray-400 font-normal">(Opcional)</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      id="ie"
+                      name="ie"
+                      type="text"
+                      value={formData.ie}
+                      onChange={handleChange}
+                      placeholder="Ej. IE 001, Universidad Nacional..."
+                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm"
+                    />
+                  </div>
+                </div>
 
                 {/* Password */}
                 <div>
