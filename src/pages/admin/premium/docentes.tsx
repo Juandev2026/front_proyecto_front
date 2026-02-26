@@ -324,7 +324,7 @@ const AdminPremiumDocentes = () => {
       const users = await userService.getAll();
       // Filter by role 'Premium' AND NOT expired
       const premiumUsers = users.filter(u => 
-        u.role === 'Premium' && calculateUserStatus(u.fechaExpiracion) !== 'Expirado'
+        u.role === 'Premium' || (u.role === 'Client' && u.fechaExpiracion && u.fechaExpiracion !== '-')
       );
 
       // Map to Docente interface
@@ -366,7 +366,7 @@ const AdminPremiumDocentes = () => {
 
       const allUsers = await userService.getAll();
       let premiumUsers = allUsers.filter(u => 
-        u.role === 'Premium' && calculateUserStatus(u.fechaExpiracion) !== 'Expirado'
+        u.role === 'Premium' || (u.role === 'Client' && u.fechaExpiracion && u.fechaExpiracion !== '-')
       );
 
       // --- FILTROS ---
@@ -606,6 +606,7 @@ const AdminPremiumDocentes = () => {
                 <option value="">Seleccionar opción</option>
                 <option value="activo">Activos</option>
                 <option value="por vencer">Por vencer</option>
+                <option value="expirado">Expirados</option>
               </select>
             </div>
           </div>
@@ -636,7 +637,7 @@ const AdminPremiumDocentes = () => {
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-6 rounded-lg border-2 border-blue-100 flex flex-col items-center justify-center text-center">
             <div className="w-8 h-1 bg-blue-600 mb-2 rounded-full"></div>
             <div className="text-gray-500 text-sm font-medium">Total docentes</div>
@@ -651,6 +652,11 @@ const AdminPremiumDocentes = () => {
             <div className="w-8 h-1 bg-yellow-500 mb-2 rounded-full"></div>
             <div className="text-gray-500 text-sm font-medium">Por vencer</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">{stats.porVencer}</div>
+          </div>
+          <div className="bg-white p-6 rounded-lg border-2 border-red-100 flex flex-col items-center justify-center text-center">
+            <div className="w-8 h-1 bg-red-500 mb-2 rounded-full"></div>
+            <div className="text-gray-500 text-sm font-medium">Expirados</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{stats.expirados}</div>
           </div>
         </div>
 
