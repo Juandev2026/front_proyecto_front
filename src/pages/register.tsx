@@ -147,7 +147,6 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setLoading(true);
     setError('');
 
     // Validate password complexity
@@ -157,12 +156,15 @@ const Register = () => {
       return;
     }
 
-    try {
-      // Removed mandatory check for especialidadId
-      // if (!formData.especialidadId) {
-      //    throw new Error("Por favor seleccione una especialidad");
-      // }
+    // Validar que Nivel sea seleccionado cuando el campo está disponible
+    const nivelesDisponibles = formData.modalidadId ? getNivelesForModalidad(Number(formData.modalidadId)) : [];
+    if (nivelesDisponibles.length > 0 && !formData.nivelId) {
+      setError('Por favor seleccione un nivel.');
+      setLoading(false);
+      return;
+    }
 
+    try {
       await authService.register({
         nombreCompleto: formData.name,
         email: formData.email,
@@ -364,7 +366,7 @@ const Register = () => {
                   <select
                     id="nivelId"
                     name="nivelId"
-                    required
+                    required={displayedNiveles.length > 0}
                     value={formData.nivelId}
                     onChange={handleChange}
                     disabled={!formData.modalidadId}
