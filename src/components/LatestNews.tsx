@@ -127,7 +127,7 @@ const LatestNews = () => {
                   Inicia sesión para descargar recursos gratuitos y acceder a todo el contenido web disponible.
                 </span>
               </p>
-              <Link href="/login">
+              <Link href="/login?redirect=/recursos">
                 <a className="whitespace-nowrap px-8 py-3 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-all hover:scale-105 shadow-md">
                   Iniciar Sesión
                 </a>

@@ -134,7 +134,7 @@ const WhatsAppWidget = () => {
       {/* Floating Button */}
       <button
         onClick={toggleChat}
-        className="bg-[#25D366] hover:bg-[#20b858] text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none"
+        className="bg-[#25D366] hover:bg-[#20b858] text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none animate-shine"
         aria-label="Chat on WhatsApp"
       >
         {isOpen ? (
@@ -153,9 +153,9 @@ const WhatsAppWidget = () => {
           </svg>
         ) : (
           <img
-            src="/assets/images/whatsapp.png"
+            src="/assets/images/Logo_WhatsApp.png"
             alt="WhatsApp"
-            className="w-8 h-8"
+            className="w-8 h-8 object-contain"
           />
         )}
       </button>

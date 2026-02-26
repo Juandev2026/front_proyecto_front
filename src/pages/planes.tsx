@@ -1,6 +1,6 @@
 import React from 'react';
 import { Disclosure } from '@headlessui/react';
-import { CheckIcon, XIcon } from '@heroicons/react/outline';
+import { XIcon } from '@heroicons/react/outline';
 import { ChevronUpIcon, CheckCircleIcon, StarIcon, DeviceMobileIcon, DesktopComputerIcon, DeviceTabletIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
 import MainLayout from '../components/MainLayout';
@@ -43,11 +43,11 @@ const planes: Plan[] = [
   {
     id: 'semestral',
     name: 'PLAN SEMESTRAL',
-    subtitle: 'Impulsa tu Nombramiento y Ascenso',
+    subtitle: 'IMPULSA TU NOMBRAMIENTO Y ASCENSO',
     type: 'semestral',
     price: 35,
     duration: 'por 6 meses',
-    description: 'Preparación estratégica durante 6 meses para avanzar con enfoque.',
+    description: 'Preparación durante 6 meses para avanzar con enfoque.',
     ctaText: 'Comenzar Ahora',
     features: [
       'Nombramiento',
@@ -67,10 +67,10 @@ const planes: Plan[] = [
     price: 49,
     originalPrice: 70,
     duration: 'por 12 meses',
-    description: 'Preparación integral durante todo el año en todos los procesos.',
+    description: 'Preparación estratégica durante 12 meses (un solo pago) en todos los procesos.',
     highlighted: true,
     discount: '🔥 Más elegido',
-    ctaText: 'Acceso Total Ahora',
+    ctaText: 'Solicitar acceso ahora',
     features: [
       'Nombramiento',
       'Ascenso',
@@ -80,11 +80,16 @@ const planes: Plan[] = [
       'Práctica con tus respuestas erradas',
       'Estadísticas avanzadas de rendimiento',
       'Seguimiento y progreso acumulado',
+      'Cronómetro integrado',
+      'Lector automático de preguntas',
     ],
     extraBenefits: [
-      'Resolución en video de cada pregunta para Nombramiento y Ascenso, iniciando con Inicial y Primaria y contenido completo en abril, con explicación estratégica paso a paso para comprender cómo llegar a la respuesta correcta',
-      'Simulacros mensuales de Ascenso (Inicial y Primaria) desde mayo hasta un mes antes del examen',
-      'Herramientas avanzadas',
+      'Resolución de los 3 últimos exámenes (Inicial) desde mayo.',
+      'Micro simulacros tipo MINEDU (Inicial, Primaria, CCSS y DPCC) desde mayo.',
+      'Recursos alineados al temario MINEDU.',
+      'Herramientas exclusivas desde mayo.',
+      'Atención a consultas sobre procesos MINEDU.',
+      'Actualizaciones sobre Nombramiento, Ascenso y Directivos.',
     ],
   },
 ];
@@ -98,7 +103,7 @@ const Planes = () => {
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="max-w-7xl mx-auto text-center mb-16">
+        <div className="max-w-7xl mx-auto text-center mb-8">
           <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
             Elige el Plan Perfecto para Ti
           </h1>
@@ -109,7 +114,7 @@ const Planes = () => {
 
         {/* Video Section (Conditional) */}
         {showVideo && (
-          <div className="max-w-4xl mx-auto mb-16 animate-fade-in-down">
+          <div className="max-w-4xl mx-auto mb-12 animate-fade-in-down">
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-100">
               <div className="bg-blue-600 py-3 px-6 flex items-center justify-between">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
@@ -149,17 +154,22 @@ const Planes = () => {
           {planes.map((plan: Plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.highlighted ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
-                }`}
+              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.highlighted ? 'ring-2 ring-blue-600 ring-inset ring-opacity-50 shadow-blue-100/50' : ''
+                } ${plan.highlighted ? 'bg-gradient-to-br from-blue-100/80 via-white to-white' : ''}`}
             >
+              {/* Decorative top gradient bar for highlighted plan */}
+              {plan.highlighted && (
+                <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700" />
+              )}
+
               {/* Discount Badge */}
               {plan.discount && (
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                <div className="absolute top-7 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg z-10">
                   {plan.discount}
                 </div>
               )}
 
-              <div className="p-8">
+              <div className={`p-8 ${plan.highlighted ? 'pt-14' : ''}`}>
                 {/* Plan Name */}
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
                   {plan.name}
@@ -198,16 +208,16 @@ const Planes = () => {
                     href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(plan.name)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
-                    style={{ backgroundColor: '#2b7fff' }}
+                    className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${plan.highlighted ? 'animate-shine' : ''}`}
+                    style={{ backgroundColor: plan.highlighted ? '#1e40af' : '#2b7fff', boxShadow: plan.highlighted ? '0 10px 15px -3px rgba(30, 64, 175, 0.3)' : undefined }}
                   >
-                    Solicitar Acceso
+                    {plan.ctaText}
                   </a>
                 ) : (
                   <Link href={`/login?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}`}>
                     <a
-                      className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
-                      style={{ backgroundColor: '#2b7fff' }}
+                      className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${plan.highlighted ? 'animate-shine' : ''}`}
+                      style={{ backgroundColor: plan.highlighted ? '#1e40af' : '#2b7fff', boxShadow: plan.highlighted ? '0 10px 15px -3px rgba(30, 64, 175, 0.3)' : undefined }}
                     >
                       {plan.ctaText}
                     </a>
@@ -222,7 +232,7 @@ const Planes = () => {
                   <div className="space-y-2">
                     {plan.features.map((feature: string, index: number) => (
                       <div key={index} className="flex items-start gap-3">
-                        <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
+                        <CheckCircleIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
                         <span className="text-gray-700 text-sm leading-tight">{feature}</span>
                       </div>
                     ))}
@@ -238,7 +248,7 @@ const Planes = () => {
                     <div className="space-y-3">
                       {plan.extraBenefits.map((benefit: string, index: number) => (
                         <div key={index} className="flex items-start gap-3">
-                          <CheckIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
+                          <CheckCircleIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
                           <span className="text-gray-700 text-xs leading-normal">{benefit}</span>
                         </div>
                       ))}

@@ -23,6 +23,7 @@ const Login = () => {
 
   const planName = router.query.planName as string;
   const planId = router.query.planId as string;
+  const redirect = router.query.redirect as string;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -114,6 +115,8 @@ const Login = () => {
         finalRole?.toUpperCase() === 'SUBADMIN'
       ) {
         router.push('/admin/');
+      } else if (redirect) {
+        router.push(redirect);
       } else if (finalRole?.toUpperCase() === 'PREMIUM') {
         router.push('/');
       } else {
@@ -144,14 +147,14 @@ const Login = () => {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                 Bienvenido de nuevo
               </h1>
-              <p className="text-base sm:text-lg text-gray-600">
-                ¿Aún no tienes una cuenta?{' '}
-                <Link href={`/register${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`}>
+              <div className="text-base sm:text-lg text-gray-600 flex flex-col items-center">
+                <span>¿Aún no tienes una cuenta?</span>
+                <Link href={`/register${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>
                   <a className="font-bold text-primary hover:text-secondary transition-colors duration-200 underline decoration-2 underline-offset-4">
                     Regístrate gratis aquí
                   </a>
                 </Link>
-              </p>
+              </div>
             </div>
 
             {isRedirectingToWsp && (

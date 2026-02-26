@@ -36,6 +36,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const planName = router.query.planName as string;
   const planId = router.query.planId as string;
+  const redirect = router.query.redirect as string;
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: true,
     uppercase: false,
@@ -176,7 +177,7 @@ const Register = () => {
         especialidadId: Number(formData.especialidadId),
         ie: formData.ie,
       });
-      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`);
+      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `${planName ? '&' : '?'}redirect=${encodeURIComponent(redirect)}` : ''}`);
     } catch (err: any) {
       setError(
         err.message || 'Error al registrarse. Por favor intente de nuevo.'
@@ -203,7 +204,7 @@ const Register = () => {
               </h1>
               <p className="text-sm text-gray-600">
                 ¿Ya tienes una cuenta?{' '}
-                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`}>
+                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>
                   <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
                     Inicia sesión aquí
                   </a>
