@@ -252,6 +252,11 @@ const AdminPremiumDocentes = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Confirmación al asignar rol Admin
+      if (formData.role === 'Admin') {
+        const confirmed = window.confirm('¿Estás seguro que quieres hacer Administrador a este usuario?');
+        if (!confirmed) return;
+      }
       // Si hay selección en los dropdowns que no fue añadida manualmente, incluirla automáticamente
       let finalUserExamenes = [...userExamenes];
       if (formData.modalidadId) {
@@ -1016,8 +1021,8 @@ const AdminPremiumDocentes = () => {
                     </div>
                   </div>
 
-                  {/* IE (Solo Premium) */}
-                  {formData.role === 'Premium' && (
+                  {/* IE (Solo Premium o Admin) */}
+                  {(formData.role === 'Premium' || formData.role === 'Admin') && (
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">Institución Educativa</label>
                       <input
@@ -1030,8 +1035,8 @@ const AdminPremiumDocentes = () => {
                     </div>
                   )}
 
-                  {/* Observaciones (Solo Premium) */}
-                  {formData.role === 'Premium' && (
+                  {/* Observaciones (Solo Premium o Admin) */}
+                  {(formData.role === 'Premium' || formData.role === 'Admin') && (
                     <div>
                       <label className="block text-sm text-gray-700 mb-1">Observaciones</label>
                       <textarea
@@ -1045,8 +1050,8 @@ const AdminPremiumDocentes = () => {
                   )}
                 </div>
 
-                {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Solo Premium) === */}
-                {formData.role === 'Premium' && (
+                {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Solo Premium o Admin) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <svg className="w-5 h-5 text-[#002B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1198,8 +1203,8 @@ const AdminPremiumDocentes = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 3: TIPO DE ACCESO (Solo Premium) === */}
-                {formData.role === 'Premium' && (
+                {/* === SECCIÓN 3: TIPO DE ACCESO (Solo Premium o Admin) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <svg className="w-5 h-5 text-[#002B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1232,8 +1237,8 @@ const AdminPremiumDocentes = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 4: FECHA EXPIRACIÓN (Solo Premium) === */}
-                {formData.role === 'Premium' && (
+                {/* === SECCIÓN 4: FECHA EXPIRACIÓN (Solo Premium o Admin) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <svg className="w-5 h-5 text-[#002B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
