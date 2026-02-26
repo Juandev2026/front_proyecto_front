@@ -71,14 +71,30 @@ const Menu = () => {
             <div className="hidden md:flex items-center justify-center flex-grow gap-2 lg:gap-4 px-4">
               {/* AVEND ESCALA */}
               <div className="relative group">
-                <Link href="/planes?showVideo=true">
+                <Link
+                  href={
+                    isAuthenticated && (
+                      user?.role?.toUpperCase() === 'PREMIUM' ||
+                      user?.role?.toUpperCase() === 'ADMIN' ||
+                      user?.role?.toUpperCase() === 'SUBADMIN'
+                    )
+                      ? "/bancoPreguntas"
+                      : "/planes?showVideo=true"
+                  }
+                >
                   <a className="bg-blue-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all hover:scale-105 whitespace-nowrap">
                     AVEND ESCALA
                   </a>
                 </Link>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
                   <div className="bg-gray-900 text-white text-[10px] lg:text-xs py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-gray-700">
-                    👉 "Practica con simulacros y preguntas tipo examen MINEDU"
+                    {isAuthenticated && (
+                      user?.role?.toUpperCase() === 'PREMIUM' ||
+                      user?.role?.toUpperCase() === 'ADMIN' ||
+                      user?.role?.toUpperCase() === 'SUBADMIN'
+                    )
+                      ? "👉 Acceder al Aula Virtual"
+                      : "👉 Practica con simulacros y preguntas tipo examen MINEDU"}
                   </div>
                 </div>
               </div>
@@ -112,15 +128,6 @@ const Menu = () => {
             <div className="hidden md:flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  {!loading && (user?.role?.toUpperCase() === 'PREMIUM' ||
-                    user?.role?.toUpperCase() === 'ADMIN' ||
-                    user?.role?.toUpperCase() === 'SUBADMIN') && (
-                      <Link href="/bancoPreguntas">
-                        <a className="text-xs lg:text-sm font-bold bg-primary text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap">
-                          Aula Virtual
-                        </a>
-                      </Link>
-                    )}
                   {!loading && (user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'SUBADMIN') && (
                     <Link href="/admin">
                       <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">

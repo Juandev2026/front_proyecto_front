@@ -2,8 +2,10 @@ import React from 'react';
 import { Disclosure } from '@headlessui/react';
 import { CheckIcon, XIcon } from '@heroicons/react/outline';
 import { ChevronUpIcon } from '@heroicons/react/solid';
+import Link from 'next/link';
 import MainLayout from '../components/MainLayout';
 import { useRouter } from 'next/router';
+import { useAuth } from '../hooks/useAuth';
 
 interface Plan {
   id: string;
@@ -89,6 +91,7 @@ const planes: Plan[] = [
 
 const Planes = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const showVideo = router.query.showVideo === 'true';
 
   return (
@@ -190,15 +193,26 @@ const Planes = () => {
                 </div>
 
                 {/* CTA Button */}
-                <a
-                  href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(plan.name)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
-                  style={{ backgroundColor: '#2b7fff' }}
-                >
-                  {plan.ctaText}
-                </a>
+                {isAuthenticated ? (
+                  <a
+                    href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(plan.name)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
+                    style={{ backgroundColor: '#2b7fff' }}
+                  >
+                    Solicitar Acceso
+                  </a>
+                ) : (
+                  <Link href={`/login?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}`}>
+                    <a
+                      className="block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
+                      style={{ backgroundColor: '#2b7fff' }}
+                    >
+                      {plan.ctaText}
+                    </a>
+                  </Link>
+                )}
 
                 {/* Features */}
                 <div className="space-y-3">

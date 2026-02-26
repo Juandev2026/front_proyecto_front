@@ -19,6 +19,10 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isRedirectingToWsp, setIsRedirectingToWsp] = useState(false);
+
+  const planName = router.query.planName as string;
+  const planId = router.query.planId as string;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -96,6 +100,15 @@ const Login = () => {
         localStorage.removeItem('loginExamenes');
       }
 
+      if (planName) {
+        setIsRedirectingToWsp(true);
+        setTimeout(() => {
+          const wspUrl = `https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(planName)}`;
+          window.location.href = wspUrl;
+        }, 2500);
+        return;
+      }
+
       if (
         finalRole?.toUpperCase() === 'ADMIN' ||
         finalRole?.toUpperCase() === 'SUBADMIN'
@@ -133,13 +146,29 @@ const Login = () => {
               </h1>
               <p className="text-base sm:text-lg text-gray-600">
                 ¿Aún no tienes una cuenta?{' '}
-                <Link href="/register">
+                <Link href={`/register${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`}>
                   <a className="font-bold text-primary hover:text-secondary transition-colors duration-200 underline decoration-2 underline-offset-4">
                     Regístrate gratis aquí
                   </a>
                 </Link>
               </p>
             </div>
+
+            {isRedirectingToWsp && (
+              <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-xl text-center animate-pulse">
+                <div className="flex justify-center mb-3">
+                  <div className="bg-green-100 p-2 rounded-full">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-green-800 mb-2">¡Felicitaciones!</h3>
+                <p className="text-green-700">
+                  Acceso concedido. Estamos redirigiéndote al chat con Juan para activar tu {planName}...
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
@@ -266,8 +295,8 @@ const Login = () => {
                 <button
                   type="submit"
                   className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-primary hover:bg-secondary'
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-primary hover:bg-secondary'
                     } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
                   disabled={loading}
                 >

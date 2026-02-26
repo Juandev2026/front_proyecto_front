@@ -21,7 +21,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: 'escala2025',
+    password: 'Escala2026*',
     celular: '',
     region: '',
     regionId: 0,
@@ -40,6 +40,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const planName = router.query.planName as string;
+  const planId = router.query.planId as string;
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: true,
     uppercase: false,
@@ -192,7 +194,7 @@ const Register = () => {
         nivelId: Number(formData.nivelId),
         especialidadId: Number(formData.especialidadId),
       });
-      router.push('/login');
+      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`);
     } catch (err: any) {
       setError(
         err.message || 'Error al registrarse. Por favor intente de nuevo.'
@@ -219,7 +221,7 @@ const Register = () => {
               </h1>
               <p className="text-sm text-gray-600">
                 ¿Ya tienes una cuenta?{' '}
-                <Link href="/login">
+                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`}>
                   <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
                     Inicia sesión aquí
                   </a>
@@ -527,8 +529,8 @@ const Register = () => {
                 <button
                   type="submit"
                   className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-primary hover:bg-secondary'
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-primary hover:bg-secondary'
                     } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
                   disabled={loading}
                 >

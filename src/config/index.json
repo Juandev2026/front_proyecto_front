@@ -27,14 +27,6 @@
     {
       "name": "Cursos",
       "href": "/cursos"
-    },
-    {
-      "name": "Planes",
-      "href": "/planes"
-    },
-    {
-      "name": "IA (Próximamente)",
-      "href": "#"
     }
   ],
   "callToAction": {
@@ -120,7 +112,6 @@
         "name": "Pro",
         "price": "$15",
         "priceDetails": "per user",
-
         "features": [
           "5 users",
           "Priority Support",
@@ -151,14 +142,14 @@
         "name": "Recursos",
         "href": "/recursos"
       },
-    {
-      "name": "Cursos",
-      "href": "/cursos"
-    },
-    {
-      "name": "Normas Legales",
-      "href": "/normas-legales"
-    }
+      {
+        "name": "Cursos",
+        "href": "/cursos"
+      },
+      {
+        "name": "Normas Legales",
+        "href": "/normas-legales"
+      }
     ],
     "socialMedia": {
       "github": "https://github.com/issaafalkattan",
@@ -381,7 +372,11 @@
   "cursosPage": {
     "title": "Nuestros Cursos",
     "subtitle": "Aprende con los mejores expertos",
-    "categories": ["Clases", "Tutoriales", "Entrevistas"],
+    "categories": [
+      "Clases",
+      "Tutoriales",
+      "Entrevistas"
+    ],
     "items": [
       {
         "id": "comprension-lectora",
@@ -466,7 +461,11 @@
         "syllabus": [
           {
             "title": "Introducción a la IA",
-            "items": ["Qué es ChatGPT", "Creación de cuenta", "Interfaz básica"]
+            "items": [
+              "Qué es ChatGPT",
+              "Creación de cuenta",
+              "Interfaz básica"
+            ]
           },
           {
             "title": "Planificación Curricular",
@@ -504,11 +503,17 @@
         "syllabus": [
           {
             "title": "Tendencias Globales",
-            "items": ["Educación Híbrida", "Competencias Digitales"]
+            "items": [
+              "Educación Híbrida",
+              "Competencias Digitales"
+            ]
           },
           {
             "title": "Realidad Nacional",
-            "items": ["Brecha Digital", "Infraestructura Educativa"]
+            "items": [
+              "Brecha Digital",
+              "Infraestructura Educativa"
+            ]
           }
         ]
       },
@@ -545,7 +550,11 @@
           },
           {
             "title": "Instrumentos",
-            "items": ["Listas de cotejo", "Rúbricas", "Portafolios"]
+            "items": [
+              "Listas de cotejo",
+              "Rúbricas",
+              "Portafolios"
+            ]
           }
         ]
       },
@@ -575,11 +584,17 @@
         "syllabus": [
           {
             "title": "Google Sheets para Docentes",
-            "items": ["Fórmulas básicas", "Formato condicional"]
+            "items": [
+              "Fórmulas básicas",
+              "Formato condicional"
+            ]
           },
           {
             "title": "Automatización",
-            "items": ["Scripts básicos", "Complementos útiles"]
+            "items": [
+              "Scripts básicos",
+              "Complementos útiles"
+            ]
           }
         ]
       },
@@ -601,15 +616,25 @@
           "Verás ejemplos reales de aplicación.",
           "Te motivarás para innovar."
         ],
-        "includes": ["Acceso gratuito", "Comunidad de docentes innovadores"],
+        "includes": [
+          "Acceso gratuito",
+          "Comunidad de docentes innovadores"
+        ],
         "syllabus": [
           {
             "title": "Metodologías Activas",
-            "items": ["ABP", "Flipped Classroom", "Gamificación"]
+            "items": [
+              "ABP",
+              "Flipped Classroom",
+              "Gamificación"
+            ]
           },
           {
             "title": "Casos Reales",
-            "items": ["Experiencias en primaria", "Experiencias en secundaria"]
+            "items": [
+              "Experiencias en primaria",
+              "Experiencias en secundaria"
+            ]
           }
         ]
       }
