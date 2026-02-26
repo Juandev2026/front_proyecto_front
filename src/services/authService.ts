@@ -18,6 +18,7 @@ export interface RegisterRequest {
   modalidadId: number;
   nivelId: number;
   especialidadId: number;
+  ie?: string;
 }
 
 export interface RegisterResponse {
@@ -104,6 +105,7 @@ export const authService = {
         especialidadId: data.especialidadId
           ? Number(data.especialidadId)
           : null,
+        ie: data.ie,
       };
 
       const response = await fetch(`${apiAuth}/register`, {

@@ -1,15 +1,9 @@
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
 
-export interface YearGrouped {
-  year: string;
-  count: number;
-}
-
 export interface EspecialidadGrouped {
-  especialidadId: number;
-  especialidadNombre: string;
-  years: YearGrouped[];
+  especialidadId: number | null;
+  especialidadNombre: string | null;
 }
 
 export interface NivelGrouped {
@@ -47,13 +41,19 @@ export interface Examen {
   modalidadId: number;
   nivelId: number;
   especialidadId: number;
-  nombre?: string; // Optional if not always present
+  nombre?: string;
+}
+
+export interface SimplifiedHierarchy {
+  modalidades: { id: number; nombre: string; base?: number }[];
+  niveles: { id: number; nombre: string; modalidadIds: number[] }[];
+  especialidades: { id: number; nombre: string; nivelId: number }[];
 }
 
 export const examenService = {
   getGrouped: async (): Promise<ExamenGrouped[]> => {
     try {
-      const response = await fetch(`${API_URL}/grouped`, {
+      const response = await fetch(`${API_URL}/grouped-simple`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
@@ -63,6 +63,52 @@ export const examenService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  getSimplifiedHierarchy: async (): Promise<SimplifiedHierarchy> => {
+    const grouped = await examenService.getGrouped();
+    const modsMap = new Map<number, { id: number; nombre: string }>();
+    const nivsMap = new Map<number, { id: number; nombre: string; modIds: Set<number> }>();
+    const espsMap = new Map<string, { id: number; nombre: string; nivelId: number }>();
+
+    grouped.forEach(tipo => {
+      tipo.fuentes.forEach(fuente => {
+        fuente.modalidades.forEach(m => {
+          if (!modsMap.has(m.modalidadId)) {
+            modsMap.set(m.modalidadId, { id: m.modalidadId, nombre: m.modalidadNombre });
+          }
+          
+          m.niveles.forEach(n => {
+            if (!nivsMap.has(n.nivelId)) {
+              nivsMap.set(n.nivelId, { id: n.nivelId, nombre: n.nivelNombre, modIds: new Set() });
+            }
+            nivsMap.get(n.nivelId)!.modIds.add(m.modalidadId);
+            
+            n.especialidades.forEach(e => {
+              if (e.especialidadId !== null) {
+                const key = `${e.especialidadId}-${n.nivelId}`;
+                if (!espsMap.has(key)) {
+                  espsMap.set(key, {
+                    id: e.especialidadId,
+                    nombre: e.especialidadNombre || '',
+                    nivelId: n.nivelId
+                  });
+                }
+              }
+            });
+          });
+        });
+      });
+    });
+
+    return {
+      modalidades: Array.from(modsMap.values()),
+      niveles: Array.from(nivsMap.values())
+                 .map(n => ({ id: n.id, nombre: n.nombre, modalidadIds: Array.from(n.modIds) }))
+                 .filter(n => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO'),
+      especialidades: Array.from(espsMap.values())
+                        .filter(e => e.nombre && e.nombre.toUpperCase() !== 'NINGUNO')
+    };
   },
 
   getAll: async (): Promise<Examen[]> => {

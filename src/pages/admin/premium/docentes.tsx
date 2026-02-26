@@ -12,9 +12,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { userService, User } from '../../../services/userService';
 import { regionService, Region } from '../../../services/regionService';
-import { modalidadService, Modalidad } from '../../../services/modalidadService';
-import { nivelService, Nivel } from '../../../services/nivelService';
-import { especialidadesService, Especialidad } from '../../../services/especialidadesService';
+import { examenService } from '../../../services/examenService';
 import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
 import {
   UserIcon,
@@ -69,15 +67,14 @@ const AdminPremiumDocentes = () => {
     accesoIds: [],
   });
 
-  // Catalogs
   const [regions, setRegions] = useState<Region[]>([]);
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  const [niveles, setNiveles] = useState<Nivel[]>([]);
-  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  const [modalidades, setModalidades] = useState<{ id: number; nombre: string; base?: number }[]>([]);
+  const [niveles, setNiveles] = useState<{ id: number; nombre: string; modalidadIds: number[] }[]>([]);
+  const [especialidades, setEspecialidades] = useState<{ id: number; nombre: string; nivelId: number }[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
 
-  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
-  const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
+  const [filteredNiveles, setFilteredNiveles] = useState<typeof niveles>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<typeof especialidades>([]);
 
   // Expiration Logic
   const [expirationMode, setExpirationMode] = useState<'1year' | '5months' | '10months' | 'custom'>('custom');
@@ -102,7 +99,7 @@ const AdminPremiumDocentes = () => {
   const handleExpirationPresetChange = (mode: '1year' | '5months' | '10months') => {
     setExpirationMode(mode);
     const newDate = calculateExpirationDate(mode);
-    setFormData((prev) => ({ ...prev, fechaExpiracion: newDate }));
+    setFormData((prev: any) => ({ ...prev, fechaExpiracion: newDate }));
   };
 
   const calculateUserStatus = (fechaExpiracion: string | null | undefined): Docente['estado'] => {
@@ -119,18 +116,16 @@ const AdminPremiumDocentes = () => {
 
   const fetchCatalogs = async () => {
     try {
-      const [r, m, n, e, t] = await Promise.all([
+      const [r, t, hierarchy] = await Promise.all([
         regionService.getAll(),
-        modalidadService.getAll(),
-        nivelService.getAll(),
-        especialidadesService.getAll(),
-        tipoAccesoService.getAll()
+        tipoAccesoService.getAll(),
+        examenService.getSimplifiedHierarchy()
       ]);
       setRegions(r);
-      setModalidades(m);
-      setNiveles(n);
-      setEspecialidades(e);
       setTiposAcceso(t);
+      setModalidades(hierarchy.modalidades.reverse() as any);
+      setNiveles(hierarchy.niveles);
+      setEspecialidades(hierarchy.especialidades);
     } catch (error) {
       console.error("Error fetching catalogs", error);
     }
@@ -145,13 +140,9 @@ const AdminPremiumDocentes = () => {
     fetchCatalogs();
   }, []);
 
-  // Cascading Logic
   useEffect(() => {
     if (formData.modalidadId) {
-      const filtered = niveles.filter(n => {
-        if (Array.isArray(n.modalidadIds)) return n.modalidadIds.includes(Number(formData.modalidadId));
-        return n.modalidadId === Number(formData.modalidadId) || n.modalidadIds === Number(formData.modalidadId);
-      });
+      const filtered = niveles.filter(n => n.modalidadIds.includes(Number(formData.modalidadId)));
       setFilteredNiveles(filtered);
     } else {
       setFilteredNiveles([]);
@@ -207,11 +198,13 @@ const AdminPremiumDocentes = () => {
         observaciones: user.observaciones || '',
         tiempo: user.tiempo || 0,
         regionId: user.regionId || 0,
-        modalidadId: firstExamen?.modalidadId || 0,
-        nivelId: firstExamen?.nivelId || 0,
-        especialidadId: firstExamen?.especialidadId || 0,
+        modalidadId: firstExamen?.modalidadId || user.modalidadId || 0,
+        nivelId: firstExamen?.nivelId || user.nivelId || 0,
+        especialidadId: firstExamen?.especialidadId || user.especialidadId || 0,
         fechaExpiracion: user.fechaExpiracion,
-        accesoIds: Array.isArray(user.accesoIds) ? user.accesoIds.map(Number) : []
+        accesoIds: user.accesoIds && user.accesoIds.length > 0 
+          ? (Array.isArray(user.accesoIds) ? user.accesoIds.map(Number) : []) 
+          : tiposAcceso.map(t => Number(t.id))
       });
       setExpirationMode('custom');
       setIsModalOpen(true);
@@ -239,7 +232,7 @@ const AdminPremiumDocentes = () => {
       modalidadId: 0,
       nivelId: 0,
       especialidadId: 0,
-      accesoIds: [],
+      accesoIds: tiposAcceso.map(t => Number(t.id)),
     });
     setExpirationMode('custom');
   };
@@ -1010,7 +1003,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
                       >
-                        <option value={0}>Seleccionar region</option>
+                        <option value={0} disabled hidden>Seleccionar región</option>
                         {regions.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                       </select>
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
@@ -1118,7 +1111,7 @@ const AdminPremiumDocentes = () => {
                           onChange={(e) => setFormData({ ...formData, modalidadId: Number(e.target.value), nivelId: 0, especialidadId: 0 })}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
                         >
-                          <option value={0}>Seleccionar Modalidad</option>
+                          <option value={0} disabled hidden>Seleccionar modalidad</option>
                           {modalidades.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
                         </select>
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
@@ -1135,7 +1128,7 @@ const AdminPremiumDocentes = () => {
                             onChange={(e) => setFormData({ ...formData, nivelId: Number(e.target.value), especialidadId: 0 })}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
                           >
-                            <option value={0}>Seleccionar Nivel</option>
+                            <option value={0} disabled hidden>Seleccionar nivel</option>
                             {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
                           </select>
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
@@ -1153,7 +1146,7 @@ const AdminPremiumDocentes = () => {
                             onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
                           >
-                            <option value={0}>Seleccionar especialidad</option>
+                            <option value={0} disabled hidden>Seleccionar especialidad</option>
                             {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
                           </select>
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">▼</span>
@@ -1220,7 +1213,7 @@ const AdminPremiumDocentes = () => {
                               if (e.target.checked) {
                                 setFormData({ ...formData, accesoIds: [...currentIds.map(Number), id] });
                               } else {
-                                setFormData({ ...formData, accesoIds: currentIds.map(Number).filter(cid => cid !== id) });
+                                setFormData({ ...formData, accesoIds: currentIds.map(Number).filter((cid: number) => cid !== id) });
                               }
                             }}
                             className="w-4 h-4 accent-red-500 rounded"

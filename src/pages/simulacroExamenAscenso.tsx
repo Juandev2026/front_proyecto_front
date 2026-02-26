@@ -71,7 +71,7 @@ const SimulacroExamenAscensoPage = () => {
        try {
          setIsLoading(true);
          const data = await estructuraAcademicaService.getAgrupados();
-         setModalidades(data);
+         setModalidades([...data].reverse());
        } catch (error) {
          console.error("Error loading filters:", error);
        } finally {

@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
-import { modalidadService, Modalidad } from '../../services/modalidadService';
-
-import { nivelService, Nivel } from '../../services/nivelService';
-import { especialidadesService, Especialidad } from '../../services/especialidadesService';
 import { regionService, Region } from '../../services/regionService';
 import { userService, User } from '../../services/userService';
 import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
 import { exportToExcel } from '../../utils/excelUtils';
+import { examenService } from '../../services/examenService';
 import {
-  TrashIcon,
   EyeIcon,
   XIcon
 } from '@heroicons/react/outline';
@@ -27,14 +23,14 @@ interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId:
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [modalidades, setModalidades] = useState<any[]>([]);
 
-  const [niveles, setNiveles] = useState<Nivel[]>([]);
-  const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  const [niveles, setNiveles] = useState<any[]>([]);
+  const [especialidades, setEspecialidades] = useState<any[]>([]);
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
 
-  const [filteredNiveles, setFilteredNiveles] = useState<Nivel[]>([]);
-  const [filteredEspecialidades, setFilteredEspecialidades] = useState<Especialidad[]>([]);
+  const [filteredNiveles, setFilteredNiveles] = useState<any[]>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<any[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -94,11 +90,11 @@ const UsersPage = () => {
       especialidadId: 0,
       passwordHash: '',
       fechaExpiracion: undefined,
-      accesoIds: [],
       estado: 'Activo',
       tiempo: 0,
       ie: '',
       observaciones: '',
+      accesoIds: tiposAcceso.map(t => Number(t.id)),
     });
     setExpirationMode('custom');
     setUserExamenes([]);
@@ -116,21 +112,19 @@ const UsersPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, modalidadesData, nivelesData, tiposAccesoData, especialidadesData] =
+      const [usersData, regionsData, tiposAccesoData, hierarchyData] =
         await Promise.all([
           userService.getAll(),
           regionService.getAll(),
-          modalidadService.getAll(),
-          nivelService.getAll(),
           tipoAccesoService.getAll(),
-          especialidadesService.getAll(),
+          examenService.getSimplifiedHierarchy(),
         ]);
 
       setUsers(usersData);
       setRegions(regionsData);
-      setModalidades(modalidadesData);
-      setNiveles(nivelesData);
-      setEspecialidades(especialidadesData);
+      setModalidades(hierarchyData.modalidades.reverse() as any);
+      setNiveles(hierarchyData.niveles as any);
+      setEspecialidades(hierarchyData.especialidades as any);
       setTiposAcceso(tiposAccesoData);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -234,6 +228,16 @@ const UsersPage = () => {
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
+    const apiExamenes = (user as any).userExamenes || [];
+    const firstExamen = apiExamenes[0];
+
+    // Populate userExamenes uniformly so if switched to Premium, past accesses are retained
+    setUserExamenes(apiExamenes.map((e: any) => ({
+      modalidadId: e.modalidadId || 0,
+      nivelId: e.nivelId || 0,
+      especialidadId: e.especialidadId || 0,
+    })));
+
     setFormData({
       nombreCompleto: user.nombreCompleto,
       email: user.email,
@@ -241,25 +245,17 @@ const UsersPage = () => {
       celular: user.celular,
       password: '',
       regionId: user.regionId || 0,
-      modalidadId: user.modalidadId || 0,
-      nivelId: user.nivelId || 0,
-      especialidadId: user.especialidadId || 0,
+      ie: user.ie || '',
+      observaciones: user.observaciones || '',
+      modalidadId: firstExamen?.modalidadId || user.modalidadId || 0,
+      nivelId: firstExamen?.nivelId || user.nivelId || 0,
+      especialidadId: firstExamen?.especialidadId || user.especialidadId || 0,
       passwordHash: user.passwordHash || '',
       fechaExpiracion: user.fechaExpiracion,
-      accesoIds: user.accesoIds || [],
+      accesoIds: user.accesoIds && user.accesoIds.length > 0 
+        ? user.accesoIds.map(Number) 
+        : tiposAcceso.map(t => Number(t.id)),
     });
-
-    // Populate userExamenes
-    if (user.role === 'Premium') {
-      const apiExamenes = (user as any).userExamenes || [];
-      setUserExamenes(apiExamenes.map((e: any) => ({
-        modalidadId: e.modalidadId || 0,
-        nivelId: e.nivelId || 0,
-        especialidadId: e.especialidadId || 0,
-      })));
-    } else {
-      setUserExamenes([]);
-    }
 
     setExpirationMode('custom'); // Default to custom when editing, or we could check if it matches a preset
     setIsModalOpen(true);
@@ -674,7 +670,7 @@ const UsersPage = () => {
                       onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
                     >
-                      <option value={0}>Seleccionar región</option>
+                      <option value={0} disabled hidden>Seleccionar región</option>
                       {regions.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                     </select>
                   </div>
@@ -782,6 +778,7 @@ const UsersPage = () => {
                     </div>
 
                     {/* Nivel */}
+                    {!!formData.modalidadId && filteredNiveles.length > 0 && (
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">Nivel</label>
                       <select
@@ -794,8 +791,10 @@ const UsersPage = () => {
                         {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
                       </select>
                     </div>
+                    )}
 
                     {/* Especialidad */}
+                    {!!formData.nivelId && filteredEspecialidades.length > 0 && (
                     <div className="mb-4">
                       <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
                       <select
@@ -808,6 +807,7 @@ const UsersPage = () => {
                         {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
                       </select>
                     </div>
+                    )}
 
                     {/* Botones académicos */}
                     <div className="space-y-2">
@@ -856,43 +856,6 @@ const UsersPage = () => {
                         Agregar acceso
                       </button>
                     </div>
-
-                    {/* Lista de accesos añadidos */}
-                    {userExamenes.length > 0 && (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-gray-700">Accesos agregados:</span>
-                          <button
-                            type="button"
-                            onClick={() => setUserExamenes([])}
-                            className="text-xs text-red-500 hover:text-red-700 underline"
-                          >
-                            Limpiar todo
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          {userExamenes.map((ex, idx) => {
-                            const mod = modalidades.find(m => m.id === ex.modalidadId);
-                            const niv = niveles.find(n => n.id === ex.nivelId);
-                            const esp = especialidades.find(e => e.id === ex.especialidadId);
-                            return (
-                              <div key={idx} className="flex items-start justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                <span className="text-gray-700">
-                                  {mod?.nombre || '?'} | {niv?.nombre || '?'} | {esp?.nombre || 'General'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
-                                  className="text-red-400 hover:text-red-600 ml-3"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
 
