@@ -24,6 +24,7 @@ const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [serverPage, setServerPage] = useState(1);
+  const [selectedRole, setSelectedRole] = useState('');
   const PAGE_SIZE = 20;
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<any[]>([]);
@@ -115,49 +116,49 @@ const UsersPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Al cambiar el rol, volver a página 1 y recargar
+  useEffect(() => {
+    setServerPage(1);
+  }, [selectedRole]);
+
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const loadUsersOnly = async (page = serverPage, search = searchDebounced) => {
-    // Cancelar petición previa si existe
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  const getEffectiveRole = (user: User) => {
+    if (user.role?.toUpperCase() === 'PREMIUM') {
+      if (!user.fechaExpiracion || user.fechaExpiracion === '-') return 'Client';
+      const expDate = new Date(user.fechaExpiracion);
+      if (expDate < new Date()) {
+        return 'Client';
+      }
     }
-    
-    // Crear nuevo controlador para esta petición
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
+    return user.role;
+  };
 
+  const loadUsersOnly = async () => {
     try {
       setLoading(true);
-      const result = await userService.getPaginated(page, PAGE_SIZE, search, controller.signal);
-      setUsers(result.data);
-      setTotalUsers(result.total);
-    } catch (e: any) {
-      if (e.name === 'AbortError') {
-        // La petición fue cancelada, no hacer nada
-        return;
-      }
+      const data = await userService.getAll();
+      setUsers(data);
+    } catch (e) {
       console.error('Error loading users:', e);
     } finally {
-      if (abortControllerRef.current === controller) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersResult, regionsData, tiposAccesoData, hierarchyData] =
+      const [usersData, regionsData, tiposAccesoData, hierarchyData] =
         await Promise.all([
-          userService.getPaginated(1, PAGE_SIZE, ''),
+          userService.getAll(),
           regionService.getAll(),
           tipoAccesoService.getAll(),
           examenService.getSimplifiedHierarchy(),
         ]);
 
-      setUsers(usersResult.data);
-      setTotalUsers(usersResult.total);
+      setUsers(usersData);
+      setTotalUsers(usersData.length);
       setRegions(regionsData);
       setModalidades(hierarchyData.modalidades.reverse() as any);
       setNiveles(hierarchyData.niveles as any);
@@ -324,14 +325,40 @@ const UsersPage = () => {
     }
   };
 
-  // Recargar cuando cambia la página o el buscador (debounced)
-  useEffect(() => {
-    loadUsersOnly(serverPage, searchDebounced);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverPage, searchDebounced]);
+  // Filtrado local (Instantáneo)
+  const filteredUsers = users.filter((user) => {
+    const effectiveRole = getEffectiveRole(user);
+    
+    // Filtro por Rol (Dropdown)
+    if (selectedRole && effectiveRole !== selectedRole) return false;
 
-  // Paginación del servidor
-  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+    // Filtro por Búsqueda (Input)
+    const matchesSearch =
+      user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (effectiveRole || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesSearch;
+  });
+
+  // Paginación local
+  const currentItems = filteredUsers.slice(
+    (serverPage - 1) * PAGE_SIZE,
+    serverPage * PAGE_SIZE
+  );
+  
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+
+  // Recargar datos (Solo al inicio o cuando sea necesario)
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Volver a pág 1 si cambia el filtro
+  useEffect(() => {
+    setServerPage(1);
+  }, [searchTerm, selectedRole]);
 
   const nextPage = () => {
     if (serverPage < totalPages) setServerPage(serverPage + 1);
@@ -400,6 +427,16 @@ const UsersPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <select
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary text-sm bg-white"
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          >
+            <option value="">Todos los roles</option>
+            <option value="Admin">Admin</option>
+            <option value="Client">Client</option>
+            <option value="Premium">Premium</option>
+          </select>
           <button
             onClick={handleExportExcel}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
@@ -450,14 +487,14 @@ const UsersPage = () => {
                     Cargando...
                   </td>
                 </tr>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center">
                     No hay usuarios encontrados
                   </td>
                 </tr>
               ) : (
-                users.map((user: User) => {
+                currentItems.map((user: User) => {
                   const regionName = user.region?.nombre || user.regionId?.toString() || '-';
                   return (
                     <tr key={user.id}>
@@ -472,6 +509,11 @@ const UsersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.role}
+                        {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
+                          <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
+                            Expirado
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {regionName}
@@ -548,7 +590,7 @@ const UsersPage = () => {
           >
             Anterior
           </button>
-          <span className="text-sm text-gray-700">Página {serverPage} de {totalPages || 1} &bull; {totalUsers} usuarios</span>
+          <span className="text-sm text-gray-700">Página {serverPage} de {totalPages || 1} &bull; {filteredUsers.length} encontrados</span>
           <button
             onClick={nextPage}
             disabled={serverPage === totalPages || totalPages === 0}

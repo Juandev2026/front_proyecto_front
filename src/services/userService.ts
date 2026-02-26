@@ -82,6 +82,7 @@ export const userService = {
     page: number = 1,
     pageSize: number = 20,
     search: string = '',
+    role: string = '',
     signal?: AbortSignal
   ): Promise<{ data: User[]; total: number }> => {
     try {
@@ -89,6 +90,7 @@ export const userService = {
         page: String(page),
         pageSize: String(pageSize),
         ...(search ? { search } : {}),
+        ...(role ? { role } : {}),
       });
       const response = await fetch(`${API_URL}?${params.toString()}`, {
         headers: getPublicHeaders(),
