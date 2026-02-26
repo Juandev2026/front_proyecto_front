@@ -22,6 +22,9 @@ interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId:
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [serverPage, setServerPage] = useState(1);
+  const PAGE_SIZE = 20;
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<any[]>([]);
 
@@ -100,27 +103,44 @@ const UsersPage = () => {
     setUserExamenes([]);
   };
 
-  const loadUsersOnly = async () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
+
+  // Debounce del buscador: espera 400ms antes de disparar la búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(searchTerm);
+      setServerPage(1); // volver a página 1 al buscar
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const loadUsersOnly = async (page = serverPage, search = searchDebounced) => {
     try {
-      const data = await userService.getAll();
-      setUsers(data);
+      setLoading(true);
+      const result = await userService.getPaginated(page, PAGE_SIZE, search);
+      setUsers(result.data);
+      setTotalUsers(result.total);
     } catch (e) {
       console.error('Error loading users:', e);
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, tiposAccesoData, hierarchyData] =
+      const [usersResult, regionsData, tiposAccesoData, hierarchyData] =
         await Promise.all([
-          userService.getAll(),
+          userService.getPaginated(1, PAGE_SIZE, ''),
           regionService.getAll(),
           tipoAccesoService.getAll(),
           examenService.getSimplifiedHierarchy(),
         ]);
 
-      setUsers(usersData);
+      setUsers(usersResult.data);
+      setTotalUsers(usersResult.total);
       setRegions(regionsData);
       setModalidades(hierarchyData.modalidades.reverse() as any);
       setNiveles(hierarchyData.niveles as any);
@@ -224,7 +244,7 @@ const UsersPage = () => {
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
-      await loadUsersOnly();
+      await loadUsersOnly(serverPage, searchDebounced);
     } catch (error: any) {
       console.error('Error in handleSubmit:', error);
       alert(`Error al guardar usuario: ${error.message || error}`);
@@ -270,7 +290,7 @@ const UsersPage = () => {
     if (window.confirm('¿Está seguro de que desea eliminar este usuario?')) {
       try {
         await userService.delete(id);
-        await loadUsersOnly();
+        await loadUsersOnly(serverPage, searchDebounced);
       } catch (error) {
         // Error deleting user
       }
@@ -287,58 +307,22 @@ const UsersPage = () => {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // Recargar cuando cambia la página o el buscador (debounced)
+  useEffect(() => {
+    loadUsersOnly(serverPage, searchDebounced);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverPage, searchDebounced]);
 
-  const getEffectiveRole = (user: User) => {
-    if (user.role?.toUpperCase() === 'PREMIUM') {
-      if (!user.fechaExpiracion || user.fechaExpiracion === '-') return 'Client';
-      const expDate = new Date(user.fechaExpiracion);
-      if (expDate < new Date()) {
-        return 'Client';
-      }
-    }
-    return user.role;
-  };
-
-  const filteredUsers = users.filter((user) => {
-    const effectiveRole = getEffectiveRole(user);
-    const matchesSearch =
-      user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (effectiveRole || '').toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Show ONLY 'Admin' and 'Client' roles as requested
-    const isAllowedRole = ['Admin', 'Client'].includes(effectiveRole || '');
-
-    return matchesSearch && isAllowedRole;
-  });
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
-
-  // Calculate pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  // Paginación del servidor
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
   const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (serverPage < totalPages) setServerPage(serverPage + 1);
   };
 
   const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (serverPage > 1) setServerPage(serverPage - 1);
   };
-
-  // Reset page when filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
 
   const handleExportExcel = async () => {
     try {
@@ -351,7 +335,7 @@ const UsersPage = () => {
         'Nombre Completo': u.nombreCompleto,
         'Teléfono': u.celular || '-',
         'Email': u.email,
-        'Rol': u.role + (getEffectiveRole(u) === 'Client' && u.role?.toUpperCase() === 'PREMIUM' ? ' (Expirado)' : ''),
+        'Rol': u.role,
         'Estado': u.estado || 'Activo',
         'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
         'Suscripciones Activas': u.accesoNombres && u.accesoNombres.length > 0 ? u.accesoNombres.join(', ') : '-',
@@ -449,14 +433,14 @@ const UsersPage = () => {
                     Cargando...
                   </td>
                 </tr>
-              ) : filteredUsers.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center">
                     No hay usuarios encontrados
                   </td>
                 </tr>
               ) : (
-                currentItems.map((user) => {
+                users.map((user: User) => {
                   const regionName = user.region?.nombre || user.regionId?.toString() || '-';
                   return (
                     <tr key={user.id}>
@@ -471,11 +455,6 @@ const UsersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.role}
-                        {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
-                          <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
-                            Expirado
-                          </span>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {regionName}
@@ -547,16 +526,16 @@ const UsersPage = () => {
         <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 bg-gray-50">
           <button
             onClick={prevPage}
-            disabled={currentPage === 1}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={serverPage === 1}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Anterior
           </button>
-          <span className="text-sm text-gray-700">Page {currentPage} de {totalPages}</span>
+          <span className="text-sm text-gray-700">Página {serverPage} de {totalPages || 1} &bull; {totalUsers} usuarios</span>
           <button
             onClick={nextPage}
-            disabled={currentPage === totalPages || totalPages === 0}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={serverPage === totalPages || totalPages === 0}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Siguiente
           </button>
