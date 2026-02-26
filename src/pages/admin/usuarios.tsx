@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
 import { regionService, Region } from '../../services/regionService';
@@ -106,25 +106,42 @@ const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDebounced, setSearchDebounced] = useState('');
 
-  // Debounce del buscador: espera 400ms antes de disparar la búsqueda
+  // Debounce del buscador: espera 800ms antes de disparar la búsqueda
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchDebounced(searchTerm);
       setServerPage(1); // volver a página 1 al buscar
-    }, 400);
+    }, 800);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const loadUsersOnly = async (page = serverPage, search = searchDebounced) => {
+    // Cancelar petición previa si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Crear nuevo controlador para esta petición
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       setLoading(true);
-      const result = await userService.getPaginated(page, PAGE_SIZE, search);
+      const result = await userService.getPaginated(page, PAGE_SIZE, search, controller.signal);
       setUsers(result.data);
       setTotalUsers(result.total);
-    } catch (e) {
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        // La petición fue cancelada, no hacer nada
+        return;
+      }
       console.error('Error loading users:', e);
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   };
 

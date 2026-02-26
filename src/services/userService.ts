@@ -81,7 +81,8 @@ export const userService = {
   getPaginated: async (
     page: number = 1,
     pageSize: number = 20,
-    search: string = ''
+    search: string = '',
+    signal?: AbortSignal
   ): Promise<{ data: User[]; total: number }> => {
     try {
       const params = new URLSearchParams({
@@ -91,6 +92,7 @@ export const userService = {
       });
       const response = await fetch(`${API_URL}?${params.toString()}`, {
         headers: getPublicHeaders(),
+        signal, // Soporte para cancelación
       });
       if (!response.ok) {
         throw new Error('Error al obtener usuarios');
