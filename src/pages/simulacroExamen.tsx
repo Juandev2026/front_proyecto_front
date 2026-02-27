@@ -1,12 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 
-import {
-  AcademicCapIcon,
-  QuestionMarkCircleIcon,
-  XIcon,
-  FilterIcon,
-  CalendarIcon,
-} from '@heroicons/react/outline';
+import { AcademicCapIcon, FilterIcon } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -29,28 +23,19 @@ const SimulacroExamenPage = () => {
   const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
 
   // Current Selection State
-  const [selectedTipoExamenId, setSelectedTipoExamenId] = useState<string>('2');
+  const [selectedTipoExamenId] = useState<string>('2');
   const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [conteoPreguntas, setConteoPreguntas] = useState<{
-    [key: string]: {
-      cantidad: number;
-      puntos: number;
-      tiempoPregunta: number;
-      minimo: number;
-      clasificacionId: number;
-    };
-  }>({});
+  // State for per-year classification selections: Record<Year, Record<ClassificationName, boolean>>
+  const [yearSelections, setYearSelections] = useState<
+    Record<string, Record<string, boolean>>
+  >({});
 
-  // Checkbox State (Dynamic based on classifications)
-  const [tiposPregunta, setTiposPregunta] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -74,19 +59,6 @@ const SimulacroExamenPage = () => {
   }, [isAuthenticated]);
 
   // ---------- Memoized Derived Options ----------
-
-  const tiposExamenData = useMemo(() => {
-    const map = new Map<number, FilterOption>();
-    loginExamenes.forEach((e) => {
-      if (!map.has(e.tipoExamenId)) {
-        map.set(e.tipoExamenId, {
-          id: e.tipoExamenId,
-          nombre: e.tipoExamenNombre || 'Sin nombre',
-        });
-      }
-    });
-    return Array.from(map.values());
-  }, [loginExamenes]);
 
   const modalidadesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
@@ -189,113 +161,126 @@ const SimulacroExamenPage = () => {
     selectedEspecialidadId,
   ]);
 
-  // ---------- Counts & Categories Logic aggregated across selected years ----------
+  // ---------- Metadata helper per Year ----------
 
-  useEffect(() => {
-    if (selectedModalidadId && selectedYears.length > 0) {
-      const firstNivel = nivelesData[0];
-      const resolvedNivelId =
-        selectedNivelId ||
-        (nivelesData.length === 1 &&
-        firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
-          ? String(firstNivel.id)
-          : null);
+  const getMetadataForYear = (year: string) => {
+    const firstNivel = nivelesData[0];
+    const resolvedNivelId =
+      selectedNivelId ||
+      (nivelesData.length === 1 &&
+      firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
+        ? String(firstNivel.id)
+        : null);
 
-      if (resolvedNivelId === null) return;
+    if (resolvedNivelId === null) return [];
 
-      const aggCountMap: any = {};
+    const aggCountMap: Record<
+      string,
+      {
+        cantidad: number;
+        id: number;
+        puntos: number;
+        tiempo: number;
+        minimo: number;
+      }
+    > = {};
 
-      selectedYears.forEach((year) => {
-        const exams = loginExamenes.filter(
-          (e) =>
-            String(e.tipoExamenId) === selectedTipoExamenId &&
-            String(e.modalidadId) === selectedModalidadId &&
-            String(e.nivelId) === resolvedNivelId &&
-            (selectedEspecialidadId
-              ? String(e.especialidadId) === selectedEspecialidadId
-              : !e.especialidadId || e.especialidadId === 0) &&
-            ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
-              String(e.year) === year ||
-              e.years?.some((y) => String(y.year) === year))
-        );
+    const exams = loginExamenes.filter(
+      (e) =>
+        String(e.tipoExamenId) === selectedTipoExamenId &&
+        String(e.modalidadId) === selectedModalidadId &&
+        String(e.nivelId) === resolvedNivelId &&
+        (selectedEspecialidadId
+          ? String(e.especialidadId) === selectedEspecialidadId
+          : !e.especialidadId || e.especialidadId === 0) &&
+        ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
+          String(e.year) === year ||
+          e.years?.some((y) => String(y.year) === year))
+    );
 
-        exams.forEach((exam) => {
-          if (exam.clasificaciones) {
-            exam.clasificaciones.forEach((item) => {
-              const name = item.clasificacionNombre;
-              if (name) {
-                let cantidadExacta = 0;
-                const isUnico = year === 'Único';
+    exams.forEach((exam) => {
+      if (exam.clasificaciones) {
+        exam.clasificaciones.forEach((item) => {
+          const name = item.clasificacionNombre;
+          if (name) {
+            let cantidadExacta = 0;
+            const isUnico = year === 'Único';
+            if (isUnico || !item.years || item.years.length === 0) {
+              cantidadExacta = item.cantidadPreguntas;
+            } else {
+              const yrData = item.years.find(
+                (y: any) => String(y.year) === year
+              );
+              cantidadExacta = yrData ? yrData.cantidadPreguntas : 0;
+            }
 
-                if (isUnico || !item.years || item.years.length === 0) {
-                  cantidadExacta = item.cantidadPreguntas;
-                } else {
-                  const yearData = item.years.find(
-                    (y: any) => String(y.year) === year
-                  );
-                  cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
-                }
-
-                if (!aggCountMap[name]) {
-                  aggCountMap[name] = {
-                    cantidad: cantidadExacta,
-                    puntos: item.puntos || 0,
-                    tiempoPregunta: item.tiempoPregunta || 0,
-                    minimo: item.minimo || 0,
-                    clasificacionId: item.clasificacionId,
-                  };
-                } else {
-                  aggCountMap[name].cantidad += cantidadExacta;
-                  // We assume points and time are consistent or we take the first seen
-                }
-              }
-            });
+            if (!aggCountMap[name]) {
+              aggCountMap[name] = {
+                cantidad: cantidadExacta,
+                id: item.clasificacionId,
+                puntos: item.puntos || 0,
+                tiempo: item.tiempoPregunta || 0,
+                minimo: item.minimo || 0,
+              };
+            } else {
+              aggCountMap[name].cantidad += cantidadExacta;
+            }
           }
         });
-      });
+      }
+    });
 
-      setConteoPreguntas(aggCountMap);
-
-      setTiposPregunta((prev) => {
-        const nextTipos: Record<string, boolean> = { ...prev };
-        Object.keys(aggCountMap).forEach((name) => {
-          if (nextTipos[name] === undefined && aggCountMap[name].cantidad > 0) {
-            nextTipos[name] = true;
-          } else if (aggCountMap[name].cantidad === 0) {
-            nextTipos[name] = false;
-          }
-        });
-        return nextTipos;
-      });
-    } else {
-      setConteoPreguntas({});
-      setTiposPregunta({});
-    }
-  }, [
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-    selectedEspecialidadId,
-    selectedYears,
-    loginExamenes,
-    nivelesData,
-  ]);
+    return Object.entries(aggCountMap).map(([name, data]) => ({
+      name,
+      ...data,
+    }));
+  };
 
   // ---------- Handlers ----------
 
-  const handleYearChange = (year: string) => {
-    setSelectedYears((prev) =>
-      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
-    );
+  const handleYearToggle = (year: string) => {
+    setSelectedYears((prev) => {
+      const isSelected = prev.includes(year);
+      if (isSelected) {
+        const next = prev.filter((y) => y !== year);
+        setYearSelections((prevSel) => {
+          const nextSel = { ...prevSel };
+          delete nextSel[year];
+          return nextSel;
+        });
+        return next;
+      }
+      const next = [...prev, year];
+      // Initialize classifications for this year
+      const meta = getMetadataForYear(year);
+      const initialTypeSelections: Record<string, boolean> = {};
+      meta.forEach((m) => {
+        if (m.cantidad > 0) initialTypeSelections[m.name] = true;
+      });
+      setYearSelections((prevSel) => ({
+        ...prevSel,
+        [year]: initialTypeSelections,
+      }));
+      return next;
+    });
+  };
+
+  const handleTypeToggle = (year: string, typeName: string) => {
+    setYearSelections((prev) => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [typeName]: !prev[year]?.[typeName],
+      },
+    }));
   };
 
   const handleClear = () => {
-    setSelectedTipoExamenId('2');
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
     setSelectedYears([]);
-    setTiposPregunta({});
+    setYearSelections({});
   };
 
   const handleConfirm = async () => {
@@ -312,12 +297,15 @@ const SimulacroExamenPage = () => {
           ? String(firstNivel.id)
           : '0');
 
-      // We need a sample exam to get fuenteId
+      // 1. Buscamos un examen de referencia en la metadata
       const sampleExam = loginExamenes.find(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
-          String(e.nivelId) === resolvedNivelId
+          String(e.nivelId) === resolvedNivelId &&
+          (selectedEspecialidadId
+            ? String(e.especialidadId) === selectedEspecialidadId
+            : true)
       );
 
       if (!sampleExam) {
@@ -326,20 +314,21 @@ const SimulacroExamenPage = () => {
         return;
       }
 
-      // Map selected classifications to IDs
-      const activeClasificacionIds: number[] = [];
-      Object.entries(tiposPregunta).forEach(([name, isChecked]) => {
-        if (isChecked && conteoPreguntas[name]) {
-          activeClasificacionIds.push(conteoPreguntas[name].clasificacionId);
-        }
+      // 2. Construimos el array de filtros por año
+      const yearFilters = selectedYears.map((year) => {
+        const yearMeta = getMetadataForYear(year);
+        // Obtenemos solo los IDs de las clasificaciones que el usuario marcó para ESTE año
+        const activeIds = yearMeta
+          .filter((m) => yearSelections[year]?.[m.name] === true)
+          .map((m) => m.id);
+
+        return {
+          year: year === 'Único' ? '0' : year,
+          clasificacionIds: activeIds,
+        };
       });
 
-      // Construct yearFilters
-      const yearFilters = selectedYears.map((y) => ({
-        year: y === 'Único' ? '0' : y,
-        clasificacionIds: activeClasificacionIds,
-      }));
-
+      // 3. ARMAMOS EL PAYLOAD PARA MULTI-AÑO
       const payload = {
         tipoExamenId: sampleExam.tipoExamenId,
         fuenteId: sampleExam.fuenteId || 0,
@@ -349,29 +338,65 @@ const SimulacroExamenPage = () => {
         yearFilters,
       };
 
-      console.log('Sending multi-year filter to API:', payload);
+      console.log('Enviando filtro multi-año a la API:', payload);
 
-      const questions =
+      // 4. LLAMADA AL SERVICIO
+      let questions =
         await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
 
+      // --- PARCHE DE FRONTEND: Filtrar localmente por si la API devuelve más de lo pedido ---
+      if (questions.length > 0) {
+        questions = questions.filter((q) => {
+          const qYear = String(q.year || q.anio || '0');
+          // Buscamos si el año de la pregunta está en nuestros filtros
+          const filterForThisYear = yearFilters.find((f) => f.year === qYear);
+          if (!filterForThisYear) return false;
+
+          // Si el año coincide, verificamos que la clasificación también esté permitida para ese año
+          return (
+            q.clasificacionId !== undefined &&
+            filterForThisYear.clasificacionIds.includes(q.clasificacionId)
+          );
+        });
+      }
+
+      console.log(`Preguntas obtenidas tras filtro local: ${questions.length}`);
+
+      // 5. Guardar metadata y redirigir
       const metadata = {
         modalidad: sampleExam.modalidadNombre,
         nivel: sampleExam.nivelNombre || 'NINGUNO',
         especialidad: sampleExam.especialidadNombre || null,
         year: selectedYears.join(', '),
+        isSimulacro: true, // Flag para indicar que es un simulacro multi-año
       };
 
       localStorage.setItem('currentQuestions', JSON.stringify(questions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-      router.push('/examen');
+      if (questions.length === 0) {
+        alert('No se encontraron preguntas para los filtros seleccionados.');
+      } else {
+        router.push('/examen');
+      }
     } catch (error) {
       console.error('Error confirming selection:', error);
-      alert('Hubo un error al cargar los simulacros.');
+      alert('Hubo un error al cargar el simulacro.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Grand Total calculation
+  const totalQuestions = selectedYears.reduce((acc, year) => {
+    const meta = getMetadataForYear(year);
+    return (
+      acc +
+      meta.reduce((accM, m) => {
+        return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
+      }, 0)
+    );
+  }, 0);
 
   if (loading || !isAuthenticated) {
     return (
@@ -390,306 +415,350 @@ const SimulacroExamenPage = () => {
         <title>Simulacro de Examen - AVENDOCENTE</title>
       </Head>
 
-      <div className="w-full space-y-6">
-        <div className="text-center py-4">
-          <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
-            Configura tu Simulacro
-          </h3>
-          <p className="text-[#A3AED0] text-base mt-1 font-medium">
-            Selecciona al menos dos años para generar un simulacro personalizado
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          {/* Modalidad */}
-          <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <AcademicCapIcon className="h-5 w-5" />
-              <span>Modalidad habilitada</span>
-            </div>
-            <select
-              value={selectedModalidadId}
-              onChange={(e) => {
-                setSelectedModalidadId(e.target.value);
-                setSelectedNivelId('');
-                setSelectedEspecialidadId('');
-                setSelectedYears([]);
-              }}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="">Selecciona Modalidad</option>
-              {modalidadesData.map((m) => (
-                <option key={m.id} value={String(m.id)}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
+      <div className="w-full max-w-7xl mx-auto space-y-6 px-4">
+        {/* Main Box: Bloque I */}
+        <div className="border border-blue-400 rounded-lg overflow-hidden bg-white shadow-sm">
+          <div className="bg-white border-b border-blue-100 px-6 py-3 flex items-center gap-2">
+            <AcademicCapIcon className="h-5 w-5 text-blue-500" />
+            <span className="font-bold text-blue-900 text-lg">
+              Bloque I - Exámenes MINEDU
+            </span>
           </div>
 
-          {/* Nivel */}
-          {nivelesData.length > 0 &&
-            !(
-              nivelesData.length === 1 &&
-              nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
-            ) && (
-              <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
-                <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                  <FilterIcon className="h-5 w-5" />
-                  <span>Nivel</span>
-                </div>
-                <select
-                  value={selectedNivelId}
-                  onChange={(e) => {
-                    setSelectedNivelId(e.target.value);
-                    setSelectedEspecialidadId('');
-                    setSelectedYears([]);
-                  }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                  disabled={!selectedModalidadId}
-                >
-                  <option value="">Selecciona Nivel</option>
-                  {nivelesData.map((n) => (
-                    <option key={n.id} value={String(n.id)}>
-                      {n.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-          {/* Especialidad */}
-          {especialidadesData.length > 0 && (
-            <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                <AcademicCapIcon className="h-5 w-5" />
-                <span>Especialidad</span>
+          <div className="p-6 space-y-8">
+            {/* Modalidad Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-blue-900 font-bold">
+                <AcademicCapIcon className="h-4 w-4" />
+                <span>Modalidad habilitada</span>
               </div>
               <select
-                value={selectedEspecialidadId}
+                value={selectedModalidadId}
                 onChange={(e) => {
-                  setSelectedEspecialidadId(e.target.value);
+                  setSelectedModalidadId(e.target.value);
+                  setSelectedNivelId('');
+                  setSelectedEspecialidadId('');
                   setSelectedYears([]);
+                  setYearSelections({});
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                disabled={!selectedModalidadId}
+                className="w-full border border-blue-300 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all shadow-sm"
               >
-                <option value="">Selecciona Especialidad</option>
-                {especialidadesData.map((e) => (
-                  <option key={e.id} value={String(e.id)}>
-                    {e.nombre}
+                <option value="">Selecciona Modalidad</option>
+                {modalidadesData.map((m) => (
+                  <option key={m.id} value={String(m.id)}>
+                    {m.nombre}
                   </option>
                 ))}
               </select>
             </div>
-          )}
 
-          {/* Años Checkboxes */}
-          <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <CalendarIcon className="h-5 w-5" />
-              <span>Selecciona los años (Mínimo 2)*</span>
+            {/* Hierarchical selectors for Nivel and Especialidad */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {nivelesData.length > 0 &&
+                !(
+                  nivelesData.length === 1 &&
+                  nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+                ) && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-blue-900 font-bold">
+                      <FilterIcon className="h-4 w-4" />
+                      <span>Nivel</span>
+                    </div>
+                    <select
+                      value={selectedNivelId}
+                      onChange={(e) => {
+                        setSelectedNivelId(e.target.value);
+                        setSelectedEspecialidadId('');
+                        setSelectedYears([]);
+                        setYearSelections({});
+                      }}
+                      className="w-full border border-blue-300 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all shadow-sm"
+                      disabled={!selectedModalidadId}
+                    >
+                      <option value="">Selecciona Nivel</option>
+                      {nivelesData.map((n) => (
+                        <option key={n.id} value={String(n.id)}>
+                          {n.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+              {especialidadesData.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-blue-900 font-bold">
+                    <AcademicCapIcon className="h-4 w-4" />
+                    <span>Especialidad</span>
+                  </div>
+                  <select
+                    value={selectedEspecialidadId}
+                    onChange={(e) => {
+                      setSelectedEspecialidadId(e.target.value);
+                      setSelectedYears([]);
+                      setYearSelections({});
+                    }}
+                    className="w-full border border-blue-300 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all shadow-sm"
+                    disabled={!selectedModalidadId}
+                  >
+                    <option value="">Selecciona Especialidad</option>
+                    {especialidadesData.map((e) => (
+                      <option key={e.id} value={String(e.id)}>
+                        {e.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {aniosData.map((year) => (
-                <label
-                  key={year}
-                  className={`flex items-center gap-2 p-2 border rounded-md cursor-pointer transition-colors ${
-                    selectedYears.includes(year)
-                      ? 'border-primary bg-blue-50 text-primary font-bold'
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedYears.includes(year)}
-                    onChange={() => handleYearChange(year)}
-                    className="h-4 w-4 text-primary rounded focus:ring-primary"
-                  />
-                  <span className="text-sm">{year}</span>
-                </label>
-              ))}
+
+            {/* Years Selection with per-year classifications */}
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-2 text-blue-900 font-bold">
+                <AcademicCapIcon className="h-4 w-4" />
+                <span>Selecciona mínimo dos años*</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {aniosData.map((year) => {
+                  const isChecked = selectedYears.includes(year);
+                  const yearMeta = getMetadataForYear(year);
+
+                  return (
+                    <div key={year} className="flex flex-col gap-3">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handleYearToggle(year)}
+                            className="h-5 w-5 rounded border-blue-300 text-orange-500 focus:ring-orange-200 transition-all"
+                          />
+                        </div>
+                        <span
+                          className={`text-base font-bold transition-all ${
+                            isChecked ? 'text-orange-600' : 'text-blue-900'
+                          }`}
+                        >
+                          {year}
+                        </span>
+                      </label>
+
+                      {isChecked && yearMeta.length > 0 && (
+                        <div className="ml-2 border border-blue-200 rounded-xl p-4 bg-blue-50/30 space-y-3 shadow-inner">
+                          <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tighter">
+                            Tipos de Pregunta
+                          </p>
+                          <div className="space-y-2">
+                            {yearMeta.map((m) => (
+                              <label
+                                key={m.name}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
+                                  m.cantidad > 0
+                                    ? `cursor-pointer ${
+                                        yearSelections[year]?.[m.name]
+                                          ? 'bg-white border-orange-200 shadow-sm'
+                                          : 'bg-white/50 border-gray-100 opacity-70 hover:opacity-100 hover:border-blue-200'
+                                      }`
+                                    : 'opacity-40 cursor-not-allowed bg-gray-50 border-gray-100'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      yearSelections[year]?.[m.name] || false
+                                    }
+                                    disabled={m.cantidad === 0}
+                                    onChange={() =>
+                                      handleTypeToggle(year, m.name)
+                                    }
+                                    className="h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-200"
+                                  />
+                                  <span className="text-xs font-bold text-blue-800">
+                                    {m.name}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full min-w-[32px] text-center">
+                                  {m.cantidad}p
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {aniosData.length === 0 && selectedModalidadId && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-lg">
+                  <p className="text-red-500 text-sm font-medium">
+                    ⚠️ No hay exámenes disponibles para esta selección
+                  </p>
+                </div>
+              )}
             </div>
-            {aniosData.length === 0 && selectedModalidadId && (
-              <p className="text-red-500 text-xs mt-2 italic">
-                No hay años disponibles para esta selección
-              </p>
-            )}
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">
+              <div className="mt-0.5">
+                <AcademicCapIcon className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-yellow-800">
+                  Cantidades de preguntas reales
+                </p>
+                <p className="text-[10px] text-yellow-700/90 leading-relaxed">
+                  Las cantidades de preguntas mostradas corresponden a los datos
+                  reales de cada examen. Total actual:{' '}
+                  <span className="font-bold">{totalQuestions}</span> preguntas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Resumen Section */}
+        <div className="border border-blue-400 rounded-lg p-6 bg-white shadow-sm space-y-6">
+          <div className="flex items-center gap-2 text-blue-900 font-extrabold pb-3 border-b border-gray-100">
+            <AcademicCapIcon className="h-6 w-6" />
+            <h3 className="text-xl">Resumen de selección</h3>
           </div>
 
-          {/* Tipos de Pregunta */}
-          {selectedYears.length > 0 &&
-            Object.keys(conteoPreguntas).length > 0 && (
-              <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
-                <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                  <QuestionMarkCircleIcon className="h-5 w-5" />
-                  <span>Configurar Tipos de Pregunta</span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                  Modalidad
+                </p>
+                <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-500 font-bold text-xs rounded-md shadow-sm">
+                  {modalidadesData.find(
+                    (m) => String(m.id) === selectedModalidadId
+                  )?.nombre || 'None'}
                 </div>
-                <div className="space-y-3">
-                  {Object.entries(conteoPreguntas).map(([name, data]) => (
-                    <label
-                      key={name}
-                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                        data.cantidad > 0
-                          ? `cursor-pointer hover:bg-gray-50 ${
-                              tiposPregunta[name]
-                                ? 'border-primary bg-blue-50 ring-1 ring-primary'
-                                : 'border-gray-200'
-                            }`
-                          : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
-                          checked={tiposPregunta[name] || false}
-                          disabled={data.cantidad === 0}
-                          onChange={(e) =>
-                            setTiposPregunta({
-                              ...tiposPregunta,
-                              [name]: e.target.checked,
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                  Bloque I - Años
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedYears.length > 0 ? (
+                    selectedYears.map((y) => (
+                      <span
+                        key={y}
+                        className="px-3 py-1 bg-yellow-100/50 border border-yellow-300 text-yellow-700 font-bold text-xs rounded-md shadow-sm"
+                      >
+                        {y}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">
+                      Ninguno seleccionado
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Selection per year detail */}
+            {selectedYears.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                  Tipos de pregunta por año (Bloque I)
+                </p>
+                <div className="grid grid-cols-1 gap-3">
+                  {selectedYears.map((year) => {
+                    const selectionsForYear = Object.entries(
+                      yearSelections[year] || {}
+                    ).filter(([_, isSelected]) => isSelected);
+
+                    return (
+                      <div
+                        key={year}
+                        className="bg-gray-50/50 border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between"
+                      >
+                        <p className="text-xs font-black text-blue-900 min-w-[80px]">
+                          Año {year}:
+                        </p>
+                        <div className="flex flex-wrap gap-2 flex-1">
+                          {selectionsForYear.length > 0 ? (
+                            selectionsForYear.map(([name]) => {
+                              const meta = getMetadataForYear(year).find(
+                                (m) => m.name === name
+                              );
+                              return (
+                                <span
+                                  key={name}
+                                  className="px-2.5 py-1 bg-white border border-blue-100 text-blue-500 font-bold text-[10px] rounded-md shadow-sm flex items-center gap-1"
+                                >
+                                  {name} ({meta?.cantidad} preguntas)
+                                </span>
+                              );
                             })
-                          }
-                        />
-                        <div className="flex flex-col">
-                          <span className="text-[#2B3674] font-bold text-lg">
-                            {name}
-                          </span>
-                          <span
-                            className={`${
-                              data.cantidad > 0
-                                ? 'text-[#05CD99]'
-                                : 'text-gray-400'
-                            } text-sm font-medium`}
-                          >
-                            {data.cantidad > 0
-                              ? `${data.cantidad} preguntas acumuladas`
-                              : '0 preguntas disponibles'}
-                          </span>
+                          ) : (
+                            <span className="text-[10px] text-red-400 italic font-medium">
+                              Sin tipos de pregunta seleccionados
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </label>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-          {/* Resumen de selección */}
-          {(selectedModalidadId || selectedYears.length > 0) && (
-            <div className="border border-cyan-300 rounded-xl p-6 bg-[#F8FDFF] shadow-sm mt-6">
-              <h3 className="font-bold text-[#2B3674] text-lg mb-4 flex items-center gap-2">
-                <AcademicCapIcon className="h-6 w-6" /> Resumen del Simulacro
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
-                    Modalidad
-                  </p>
-                  <p className="text-primary font-medium">
-                    {modalidadesData.find(
-                      (m) => String(m.id) === selectedModalidadId
-                    )?.nombre || 'Pendiente'}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
-                    Años Seleccionados
-                  </p>
-                  <p className="text-primary font-medium">
-                    {selectedYears.length > 0
-                      ? selectedYears.join(', ')
-                      : 'Ninguno'}
-                  </p>
-                </div>
-                {selectedNivelId && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
-                      Nivel
-                    </p>
-                    <p className="text-primary font-medium">
-                      {
-                        nivelesData.find(
-                          (n) => String(n.id) === selectedNivelId
-                        )?.nombre
-                      }
-                    </p>
-                  </div>
-                )}
-                {selectedEspecialidadId && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
-                      Especialidad
-                    </p>
-                    <p className="text-primary font-medium">
-                      {
-                        especialidadesData.find(
-                          (e) => String(e.id) === selectedEspecialidadId
-                        )?.nombre
-                      }
-                    </p>
-                  </div>
-                )}
+            <div className="bg-green-100/50 border border-green-200 rounded-lg p-5 flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-xl font-bold text-green-700">
+                  Total de preguntas seleccionadas:{' '}
+                  <span className="text-2xl font-black">{totalQuestions}</span>{' '}
+                  preguntas
+                </p>
+                <p className="text-xs font-semibold text-green-600 mt-0.5">
+                  Incluye preguntas de Bloque I Exámenes MINEDU
+                </p>
               </div>
-
-              {/* Counts Summary */}
-              {Object.values(tiposPregunta).some((c) => c) && (
-                <div className="mt-4 pt-4 border-t border-cyan-100 flex flex-wrap gap-3">
-                  <div className="bg-white border border-blue-100 rounded-lg px-4 py-2 shadow-sm">
-                    <span className="text-xs text-gray-500 block mb-1">
-                      Preguntas Totales
-                    </span>
-                    <span className="text-xl font-bold text-primary">
-                      {Object.entries(conteoPreguntas).reduce(
-                        (acc, [name, curr]) =>
-                          tiposPregunta[name] ? acc + curr.cantidad : acc,
-                        0
-                      )}
-                    </span>
-                  </div>
-                  <div className="bg-white border border-green-100 rounded-lg px-4 py-2 shadow-sm">
-                    <span className="text-xs text-gray-500 block mb-1">
-                      Tiempo Est.
-                    </span>
-                    <span className="text-xl font-bold text-green-600">
-                      {Object.entries(conteoPreguntas).reduce(
-                        (acc, [name, curr]) =>
-                          tiposPregunta[name]
-                            ? acc + curr.cantidad * curr.tiempoPregunta
-                            : acc,
-                        0
-                      )}{' '}
-                      min
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-            <button
-              onClick={handleClear}
-              className="px-8 py-3 border-2 border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            >
-              <XIcon className="h-5 w-5" /> Limpiar Filtros
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={
-                isLoading ||
-                selectedYears.length < 2 ||
-                !Object.values(tiposPregunta).some((v) => v)
-              }
-              className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[200px]"
-            >
-              {isLoading ? (
-                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                'Iniciar Simulacro'
-              )}
-            </button>
+            <p className="text-[10px] text-gray-400 italic">
+              * Si desea solo de un año determinado un específico puede ir al
+              módulo de Banco de preguntas
+            </p>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 py-6">
+          <button
+            onClick={handleClear}
+            className="px-10 py-2.5 border border-blue-400 rounded-md text-blue-500 font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
+          >
+            <span className="text-lg">✕</span> Limpiar
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={
+              isLoading ||
+              selectedYears.length < 2 ||
+              totalQuestions === 0 ||
+              selectedYears.some(
+                (y) =>
+                  !Object.values(yearSelections[y] || {}).some(
+                    (v) => v === true
+                  )
+              )
+            }
+            className="px-12 py-2.5 bg-blue-900 text-white rounded-md font-bold shadow-lg hover:bg-blue-800 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+          >
+            {isLoading ? (
+              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              'Confirmar selección'
+            )}
+          </button>
         </div>
       </div>
     </PremiumLayout>
