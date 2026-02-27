@@ -89,7 +89,9 @@ export const preguntaService = {
       body: JSON.stringify(item),
     });
     if (!response.ok) {
-      throw new Error('Error al crear la pregunta');
+      const errText = await response.text();
+      console.error('Error en preguntaService.create:', errText);
+      throw new Error(`Error al crear la pregunta: ${errText}`);
     }
     return response.json();
   },
@@ -110,7 +112,9 @@ export const preguntaService = {
       });
 
       if (!response.ok) {
-        throw new Error('Error al actualizar la pregunta');
+        const errText = await response.text();
+        console.error('Error en preguntaService.update:', errText);
+        throw new Error(`Error al actualizar la pregunta: ${errText}`);
       }
 
       const text = await response.text();

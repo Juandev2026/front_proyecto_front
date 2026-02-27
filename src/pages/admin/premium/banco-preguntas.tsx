@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 import PreguntaComunForm from '../../../components/admin/PreguntaComunForm';
 import AdminLayout from '../../../components/AdminLayout';
 import HtmlMathRenderer from '../../../components/common/HtmlMathRenderer';
+import { ADMIN_CATALOG } from '../../../data/adminCatalog';
 import { aiService } from '../../../services/aiService';
 import {
   clasificacionService,
@@ -39,7 +40,6 @@ import {
 import { uploadService } from '../../../services/uploadService';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
-import { ADMIN_CATALOG } from '../../../data/adminCatalog';
 
 // Dynamic import for ReactQuill
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -62,7 +62,7 @@ const Recursos = () => {
     if (typeof window !== 'undefined') {
       const examenesStr = localStorage.getItem('loginExamenes');
       const role = localStorage.getItem('role');
-      
+
       if (examenesStr) setLoginExamenes(JSON.parse(examenesStr));
       if (role) setUserRole(role);
     }
@@ -70,10 +70,14 @@ const Recursos = () => {
 
   const groupedData = useMemo(() => {
     // 1. Iniciamos con una copia del catálogo general
-    let combined = JSON.parse(JSON.stringify(rawGroupedData)) as ExamenGrouped[];
+    const combined = JSON.parse(
+      JSON.stringify(rawGroupedData)
+    ) as ExamenGrouped[];
 
     // 2. Normalizamos la lista de exámenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
-    const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
+    const userExamsList = Array.isArray(loginExamenes)
+      ? loginExamenes
+      : (loginExamenes as any)?.examenes || [];
 
     // 3. Fusionamos con la información de userExamsList para asegurar que no falte nada (como "Directivos")
     if (userExamsList && userExamsList.length > 0) {
@@ -81,57 +85,62 @@ const Recursos = () => {
         const tId = Number(le.tipoExamenId);
         if (!tId) return;
 
-        let tipo = combined.find(t => t.tipoExamenId === tId);
+        let tipo = combined.find((t) => t.tipoExamenId === tId);
         if (!tipo) {
           tipo = {
             tipoExamenId: tId,
             tipoExamenNombre: le.tipoExamenNombre || 'Sin nombre',
-            fuentes: []
+            fuentes: [],
           };
           combined.push(tipo);
         }
 
         const fId = Number(le.fuenteId);
-        let fuente = tipo.fuentes.find(f => f.fuenteId === fId);
+        let fuente = tipo.fuentes.find((f) => f.fuenteId === fId);
         if (!fuente) {
           fuente = {
             fuenteId: fId,
             fuenteNombre: le.fuenteNombre || 'Sin nombre',
-            modalidades: []
+            modalidades: [],
           };
           tipo.fuentes.push(fuente);
         }
 
         const mId = Number(le.modalidadId);
-        let mod = fuente.modalidades.find(m => m.modalidadId === mId);
+        let mod = fuente.modalidades.find((m) => m.modalidadId === mId);
         if (!mod) {
           mod = {
             modalidadId: mId,
             modalidadNombre: le.modalidadNombre || 'Sin nombre',
-            niveles: []
+            niveles: [],
           };
           fuente.modalidades.push(mod);
         }
 
         const nId = Number(le.nivelId);
-        let niv = mod.niveles.find(n => n.nivelId === nId);
+        let niv = mod.niveles.find((n) => n.nivelId === nId);
         if (!niv) {
           niv = {
             nivelId: nId,
             nivelNombre: le.nivelNombre || 'Sin nombre',
-            especialidades: []
+            especialidades: [],
           };
           mod.niveles.push(niv);
         }
 
-        const eId = (le.especialidadId === null || le.especialidadId === undefined) ? null : Number(le.especialidadId);
-        const hasEsp = niv.especialidades.some(e => 
-            (e.especialidadId === eId) || (eId === null && e.especialidadId === null)
+        const eId =
+          le.especialidadId === null || le.especialidadId === undefined
+            ? null
+            : Number(le.especialidadId);
+        const hasEsp = niv.especialidades.some(
+          (e) =>
+            e.especialidadId === eId ||
+            (eId === null && e.especialidadId === null)
         );
         if (!hasEsp) {
           niv.especialidades.push({
             especialidadId: eId,
-            especialidadNombre: le.especialidadNombre || 'General'
+            especialidadNombre: le.especialidadNombre || 'General',
           });
         }
       });
@@ -141,29 +150,61 @@ const Recursos = () => {
     if (userRole === 'Admin') return ADMIN_CATALOG;
 
     // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
-    return combined.filter(tipo => 
-      userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId)
-    ).map(tipo => ({
-      ...tipo,
-      fuentes: tipo.fuentes.filter(f => 
-        userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId)
-      ).map(f => ({
-        ...f,
-        modalidades: f.modalidades.filter(m => 
-           userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId)
-        ).map(m => ({
-          ...m,
-          niveles: m.niveles.filter(n => 
-            userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId && le.nivelId === n.nivelId)
-          ).map(n => ({
-            ...n,
-            especialidades: n.especialidades.filter(e => 
-              userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId && le.nivelId === n.nivelId && (e.especialidadId === null ? le.especialidadId === null : le.especialidadId === e.especialidadId))
+    return combined
+      .filter((tipo) =>
+        userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId)
+      )
+      .map((tipo) => ({
+        ...tipo,
+        fuentes: tipo.fuentes
+          .filter((f) =>
+            userExamsList.some(
+              (le: any) =>
+                le.tipoExamenId === tipo.tipoExamenId &&
+                le.fuenteId === f.fuenteId
             )
-          }))
-        }))
-      }))
-    }));
+          )
+          .map((f) => ({
+            ...f,
+            modalidades: f.modalidades
+              .filter((m) =>
+                userExamsList.some(
+                  (le: any) =>
+                    le.tipoExamenId === tipo.tipoExamenId &&
+                    le.fuenteId === f.fuenteId &&
+                    le.modalidadId === m.modalidadId
+                )
+              )
+              .map((m) => ({
+                ...m,
+                niveles: m.niveles
+                  .filter((n) =>
+                    userExamsList.some(
+                      (le: any) =>
+                        le.tipoExamenId === tipo.tipoExamenId &&
+                        le.fuenteId === f.fuenteId &&
+                        le.modalidadId === m.modalidadId &&
+                        le.nivelId === n.nivelId
+                    )
+                  )
+                  .map((n) => ({
+                    ...n,
+                    especialidades: n.especialidades.filter((e) =>
+                      userExamsList.some(
+                        (le: any) =>
+                          le.tipoExamenId === tipo.tipoExamenId &&
+                          le.fuenteId === f.fuenteId &&
+                          le.modalidadId === m.modalidadId &&
+                          le.nivelId === n.nivelId &&
+                          (e.especialidadId === null
+                            ? le.especialidadId === null
+                            : le.especialidadId === e.especialidadId)
+                      )
+                    ),
+                  })),
+              })),
+          })),
+      }));
   }, [rawGroupedData, loginExamenes, userRole]);
 
   const [allExams, setAllExams] = useState<Examen[]>([]);
@@ -186,7 +227,6 @@ const Recursos = () => {
   const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
 
   // Pagination State
-
 
   // --- ESTADOS VISUALES (FILTROS UI) ---
   const [selectedTipo, setSelectedTipo] = useState<number | ''>(2);
@@ -401,25 +441,40 @@ const Recursos = () => {
 
   const availableModalidades = useMemo(() => {
     if (!selectedFuente) return [];
-    const mods = availableFuentes.find((f: any) => f.fuenteId === Number(selectedFuente))?.modalidades || [];
+    const mods =
+      availableFuentes.find((f: any) => f.fuenteId === Number(selectedFuente))
+        ?.modalidades || [];
     return [...mods];
   }, [availableFuentes, selectedFuente]);
 
   const availableNiveles = useMemo(() => {
     if (!selectedModalidad) return [];
-    return availableModalidades.find((m: any) => m.modalidadId === Number(selectedModalidad))?.niveles || [];
+    return (
+      availableModalidades.find(
+        (m: any) => m.modalidadId === Number(selectedModalidad)
+      )?.niveles || []
+    );
   }, [availableModalidades, selectedModalidad]);
 
   const availableEspecialidades = useMemo(() => {
     if (!selectedNivel) return [];
-    return availableNiveles.find((n: any) => n.nivelId === Number(selectedNivel))?.especialidades || [];
+    return (
+      availableNiveles.find((n: any) => n.nivelId === Number(selectedNivel))
+        ?.especialidades || []
+    );
   }, [availableNiveles, selectedNivel]);
 
   // Auto-select specialty if only one is available and it's null/empty (hidden)
   useEffect(() => {
     const firstEsp = availableEspecialidades[0];
-    if (availableEspecialidades.length === 1 && (!firstEsp?.especialidadId) && selectedEspecialidad === '') {
-      setSelectedEspecialidad(firstEsp?.especialidadId === null ? 0 : (firstEsp?.especialidadId ?? ''));
+    if (
+      availableEspecialidades.length === 1 &&
+      !firstEsp?.especialidadId &&
+      selectedEspecialidad === ''
+    ) {
+      setSelectedEspecialidad(
+        firstEsp?.especialidadId === null ? 0 : firstEsp?.especialidadId ?? ''
+      );
     }
   }, [availableEspecialidades, selectedEspecialidad]);
 
@@ -428,54 +483,102 @@ const Recursos = () => {
 
     // Prioridad 1: Si es Admin, usamos la jerarquía de ADMIN_CATALOG
     if (userRole === 'Admin') {
-        const tipo = ADMIN_CATALOG.find(t => t.tipoExamenId === Number(selectedTipo));
-        const fuente = tipo?.fuentes.find(f => f.fuenteId === Number(selectedFuente));
-        const modalidad = fuente?.modalidades.find(m => m.modalidadId === Number(selectedModalidad));
-        const nivel = modalidad?.niveles.find(n => n.nivelId === Number(selectedNivel));
-        const especialidad = nivel?.especialidades.find(e => 
-            (selectedEspecialidad === '') 
-                ? (e.especialidadId === null || e.especialidadId === 0)
-                : e.especialidadId === Number(selectedEspecialidad)
-        );
+      const tipo = ADMIN_CATALOG.find(
+        (t) => t.tipoExamenId === Number(selectedTipo)
+      );
+      const fuente = tipo?.fuentes.find(
+        (f) => f.fuenteId === Number(selectedFuente)
+      );
+      const modalidad = fuente?.modalidades.find(
+        (m) => m.modalidadId === Number(selectedModalidad)
+      );
+      const nivel = modalidad?.niveles.find(
+        (n) => n.nivelId === Number(selectedNivel)
+      );
+      const especialidad = nivel?.especialidades.find((e) =>
+        selectedEspecialidad === ''
+          ? e.especialidadId === null || e.especialidadId === 0
+          : e.especialidadId === Number(selectedEspecialidad)
+      );
 
-        if (especialidad?.years) {
-            return especialidad.years.map(y => ({ year: y.year }));
-        }
-        
-        // Fallback for NINGUNO level if no specialty selected
-        if (!especialidad && nivel && !selectedEspecialidad) {
-            const defaultEsp = nivel.especialidades[0];
-            if (defaultEsp?.years) return defaultEsp.years.map(y => ({ year: y.year }));
-        }
+      if (especialidad?.years) {
+        return especialidad.years.map((y) => ({ year: y.year }));
+      }
+
+      // Fallback for NINGUNO level if no specialty selected
+      if (!especialidad && nivel && !selectedEspecialidad) {
+        const defaultEsp = nivel.especialidades[0];
+        if (defaultEsp?.years)
+          return defaultEsp.years.map((y) => ({ year: y.year }));
+      }
     }
 
     // Prioridad 2: Lógica actual para usuarios no-admin o fallback
-    const effEspecialidadId = selectedEspecialidad ? Number(selectedEspecialidad) : 0;
+    const effEspecialidadId = selectedEspecialidad
+      ? Number(selectedEspecialidad)
+      : 0;
     const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
     const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
 
-    const filteredFromCatalog = allExams.filter(e => 
-      e.tipoExamenId === Number(selectedTipo) &&
-      e.fuenteId === Number(selectedFuente) &&
-      (effModalidadId === 0 ? (!e.modalidadId || e.modalidadId === 0) : e.modalidadId === effModalidadId) &&
-      (effNivelId === 0 ? (!e.nivelId || e.nivelId === 0) : e.nivelId === effNivelId) &&
-      (effEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effEspecialidadId)
-    ).flatMap(e => (e as any).years ? (e as any).years.map((y: any) => y.year) : [e.year]);
+    const filteredFromCatalog = allExams
+      .filter(
+        (e) =>
+          e.tipoExamenId === Number(selectedTipo) &&
+          e.fuenteId === Number(selectedFuente) &&
+          (effModalidadId === 0
+            ? !e.modalidadId || e.modalidadId === 0
+            : e.modalidadId === effModalidadId) &&
+          (effNivelId === 0
+            ? !e.nivelId || e.nivelId === 0
+            : e.nivelId === effNivelId) &&
+          (effEspecialidadId === 0
+            ? !e.especialidadId || e.especialidadId === 0
+            : e.especialidadId === effEspecialidadId)
+      )
+      .flatMap((e) =>
+        (e as any).years ? (e as any).years.map((y: any) => y.year) : [e.year]
+      );
 
-    const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
-    const filteredFromUser = userExamsList.filter((le: any) => 
-      Number(le.tipoExamenId) === Number(selectedTipo) &&
-      Number(le.fuenteId) === Number(selectedFuente) &&
-      (effModalidadId === 0 || Number(le.modalidadId) === effModalidadId) &&
-      (effNivelId === 0 || (le.nivelId !== null && Number(le.nivelId) === effNivelId)) &&
-      (effEspecialidadId === 0 || (le.especialidadId !== null && Number(le.especialidadId) === effEspecialidadId))
-    ).flatMap((le: any) => le.years?.map((y: any) => y.year) || (le.year !== undefined ? [le.year] : []));
+    const userExamsList = Array.isArray(loginExamenes)
+      ? loginExamenes
+      : (loginExamenes as any)?.examenes || [];
+    const filteredFromUser = userExamsList
+      .filter(
+        (le: any) =>
+          Number(le.tipoExamenId) === Number(selectedTipo) &&
+          Number(le.fuenteId) === Number(selectedFuente) &&
+          (effModalidadId === 0 || Number(le.modalidadId) === effModalidadId) &&
+          (effNivelId === 0 ||
+            (le.nivelId !== null && Number(le.nivelId) === effNivelId)) &&
+          (effEspecialidadId === 0 ||
+            (le.especialidadId !== null &&
+              Number(le.especialidadId) === effEspecialidadId))
+      )
+      .flatMap(
+        (le: any) =>
+          le.years?.map((y: any) => y.year) ||
+          (le.year !== undefined ? [le.year] : [])
+      );
 
-    const allYears = Array.from(new Set([...filteredFromCatalog, ...filteredFromUser]))
-      .filter(y => y !== null && y !== undefined && y !== '' && y !== 0 && y !== '0');
+    const allYears = Array.from(
+      new Set([...filteredFromCatalog, ...filteredFromUser])
+    ).filter(
+      (y) => y !== null && y !== undefined && y !== '' && y !== 0 && y !== '0'
+    );
 
-    return allYears.sort((a, b) => Number(b) - Number(a)).map(y => ({ year: y.toString() }));
-  }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, allExams, loginExamenes, userRole]);
+    return allYears
+      .sort((a, b) => Number(b) - Number(a))
+      .map((y) => ({ year: y.toString() }));
+  }, [
+    selectedTipo,
+    selectedFuente,
+    selectedModalidad,
+    selectedNivel,
+    selectedEspecialidad,
+    allExams,
+    loginExamenes,
+    userRole,
+  ]);
 
   // --- CONTINUOUS INDEXING LOGIC ---
   const itemsWithIndices = useMemo(() => {
@@ -485,25 +588,27 @@ const Recursos = () => {
       const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
       return numA - numB || a.id - b.id;
     });
-    
-    return sortedItems.map(item => {
+
+    return sortedItems.map((item) => {
       const isParent = item.tipoPreguntaId === 2;
       let mainIdx = null;
-      
+
       if (!isParent) {
         globalCounter++;
         mainIdx = globalCounter;
       }
-      
+
       const subPreguntas = item.subPreguntas || subQuestionsMap[item.id] || [];
       // Sort subs by order (numero) then by id
-      const sortedSubs = [...subPreguntas].sort((a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id);
-      
-      const subsWithIdx = sortedSubs.map(s => {
+      const sortedSubs = [...subPreguntas].sort(
+        (a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id
+      );
+
+      const subsWithIdx = sortedSubs.map((s) => {
         globalCounter++;
         return { ...s, displayIndex: globalCounter };
       });
-      
+
       return { ...item, displayIndex: mainIdx, subsWithIdx };
     });
   }, [filteredItems, subQuestionsMap]);
@@ -720,9 +825,9 @@ const Recursos = () => {
 
   const handleAddNew = () => {
     resetForm();
-    setNewItem(prev => ({
-        ...prev,
-        examenId: Number(selectedFuente) || 0
+    setNewItem((prev) => ({
+      ...prev,
+      examenId: Number(selectedFuente) || 0,
     }));
     setViewMode('create');
   };
@@ -765,16 +870,16 @@ const Recursos = () => {
           esCorrecta: generated.respuesta === 'C',
         },
       ]);
-      
+
       // Si por alguna razón la IA devolvió una cuarta
       if (generated.alternativaD) {
-        setAlternatives(prev => [
-            ...prev,
-            {
-                id: '4',
-                contenido: generated.alternativaD!,
-                esCorrecta: generated.respuesta === 'D',
-            }
+        setAlternatives((prev) => [
+          ...prev,
+          {
+            id: '4',
+            contenido: generated.alternativaD!,
+            esCorrecta: generated.respuesta === 'D',
+          },
         ]);
       }
 
@@ -832,13 +937,13 @@ const Recursos = () => {
       ]);
 
       if (generated.alternativaD) {
-        setAlternatives(prev => [
-            ...prev,
-            {
-                id: '4',
-                contenido: generated.alternativaD!,
-                esCorrecta: generated.respuesta === 'D',
-            }
+        setAlternatives((prev) => [
+          ...prev,
+          {
+            id: '4',
+            contenido: generated.alternativaD!,
+            esCorrecta: generated.respuesta === 'D',
+          },
         ]);
       }
       alert('Respuestas generadas con éxito.');
@@ -922,7 +1027,12 @@ const Recursos = () => {
       const allExams = await examenService.getAll();
       const targetExam = allExams.find(
         (e: any) =>
-          e.year === selectedYear &&
+          (String(e.year) === String(selectedYear) ||
+            (e.years &&
+              Array.isArray(e.years) &&
+              e.years.some(
+                (y: any) => String(y.year) === String(selectedYear)
+              ))) &&
           e.tipoExamenId === Number(selectedTipo) &&
           e.fuenteId === Number(selectedFuente) &&
           (effModalidadId === 0
@@ -968,12 +1078,12 @@ const Recursos = () => {
       // Actually we need them to populate dropdowns.
       // Maybe we can split this? For now, keep loading controls.
       if (rawGroupedData.length === 0) {
-          try {
-            const grouped = await examenService.getGrouped();
-            setRawGroupedData(grouped);
-          } catch (err: any) {
-             console.error('Examen Service Error:', err);
-          }
+        try {
+          const grouped = await examenService.getGrouped();
+          setRawGroupedData(grouped);
+        } catch (err: any) {
+          console.error('Examen Service Error:', err);
+        }
       }
 
       if (allExams.length === 0) {
@@ -995,35 +1105,45 @@ const Recursos = () => {
       }
 
       if (clasificaciones.length === 0) {
-          try {
-             const classData = await clasificacionService.getAll();
-             setClasificaciones(classData);
-          } catch (err: any) {
-             console.error('Clasificacion Service Error:', err);
-          }
+        try {
+          const classData = await clasificacionService.getAll();
+          setClasificaciones(classData);
+        } catch (err: any) {
+          console.error('Clasificacion Service Error:', err);
+        }
       }
-      
+
       // 2. Load Questions - Use the new filter API
-      const hasFilter = selectedTipo || selectedFuente || selectedModalidad || selectedNivel || selectedEspecialidad || selectedYear;
-      
+      const hasFilter =
+        selectedTipo ||
+        selectedFuente ||
+        selectedModalidad ||
+        selectedNivel ||
+        selectedEspecialidad ||
+        selectedYear;
+
       try {
         setItemsLoading(true);
         let data: Pregunta[] = [];
-        
+
         if (hasFilter) {
           const filterData = {
             tipoExamenId: selectedTipo ? Number(selectedTipo) : undefined,
             fuenteId: selectedFuente ? Number(selectedFuente) : undefined,
-            modalidadId: selectedModalidad ? Number(selectedModalidad) : undefined,
+            modalidadId: selectedModalidad
+              ? Number(selectedModalidad)
+              : undefined,
             nivelId: selectedNivel ? Number(selectedNivel) : undefined,
-            especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : undefined,
+            especialidadId: selectedEspecialidad
+              ? Number(selectedEspecialidad)
+              : undefined,
             year: selectedYear || undefined,
           };
           data = await preguntaService.examenFilter(filterData);
         } else {
           data = await preguntaService.getAll();
         }
-        
+
         // Sort by ID descending (newest first)
         setItems(data.sort((a, b) => b.id - a.id));
       } catch (err) {
@@ -1097,20 +1217,50 @@ const Recursos = () => {
     try {
       const allExams = await examenService.getAll();
       const target = allExams.find(
-        (e) =>
-          e.tipoExamenId === Number(selectedTipo) &&
-          e.fuenteId === Number(selectedFuente) &&
+        (e: any) =>
+          Number(e.tipoExamenId) === Number(selectedTipo) &&
+          Number(e.fuenteId) === Number(selectedFuente) &&
           (effectiveModalidadId === 0
-            ? !e.modalidadId || e.modalidadId === 0
-            : e.modalidadId === effectiveModalidadId) &&
+            ? !e.modalidadId || Number(e.modalidadId) === 0
+            : Number(e.modalidadId) === effectiveModalidadId) &&
           (effectiveNivelId === 0
-            ? !e.nivelId || e.nivelId === 0
-            : e.nivelId === effectiveNivelId) &&
+            ? !e.nivelId || Number(e.nivelId) === 0
+            : Number(e.nivelId) === effectiveNivelId) &&
           (effectiveEspecialidadId === 0
-            ? !e.especialidadId || e.especialidadId === 0
-            : e.especialidadId === effectiveEspecialidadId) &&
-          e.year === selectedYear
+            ? !e.especialidadId || Number(e.especialidadId) === 0
+            : Number(e.especialidadId) === effectiveEspecialidadId) &&
+          (String(e.year) === String(selectedYear) ||
+            (e.years &&
+              Array.isArray(e.years) &&
+              e.years.some(
+                (y: any) =>
+                  String(y) === String(selectedYear) ||
+                  String(y.year) === String(selectedYear)
+              )))
       );
+
+      console.log('resolveCurrentExamenId - Target Match:', target);
+      if (!target) {
+        console.warn(
+          'resolveCurrentExamenId - No exam found matching filters.',
+          {
+            allExamsCount: allExams.length,
+            tipo: selectedTipo,
+            fuente: selectedFuente,
+            mod: effectiveModalidadId,
+            niv: effectiveNivelId,
+            esp: effectiveEspecialidadId,
+            year: selectedYear,
+          }
+        );
+        const closestExams = allExams.filter(
+          (e: any) =>
+            e.tipoExamenId === Number(selectedTipo) &&
+            e.fuenteId === Number(selectedFuente)
+        );
+        console.log('Closest Exams for this Tipo and Fuente:', closestExams);
+      }
+
       return target ? target.id : null;
     } catch (error) {
       console.error('Error resolving examen ID', error);
@@ -1175,35 +1325,36 @@ const Recursos = () => {
         return;
       }
 
-      // Format alternatives with temporary IDs (1, 2, 3...) 
+      // Format alternatives with temporary IDs (1, 2, 3...)
       // strictly for linking with 'respuesta' in the same save operation.
-      const safeAlts = alternatives.map(a => ({ ...a }));
+      const safeAlts = alternatives.map((a) => ({ ...a }));
       const mappedAlternativas = safeAlts.map((alt, idx) => {
-        const tempId = isNaN(Number(alt.id)) || Number(alt.id) < 1 
-            ? idx + 1 
+        const tempId =
+          isNaN(Number(alt.id)) || Number(alt.id) < 1
+            ? idx + 1
             : Number(alt.id);
-        
+
         return {
-            id: tempId,
-            contenido: alt.contenido || ''
+          id: tempId,
+          contenido: alt.contenido || '',
         };
       });
 
       // Find the answer referencing our mapped items
       let finalRespuesta: number = 0;
-      const correctIdx = safeAlts.findIndex(a => a.esCorrecta);
+      const correctIdx = safeAlts.findIndex((a) => a.esCorrecta);
       if (correctIdx !== -1) {
-          const matchedAlt = mappedAlternativas[correctIdx];
-          if (matchedAlt) {
-              finalRespuesta = matchedAlt.id;
-          }
+        const matchedAlt = mappedAlternativas[correctIdx];
+        if (matchedAlt) {
+          finalRespuesta = matchedAlt.id;
+        }
       }
 
       // STRICT PAYLOAD as per Latest Schema
       const payload = {
         id: editingId || 0, // Mandatory 0 for POST
         examenId: targetExamenId,
-        year: selectedYear || "2024", 
+        year: selectedYear || '2024',
         numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
@@ -1216,15 +1367,14 @@ const Recursos = () => {
         ],
         alternativas: mappedAlternativas,
         justificaciones: justificationBlocks.map((b) => ({
-            id: 0, // Server manages sequence
-            contenido: b.content
+          id: 0, // Server manages sequence
+          contenido: b.content,
         })),
-        imagen: finalUrl || ""
+        imagen: finalUrl || '',
       };
 
       if (editingId) {
-        // UPDATE Logic (remains same? Or new endpoint?)
-        // Assuming update endpoint is standard PUT /api/Preguntas/{id}
+        // UPDATE Logic
         const updated = await preguntaService.update(
           payload.examenId,
           editingId,
@@ -1235,10 +1385,9 @@ const Recursos = () => {
         setItems((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
         alert('Pregunta actualizada con éxito');
       } else {
-        // POST /api/Preguntas — examenId va dentro del body
-        const created = await preguntaService.create(
-          payload as any
-        );
+        // POST /api/Preguntas
+        payload.id = 0; // Ensures fresh item logic on backend
+        const created = await preguntaService.create(payload as any);
         if (created) {
           setItems((prev) => [created, ...prev]);
           alert('Pregunta creada con éxito');
@@ -1246,9 +1395,6 @@ const Recursos = () => {
       }
 
       // DO NOT reset filters, keep context
-      // setViewMode('list'); // Maybe stay in create? User might want "Guardar y Añadir otra" handling
-      // resetForm(); // We handle this based on which button was clicked effectively
-      // But for this generic handler:
       setViewMode('list');
       resetForm();
     } catch (err) {
@@ -1349,6 +1495,7 @@ const Recursos = () => {
                 }
                 resolveExamenId={resolveCurrentExamenId}
                 defaultClasificacionId={Number(newItem.clasificacionId) || 0}
+                selectedYear={selectedYear}
                 onSuccess={() => {
                   fetchData();
                   setViewMode('list');
@@ -1678,232 +1825,270 @@ const Recursos = () => {
       <div className="space-y-6">
         {/* SECCIÓN 2: FILTROS (Show only if !showResults) */}
         {!showResults && (
-        <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
-          <div className="flex flex-col gap-4 mb-6">
-            {/* 1. Tipo Examen */}
-            <div>
-              <label className="block text-sm font-semibold text-primary mb-2">
-                Tipo Exámen <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={selectedTipo}
-                onChange={(e) => {
-                  setSelectedTipo(e.target.value ? Number(e.target.value) : '');
-                  setSelectedFuente('');
-                  setSelectedModalidad('');
-                  setSelectedNivel('');
-                  setSelectedEspecialidad('');
-                  setSelectedYear('');
-                }}
-              >
-                <option value="">Seleccionar Tipo Exámen</option>
-                {groupedData.map((t: any) => (
-                  <option key={t.tipoExamenId} value={t.tipoExamenId}>
-                    {t.tipoExamenNombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 2. Sección Fuente */}
-            <div>
-              <label className="block text-sm font-semibold text-primary mb-2">
-                Sección Fuente <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                value={selectedFuente}
-                onChange={(e) => {
-                  setSelectedFuente(e.target.value ? Number(e.target.value) : '');
-                  setSelectedModalidad('');
-                  setSelectedNivel('');
-                  setSelectedEspecialidad('');
-                  setSelectedYear('');
-                }}
-                disabled={!selectedTipo}
-              >
-                <option value="">
-                  {selectedTipo
-                    ? 'Selecciona una sección'
-                    : 'Primero selecciona el tipo de examen'}
-                </option>
-                {availableFuentes.map((f: any) => (
-                  <option key={f.fuenteId} value={f.fuenteId}>
-                    {f.fuenteNombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 3. Modalidad */}
-            <div>
-              <label className="block text-sm font-semibold text-primary mb-2">
-                {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                value={selectedModalidad}
-                onChange={(e) => {
-                  setSelectedModalidad(e.target.value ? Number(e.target.value) : '');
-                  setSelectedNivel('');
-                  setSelectedEspecialidad('');
-                  setSelectedYear('');
-                }}
-                disabled={!selectedFuente || availableModalidades.length === 0}
-              >
-                <option value="" disabled hidden>Seleccionar modalidad</option>
-                {availableModalidades.map((m: any) => (
-                  <option key={m.modalidadId} value={m.modalidadId}>
-                    {m.modalidadNombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 4. Nivel */}
-            {availableNiveles.length > 0 && 
-             !(availableNiveles.length === 1 && availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO') && (
+          <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
+            <div className="flex flex-col gap-4 mb-6">
+              {/* 1. Tipo Examen */}
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Nivel
+                  Tipo Exámen <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedNivel}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={selectedTipo}
                   onChange={(e) => {
-                    setSelectedNivel(e.target.value ? Number(e.target.value) : '');
+                    setSelectedTipo(
+                      e.target.value ? Number(e.target.value) : ''
+                    );
+                    setSelectedFuente('');
+                    setSelectedModalidad('');
+                    setSelectedNivel('');
                     setSelectedEspecialidad('');
                     setSelectedYear('');
                   }}
-                  disabled={!selectedModalidad}
                 >
-                  <option value="" disabled hidden>Seleccionar nivel</option>
-                  {availableNiveles.map((n: any) => (
-                    <option key={n.nivelId} value={n.nivelId}>
-                      {n.nivelNombre}
+                  <option value="">Seleccionar Tipo Exámen</option>
+                  {groupedData.map((t: any) => (
+                    <option key={t.tipoExamenId} value={t.tipoExamenId}>
+                      {t.tipoExamenNombre}
                     </option>
                   ))}
                 </select>
               </div>
-            )}
 
-            {/* 5. Especialidad */}
-            {availableEspecialidades.length > 0 &&
-             // Hide if it's the "null" single option
-             !(availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId)) && (
+              {/* 2. Sección Fuente */}
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Especialidad
+                  Sección Fuente <span className="text-red-500">*</span>
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedEspecialidad}
+                  value={selectedFuente}
                   onChange={(e) => {
-                    setSelectedEspecialidad(e.target.value ? Number(e.target.value) : '');
+                    setSelectedFuente(
+                      e.target.value ? Number(e.target.value) : ''
+                    );
+                    setSelectedModalidad('');
+                    setSelectedNivel('');
+                    setSelectedEspecialidad('');
                     setSelectedYear('');
                   }}
-                  disabled={!selectedNivel}
+                  disabled={!selectedTipo}
                 >
-                  <option value="" disabled hidden>Seleccionar especialidad</option>
-                  {availableEspecialidades.map((e: any, idx: any) => (
-                    <option key={e.especialidadId !== null ? e.especialidadId : `null-${idx}`} value={e.especialidadId !== null ? e.especialidadId.toString() : ''}>
-                      {e.especialidadNombre ?? 'General'}
+                  <option value="">
+                    {selectedTipo
+                      ? 'Selecciona una sección'
+                      : 'Primero selecciona el tipo de examen'}
+                  </option>
+                  {availableFuentes.map((f: any) => (
+                    <option key={f.fuenteId} value={f.fuenteId}>
+                      {f.fuenteNombre}
                     </option>
                   ))}
                 </select>
               </div>
-            )}
 
-            {/* 6. Año */}
-            {selectedModalidad && (
+              {/* 3. Modalidad */}
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Año
+                  {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                  value={selectedModalidad}
+                  onChange={(e) => {
+                    setSelectedModalidad(
+                      e.target.value ? Number(e.target.value) : ''
+                    );
+                    setSelectedNivel('');
+                    setSelectedEspecialidad('');
+                    setSelectedYear('');
+                  }}
+                  disabled={
+                    !selectedFuente || availableModalidades.length === 0
+                  }
                 >
-                  <option value="">Seleccionar Año</option>
-                  {availableYears.map((y: { year: string }) => (
-                    <option key={y.year} value={y.year}>
-                      {y.year}
+                  <option value="" disabled hidden>
+                    Seleccionar modalidad
+                  </option>
+                  {availableModalidades.map((m: any) => (
+                    <option key={m.modalidadId} value={m.modalidadId}>
+                      {m.modalidadNombre}
                     </option>
                   ))}
                 </select>
               </div>
-            )}
-          </div>
 
-          {/* New Row for Year Management */}
-          {selectedModalidad && (
-             <div className="flex items-end gap-2 mt-4">
-                 <input 
-                     type="text"
-                     placeholder="Nuevo año (ej: 2025)"
-                     className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                     value={newYearInput}
-                     onChange={(e) => setNewYearInput(e.target.value)}
-                 />
-                 <button
-                     onClick={handleAddYear}
-                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
-                 >
-                     Agregar Año
-                 </button>
-                 <button
-                     onClick={handleDeleteYear}
-                     disabled={!selectedYear}
-                     className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-md whitespace-nowrap ${
-                         !selectedYear 
-                             ? "bg-red-300 text-white cursor-not-allowed" 
-                             : "bg-red-500 text-white hover:bg-red-600"
-                     }`}
-                 >
-                     Eliminar
-                 </button>
-             </div>
-          )}
+              {/* 4. Nivel */}
+              {availableNiveles.length > 0 &&
+                !(
+                  availableNiveles.length === 1 &&
+                  availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO'
+                ) && (
+                  <div>
+                    <label className="block text-sm font-semibold text-primary mb-2">
+                      Nivel
+                    </label>
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                      value={selectedNivel}
+                      onChange={(e) => {
+                        setSelectedNivel(
+                          e.target.value ? Number(e.target.value) : ''
+                        );
+                        setSelectedEspecialidad('');
+                        setSelectedYear('');
+                      }}
+                      disabled={!selectedModalidad}
+                    >
+                      <option value="" disabled hidden>
+                        Seleccionar nivel
+                      </option>
+                      {availableNiveles.map((n: any) => (
+                        <option key={n.nivelId} value={n.nivelId}>
+                          {n.nivelNombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-          <div className="flex flex-wrap justify-center gap-3 mt-4">
-            <button
-              onClick={handleAddNew}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-            >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Añadir preguntas
-            </button>
+              {/* 5. Especialidad */}
+              {availableEspecialidades.length > 0 &&
+                // Hide if it's the "null" single option
+                !(
+                  availableEspecialidades.length === 1 &&
+                  !availableEspecialidades[0]?.especialidadId
+                ) && (
+                  <div>
+                    <label className="block text-sm font-semibold text-primary mb-2">
+                      Especialidad
+                    </label>
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                      value={selectedEspecialidad}
+                      onChange={(e) => {
+                        setSelectedEspecialidad(
+                          e.target.value ? Number(e.target.value) : ''
+                        );
+                        setSelectedYear('');
+                      }}
+                      disabled={!selectedNivel}
+                    >
+                      <option value="" disabled hidden>
+                        Seleccionar especialidad
+                      </option>
+                      {availableEspecialidades.map((e: any, idx: any) => (
+                        <option
+                          key={
+                            e.especialidadId !== null
+                              ? e.especialidadId
+                              : `null-${idx}`
+                          }
+                          value={
+                            e.especialidadId !== null
+                              ? e.especialidadId.toString()
+                              : ''
+                          }
+                        >
+                          {e.especialidadNombre ?? 'General'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-            <button
-              onClick={() => setIsAiModalOpen(true)}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-            >
-              <SparklesIcon className="w-4 h-4 mr-2" />
-              Añadir preguntas con IA
-            </button>
-
-            <button
-              onClick={handleGenerateAnswersAI}
-              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-              disabled={isGeneratingAi || viewMode === 'list'} 
-              title={viewMode === 'list' ? "Entra a modo crear/editar primero" : "Generar respuestas para el enunciado actual"}
-            >
-              {isGeneratingAi ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-              ) : (
-                  <SparklesIcon className="w-4 h-4 mr-2" />
+              {/* 6. Año */}
+              {selectedModalidad && (
+                <div>
+                  <label className="block text-sm font-semibold text-primary mb-2">
+                    Año
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                  >
+                    <option value="">Seleccionar Año</option>
+                    {availableYears.map((y: { year: string }) => (
+                      <option key={y.year} value={y.year}>
+                        {y.year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
-              Añadir respuestas con IA
-            </button>
+            </div>
 
+            {/* New Row for Year Management */}
+            {selectedModalidad && (
+              <div className="flex items-end gap-2 mt-4">
+                <input
+                  type="text"
+                  placeholder="Nuevo año (ej: 2025)"
+                  className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={newYearInput}
+                  onChange={(e) => setNewYearInput(e.target.value)}
+                />
+                <button
+                  onClick={handleAddYear}
+                  className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
+                >
+                  Agregar Año
+                </button>
+                <button
+                  onClick={handleDeleteYear}
+                  disabled={!selectedYear}
+                  className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-md whitespace-nowrap ${
+                    !selectedYear
+                      ? 'bg-red-300 text-white cursor-not-allowed'
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  }`}
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-wrap justify-center gap-3 mt-4">
+              <button
+                onClick={handleAddNew}
+                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
+              >
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Añadir preguntas
+              </button>
+
+              <button
+                onClick={() => setIsAiModalOpen(true)}
+                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
+              >
+                <SparklesIcon className="w-4 h-4 mr-2" />
+                Añadir preguntas con IA
+              </button>
+
+              <button
+                onClick={handleGenerateAnswersAI}
+                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
+                disabled={isGeneratingAi || viewMode === 'list'}
+                title={
+                  viewMode === 'list'
+                    ? 'Entra a modo crear/editar primero'
+                    : 'Generar respuestas para el enunciado actual'
+                }
+              >
+                {isGeneratingAi ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                ) : (
+                  <SparklesIcon className="w-4 h-4 mr-2" />
+                )}
+                Añadir respuestas con IA
+              </button>
 
               <button
                 disabled={!selectedTipo || itemsLoading}
                 onClick={() => {
                   if (filteredItems.length === 0) {
-                    alert("No se encontraron preguntas para esta categoría.");
+                    alert('No se encontraron preguntas para esta categoría.');
                   } else {
                     setShowResults(true);
                   }
@@ -2001,78 +2186,102 @@ const Recursos = () => {
           <div>
             {/* RESULT HEADER & CRITERIA */}
             <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm flex items-center gap-4">
-                 <button onClick={() => setShowResults(false)} className="text-white hover:text-gray-200 font-medium flex items-center gap-1">
-                    <ChevronLeftIcon className="w-5 h-5" /> Volver
-                 </button>
-                 <h1 className="text-xl font-bold text-white flex-1 text-center">Ver preguntas</h1>
+              <button
+                onClick={() => setShowResults(false)}
+                className="text-white hover:text-gray-200 font-medium flex items-center gap-1"
+              >
+                <ChevronLeftIcon className="w-5 h-5" /> Volver
+              </button>
+              <h1 className="text-xl font-bold text-white flex-1 text-center">
+                Ver preguntas
+              </h1>
             </div>
-            
+
             <div className="bg-white border border-gray-200 p-4 rounded-b-lg mb-6 shadow-sm">
-                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                     <div className="flex flex-wrap gap-2 items-center">
-                         <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
-                         <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
-                             {filteredItems.length} {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
-                         </span>
-                         {/* Display Selected Criteria as Pills */}
-                         {groupedData.find(t => t.tipoExamenId === selectedTipo) && (
-                            <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
-                                {groupedData.find(t => t.tipoExamenId === selectedTipo)?.tipoExamenNombre}
-                            </span>
-                         )}
-                         {/* We could map other selected IDs to names here if available in state arrays or lookups */}
-                         {selectedModalidad && (
-                             <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">Modalidad ID: {selectedModalidad}</span>
-                         )}
-                         {selectedYear && (
-                             <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">{selectedYear}</span>
-                         )}
-                     </div>
-                      <button
-                        onClick={handleAddNew}
-                        className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
-                      >
-                        <PlusIcon className="w-5 h-5" />
-                        Añadir preguntas
-                     </button>
-                 </div>
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="font-bold text-gray-700 mr-2">
+                    Criterios de selección
+                  </span>
+                  <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
+                    {filteredItems.length}{' '}
+                    {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
+                  </span>
+                  {/* Display Selected Criteria as Pills */}
+                  {groupedData.find((t) => t.tipoExamenId === selectedTipo) && (
+                    <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
+                      {
+                        groupedData.find((t) => t.tipoExamenId === selectedTipo)
+                          ?.tipoExamenNombre
+                      }
+                    </span>
+                  )}
+                  {/* We could map other selected IDs to names here if available in state arrays or lookups */}
+                  {selectedModalidad && (
+                    <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">
+                      Modalidad ID: {selectedModalidad}
+                    </span>
+                  )}
+                  {selectedYear && (
+                    <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
+                      {selectedYear}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleAddNew}
+                  className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
+                >
+                  <PlusIcon className="w-5 h-5" />
+                  Añadir preguntas
+                </button>
+              </div>
             </div>
 
             <div className="space-y-6">
-                {currentItems.map((item) => {
-                     const isParent = item.tipoPreguntaId === 2;
-                     const subCount = subCountsMap[item.id] || 0;
-                     const isLoadingSubs = loadingSubIds.has(item.id);
-                     const subs = item.subsWithIdx || [];
+              {currentItems.map((item) => {
+                const isParent = item.tipoPreguntaId === 2;
+                const subCount = subCountsMap[item.id] || 0;
+                const isLoadingSubs = loadingSubIds.has(item.id);
+                const subs = item.subsWithIdx || [];
 
-                     return (
-                      <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                        {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
-                        <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
-                          
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
-                              {!isParent ? (item.displayIndex || item.numero || '-') : ''}
-                            </div>
-                            
-                            <span className="text-sm font-bold text-gray-900">
-                               {isParent ? 'Pregunta Grupal' : 'Pregunta Individual'}
-                            </span>
-                          </div>
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
+                    <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
+                          {!isParent
+                            ? item.displayIndex || item.numero || '-'
+                            : ''}
+                        </div>
 
-                          <div className="flex items-center gap-2 ml-auto">
-                            {item.clasificacionNombre && (
-                                <span className={`px-2 py-1 text-xs font-bold rounded-md ${
-                                    item.clasificacionNombre === 'CL' ? 'bg-blue-100 text-blue-700' :
-                                    item.clasificacionNombre === 'RL' ? 'bg-purple-100 text-purple-700' :
-                                    item.clasificacionNombre === 'CCP' ? 'bg-green-100 text-green-700' :
-                                    'bg-gray-100 text-gray-700'
-                                }`}>
-                                    {item.clasificacionNombre}
-                                </span>
-                            )}
+                        <span className="text-sm font-bold text-gray-900">
+                          {isParent ? 'Pregunta Grupal' : 'Pregunta Individual'}
+                        </span>
+                      </div>
 
-                            <div className="flex gap-2">
+                      <div className="flex items-center gap-2 ml-auto">
+                        {item.clasificacionNombre && (
+                          <span
+                            className={`px-2 py-1 text-xs font-bold rounded-md ${
+                              item.clasificacionNombre === 'CL'
+                                ? 'bg-blue-100 text-blue-700'
+                                : item.clasificacionNombre === 'RL'
+                                ? 'bg-purple-100 text-purple-700'
+                                : item.clasificacionNombre === 'CCP'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {item.clasificacionNombre}
+                          </span>
+                        )}
+
+                        <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
@@ -2092,141 +2301,144 @@ const Recursos = () => {
                             Eliminar
                           </button>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* --- CONTENIDO PRINCIPAL --- */}
+                    <div className="p-6">
+                      {/* Enunciado */}
+                      <div className="mb-6 prose max-w-none text-gray-800 bg-blue-50/30 p-4 rounded-lg border border-blue-100">
+                        <div className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-wider">
+                          {isParent ? 'Lectura / Contexto' : 'Enunciado'}
                         </div>
+                        {item.enunciados && item.enunciados.length > 0 ? (
+                          item.enunciados.map((e: any) => (
+                            <HtmlMathRenderer key={e.id} html={e.contenido} />
+                          ))
+                        ) : (
+                          <HtmlMathRenderer html={item.enunciado || ''} />
+                        )}
+
+                        {item.imagen && (
+                          <div className="mt-4">
+                            <img
+                              src={item.imagen}
+                              alt="Imagen pregunta"
+                              className="max-h-60 rounded border shadow-sm"
+                            />
+                          </div>
+                        )}
                       </div>
 
-                      {/* --- CONTENIDO PRINCIPAL --- */}
-                      <div className="p-6">
-                        {/* Enunciado */}
-                        <div className="mb-6 prose max-w-none text-gray-800 bg-blue-50/30 p-4 rounded-lg border border-blue-100">
-                          <div className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-wider">
-                            {isParent ? 'Lectura / Contexto' : 'Enunciado'}
+                      {/* --- CASO 1: PREGUNTA AGRUPADA (Sub-Preguntas mostradas inmediatamente) --- */}
+                      {isParent && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4 p-3 bg-indigo-50 text-indigo-800 rounded-lg border border-indigo-200 font-bold text-sm uppercase tracking-wide">
+                            <DocumentTextIcon className="w-5 h-5" />
+                            <span>Sub-Preguntas ({subCount})</span>
                           </div>
-                          {item.enunciados && item.enunciados.length > 0 ? (
-                            item.enunciados.map((e: any) => (
-                              <HtmlMathRenderer key={e.id} html={e.contenido} />
-                            ))
-                          ) : (
-                            <HtmlMathRenderer html={item.enunciado || ''} />
-                          )}
 
-                          {item.imagen && (
-                            <div className="mt-4">
-                              <img
-                                src={item.imagen}
-                                alt="Imagen pregunta"
-                                className="max-h-60 rounded border shadow-sm"
-                              />
-                            </div>
-                          )}
-                        </div>
+                          <div className="space-y-4 pl-4 border-l-2 border-indigo-200">
+                            {isLoadingSubs ? (
+                              <div className="flex items-center justify-center p-8 text-indigo-500">
+                                <svg
+                                  className="animate-spin h-6 w-6 mr-3"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  />
+                                </svg>
+                                <span className="font-medium">
+                                  Cargando sub-preguntas...
+                                </span>
+                              </div>
+                            ) : subs.length === 0 ? (
+                              <div className="text-center p-6 text-gray-400 italic">
+                                No se encontraron sub-preguntas.
+                              </div>
+                            ) : (
+                              subs.map((sub, idx) => (
+                                <div
+                                  key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`}
+                                  className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                                >
+                                  {/* Header mini */}
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
+                                      {sub.displayIndex}
+                                    </span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase">
+                                      Sub-Pregunta {sub.displayIndex}
+                                    </span>
 
-                        {/* --- CASO 1: PREGUNTA AGRUPADA (Sub-Preguntas mostradas inmediatamente) --- */}
-                        {isParent && (
-                          <div>
-                            <div className="flex items-center gap-2 mb-4 p-3 bg-indigo-50 text-indigo-800 rounded-lg border border-indigo-200 font-bold text-sm uppercase tracking-wide">
-                              <DocumentTextIcon className="w-5 h-5" />
-                              <span>Sub-Preguntas ({subCount})</span>
-                            </div>
-
-                            <div className="space-y-4 pl-4 border-l-2 border-indigo-200">
-                              {isLoadingSubs ? (
-                                <div className="flex items-center justify-center p-8 text-indigo-500">
-                                  <svg
-                                    className="animate-spin h-6 w-6 mr-3"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <circle
-                                      className="opacity-25"
-                                      cx="12"
-                                      cy="12"
-                                      r="10"
-                                      stroke="currentColor"
-                                      strokeWidth="4"
-                                      fill="none"
-                                    />
-                                    <path
-                                      className="opacity-75"
-                                      fill="currentColor"
-                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    />
-                                  </svg>
-                                  <span className="font-medium">
-                                    Cargando sub-preguntas...
-                                  </span>
-                                </div>
-                              ) : subs.length === 0 ? (
-                                <div className="text-center p-6 text-gray-400 italic">
-                                  No se encontraron sub-preguntas.
-                                </div>
-                              ) : (
-                                subs.map((sub, idx) => (
-                                  <div
-                                    key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`}
-                                    className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-                                  >
-                                    {/* Header mini */}
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                        {sub.displayIndex}
-                                      </span>
-                                      <span className="text-xs font-bold text-gray-500 uppercase">
-                                        Sub-Pregunta {sub.displayIndex}
-                                      </span>
-
-                                      <div className="ml-auto flex gap-2">
-                                        <button
-                                          onClick={() =>
-                                            handleDeleteSub(
-                                              sub.examenId,
-                                              sub.preguntaId,
-                                              sub.numero
-                                            )
-                                          }
-                                          disabled={deletingIds.has(
-                                            `${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any
-                                          )}
-                                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-                                        >
-                                          <TrashIcon className="w-4 h-4" />
-                                        </button>
-                                      </div>
+                                    <div className="ml-auto flex gap-2">
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteSub(
+                                            sub.examenId,
+                                            sub.preguntaId,
+                                            sub.numero
+                                          )
+                                        }
+                                        disabled={deletingIds.has(
+                                          `${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any
+                                        )}
+                                        className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                      >
+                                        <TrashIcon className="w-4 h-4" />
+                                      </button>
                                     </div>
+                                  </div>
 
-                                    {/* Enunciado */}
-                                    <div className="mb-4 text-sm text-gray-800 prose max-w-none">
-                                      {sub.enunciados &&
-                                      sub.enunciados.length > 0 ? (
-                                        sub.enunciados.map((e: any) => (
-                                          <HtmlMathRenderer
-                                            key={e.id}
-                                            html={e.contenido}
-                                          />
-                                        ))
-                                      ) : (
+                                  {/* Enunciado */}
+                                  <div className="mb-4 text-sm text-gray-800 prose max-w-none">
+                                    {sub.enunciados &&
+                                    sub.enunciados.length > 0 ? (
+                                      sub.enunciados.map((e: any) => (
                                         <HtmlMathRenderer
-                                          html={sub.enunciado || ''}
+                                          key={e.id}
+                                          html={e.contenido}
                                         />
-                                      )}
-                                    </div>
-
-                                    {/* Imagen */}
-                                    {sub.imagen && (
-                                      <div className="mb-3">
-                                        <img
-                                          src={sub.imagen}
-                                          alt="Pregunta"
-                                          className="max-w-full h-auto rounded border border-gray-200 max-h-48"
-                                        />
-                                      </div>
+                                      ))
+                                    ) : (
+                                      <HtmlMathRenderer
+                                        html={sub.enunciado || ''}
+                                      />
                                     )}
+                                  </div>
 
-                                    {/* Alternativas - mismo grid que individual pero un poco más chico */}
-                                    <div className="grid grid-cols-1 gap-2 mb-4">
-                                      {sub.alternativas && sub.alternativas.length > 0 ? (
-                                        sub.alternativas.map((alt: any) => {
-                                          const respString = sub.respuestaCorrecta?.toString();
-                                          const isCorrect = alt.id.toString() === respString;
+                                  {/* Imagen */}
+                                  {sub.imagen && (
+                                    <div className="mb-3">
+                                      <img
+                                        src={sub.imagen}
+                                        alt="Pregunta"
+                                        className="max-w-full h-auto rounded border border-gray-200 max-h-48"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* Alternativas - mismo grid que individual pero un poco más chico */}
+                                  <div className="grid grid-cols-1 gap-2 mb-4">
+                                    {sub.alternativas &&
+                                    sub.alternativas.length > 0
+                                      ? sub.alternativas.map((alt: any) => {
+                                          const respString =
+                                            sub.respuestaCorrecta?.toString();
+                                          const isCorrect =
+                                            alt.id.toString() === respString;
                                           return (
                                             <div
                                               key={alt.id}
@@ -2238,13 +2450,16 @@ const Recursos = () => {
                                             >
                                               <HtmlMathRenderer
                                                 html={alt.contenido || ''}
-                                                className={`text-sm ${isCorrect ? 'text-green-800 font-medium' : 'text-gray-800'}`}
+                                                className={`text-sm ${
+                                                  isCorrect
+                                                    ? 'text-green-800 font-medium'
+                                                    : 'text-gray-800'
+                                                }`}
                                               />
                                             </div>
                                           );
                                         })
-                                      ) : (
-                                        ['A', 'B', 'C', 'D'].map((opt, i) => {
+                                      : ['A', 'B', 'C', 'D'].map((opt, i) => {
                                           const altText =
                                             opt === 'A'
                                               ? sub.alternativaA
@@ -2294,40 +2509,39 @@ const Recursos = () => {
                                               </div>
                                             </div>
                                           );
-                                        })
+                                        })}
+                                  </div>
+
+                                  {/* Sustento */}
+                                  <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
+                                    <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">
+                                      Sustento:
+                                    </span>
+                                    <div className="italic">
+                                      {sub.sustento ? (
+                                        <HtmlMathRenderer html={sub.sustento} />
+                                      ) : (
+                                        'Sin sustento disponible'
                                       )}
                                     </div>
-
-                                    {/* Sustento */}
-                                    <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
-                                      <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">
-                                        Sustento:
-                                      </span>
-                                      <div className="italic">
-                                        {sub.sustento ? (
-                                          <HtmlMathRenderer
-                                            html={sub.sustento}
-                                          />
-                                        ) : (
-                                          'Sin sustento disponible'
-                                        )}
-                                      </div>
-                                    </div>
                                   </div>
-                                ))
-                              )}
-                            </div>
+                                </div>
+                              ))
+                            )}
                           </div>
-                        )}
+                        </div>
+                      )}
 
-                        {/* --- CASO 2: PREGUNTA INDIVIDUAL --- */}
-                        {!isParent && (
-                          <div>
-                            <div className="grid grid-cols-1 gap-3 mb-4">
-                              {item.alternativas && item.alternativas.length > 0 ? (
-                                item.alternativas.map((alt: any) => {
+                      {/* --- CASO 2: PREGUNTA INDIVIDUAL --- */}
+                      {!isParent && (
+                        <div>
+                          <div className="grid grid-cols-1 gap-3 mb-4">
+                            {item.alternativas && item.alternativas.length > 0
+                              ? item.alternativas.map((alt: any) => {
                                   // Use the raw ID for comparison, same as sub-questions
-                                  const isCorrect = alt.id.toString() === item.respuestaCorrecta?.toString();
+                                  const isCorrect =
+                                    alt.id.toString() ===
+                                    item.respuestaCorrecta?.toString();
                                   return (
                                     <div
                                       key={alt.id}
@@ -2339,13 +2553,16 @@ const Recursos = () => {
                                     >
                                       <HtmlMathRenderer
                                         html={alt.contenido || ''}
-                                        className={`text-sm ${isCorrect ? 'text-green-800 font-medium' : 'text-gray-800'}`}
+                                        className={`text-sm ${
+                                          isCorrect
+                                            ? 'text-green-800 font-medium'
+                                            : 'text-gray-800'
+                                        }`}
                                       />
                                     </div>
                                   );
                                 })
-                              ) : (
-                                ['A', 'B', 'C', 'D'].map((opt, i) => {
+                              : ['A', 'B', 'C', 'D'].map((opt, i) => {
                                   const altText =
                                     opt === 'A'
                                       ? item.alternativaA
@@ -2389,30 +2606,28 @@ const Recursos = () => {
                                       </div>
                                     </div>
                                   );
-                                })
+                                })}
+                          </div>
+
+                          <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
+                            <span className="font-bold text-gray-700 block mb-1">
+                              Sustento:
+                            </span>
+                            <div className="italic">
+                              {item.sustento ? (
+                                <HtmlMathRenderer html={item.sustento} />
+                              ) : (
+                                'Sin sustento disponible'
                               )}
                             </div>
-
-                            <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
-                              <span className="font-bold text-gray-700 block mb-1">
-                                Sustento:
-                              </span>
-                              <div className="italic">
-                                {item.sustento ? (
-                                  <HtmlMathRenderer html={item.sustento} />
-                                ) : (
-                                  'Sin sustento disponible'
-                                )}
-                              </div>
-                            </div>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-
-          </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

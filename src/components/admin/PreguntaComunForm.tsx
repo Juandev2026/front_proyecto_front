@@ -41,6 +41,7 @@ interface PreguntaComunFormProps {
   initialSubQuestions?: any[];
   resolveExamenId: () => Promise<number | null>;
   defaultClasificacionId: number;
+  selectedYear: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -50,6 +51,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   initialSubQuestions,
   resolveExamenId,
   defaultClasificacionId,
+  selectedYear,
   onSuccess,
   onCancel,
 }) => {
@@ -432,7 +434,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
-        year: initialParent?.year || "2024", // Fallback
+        year: initialParent?.year || selectedYear || '2024',
         tipoPreguntaId: 2,
         numero: 0,
         enunciados: [
@@ -447,23 +449,23 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             correctIndex !== -1 ? ['A', 'B', 'C', 'D'][correctIndex] || '' : '';
 
           return {
-            id: (q as any).id || 0,
+            id: initialParent ? (q as any).id || 0 : index + 1, // Force 0 if creating
             numero: index + 1,
             respuestaCorrecta: respuestaChar,
             clasificacionId: q.clasificacionId,
             enunciados: [
               {
-                id: 0,
+                id: index + 1,
                 contenido: serializeBlocks(q.specificStatement),
               },
             ],
             alternativas: q.alternatives.map((alt, altIdx) => ({
-                id: isNaN(Number(alt.id)) ? altIdx + 1 : Number(alt.id),
-                contenido: alt.contenido || ''
+              id: altIdx + 1, // Let the backend iterate correctly as it does on Question type 1
+              contenido: alt.contenido || '',
             })),
             justificaciones: [
               {
-                id: 0,
+                id: index + 1,
                 contenido: q.sustento || '',
               },
             ],
@@ -474,17 +476,19 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       console.log('Payload Atómico:', payload);
 
       if (initialParent) {
-          await preguntaService.update(examenId, initialParent.id, payload);
-          alert('Pregunta común actualizada con éxito');
+        await preguntaService.update(examenId, initialParent.id, payload);
+        alert('Pregunta común actualizada con éxito');
       } else {
-          await preguntaService.create(payload as any);
-          alert('Pregunta común creada con éxito (Padre e Hijos)');
+        await preguntaService.create(payload as any);
+        alert('Pregunta común creada con éxito (Padre e Hijos)');
       }
 
       onSuccess();
     } catch (saveError) {
       console.error('Error al guardar pregunta común atómica:', saveError);
-      alert('Error técnico al guardar la pregunta agrupada. Revisa la consola para más detalles.');
+      alert(
+        'Error técnico al guardar la pregunta agrupada. Revisa la consola para más detalles.'
+      );
     } finally {
       setSaving(false);
     }
