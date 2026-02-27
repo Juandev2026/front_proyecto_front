@@ -89,13 +89,28 @@ export const preguntaService = {
   },
 
   update: async (
-    _examenId: number, // Kept for signature compatibility with components
+    _examenId: number,
     id: number,
     item: Partial<Pregunta>
   ): Promise<Pregunta> => {
     try {
-      // Stripping 'id' from the body as per the provided API schema
-      const { id: _ignoredId, ...payload } = item;
+      const payload = {
+        numero: Number(item.numero),
+        clasificacionId: Number(item.clasificacionId),
+        tipoPreguntaId: Number(item.tipoPreguntaId),
+        respuesta: item.respuesta, // Can be string or number
+        enunciado: item.enunciado,
+        alternativaA: item.alternativaA,
+        alternativaB: item.alternativaB,
+        alternativaC: item.alternativaC,
+        alternativaD: item.alternativaD,
+        sustento: item.sustento,
+        examenId: Number(item.examenId),
+        imagen: item.imagen,
+        enunciados: item.enunciados,
+        alternativas: item.alternativas,
+        justificaciones: item.justificaciones,
+      };
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
@@ -103,13 +118,9 @@ export const preguntaService = {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...payload,
-          numero: Number(payload.numero),
-          clasificacionId: Number(payload.clasificacionId),
-          tipoPreguntaId: Number(payload.tipoPreguntaId),
-        }),
+        body: JSON.stringify(payload),
       });
+
       if (!response.ok) {
         throw new Error('Error al actualizar la pregunta');
       }
@@ -117,7 +128,6 @@ export const preguntaService = {
       const text = await response.text();
       const updatedData = text ? JSON.parse(text) : payload;
 
-      // Ensure the returned object has the ID so UI components can update correctly
       return { ...updatedData, id } as Pregunta;
     } catch (error) {
       throw error;

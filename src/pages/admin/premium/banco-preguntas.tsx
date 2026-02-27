@@ -1166,36 +1166,39 @@ const Recursos = () => {
         return;
       }
 
-      // Ensure we have up to 4 alternatives (A, B, C, D) but only those with content
+      // Format alternatives for rich payload
       const safeAlts = alternatives.map(a => ({ ...a }));
-      // The API expects exactly A, B, C, D fields. If less than 4, D will be empty.
-      // However, the mapping below already handles indexing.
-      // If we have > 4, the backend might only take the first 4.
+      const mappedAlternativas = safeAlts.map((alt, idx) => ({
+        id: isNaN(Number(alt.id)) ? 0 : Number(alt.id),
+        contenido: alt.contenido || '',
+        esCorrecta: alt.esCorrecta,
+      }));
 
-      const mappedAlts = {
+      // Find the answer ID or use original letter/index
+      const finalRespuesta = correctAlt 
+        ? (!isNaN(Number(correctAlt.id)) && Number(correctAlt.id) !== 0 ? Number(correctAlt.id) : ['A', 'B', 'C', 'D'][safeAlts.indexOf(correctAlt)])
+        : '';
+
+      const payload = {
+        numero: numPreguntaParsed,
+        enunciado: newItem.enunciado,
         alternativaA: safeAlts[0]?.contenido || '',
         alternativaB: safeAlts[1]?.contenido || '',
         alternativaC: safeAlts[2]?.contenido || '',
         alternativaD: safeAlts[3]?.contenido || '',
-        respuesta:
-          newItem.tipoPreguntaId === 1
-            ? ['A', 'B', 'C', 'D'][safeAlts.findIndex((a) => a.esCorrecta)] ||
-              ''
-            : '',
-      };
-
-      const payload = {
-        enunciado: newItem.enunciado,
-        alternativaA: mappedAlts.alternativaA,
-        alternativaB: mappedAlts.alternativaB,
-        alternativaC: mappedAlts.alternativaC,
-        alternativaD: mappedAlts.alternativaD,
-        respuesta: mappedAlts.respuesta,
+        respuesta: finalRespuesta,
         sustento: serializeJustification(),
         examenId: targetExamenId,
         clasificacionId: Number(newItem.clasificacionId),
         imagen: finalUrl,
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
+        enunciados: [
+          {
+            id: 0, // Server will handle this
+            contenido: newItem.enunciado,
+          },
+        ],
+        alternativas: mappedAlternativas,
       };
 
       if (editingId) {
