@@ -64,15 +64,51 @@ export interface User {
 export const userService = {
   getAll: async (): Promise<User[]> => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}?page=1&pageSize=9999`, {
         headers: getPublicHeaders(),
       });
       if (!response.ok) {
         throw new Error('Error al obtener usuarios');
       }
-      return await response.json();
+      const result = await response.json();
+      // El backend puede devolver { data: [] } o directamente []
+      return Array.isArray(result) ? result : (result.data ?? []);
     } catch (error) {
-      // Log removed
+      throw error;
+    }
+  },
+
+  getPaginated: async (
+    page: number = 1,
+    pageSize: number = 20,
+    search: string = '',
+    role: string = '',
+    signal?: AbortSignal
+  ): Promise<{ data: User[]; total: number }> => {
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        ...(search ? { search } : {}),
+        ...(role ? { role } : {}),
+      });
+      const response = await fetch(`${API_URL}?${params.toString()}`, {
+        headers: getPublicHeaders(),
+        signal, // Soporte para cancelación
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener usuarios');
+      }
+      const result = await response.json();
+      // Soporte para { data: [], total: N } o array plano
+      if (Array.isArray(result)) {
+        return { data: result, total: result.length };
+      }
+      return {
+        data: result.data ?? [],
+        total: result.total ?? result.totalCount ?? (result.data?.length ?? 0),
+      };
+    } catch (error) {
       throw error;
     }
   },
