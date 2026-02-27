@@ -16,7 +16,8 @@ class MyDocument extends Document {
                 '@context': 'https://schema.org',
                 '@type': 'EducationalOrganization',
                 name: 'Avendocente',
-                description: 'Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato.',
+                description:
+                  'Plataforma educativa con cursos de preparación para nombramiento docente, ascenso y contrato.',
                 url: 'https://www.Avendocente.com',
                 logo: 'https://www.Avendocente.com/assets/images/logo_principal.png',
                 sameAs: [

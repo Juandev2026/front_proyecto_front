@@ -49,7 +49,8 @@ const MathInline = Node.create<MathNodeOptions>({
     return {
       latex: {
         default: '',
-        parseHTML: (element: HTMLElement) => element.getAttribute('data-latex') || '',
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute('data-latex') || '',
         renderHTML: (attributes: Record<string, any>) => ({
           'data-latex': attributes.latex,
         }),

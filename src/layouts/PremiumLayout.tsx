@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+
 import {
   HomeIcon,
   AcademicCapIcon,
@@ -19,8 +18,11 @@ import {
   ViewBoardsIcon,
   UserIcon,
   ChevronDoubleLeftIcon,
-  ChevronDoubleRightIcon
+  ChevronDoubleRightIcon,
 } from '@heroicons/react/outline';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
 import { useAuth } from '../hooks/useAuth';
 
 interface PremiumLayoutProps {
@@ -29,7 +31,11 @@ interface PremiumLayoutProps {
   breadcrumb?: string;
 }
 
-const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashboard', breadcrumb = 'Pages / Dashboard' }) => {
+const PremiumLayout: React.FC<PremiumLayoutProps> = ({
+  children,
+  title = 'Dashboard',
+  breadcrumb = 'Pages / Dashboard',
+}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user, isAuthenticated, loading } = useAuth();
@@ -70,9 +76,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
   // Auto-expand menu based on active route
   useEffect(() => {
-    menuItems.forEach(item => {
+    menuItems.forEach((item) => {
       if (item.children) {
-        const hasActiveChild = item.children.some((child: any) => child.href === router.pathname);
+        const hasActiveChild = item.children.some(
+          (child: any) => child.href === router.pathname
+        );
         if (hasActiveChild) {
           setExpandedMenu(item.name);
         }
@@ -86,10 +94,22 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       href: '/bancoPreguntas',
       icon: AcademicCapIcon,
       children: [
-        { name: 'Banco de Preguntas', href: '/bancoPreguntas', icon: CollectionIcon },
-        { name: 'Simulacro de Examen', href: '/simulacroExamen', icon: ClipboardListIcon },
-        { name: 'Respuestas Erróneas', href: '/respuestasErroneas', icon: ExclamationCircleIcon },
-      ]
+        {
+          name: 'Banco de Preguntas',
+          href: '/bancoPreguntas',
+          icon: CollectionIcon,
+        },
+        {
+          name: 'Simulacro de Examen',
+          href: '/simulacroExamen',
+          icon: ClipboardListIcon,
+        },
+        {
+          name: 'Respuestas Erróneas',
+          href: '/respuestasErroneas',
+          icon: ExclamationCircleIcon,
+        },
+      ],
     },
     {
       name: 'Ascenso',
@@ -97,11 +117,23 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       icon: ChartBarIcon,
       current: false,
       children: [
-        { name: 'Banco de Preguntas', href: '/bancoPreguntasAscenso', icon: CollectionIcon },
-        { name: 'Simulacro de Examen', href: '/simulacroExamenAscenso', icon: ClipboardListIcon },
-        { name: 'Respuestas Erróneas', href: '/respuestasErroneasAscenso', icon: ExclamationCircleIcon },
+        {
+          name: 'Banco de Preguntas',
+          href: '/bancoPreguntasAscenso',
+          icon: CollectionIcon,
+        },
+        {
+          name: 'Simulacro de Examen',
+          href: '/simulacroExamenAscenso',
+          icon: ClipboardListIcon,
+        },
+        {
+          name: 'Respuestas Erróneas',
+          href: '/respuestasErroneasAscenso',
+          icon: ExclamationCircleIcon,
+        },
         { name: 'Recursos', href: '/recursosAscenso', icon: ArchiveIcon },
-      ]
+      ],
     },
     {
       name: 'Directivos',
@@ -109,8 +141,12 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       icon: UserGroupIcon,
       current: false,
       children: [
-        { name: 'Exámenes MINEDU y Simulacros', href: '/examenesDirectivos', icon: FolderIcon }
-      ]
+        {
+          name: 'Exámenes MINEDU y Simulacros',
+          href: '/examenesDirectivos',
+          icon: FolderIcon,
+        },
+      ],
     },
     {
       name: 'Próximamente',
@@ -119,32 +155,39 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       current: false,
       children: [
         { name: 'IA para maestros', href: '#', icon: ChipIcon, locked: true },
-        { name: 'Generador de prompt', href: '#', icon: ViewBoardsIcon, locked: true },
+        {
+          name: 'Generador de prompt',
+          href: '#',
+          icon: ViewBoardsIcon,
+          locked: true,
+        },
         { name: 'Comunidad VIP', href: '#', icon: UserIcon, locked: true },
-      ]
+      ],
     },
   ];
 
   const menuItems = React.useMemo(() => {
-    if (!user?.accesoNombres || user.accesoNombres.length === 0) return allMenuItems;
+    if (!user?.accesoNombres || user.accesoNombres.length === 0)
+      return allMenuItems;
 
-    return allMenuItems.filter(item => {
+    return allMenuItems.filter((item) => {
       // "Próximamente" is always visible
       if (item.name === 'Próximamente') return true;
 
       // Check if item name (e.g. "Nombramiento") is in user.accesoNombres
       // We use case-insensitive matching and handle "Directivo" vs "Directivos"
-      return user.accesoNombres!.some(access => {
+      return user.accesoNombres!.some((access) => {
         const normalizedAccess = access.toLowerCase().trim();
         const normalizedItemName = item.name.toLowerCase().trim();
 
         // Match exact or contains (for cases like "Directivo" matching "Directivos")
-        return normalizedItemName.includes(normalizedAccess) || normalizedAccess.includes(normalizedItemName);
+        return (
+          normalizedItemName.includes(normalizedAccess) ||
+          normalizedAccess.includes(normalizedItemName)
+        );
       });
     });
   }, [user?.accesoNombres]);
-
-
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">
@@ -165,18 +208,28 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         fixed inset-y-0 left-0 z-50 bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         ${isCollapsed ? 'w-20' : 'w-72'}
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
-      `}>
+      `}
+      >
         {/* Logo Area */}
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-40 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}>
+        <div
+          className={`flex items-center ${
+            isCollapsed ? 'justify-center' : 'justify-between'
+          } h-40 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}
+        >
           {!isCollapsed && (
             <Link href="/">
               <a className="flex items-center gap-2 group">
-                <img src="/assets/images/logo_principal1.png" alt="Avendo" className="h-32 w-auto object-contain" />
+                <img
+                  src="/assets/images/logo_principal1.png"
+                  alt="Avendo"
+                  className="h-32 w-auto object-contain"
+                />
               </a>
             </Link>
           )}
@@ -184,7 +237,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden md:block text-gray-400 hover:text-[#4790FD] transition-colors focus:outline-none"
           >
-            {isCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6" /> : <ChevronDoubleLeftIcon className="h-6 w-6" />}
+            {isCollapsed ? (
+              <ChevronDoubleRightIcon className="h-6 w-6" />
+            ) : (
+              <ChevronDoubleLeftIcon className="h-6 w-6" />
+            )}
           </button>
           <button
             className="md:hidden text-gray-400 hover:text-gray-600"
@@ -207,21 +264,31 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                   <button
                     onClick={() => {
                       if (isCollapsed) setIsCollapsed(false);
-                      toggleSubMenu(item.name)
+                      toggleSubMenu(item.name);
                     }}
                     className={`
                       w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
-                      ${isExpanded
-                        ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
-                        : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'}
+                      ${
+                        isExpanded
+                          ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'
+                      }
                     `}
                     title={isCollapsed ? item.name : ''}
                   >
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
+                    <div
+                      className={`flex items-center ${
+                        isCollapsed ? 'justify-center w-full' : ''
+                      }`}
+                    >
                       <item.icon
                         className={`
                           h-6 w-6 flex-shrink-0 transition-colors
-                          ${isExpanded ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#4790FD]'}
+                          ${
+                            isExpanded
+                              ? 'text-white'
+                              : 'text-[#A3AED0] group-hover:text-[#4790FD]'
+                          }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
                         `}
                       />
@@ -230,12 +297,19 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                     {/* Arrow Icon */}
                     {!isCollapsed && (
                       <svg
-                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     )}
                   </button>
@@ -244,9 +318,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                     <a
                       className={`
                         group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
-                        ${isActive
-                          ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
-                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'}
+                        ${
+                          isActive
+                            ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                            : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'
+                        }
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
                       title={isCollapsed ? item.name : ''}
@@ -254,7 +330,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                       <item.icon
                         className={`
                            flex-shrink-0 transition-colors
-                          ${isActive ? 'text-white' : 'text-[#A3AED0] group-hover:text-[#4790FD]'}
+                          ${
+                            isActive
+                              ? 'text-white'
+                              : 'text-[#A3AED0] group-hover:text-[#4790FD]'
+                          }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
                         `}
                       />
@@ -270,17 +350,27 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
                       const isChildActive = router.pathname === child.href;
                       return (
                         <Link key={child.name} href={child.href}>
-                          <a className={`
+                          <a
+                            className={`
                               flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200
-                              ${child.locked
-                                ? 'text-gray-400 cursor-not-allowed opacity-75'
-                                : isChildActive 
-                                  ? 'bg-blue-50 text-[#4790FD] shadow-sm' 
-                                  : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'}
-                           `}>
+                              ${
+                                child.locked
+                                  ? 'text-gray-400 cursor-not-allowed opacity-75'
+                                  : isChildActive
+                                  ? 'bg-blue-50 text-[#4790FD] shadow-sm'
+                                  : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'
+                              }
+                           `}
+                          >
                             <div className="flex items-center">
                               {child.icon && (
-                                <child.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${isChildActive ? 'text-[#4790FD]' : 'text-[#A3AED0]'}`} />
+                                <child.icon
+                                  className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                                    isChildActive
+                                      ? 'text-[#4790FD]'
+                                      : 'text-[#A3AED0]'
+                                  }`}
+                                />
                               )}
                               {child.name}
                             </div>
@@ -319,11 +409,18 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
           ) : (
             <div className="flex flex-col gap-2 items-center">
               <Link href="/">
-                <a className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]" title="Volver a Inicio">
+                <a
+                  className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
+                  title="Volver a Inicio"
+                >
                   <HomeIcon className="h-6 w-6" />
                 </a>
               </Link>
-              <button onClick={handleLogout} className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600" title="Cerrar Sesión">
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600"
+                title="Cerrar Sesión"
+              >
                 <LogoutIcon className="h-6 w-6" />
               </button>
             </div>
@@ -333,7 +430,6 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
 
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F4F7FE]">
-
         {/* Top Header (Desktop & Mobile) */}
         <header className="bg-white flex items-center justify-between px-6 py-4 border-b border-gray-100 md:bg-transparent md:border-none md:shadow-none">
           <div className="flex items-center gap-4">
@@ -347,15 +443,21 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({ children, title = 'Dashbo
             {/* Breadcrumb / Page Title Placeholder */}
             <div className="hidden md:block">
               <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
-              <h1 className="text-2xl font-bold text-[#4790FD] mt-1">{title}</h1>
+              <h1 className="text-2xl font-bold text-[#4790FD] mt-1">
+                {title}
+              </h1>
             </div>
           </div>
 
           {/* Right Side: Profile & Actions */}
           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
             <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-sm font-bold text-[#4790FD] leading-tight">{user?.name || 'Usuario'}</span>
-              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">{user?.role?.toUpperCase()}</span>
+              <span className="text-sm font-bold text-[#4790FD] leading-tight">
+                {user?.name || 'Usuario'}
+              </span>
+              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
+                {user?.role?.toUpperCase()}
+              </span>
             </div>
             <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
               {(user?.name || 'U').charAt(0).toUpperCase()}

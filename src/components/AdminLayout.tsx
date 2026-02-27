@@ -10,7 +10,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [fullName, setFullName] = useState('');
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    Premium: true
+    Premium: true,
   });
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -21,16 +21,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
     if (!token) {
       router.push('/login');
+    } else if (
+      role?.toUpperCase() === 'ADMIN' ||
+      role?.toUpperCase() === 'SUBADMIN'
+    ) {
+      setIsAuthorized(true);
+      setFullName(storedName || 'Admin User');
     } else {
-      if (
-        role?.toUpperCase() === 'ADMIN' ||
-        role?.toUpperCase() === 'SUBADMIN'
-      ) {
-        setIsAuthorized(true);
-        setFullName(storedName || 'Admin User');
-      } else {
-        router.push('/');
-      }
+      router.push('/');
     }
   }, [router]);
 
@@ -65,11 +63,23 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </svg>
       ),
       children: [
-        { name: 'Gestión Docentes', href: '/admin/premium/docentes', icon: null },
-        { name: 'Banco de Preguntas', href: '/admin/premium/banco-preguntas', icon: null },
+        {
+          name: 'Gestión Docentes',
+          href: '/admin/premium/docentes',
+          icon: null,
+        },
+        {
+          name: 'Banco de Preguntas',
+          href: '/admin/premium/banco-preguntas',
+          icon: null,
+        },
         { name: 'Recursos', href: '/admin/premium/recursos', icon: null },
-        { name: 'Gestión Secciones', href: '/admin/premium/secciones', icon: null },
-      ]
+        {
+          name: 'Gestión Secciones',
+          href: '/admin/premium/secciones',
+          icon: null,
+        },
+      ],
     },
     {
       name: 'Dashboard',
@@ -322,9 +332,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const toggleMenu = (name: string) => {
     if (isCollapsed) return; // Disable sub-menu toggling when collapsed
-    setExpandedMenus(prev => ({
+    setExpandedMenus((prev) => ({
       ...prev,
-      [name]: !prev[name]
+      [name]: !prev[name],
     }));
   };
 
@@ -332,14 +342,23 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="h-screen bg-white flex overflow-hidden">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
+        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
-        <div className={`flex items-center h-40 border-b border-gray-100 flex-shrink-0 transition-all ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
+        <div
+          className={`flex items-center h-40 border-b border-gray-100 flex-shrink-0 transition-all ${
+            isCollapsed ? 'justify-center' : 'justify-between px-6'
+          }`}
+        >
           {!isCollapsed && (
             <Link href="/admin">
               <a className="flex items-center">
-                <img src="/assets/images/logo_principal1.png" alt="Avendo" className="h-28 w-auto object-contain" />
+                <img
+                  src="/assets/images/logo_principal1.png"
+                  alt="Avendo"
+                  className="h-28 w-auto object-contain"
+                />
               </a>
             </Link>
           )}
@@ -348,15 +367,37 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden md:flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none"
-            title={isCollapsed ? "Expandir" : "Contraer"}
+            title={isCollapsed ? 'Expandir' : 'Contraer'}
           >
             {isCollapsed ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                />
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                />
               </svg>
             )}
           </button>
@@ -368,13 +409,16 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               {!item.children ? (
                 <Link href={item.href}>
                   <a
-                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${router.pathname === item.href
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-blue-100'
-                      } ${isCollapsed ? 'justify-center' : ''}`}
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      router.pathname === item.href
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-blue-100'
+                    } ${isCollapsed ? 'justify-center' : ''}`}
                     title={isCollapsed ? item.name : ''}
                   >
-                    <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
+                    <span className={`${isCollapsed ? '' : 'mr-3'}`}>
+                      {item.icon}
+                    </span>
                     {!isCollapsed && item.name}
                   </a>
                 </Link>
@@ -382,20 +426,24 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <>
                   <button
                     onClick={() => toggleMenu(item.name)}
-                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${expandedMenus[item.name]
-                      ? 'bg-blue-50 text-primary'
-                      : 'text-gray-700 hover:bg-blue-100'
-                      } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      expandedMenus[item.name]
+                        ? 'bg-blue-50 text-primary'
+                        : 'text-gray-700 hover:bg-blue-100'
+                    } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
                     title={isCollapsed ? item.name : ''}
                   >
                     <div className="flex items-center">
-                      <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
+                      <span className={`${isCollapsed ? '' : 'mr-3'}`}>
+                        {item.icon}
+                      </span>
                       {!isCollapsed && item.name}
                     </div>
                     {!isCollapsed && (
                       <svg
-                        className={`w-4 h-4 transform transition-transform duration-200 ${expandedMenus[item.name] ? 'rotate-180' : ''
-                          }`}
+                        className={`w-4 h-4 transform transition-transform duration-200 ${
+                          expandedMenus[item.name] ? 'rotate-180' : ''
+                        }`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -411,21 +459,24 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   </button>
                   {expandedMenus[item.name] && !isCollapsed && (
                     <div className="bg-blue-50 rounded-b-lg mb-2 space-y-1 pb-2">
-                      {item.children.map((subItem) => (
+                      {item.children.map((subItem) =>
                         subItem.href === '#' ? null : (
                           <Link key={subItem.name} href={subItem.href}>
                             <a
-                              className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${router.pathname === subItem.href
-                                ? 'text-primary bg-blue-100'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
-                                }`}
+                              className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                router.pathname === subItem.href
+                                  ? 'text-primary bg-blue-100'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
+                              }`}
                             >
-                              {subItem.icon && <span className="mr-2">{subItem.icon}</span>}
+                              {subItem.icon && (
+                                <span className="mr-2">{subItem.icon}</span>
+                              )}
                               {subItem.name}
                             </a>
                           </Link>
                         )
-                      ))}
+                      )}
                     </div>
                   )}
                 </>
@@ -435,8 +486,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="pt-4 mt-4 border-t border-gray-200">
             <button
               onClick={() => setIsLogoutModalOpen(true)}
-              className={`w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none ${isCollapsed ? 'justify-center' : ''}`}
-              title={isCollapsed ? "Cerrar Sesión" : ""}
+              className={`w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none ${
+                isCollapsed ? 'justify-center' : ''
+              }`}
+              title={isCollapsed ? 'Cerrar Sesión' : ''}
             >
               <span className={`${isCollapsed ? '' : 'mr-3'}`}>
                 <svg
@@ -453,7 +506,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   ></path>
                 </svg>
               </span>
-              {!isCollapsed && "Cerrar Sesión"}
+              {!isCollapsed && 'Cerrar Sesión'}
             </button>
           </div>
         </nav>

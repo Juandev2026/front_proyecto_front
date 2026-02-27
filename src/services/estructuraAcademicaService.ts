@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
 import { PreguntaExamen } from '../types/examen';
+import { getAuthHeaders } from '../utils/apiUtils';
 
 export interface Especialidad {
   id: number;
@@ -26,11 +26,12 @@ export const estructuraAcademicaService = {
       const response = await fetch(`${API_BASE_URL}/Examenes/grouped-simple`, {
         headers: getAuthHeaders(),
       });
-      if (!response.ok) throw new Error('Error al obtener estructura académica');
+      if (!response.ok)
+        throw new Error('Error al obtener estructura académica');
       const groupedData = await response.json();
-      
+
       const modMap = new Map<number, Modalidad>();
-      
+
       groupedData.forEach((tipo: any) => {
         tipo.fuentes.forEach((fuente: any) => {
           fuente.modalidades.forEach((m: any) => {
@@ -38,32 +39,42 @@ export const estructuraAcademicaService = {
               modMap.set(m.modalidadId, {
                 id: m.modalidadId,
                 nombre: m.modalidadNombre,
-                niveles: []
+                niveles: [],
               });
             }
-            
+
             const modEntry = modMap.get(m.modalidadId)!;
-            
+
             m.niveles.forEach((n: any) => {
-              if (n.nivelNombre && n.nivelNombre.toUpperCase() === 'NINGUNO') return;
-              
-              let nivEntry = modEntry.niveles.find(nx => nx.id === n.nivelId);
+              if (n.nivelNombre && n.nivelNombre.toUpperCase() === 'NINGUNO')
+                return;
+
+              let nivEntry = modEntry.niveles.find((nx) => nx.id === n.nivelId);
               if (!nivEntry) {
                 nivEntry = {
                   id: n.nivelId,
                   nombre: n.nivelNombre,
                   especialidades: [],
-                  anios: []
+                  anios: [],
                 };
                 modEntry.niveles.push(nivEntry);
               }
-              
+
               n.especialidades.forEach((e: any) => {
-                if (e.especialidadNombre && e.especialidadNombre.toUpperCase() === 'NINGUNO') return;
-                if (e.especialidadId !== null && !nivEntry!.especialidades.some(ex => ex.id === e.especialidadId)) {
+                if (
+                  e.especialidadNombre &&
+                  e.especialidadNombre.toUpperCase() === 'NINGUNO'
+                )
+                  return;
+                if (
+                  e.especialidadId !== null &&
+                  !nivEntry!.especialidades.some(
+                    (ex) => ex.id === e.especialidadId
+                  )
+                ) {
                   nivEntry!.especialidades.push({
                     id: e.especialidadId,
-                    nombre: e.especialidadNombre || ''
+                    nombre: e.especialidadNombre || '',
                   });
                 }
               });
@@ -71,7 +82,7 @@ export const estructuraAcademicaService = {
           });
         });
       });
-      
+
       return Array.from(modMap.values());
     } catch (error) {
       console.error('Error fetching estructura académica:', error);
@@ -81,9 +92,12 @@ export const estructuraAcademicaService = {
 
   getAgrupados: async (): Promise<Modalidad[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/FiltrosEstructura/agrupados`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/FiltrosEstructura/agrupados`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al obtener filtros agrupados');
       return await response.json();
     } catch (error) {
@@ -92,7 +106,11 @@ export const estructuraAcademicaService = {
     }
   },
 
-  getConteoPreguntas: async (modalidadId: number, nivelId: number, year: string): Promise<any> => {
+  getConteoPreguntas: async (
+    modalidadId: number,
+    nivelId: number,
+    year: string
+  ): Promise<any> => {
     try {
       const url = `${API_BASE_URL}/FiltrosEstructura/conteo-preguntas?modalidadId=${modalidadId}&nivelId=${nivelId}&year=${year}`;
       const response = await fetch(url, {
@@ -106,14 +124,20 @@ export const estructuraAcademicaService = {
     }
   },
 
-  getPreguntas: async (modalidadId: number, nivelId: number, year: string, especialidadId?: number, clasificacionIds?: number[]): Promise<PreguntaExamen[]> => {
+  getPreguntas: async (
+    modalidadId: number,
+    nivelId: number,
+    year: string,
+    especialidadId?: number,
+    clasificacionIds?: number[]
+  ): Promise<PreguntaExamen[]> => {
     try {
       let url = `${API_BASE_URL}/FiltrosEstructura/preguntas?modalidadId=${modalidadId}&nivelId=${nivelId}&year=${year}`;
       if (especialidadId) {
         url += `&especialidadId=${especialidadId}`;
       }
       if (clasificacionIds && clasificacionIds.length > 0) {
-        clasificacionIds.forEach(id => {
+        clasificacionIds.forEach((id) => {
           url += `&clasificacionIds=${id}`;
         });
       }
@@ -121,23 +145,63 @@ export const estructuraAcademicaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener preguntas');
-      const data = await response.json() as PreguntaExamen[];
-      
-      // Deduplicar: Si una pregunta aparece tanto en el nivel superior como en el arreglo de subPreguntas
-      // de otra pregunta (común en situaciones), la filtramos del nivel superior para evitar
-      // duplicidad de pantallas y de conteos de puntos/tiempo.
+      const data = (await response.json()) as PreguntaExamen[];
+
       const subEnunciados = new Set<string>();
-      data.forEach(q => {
+      data.forEach((q) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach(sub => {
+          q.subPreguntas.forEach((sub) => {
             if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
           });
         }
       });
 
-      return data.filter(q => !subEnunciados.has(q.enunciado?.trim()));
+      return data.filter((q) => !subEnunciados.has(q.enunciado?.trim()));
     } catch (error) {
       console.error('Error fetching questions:', error);
+      throw error;
+    }
+  },
+
+  // --- NUEVA FUNCIÓN AÑADIDA AQUÍ ---
+  getPreguntasByFilter: async (payload: {
+    tipoExamenId: number;
+    fuenteId: number;
+    modalidadId: number;
+    nivelId: number;
+    especialidadId: number;
+    year: string;
+    clasificaciones?: number[];
+  }): Promise<PreguntaExamen[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/Preguntas/examen-filter`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener preguntas filtradas');
+      }
+
+      const data = (await response.json()) as PreguntaExamen[];
+
+      // Mantenemos la misma lógica de deduplicación que usabas en getPreguntas
+      const subEnunciados = new Set<string>();
+      data.forEach((q) => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          q.subPreguntas.forEach((sub) => {
+            if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
+          });
+        }
+      });
+
+      return data.filter((q) => !subEnunciados.has(q.enunciado?.trim()));
+    } catch (error) {
+      console.error('Error fetching questions by filter:', error);
       throw error;
     }
   },

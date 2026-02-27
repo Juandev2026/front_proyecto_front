@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import { authService } from '../services/authService';
 
 export const useAuth = () => {
@@ -21,16 +22,23 @@ export const useAuth = () => {
     let userId = localStorage.getItem('userId');
     let nivelId = localStorage.getItem('nivelId');
     let role = localStorage.getItem('role');
-    let especialidad = localStorage.getItem('especialidad');
+    const especialidad = localStorage.getItem('especialidad');
     let especialidadId = localStorage.getItem('especialidadId');
-    let accesoNombresRaw = localStorage.getItem('accesoNombres');
-    let accesoIdsRaw = localStorage.getItem('accesoIds');
-    let fechaExpiracion = localStorage.getItem('fechaExpiracion');
+    const accesoNombresRaw = localStorage.getItem('accesoNombres');
+    const accesoIdsRaw = localStorage.getItem('accesoIds');
+    const fechaExpiracion = localStorage.getItem('fechaExpiracion');
 
     // Clean up invalid strings
-    if (userId === 'undefined' || userId === 'null' || userId === 'NaN') userId = null;
-    if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN') nivelId = null;
-    if (especialidadId === 'undefined' || especialidadId === 'null' || especialidadId === 'NaN') especialidadId = null;
+    if (userId === 'undefined' || userId === 'null' || userId === 'NaN')
+      userId = null;
+    if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN')
+      nivelId = null;
+    if (
+      especialidadId === 'undefined' ||
+      especialidadId === 'null' ||
+      especialidadId === 'NaN'
+    )
+      especialidadId = null;
     if (role === 'undefined' || role === 'null') role = null;
 
     if (token) {
@@ -43,13 +51,26 @@ export const useAuth = () => {
 
             // Full Name
             if (!fullName) {
-              fullName = payload.FullName || payload.fullName || payload.name || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+              fullName =
+                payload.FullName ||
+                payload.fullName ||
+                payload.name ||
+                payload[
+                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
+                ];
               if (fullName) localStorage.setItem('fullName', fullName);
             }
 
             // User ID
             if (!userId) {
-              const extractedId = payload.id || payload.Id || payload.sub || payload.nameid || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+              const extractedId =
+                payload.id ||
+                payload.Id ||
+                payload.sub ||
+                payload.nameid ||
+                payload[
+                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+                ];
               if (extractedId) {
                 userId = String(extractedId);
                 localStorage.setItem('userId', userId);
@@ -58,7 +79,15 @@ export const useAuth = () => {
 
             // Role - Enhanced Extraction
             if (!role) {
-              role = payload.role || payload.Role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'];
+              role =
+                payload.role ||
+                payload.Role ||
+                payload[
+                  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+                ] ||
+                payload[
+                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'
+                ];
               if (role) localStorage.setItem('role', role);
             }
           }
@@ -68,18 +97,20 @@ export const useAuth = () => {
       }
 
       setIsAuthenticated(true);
-      
+
       // Initial user object from localStorage
       const parsedId = userId ? Number(userId) : undefined;
       const parsedNivelId = nivelId ? Number(nivelId) : undefined;
-      const parsedEspecialidadId = especialidadId ? Number(especialidadId) : undefined;
-      
+      const parsedEspecialidadId = especialidadId
+        ? Number(especialidadId)
+        : undefined;
+
       let accesoNombres: string[] = [];
       if (accesoNombresRaw) {
         try {
           accesoNombres = JSON.parse(accesoNombresRaw);
         } catch (e) {
-          console.error("Error parsing accesoNombres from localStorage:", e);
+          console.error('Error parsing accesoNombres from localStorage:', e);
         }
       }
 
@@ -88,12 +119,16 @@ export const useAuth = () => {
         try {
           accesoIds = JSON.parse(accesoIdsRaw);
         } catch (e) {
-          console.error("Error parsing accesoIds from localStorage:", e);
+          console.error('Error parsing accesoIds from localStorage:', e);
         }
       }
 
       let finalInitialRole = role;
-      if (fechaExpiracion && fechaExpiracion !== '-' && role?.toUpperCase() === 'PREMIUM') {
+      if (
+        fechaExpiracion &&
+        fechaExpiracion !== '-' &&
+        role?.toUpperCase() === 'PREMIUM'
+      ) {
         const expDate = new Date(fechaExpiracion);
         if (expDate < new Date()) {
           finalInitialRole = 'Client';
@@ -108,7 +143,9 @@ export const useAuth = () => {
         accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
         accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
         especialidad: especialidad || undefined,
-        especialidadId: !isNaN(parsedEspecialidadId!) ? parsedEspecialidadId : undefined,
+        especialidadId: !isNaN(parsedEspecialidadId!)
+          ? parsedEspecialidadId
+          : undefined,
       };
 
       setUser(initialUser);
@@ -117,22 +154,42 @@ export const useAuth = () => {
       const verifyStatus = async () => {
         try {
           const status = await authService.checkStatus();
-          
+
           // Full sync from backend status
           if (status) {
             // Update localStorage
             if (status.role) localStorage.setItem('role', status.role);
-            if (status.fullName) localStorage.setItem('fullName', status.fullName);
-            if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
-            if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
-            if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
-            if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
-            if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
-            if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
+            if (status.fullName)
+              localStorage.setItem('fullName', status.fullName);
+            if (status.nivelId)
+              localStorage.setItem('nivelId', String(status.nivelId));
+            if (status.accesoNombres)
+              localStorage.setItem(
+                'accesoNombres',
+                JSON.stringify(status.accesoNombres)
+              );
+            if (status.accesoIds)
+              localStorage.setItem(
+                'accesoIds',
+                JSON.stringify(status.accesoIds)
+              );
+            if (status.especialidad)
+              localStorage.setItem('especialidad', status.especialidad);
+            if (status.especialidadId)
+              localStorage.setItem(
+                'especialidadId',
+                String(status.especialidadId)
+              );
+            if (status.fechaExpiracion)
+              localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
 
             // Role override logic: if expired, force Client in frontend
             let currentRole = status.role || role;
-            if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
+            if (
+              status.fechaExpiracion &&
+              status.fechaExpiracion !== '-' &&
+              currentRole?.toUpperCase() === 'PREMIUM'
+            ) {
               const expDate = new Date(status.fechaExpiracion);
               if (expDate < new Date()) {
                 currentRole = 'Client';
@@ -153,7 +210,7 @@ export const useAuth = () => {
           }
         } catch (error) {
           // If status fails, token might be invalid/expired
-          console.error("Session verification failed", error);
+          console.error('Session verification failed', error);
           // Optional: clear session if 401/403
           // localStorage.clear();
           // setIsAuthenticated(false);

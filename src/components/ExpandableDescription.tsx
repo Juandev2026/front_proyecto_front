@@ -23,10 +23,10 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
   // Assuming average line-height of 1.75rem (28px) for prose content
   const getMaxHeight = () => {
     const lineHeightMap: { [key: number]: string } = {
-      3: '5.25rem',  // 3 * 1.75rem
-      4: '7rem',     // 4 * 1.75rem
-      5: '8.75rem',  // 5 * 1.75rem
-      6: '10.5rem',  // 6 * 1.75rem
+      3: '5.25rem', // 3 * 1.75rem
+      4: '7rem', // 4 * 1.75rem
+      5: '8.75rem', // 5 * 1.75rem
+      6: '10.5rem', // 6 * 1.75rem
     };
     return lineHeightMap[maxLines] || '8.75rem';
   };
@@ -106,4 +106,3 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
 };
 
 export default ExpandableDescription;
-

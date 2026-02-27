@@ -41,7 +41,9 @@ export const normasLegalesService = {
     }
   },
 
-  create: async (norma: Omit<NormaLegal, 'id' | 'fechaCreacion'>): Promise<NormaLegal> => {
+  create: async (
+    norma: Omit<NormaLegal, 'id' | 'fechaCreacion'>
+  ): Promise<NormaLegal> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',

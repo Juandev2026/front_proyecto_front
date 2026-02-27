@@ -14,7 +14,6 @@ import {
 } from '../../services/especialidadesService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
-import { uploadService } from '../../services/uploadService';
 
 type TabType = 'modalidades' | 'niveles' | 'especialidades';
 
@@ -23,9 +22,10 @@ const AcademicStructure = () => {
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
   const [niveles, setNiveles] = useState<Nivel[]>([]);
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
-  
+
   // Filter State
-  const [selectedModalidadFilter, setSelectedModalidadFilter] = useState<number>(0);
+  const [selectedModalidadFilter, setSelectedModalidadFilter] =
+    useState<number>(0);
 
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,37 +140,40 @@ const AcademicStructure = () => {
   });
   const [file, setFile] = useState<File | null>(null);
 
-  const fetchData = useCallback(async (forceFresh = false) => {
-    setLoading(true);
+  const fetchData = useCallback(
+    async (forceFresh = false) => {
+      setLoading(true);
 
-    // Fetch Modalidades
-    try {
-      const modalidesResponse = await modalidadService.getAll();
-      setModalidades(modalidesResponse);
-    } catch (error) {
-      console.error('Error fetching modalidades:', error);
-    }
-
-    // Fetch Niveles
-    try {
-      const nivelesResponse = await nivelService.getAll();
-      setNiveles(nivelesResponse);
-    } catch (error) {
-      console.error('Error fetching niveles:', error);
-    }
-
-    // Fetch Especialidades (if active tab)
-    if (activeTab === 'especialidades') {
+      // Fetch Modalidades
       try {
-        const especialidadesResponse = await especialidadesService.getAll();
-        setEspecialidades(especialidadesResponse);
+        const modalidesResponse = await modalidadService.getAll();
+        setModalidades(modalidesResponse);
       } catch (error) {
-        console.error('Error fetching especialidades:', error);
+        console.error('Error fetching modalidades:', error);
       }
-    }
 
-    setLoading(false);
-  }, [activeTab]);
+      // Fetch Niveles
+      try {
+        const nivelesResponse = await nivelService.getAll();
+        setNiveles(nivelesResponse);
+      } catch (error) {
+        console.error('Error fetching niveles:', error);
+      }
+
+      // Fetch Especialidades (if active tab)
+      if (activeTab === 'especialidades') {
+        try {
+          const especialidadesResponse = await especialidadesService.getAll();
+          setEspecialidades(especialidadesResponse);
+        } catch (error) {
+          console.error('Error fetching especialidades:', error);
+        }
+      }
+
+      setLoading(false);
+    },
+    [activeTab]
+  );
 
   useEffect(() => {
     fetchData();
@@ -236,19 +239,25 @@ const AcademicStructure = () => {
       fetchData();
     } catch (error: any) {
       // console.error('Error deleting item:', error);
-      alert(error.message || 'Error al eliminar el elemento. Asegúrese de que no tenga dependencias.');
+      alert(
+        error.message ||
+          'Error al eliminar el elemento. Asegúrese de que no tenga dependencias.'
+      );
     }
   };
 
   const openModal = (item?: Modalidad | Nivel | Especialidad) => {
     if (item) {
       setEditingId(item.id);
-      
+
       // Extract modalidadId from modalidadIds array (API now returns array)
       let modalidadId = 0;
       if (activeTab === 'niveles') {
         const nivel = item as Nivel;
-        if (Array.isArray(nivel.modalidadIds) && nivel.modalidadIds.length > 0) {
+        if (
+          Array.isArray(nivel.modalidadIds) &&
+          nivel.modalidadIds.length > 0
+        ) {
           modalidadId = nivel.modalidadIds[0]!; // Safe because we check length > 0
         } else if (typeof nivel.modalidadIds === 'number') {
           modalidadId = nivel.modalidadIds;
@@ -257,18 +266,21 @@ const AcademicStructure = () => {
           modalidadId = nivel.modalidadId;
         }
       }
-      
+
       // Extract nivelId from array format for especialidades
       let nivelId = 0;
       if (activeTab === 'especialidades') {
         const especialidad = item as Especialidad;
-        if (Array.isArray(especialidad.nivelId) && especialidad.nivelId.length > 0) {
+        if (
+          Array.isArray(especialidad.nivelId) &&
+          especialidad.nivelId.length > 0
+        ) {
           nivelId = especialidad.nivelId[0]!; // Safe because we check length > 0
         } else if (typeof especialidad.nivelId === 'number') {
           nivelId = especialidad.nivelId;
         }
       }
-      
+
       setFormData({
         nombre: item.nombre,
         imageUrl: (item as Nivel).imageUrl || '',
@@ -312,13 +324,15 @@ const AcademicStructure = () => {
     currentData = modalidades;
   } else if (activeTab === 'niveles') {
     if (selectedModalidadFilter !== 0) {
-      currentData = niveles.filter(n => {
+      currentData = niveles.filter((n) => {
         // Handle both array and single number formats
         if (Array.isArray(n.modalidadIds)) {
           return n.modalidadIds.includes(selectedModalidadFilter);
-        } else if (typeof n.modalidadIds === 'number') {
+        }
+        if (typeof n.modalidadIds === 'number') {
           return n.modalidadIds === selectedModalidadFilter;
-        } else if (n.modalidadId) {
+        }
+        if (n.modalidadId) {
           return n.modalidadId === selectedModalidadFilter;
         }
         return false;
@@ -355,24 +369,28 @@ const AcademicStructure = () => {
           <TabButton type="niveles" label="Niveles" />
           <TabButton type="especialidades" label="Especialidades" />
         </div>
-        
+
         {activeTab === 'niveles' && (
           <div className="flex justify-end p-2">
-             <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Filtrar por Modalidad:</label>
-                <select
-                  className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
-                  value={selectedModalidadFilter}
-                  onChange={(e) => setSelectedModalidadFilter(Number(e.target.value))}
-                >
-                  <option value={0}>Todas las Modalidades</option>
-                  {modalidades.map((mod) => (
-                    <option key={mod.id} value={mod.id}>
-                      {mod.nombre}
-                    </option>
-                  ))}
-                </select>
-             </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">
+                Filtrar por Modalidad:
+              </label>
+              <select
+                className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
+                value={selectedModalidadFilter}
+                onChange={(e) =>
+                  setSelectedModalidadFilter(Number(e.target.value))
+                }
+              >
+                <option value={0}>Todas las Modalidades</option>
+                {modalidades.map((mod) => (
+                  <option key={mod.id} value={mod.id}>
+                    {mod.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
       </div>
@@ -411,125 +429,140 @@ const AcademicStructure = () => {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre
-              </th>
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
 
-              {activeTab === 'niveles' && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Modalidad
+                {activeTab === 'niveles' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Modalidad
+                  </th>
+                )}
+                {activeTab === 'especialidades' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nivel
+                  </th>
+                )}
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
                 </th>
-              )}
-              {activeTab === 'especialidades' && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nivel
-                </th>
-              )}
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading && (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  Cargando...
-                </td>
               </tr>
-            )}
-            {!loading && currentData.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No hay registros.
-                </td>
-              </tr>
-            )}
-            {!loading &&
-              currentData.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.nombre}
-                  </td>
-                  {activeTab === 'niveles' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(() => {
-                        const modalidad = (item as Nivel).modalidad;
-                        if (!modalidad) return '-';
-                        if (typeof modalidad === 'string') return modalidad;
-                        if (Array.isArray(modalidad)) return modalidad.join(', ');
-                        return '-';
-                      })()}
-                    </td>
-                  )}
-                  {activeTab === 'especialidades' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(() => {
-                        const especialidad = item as Especialidad;
-                        const nivelId = especialidad.nivelId;
-                        
-                        // Handle nivelId as array or number
-                        if (Array.isArray(nivelId)) {
-                          const nivelNames = nivelId
-                            .map(id => niveles.find(n => n.id === id)?.nombre)
-                            .filter(Boolean);
-                          return nivelNames.length > 0 ? nivelNames.join(', ') : '-';
-                        } else if (typeof nivelId === 'number') {
-                          return niveles.find(n => n.id === nivelId)?.nombre || '-';
-                        }
-                        
-                        // Fallback to nivel object if available
-                        return especialidad.nivel?.nombre || '-';
-                      })()}
-                    </td>
-                  )}
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleView(item)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                      title="Ver Detalles"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => openModal(item as any)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      title="Editar"
-                    >
-                      <PencilIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Eliminar"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    Cargando...
                   </td>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              )}
+              {!loading && currentData.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    No hay registros.
+                  </td>
+                </tr>
+              )}
+              {!loading &&
+                currentData.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.nombre}
+                    </td>
+                    {activeTab === 'niveles' && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(() => {
+                          const { modalidad } = item as Nivel;
+                          if (!modalidad) return '-';
+                          if (typeof modalidad === 'string') return modalidad;
+                          if (Array.isArray(modalidad))
+                            return modalidad.join(', ');
+                          return '-';
+                        })()}
+                      </td>
+                    )}
+                    {activeTab === 'especialidades' && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(() => {
+                          const especialidad = item as Especialidad;
+                          const { nivelId } = especialidad;
+
+                          // Handle nivelId as array or number
+                          if (Array.isArray(nivelId)) {
+                            const nivelNames = nivelId
+                              .map(
+                                (id) => niveles.find((n) => n.id === id)?.nombre
+                              )
+                              .filter(Boolean);
+                            return nivelNames.length > 0
+                              ? nivelNames.join(', ')
+                              : '-';
+                          }
+                          if (typeof nivelId === 'number') {
+                            return (
+                              niveles.find((n) => n.id === nivelId)?.nombre ||
+                              '-'
+                            );
+                          }
+
+                          // Fallback to nivel object if available
+                          return especialidad.nivel?.nombre || '-';
+                        })()}
+                      </td>
+                    )}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleView(item)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        title="Ver Detalles"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => openModal(item as any)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        title="Editar"
+                      >
+                        <PencilIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -590,7 +623,6 @@ const AcademicStructure = () => {
 
               {activeTab === 'niveles' && (
                 <>
-
                   <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Modalidad
@@ -704,17 +736,17 @@ const AcademicStructure = () => {
 
               {activeTab === 'niveles' && (
                 <>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Modalidad
                     </label>
                     <p className="mt-1 text-gray-900">
                       {(() => {
-                        const modalidad = (viewingItem as Nivel).modalidad;
+                        const { modalidad } = viewingItem as Nivel;
                         if (!modalidad) return '-';
                         if (typeof modalidad === 'string') return modalidad;
-                        if (Array.isArray(modalidad)) return modalidad.join(', ');
+                        if (Array.isArray(modalidad))
+                          return modalidad.join(', ');
                         return '-';
                       })()}
                     </p>

@@ -1,14 +1,15 @@
+import { useEffect } from 'react';
+
 import { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 import Script from 'next/script';
 
 import '../styles/main.css';
 import '../styles/tiptap-editor.css';
 import 'katex/dist/katex.min.css';
 import WhatsAppWidget from '../components/WhatsAppWidget';
-import { GA_MEASUREMENT_ID, trackPageView } from '../lib/analytics';
 import { useAuth } from '../hooks/useAuth';
+import { GA_MEASUREMENT_ID, trackPageView } from '../lib/analytics';
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
@@ -28,13 +29,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
   // Check if current path is an admin page or banco preguntas area
   // ALSO hide if user is authenticated (Aula Virtual)
-  const isExcludedPath = router.pathname.startsWith('/admin') || 
-                         router.pathname.startsWith('/bancoPreguntas') || 
-                         router.pathname.startsWith('/bancoPreguntasAscenso') ||
-                         router.pathname.startsWith('/recursosAscenso') ||
-                         router.pathname.startsWith('/examen') ||
-                         router.pathname.startsWith('/simulacroExamen') ||
-                         router.pathname.startsWith('/respuestasErroneas');
+  const isExcludedPath =
+    router.pathname.startsWith('/admin') ||
+    router.pathname.startsWith('/bancoPreguntas') ||
+    router.pathname.startsWith('/bancoPreguntasAscenso') ||
+    router.pathname.startsWith('/recursosAscenso') ||
+    router.pathname.startsWith('/examen') ||
+    router.pathname.startsWith('/simulacroExamen') ||
+    router.pathname.startsWith('/respuestasErroneas');
 
   const showWhatsApp = !isAuthenticated && !isExcludedPath;
 

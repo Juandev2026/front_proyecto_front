@@ -3,19 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
 import Link from 'next/link';
-import { createSlug } from '../utils/urlUtils';
 
 import AdSidebar from '../components/AdSidebar';
 import CommunitySection from '../components/CommunitySection';
-import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import { useAuth } from '../hooks/useAuth';
 import {
   categoriaGeneralService,
   CategoriaGeneral,
 } from '../services/categoriaGeneralService';
 import { noticiaService, Noticia } from '../services/noticiaService';
+import { createSlug } from '../utils/urlUtils';
 
 const News = () => {
   const { user, isAuthenticated } = useAuth();
@@ -27,7 +27,7 @@ const News = () => {
   );
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -43,7 +43,7 @@ const News = () => {
         }
 
         const categoriesData = await categoriaGeneralService.getAll();
-        
+
         // Filter by PUBLICADO
         const publishedNews = newsData.filter(
           (n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO'
@@ -64,7 +64,7 @@ const News = () => {
 
   // Reset page when category or search changes
   useEffect(() => {
-      setCurrentPage(1);
+    setCurrentPage(1);
   }, [selectedCategoryId, searchTerm]);
 
   // Helper to strip HTML tags for preview and handle entities
@@ -107,7 +107,7 @@ const News = () => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'General';
   };
-  
+
   // Pagination Helper Values
   const itemsPerPage = 5;
   const totalPages = Math.ceil(otherNews.length / itemsPerPage);
@@ -118,9 +118,17 @@ const News = () => {
   return (
     <div className="bg-white min-h-screen font-sans">
       <Head>
-        <title>Portal de Noticias Educativas - MINEDU, Nombramiento, Ascenso</title>
-        <meta name="description" content="Últimas noticias sobre educación en Perú: nombramiento docente, ascenso, contrato, MINEDU, sindicatos y tecnología educativa. Mantente informado con nuestro portal de noticias." />
-        <meta name="keywords" content="noticias educación, MINEDU noticias, nombramiento docente 2024, ascenso docente, contrato docente, noticias SUTEP" />
+        <title>
+          Portal de Noticias Educativas - MINEDU, Nombramiento, Ascenso
+        </title>
+        <meta
+          name="description"
+          content="Últimas noticias sobre educación en Perú: nombramiento docente, ascenso, contrato, MINEDU, sindicatos y tecnología educativa. Mantente informado con nuestro portal de noticias."
+        />
+        <meta
+          name="keywords"
+          content="noticias educación, MINEDU noticias, nombramiento docente 2024, ascenso docente, contrato docente, noticias SUTEP"
+        />
       </Head>
 
       <div className="relative bg-background">
@@ -139,7 +147,6 @@ const News = () => {
             Entérate de lo último en educación y tecnología.
           </p>
         </div>
-
 
         {!isAuthenticated && (
           <div className="max-w-2xl mx-auto mt-2 mb-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
@@ -228,7 +235,7 @@ const News = () => {
           >
             Todas
           </button>
-          
+
           {categories.slice(0, 5).map((cat) => (
             <button
               key={cat.id}
@@ -248,36 +255,53 @@ const News = () => {
             <div className="relative">
               <select
                 className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
-                   categories.slice(5).some(c => c.id === selectedCategoryId)
+                  categories.slice(5).some((c) => c.id === selectedCategoryId)
                     ? 'bg-primary text-white border-primary shadow-md'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
                 }`}
-                value={categories.slice(5).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
+                value={
+                  categories.slice(5).some((c) => c.id === selectedCategoryId)
+                    ? selectedCategoryId!
+                    : ''
+                }
                 onChange={(e) => {
-                   if (e.target.value) {
-                     setSelectedCategoryId(Number(e.target.value));
-                   }
+                  if (e.target.value) {
+                    setSelectedCategoryId(Number(e.target.value));
+                  }
                 }}
               >
                 <option value="" disabled className="text-gray-500 bg-white">
-                  {categories.slice(5).some(c => c.id === selectedCategoryId) 
-                    ? categories.find(c => c.id === selectedCategoryId)?.nombre 
+                  {categories.slice(5).some((c) => c.id === selectedCategoryId)
+                    ? categories.find((c) => c.id === selectedCategoryId)
+                        ?.nombre
                     : 'Más...'}
                 </option>
                 {categories.slice(5).map((cat) => (
-                  <option key={cat.id} value={cat.id} className="text-gray-900 bg-white">
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className="text-gray-900 bg-white"
+                  >
                     {cat.nombre}
                   </option>
                 ))}
               </select>
-               {/* Custom Chevron for select styling if needed, or rely on browser default/remove appearance-none for standard arrow */}
-               <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
-                  categories.slice(5).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
-               }`}>
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
+              {/* Custom Chevron for select styling if needed, or rely on browser default/remove appearance-none for standard arrow */}
+              <div
+                className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                  categories.slice(5).some((c) => c.id === selectedCategoryId)
+                    ? 'text-white'
+                    : 'text-gray-600'
+                }`}
+              >
+                <svg
+                  className="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
             </div>
           )}
         </div>
@@ -307,8 +331,6 @@ const News = () => {
           </div>
         )}
 
-
-
         <div className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* LEFT COLUMN: Main Content */}
           <div className="col-span-12 lg:col-span-7 space-y-6 sm:space-y-8 lg:space-y-10">
@@ -337,26 +359,29 @@ const News = () => {
                       />
                     </div>
                     <div className="flex flex-col gap-1 mb-2">
-                       <div className="flex items-center gap-2">
-                          <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
-                            {getCategoryName(featuredArticle.categoriaId)}
-                          </span>
-                          <span className="text-gray-500 text-xs font-semibold">
-                            {new Date(featuredArticle.fecha).toLocaleDateString()}
-                          </span>
-                       </div>
-                       {featuredArticle.autor && (
-                          <span className="text-gray-500 text-xs font-medium">Por: {featuredArticle.autor}</span>
-                       )}
+                      <div className="flex items-center gap-2">
+                        <span className="bg-primary text-white text-xs px-2 py-1 rounded font-bold uppercase">
+                          {getCategoryName(featuredArticle.categoriaId)}
+                        </span>
+                        <span className="text-gray-500 text-xs font-semibold">
+                          {new Date(featuredArticle.fecha).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {featuredArticle.autor && (
+                        <span className="text-gray-500 text-xs font-medium">
+                          Por: {featuredArticle.autor}
+                        </span>
+                      )}
                     </div>
-                    <h2 
+                    <h2
                       className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-2 sm:mb-3 group-hover:text-primary transition-colors"
-                      dangerouslySetInnerHTML={{ __html: featuredArticle.titulo }}
+                      dangerouslySetInnerHTML={{
+                        __html: featuredArticle.titulo,
+                      }}
                     />
                     <p className="text-gray-600 leading-relaxed text-sm sm:text-base md:text-lg line-clamp-3">
                       {stripHtml(featuredArticle.descripcion).substring(0, 800)}
                     </p>
-
                   </a>
                 </Link>
               </div>
@@ -369,7 +394,10 @@ const News = () => {
             {/* Subgrid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 sm:gap-y-8 pt-6 sm:pt-8 border-t border-gray-100">
               {secondaryArticles.map((item) => (
-                <Link key={item.id} href={`/noticias/${createSlug(item.titulo)}`}>
+                <Link
+                  key={item.id}
+                  href={`/noticias/${createSlug(item.titulo)}`}
+                >
                   <a className="group flex flex-col h-full w-full">
                     <div className="relative overflow-hidden rounded-lg mb-3 aspect-[4/3] shadow-sm w-full">
                       <img
@@ -385,14 +413,12 @@ const News = () => {
                       <span className="text-xs font-bold text-primary uppercase mb-1 block">
                         {getCategoryName(item.categoriaId)}
                       </span>
-                      <h3 
+                      <h3
                         className="font-bold text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-3"
                         dangerouslySetInnerHTML={{ __html: item.titulo }}
                       />
                       <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
-                        {item.autor && (
-                           <span>Por: {item.autor}</span>
-                        )}
+                        {item.autor && <span>Por: {item.autor}</span>}
                         <span>•</span>
                         <span>{new Date(item.fecha).toLocaleDateString()}</span>
                       </div>
@@ -407,9 +433,15 @@ const News = () => {
 
             {/* List for remainder with PAGINATION */}
             {otherNews.length > 0 && (
-              <div id="paginated-list-header" className="space-y-6 pt-8 border-t border-gray-100">
+              <div
+                id="paginated-list-header"
+                className="space-y-6 pt-8 border-t border-gray-100"
+              >
                 {paginatedItems.map((item) => (
-                  <Link key={item.id} href={`/noticias/${createSlug(item.titulo)}`}>
+                  <Link
+                    key={item.id}
+                    href={`/noticias/${createSlug(item.titulo)}`}
+                  >
                     <a className="flex flex-col md:flex-row gap-4 group p-3 hover:bg-gray-50 rounded-lg transition-colors">
                       <div className="w-full md:w-1/3 aspect-video relative overflow-hidden rounded-md shadow-sm flex-shrink-0">
                         <img
@@ -423,17 +455,23 @@ const News = () => {
                         />
                       </div>
                       <div className="w-full md:w-2/3 flex flex-col">
-                        <h4 
+                        <h4
                           className="font-bold text-gray-900 group-hover:text-primary mb-1 line-clamp-2"
                           dangerouslySetInnerHTML={{ __html: item.titulo }}
                         />
                         <div className="flex items-center text-xs text-gray-500 mb-2">
-                           {item.autor && (
-                              <span className="mr-2">Por: {item.autor}</span>
-                           )}
-                           <span className={item.autor ? "before:content-['•'] before:mr-2" : ""}>
-                             {new Date(item.fecha).toLocaleDateString()}
-                           </span>
+                          {item.autor && (
+                            <span className="mr-2">Por: {item.autor}</span>
+                          )}
+                          <span
+                            className={
+                              item.autor
+                                ? "before:content-['•'] before:mr-2"
+                                : ''
+                            }
+                          >
+                            {new Date(item.fecha).toLocaleDateString()}
+                          </span>
                         </div>
                         <p className="text-sm text-gray-500 line-clamp-2">
                           {stripHtml(item.descripcion).substring(0, 800)}
@@ -449,9 +487,11 @@ const News = () => {
                     {/* Previous Button */}
                     <button
                       onClick={() => {
-                         const prev = Math.max(currentPage - 1, 1);
-                         setCurrentPage(prev);
-                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                        const prev = Math.max(currentPage - 1, 1);
+                        setCurrentPage(prev);
+                        document
+                          .getElementById('paginated-list-header')
+                          ?.scrollIntoView({ behavior: 'smooth' });
                       }}
                       disabled={currentPage === 1}
                       className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
@@ -464,29 +504,35 @@ const News = () => {
                     </button>
 
                     {/* Page Numbers */}
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                      <button
-                        key={number}
-                        onClick={() => {
-                          setCurrentPage(number);
-                          document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-all ${
-                          currentPage === number
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                        }`}
-                      >
-                        {number}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (number) => (
+                        <button
+                          key={number}
+                          onClick={() => {
+                            setCurrentPage(number);
+                            document
+                              .getElementById('paginated-list-header')
+                              ?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                            currentPage === number
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }`}
+                        >
+                          {number}
+                        </button>
+                      )
+                    )}
 
                     {/* Next Button */}
                     <button
                       onClick={() => {
-                         const next = Math.min(currentPage + 1, totalPages);
-                         setCurrentPage(next);
-                         document.getElementById('paginated-list-header')?.scrollIntoView({ behavior: 'smooth' });
+                        const next = Math.min(currentPage + 1, totalPages);
+                        setCurrentPage(next);
+                        document
+                          .getElementById('paginated-list-header')
+                          ?.scrollIntoView({ behavior: 'smooth' });
                       }}
                       disabled={currentPage === totalPages}
                       className={`px-3 py-1 rounded border text-sm font-medium transition-colors ${
@@ -499,15 +545,12 @@ const News = () => {
                     </button>
                   </div>
                 )}
-
-
               </div>
             )}
           </div>
 
           {/* SIDEBAR: Destacados + Ads (Split into 2 columns on large screens) */}
           <div className="col-span-12 lg:col-span-5 border-l border-gray-100 pl-0 lg:pl-8 grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
-            
             {/* Column 1: Destacados */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-gray-900 border-b-2 border-primary pb-2 mb-4 inline-block">
@@ -516,36 +559,50 @@ const News = () => {
 
               <div className="space-y-4">
                 {displayHighlights.map((item) => (
-                  <Link key={item.id} href={`/noticias/${createSlug(item.titulo)}`}>
+                  <Link
+                    key={item.id}
+                    href={`/noticias/${createSlug(item.titulo)}`}
+                  >
                     <a className="group block bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden">
                       {/* Image at Top */}
                       <div className="aspect-video w-full relative overflow-hidden">
                         <img
                           src={
-                            item.imageUrl || 'https://via.placeholder.com/400x225'
+                            item.imageUrl ||
+                            'https://via.placeholder.com/400x225'
                           }
                           alt=""
                           className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute top-2 left-2">
-                           <span className="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                          <span className="bg-primary/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
                             {getCategoryName(item.categoriaId)}
-                           </span>
+                          </span>
                         </div>
                       </div>
 
                       <div className="p-4 flex flex-col">
-                        <h3 
+                        <h3
                           className="font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-3"
                           dangerouslySetInnerHTML={{ __html: item.titulo }}
                         />
 
                         <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
                           <p className="font-medium flex items-center">
-                             <svg className="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                             </svg>
-                             {new Date(item.fecha).toLocaleDateString()}
+                            <svg
+                              className="w-3.5 h-3.5 mr-1 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            {new Date(item.fecha).toLocaleDateString()}
                           </p>
                           <p className="flex items-center gap-1 text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
@@ -565,7 +622,7 @@ const News = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-16">
           <CommunitySection />
           <div className="mt-16">

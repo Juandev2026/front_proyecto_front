@@ -1,6 +1,7 @@
 // Google Analytics 4 Utilities
 
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+export const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 // Types for custom events
 export type GAEventName =
@@ -31,7 +32,7 @@ export interface GAEventParams {
     tipo_accion: 'inscribirse' | 'comprar' | 'ver_mas';
     precio?: number;
   };
-  
+
   // Eventos de Exámenes
   iniciar_examen: {
     id_examen: string;
@@ -44,7 +45,7 @@ export interface GAEventParams {
     puntaje?: number;
     tiempo_tomado?: number; // en segundos
   };
-  
+
   // Eventos de Videos
   iniciar_video: {
     id_video: string;
@@ -56,7 +57,7 @@ export interface GAEventParams {
     titulo_video?: string;
     porcentaje_progreso: 25 | 50 | 75 | 100;
   };
-  
+
   // Eventos de Materiales
   ver_material: {
     id_material: string;
@@ -70,7 +71,7 @@ export interface GAEventParams {
     id_curso?: string;
     tipo_archivo?: string;
   };
-  
+
   // Eventos de Búsqueda
   busqueda: {
     termino_busqueda: string;
@@ -120,7 +121,7 @@ export const trackEvent = <T extends GAEventName>(
     if (process.env.NODE_ENV === 'development') {
       console.log('[GA4 Event]', eventName, params);
     }
-    
+
     window.gtag('event', eventName, params);
   }
 };
@@ -128,7 +129,10 @@ export const trackEvent = <T extends GAEventName>(
 /**
  * Track time spent on page
  */
-export const trackTimeOnPage = (pagePath: string, timeInSeconds: number): void => {
+export const trackTimeOnPage = (
+  pagePath: string,
+  timeInSeconds: number
+): void => {
   if (typeof window !== 'undefined' && window.gtag && timeInSeconds > 5) {
     window.gtag('event', 'user_engagement', {
       engagement_time_msec: timeInSeconds * 1000,

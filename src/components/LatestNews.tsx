@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
-import { createSlug } from '../utils/urlUtils';
-
 import AdSidebar from './AdSidebar';
 import { useAuth } from '../hooks/useAuth';
 import { noticiaService, Noticia } from '../services/noticiaService';
+import { createSlug } from '../utils/urlUtils';
 
 const LatestNews = () => {
   const { user, isAuthenticated } = useAuth();
@@ -30,7 +29,9 @@ const LatestNews = () => {
         }
 
         // Filter by PUBLICADO
-        news = news.filter((n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO');
+        news = news.filter(
+          (n) => n.estado?.nombre?.toUpperCase() === 'PUBLICADO'
+        );
         // Sort by ID desc (newest first)
         const sortedNews = news.sort((a, b) => b.id - a.id);
 
@@ -44,7 +45,6 @@ const LatestNews = () => {
         // Split into Sub-Featured (4 items) and Pagination List (rest)
         setSubFeaturedNews(remaining.slice(0, 4));
         setPaginatedNews(remaining.slice(4));
-
       } catch (error) {
         // console.error('Error loading news:', error);
       }
@@ -63,9 +63,10 @@ const LatestNews = () => {
 
     // Load Facebook SDK
     const facebookScript = document.createElement('script');
-    facebookScript.src = "https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v18.0";
+    facebookScript.src =
+      'https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v18.0';
     facebookScript.async = true;
-    facebookScript.crossOrigin = "anonymous";
+    facebookScript.crossOrigin = 'anonymous';
     facebookScript.defer = true;
     document.body.appendChild(facebookScript);
 
@@ -102,14 +103,15 @@ const LatestNews = () => {
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     // Optional: Scroll to start of paginated section (or top of news)
-    document.getElementById('paginated-news-header')?.scrollIntoView({ behavior: 'smooth' });
+    document
+      .getElementById('paginated-news-header')
+      ?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="pb-12 pt-4 bg-white">
       {/* Changed max-w-7xl to w-full and added px-4 for basic padding */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: Latest News (approx 58% -> col-span-7) */}
           <div className="lg:col-span-7 space-y-8">
@@ -120,11 +122,11 @@ const LatestNews = () => {
               Últimas Noticias
             </h2>
 
-
             <div className="mt-2 mb-6 p-5 bg-blue-50 border border-blue-100 rounded-xl flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
               <p className="text-base lg:text-lg text-blue-800 text-center lg:text-left">
                 <span className="font-bold">
-                  Inicia sesión para descargar recursos gratuitos y acceder a todo el contenido web disponible.
+                  Inicia sesión para descargar recursos gratuitos y acceder a
+                  todo el contenido web disponible.
                 </span>
               </p>
               <Link href="/login?redirect=/recursos">
@@ -137,8 +139,10 @@ const LatestNews = () => {
             <div className="space-y-6">
               {/* Render Sub-Featured News (Top 4) */}
               {subFeaturedNews.map((news) => (
-
-                <Link key={news.id} href={`/noticias/${createSlug(news.titulo, news.id)}`}>
+                <Link
+                  key={news.id}
+                  href={`/noticias/${createSlug(news.titulo, news.id)}`}
+                >
                   <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                     <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                       <img
@@ -154,9 +158,15 @@ const LatestNews = () => {
                           dangerouslySetInnerHTML={{ __html: news.titulo }}
                         />
                         <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
-                          {news.autor ? <p>Por: {news.autor}</p> : <span></span>}
+                          {news.autor ? (
+                            <p>Por: {news.autor}</p>
+                          ) : (
+                            <span></span>
+                          )}
                           {news.fecha && (
-                            <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                            <p>
+                              {new Date(news.fecha).toLocaleDateString('es-PE')}
+                            </p>
                           )}
                         </div>
                         <div className="w-full border-t border-gray-100 my-4"></div>
@@ -177,16 +187,20 @@ const LatestNews = () => {
               {/* Render Paginated News (The Rest) */}
               {paginatedNews.length > 0 && (
                 <div id="paginated-news-header" className="pt-4">
-
                   <div className="space-y-6">
                     {currentNews.map((news) => (
-
-                      <Link key={news.id} href={`/noticias/${createSlug(news.titulo, news.id)}`}>
+                      <Link
+                        key={news.id}
+                        href={`/noticias/${createSlug(news.titulo, news.id)}`}
+                      >
                         <a className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col sm:flex-row border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 transform group block cursor-pointer">
                           <div className="sm:w-2/5 relative overflow-hidden h-48 sm:h-auto">
                             <img
                               className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                              src={news.imageUrl || '/assets/images/placeholder.png'}
+                              src={
+                                news.imageUrl ||
+                                '/assets/images/placeholder.png'
+                              }
                               alt={stripHtml(news.titulo)}
                             />
                           </div>
@@ -194,12 +208,22 @@ const LatestNews = () => {
                             <div>
                               <h3
                                 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors"
-                                dangerouslySetInnerHTML={{ __html: news.titulo }}
+                                dangerouslySetInnerHTML={{
+                                  __html: news.titulo,
+                                }}
                               />
                               <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-3">
-                                {news.autor ? <p>Por: {news.autor}</p> : <span></span>}
+                                {news.autor ? (
+                                  <p>Por: {news.autor}</p>
+                                ) : (
+                                  <span></span>
+                                )}
                                 {news.fecha && (
-                                  <p>{new Date(news.fecha).toLocaleDateString('es-PE')}</p>
+                                  <p>
+                                    {new Date(news.fecha).toLocaleDateString(
+                                      'es-PE'
+                                    )}
+                                  </p>
                                 )}
                               </div>
                               <div className="w-full border-t border-gray-100 my-4"></div>
@@ -234,41 +258,64 @@ const LatestNews = () => {
                 <button
                   onClick={() => paginate(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${currentPage === 1
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    currentPage === 1
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
                       : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                    }`}
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
 
                 {/* Page Numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                  <button
-                    key={number}
-                    onClick={() => paginate(number)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === number
-                        ? 'bg-primary text-white shadow-md'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (number) => (
+                    <button
+                      key={number}
+                      onClick={() => paginate(number)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        currentPage === number
+                          ? 'bg-primary text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                       }`}
-                  >
-                    {number}
-                  </button>
-                ))}
+                    >
+                      {number}
+                    </button>
+                  )
+                )}
 
                 {/* Next Button */}
                 <button
                   onClick={() => paginate(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${currentPage === totalPages
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    currentPage === totalPages
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
                       : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                    }`}
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
               </div>
@@ -311,8 +358,6 @@ const LatestNews = () => {
               </div>
             </div>
 
-
-
             {/* Facebook */}
             <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <div className="bg-[#1877F2] px-4 py-2 text-white font-bold flex items-center justify-between">
@@ -325,8 +370,26 @@ const LatestNews = () => {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.954 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </div>
-              <div className="fb-page" data-href="https://www.facebook.com/Avendocenteperu" data-tabs="timeline" data-width="600" data-height="600" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/Avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/avendocenteperu">Avendocente</a>
-              </blockquote></div>
+              <div
+                className="fb-page"
+                data-href="https://www.facebook.com/Avendocenteperu"
+                data-tabs="timeline"
+                data-width="600"
+                data-height="600"
+                data-small-header="false"
+                data-adapt-container-width="true"
+                data-hide-cover="false"
+                data-show-facepile="true"
+              >
+                <blockquote
+                  cite="https://www.facebook.com/Avendocenteperu"
+                  className="fb-xfbml-parse-ignore"
+                >
+                  <a href="https://www.facebook.com/avendocenteperu">
+                    Avendocente
+                  </a>
+                </blockquote>
+              </div>
             </div>
 
             {/* YouTube */}
@@ -379,8 +442,12 @@ const LatestNews = () => {
                 Noticia Destacada
               </h2>
               {featuredNews ? (
-
-                <Link href={`/noticias/${createSlug(featuredNews.titulo, featuredNews.id)}`}>
+                <Link
+                  href={`/noticias/${createSlug(
+                    featuredNews.titulo,
+                    featuredNews.id
+                  )}`}
+                >
                   <a className="bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer relative block">
                     <div className="aspect-video relative">
                       <img

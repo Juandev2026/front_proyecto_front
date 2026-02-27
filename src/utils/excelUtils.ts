@@ -16,7 +16,7 @@ export const exportToExcel = (
   const worksheet = XLSX.utils.json_to_sheet(data, { header });
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-  
+
   // Create the Excel file
   XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
@@ -33,7 +33,7 @@ export const formatDateForExcel = (dateString?: string): string => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   } catch (e) {
     return '-';

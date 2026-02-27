@@ -40,6 +40,12 @@ export interface ClasificacionExamen {
   puntos?: number;
   tiempoPregunta?: number;
   minimo?: number;
+  years?: YearQuestionCount[];
+}
+
+export interface YearQuestionCount {
+  year: number;
+  cantidadPreguntas: number;
 }
 
 export interface ExamenLogin {
@@ -52,9 +58,10 @@ export interface ExamenLogin {
   modalidadNombre: string;
   nivelId: number;
   nivelNombre: string;
-  especialidadId: number;
-  especialidadNombre: string;
-  years: number[];
+  especialidadId: number | null;
+  especialidadNombre: string | null;
+  year?: string;
+  years?: YearQuestionCount[];
   cantidadPreguntas: number;
   clasificaciones: ClasificacionExamen[];
 }
@@ -78,7 +85,6 @@ export interface LoginApiResponse {
   user: LoginResponse;
   examenes: ExamenLogin[];
 }
-
 
 export interface ResetPasswordRequest {
   token: string;

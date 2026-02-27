@@ -4,14 +4,14 @@ import { getAuthHeaders } from '../utils/apiUtils';
 // DTO para crear una Sub-Pregunta (Hijo)
 export interface CreateSubPreguntaDTO {
   examenId: number;
-  preguntaId: number;         // ID del Padre
-  numero: number;             // Secuencial (1, 2, 3...)
+  preguntaId: number; // ID del Padre
+  numero: number; // Secuencial (1, 2, 3...)
   enunciado: string;
   alternativaA: string;
   alternativaB: string;
   alternativaC: string;
   alternativaD: string;
-  respuestaCorrecta: string;  // "A" | "B" | "C" | "D"
+  respuestaCorrecta: string; // "A" | "B" | "C" | "D"
   sustento?: string;
   imagen?: string;
   clasificacionId?: number;
@@ -27,16 +27,22 @@ export const subPreguntaService = {
   /**
    * Obtener todas las sub-preguntas de una pregunta padre
    */
-  getByPreguntaId: async (examenId: number, preguntaId: number): Promise<SubPreguntaResponse[]> => {
-    const response = await fetch(`${API_URL}/details/${examenId}/${preguntaId}`, {
-      headers: getAuthHeaders(),
-    });
+  getByPreguntaId: async (
+    examenId: number,
+    preguntaId: number
+  ): Promise<SubPreguntaResponse[]> => {
+    const response = await fetch(
+      `${API_URL}/details/${examenId}/${preguntaId}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     if (!response.ok) {
       if (response.status === 404) return [];
       const err = await response.text();
       throw new Error(`Error al obtener sub-preguntas: ${err}`);
     }
-    return await response.json();
+    return response.json();
   },
 
   /**
@@ -49,7 +55,7 @@ export const subPreguntaService = {
     if (!response.ok) {
       return 0;
     }
-    return await response.json();
+    return response.json();
   },
 
   /**
@@ -68,14 +74,16 @@ export const subPreguntaService = {
       const err = await response.text();
       throw new Error(`Error al crear sub-pregunta: ${err}`);
     }
-    return await response.json();
+    return response.json();
   },
 
   /**
    * Crear múltiples sub-preguntas en paralelo (Promise.all)
    */
-  createBatch: async (dtos: CreateSubPreguntaDTO[]): Promise<SubPreguntaResponse[]> => {
-    const promises = dtos.map(dto =>
+  createBatch: async (
+    dtos: CreateSubPreguntaDTO[]
+  ): Promise<SubPreguntaResponse[]> => {
+    const promises = dtos.map((dto) =>
       fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -99,35 +107,45 @@ export const subPreguntaService = {
    * Actualizar una sub-pregunta (llave compuesta)
    */
   update: async (
-    examenId: number, 
-    preguntaId: number, 
-    numero: number, 
+    examenId: number,
+    preguntaId: number,
+    numero: number,
     dto: Partial<CreateSubPreguntaDTO>
   ): Promise<SubPreguntaResponse> => {
-    const response = await fetch(`${API_URL}/${examenId}/${preguntaId}/${numero}`, {
-      method: 'PUT',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dto),
-    });
+    const response = await fetch(
+      `${API_URL}/${examenId}/${preguntaId}/${numero}`,
+      {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dto),
+      }
+    );
     if (!response.ok) {
       const err = await response.text();
       throw new Error(`Error al actualizar sub-pregunta: ${err}`);
     }
     const text = await response.text();
-    return text ? JSON.parse(text) : dto as SubPreguntaResponse;
+    return text ? JSON.parse(text) : (dto as SubPreguntaResponse);
   },
 
   /**
    * Eliminar una sub-pregunta (llave compuesta)
    */
-  delete: async (examenId: number, preguntaId: number, numero: number): Promise<void> => {
-    const response = await fetch(`${API_URL}/${examenId}/${preguntaId}/${numero}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+  delete: async (
+    examenId: number,
+    preguntaId: number,
+    numero: number
+  ): Promise<void> => {
+    const response = await fetch(
+      `${API_URL}/${examenId}/${preguntaId}/${numero}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
     if (!response.ok) {
       const err = await response.text();
       throw new Error(`Error al eliminar sub-pregunta: ${err}`);

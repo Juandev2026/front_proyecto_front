@@ -110,9 +110,12 @@ export const seccionesService = {
 
   getSubsecciones: async (seccionId: number): Promise<any[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al obtener subsecciones');
       return await response.json();
     } catch (error) {
@@ -126,7 +129,11 @@ export const seccionesService = {
       const response = await fetch(`${API_BASE_URL}/SubSecciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ nombre, descripcion: 'Descripción por defecto', seccionId }),
+        body: JSON.stringify({
+          nombre,
+          descripcion: 'Descripción por defecto',
+          seccionId,
+        }),
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -144,7 +151,10 @@ export const seccionesService = {
       const response = await fetch(`${API_BASE_URL}/SubSecciones/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ nombre, descripcion: 'Descripción por defecto' }),
+        body: JSON.stringify({
+          nombre,
+          descripcion: 'Descripción por defecto',
+        }),
       });
       if (!response.ok) {
         const errText = await response.text();

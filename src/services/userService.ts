@@ -166,7 +166,9 @@ export const userService = {
         // Si el body está vacío y es 500, el backend pudo haber creado el registro
         // pero falló al serializar la respuesta (bug del backend)
         if (!text || text.trim() === '') {
-          console.warn(`Backend retornó ${response.status} con cuerpo vacío. Asumiendo éxito.`);
+          console.warn(
+            `Backend retornó ${response.status} con cuerpo vacío. Asumiendo éxito.`
+          );
           return null; // Tratamos como éxito silencioso
         }
         let errorData;
@@ -175,7 +177,9 @@ export const userService = {
         } catch (e) {
           errorData = { message: text };
         }
-        throw new Error(errorData.message || `Error ${response.status}: ${text}`);
+        throw new Error(
+          errorData.message || `Error ${response.status}: ${text}`
+        );
       }
 
       if (!text || text.trim() === '') return null;

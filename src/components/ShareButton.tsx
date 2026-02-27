@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShareIcon, ClipboardCopyIcon, CheckIcon } from '@heroicons/react/outline';
+
+import { ShareIcon, CheckIcon } from '@heroicons/react/outline';
 
 interface ShareButtonProps {
   title: string;
@@ -8,7 +9,12 @@ interface ShareButtonProps {
   className?: string;
 }
 
-const ShareButton: React.FC<ShareButtonProps> = ({ title, text, url, className = '' }) => {
+const ShareButton: React.FC<ShareButtonProps> = ({
+  title,
+  text,
+  url,
+  className = '',
+}) => {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {

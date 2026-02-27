@@ -21,7 +21,9 @@ export const anunciosGeneralesService = {
         headers: getPublicHeaders(),
       });
       if (!response.ok) {
-        throw new Error(`Error fetching anuncios generales: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error fetching anuncios generales: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -36,7 +38,9 @@ export const anunciosGeneralesService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error(`Error fetching anuncio general by id: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error fetching anuncio general by id: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -45,7 +49,9 @@ export const anunciosGeneralesService = {
     }
   },
 
-  create: async (anuncio: Omit<AnuncioGeneral, 'id'>): Promise<AnuncioGeneral> => {
+  create: async (
+    anuncio: Omit<AnuncioGeneral, 'id'>
+  ): Promise<AnuncioGeneral> => {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -53,7 +59,9 @@ export const anunciosGeneralesService = {
         body: JSON.stringify(anuncio),
       });
       if (!response.ok) {
-        throw new Error(`Error creating anuncio general: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error creating anuncio general: ${response.status} ${response.statusText}`
+        );
       }
       return await response.json();
     } catch (error) {
@@ -62,7 +70,10 @@ export const anunciosGeneralesService = {
     }
   },
 
-  update: async (id: number, anuncio: AnuncioGeneral): Promise<AnuncioGeneral> => {
+  update: async (
+    id: number,
+    anuncio: AnuncioGeneral
+  ): Promise<AnuncioGeneral> => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
@@ -70,7 +81,9 @@ export const anunciosGeneralesService = {
         body: JSON.stringify(anuncio),
       });
       if (!response.ok) {
-        throw new Error(`Error updating anuncio general: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error updating anuncio general: ${response.status} ${response.statusText}`
+        );
       }
       // The API documentation differs slightly on return types sometimes, but usually it returns the object or 200 OK.
       // If it returns plain text, handle it.
@@ -89,7 +102,9 @@ export const anunciosGeneralesService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error(`Error deleting anuncio general: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Error deleting anuncio general: ${response.status} ${response.statusText}`
+        );
       }
     } catch (error) {
       console.error('Error deleting anuncio general:', error);

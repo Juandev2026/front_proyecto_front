@@ -1,20 +1,21 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
+
+import { Extension } from '@tiptap/core';
+import Color from '@tiptap/extension-color';
+import FontFamily from '@tiptap/extension-font-family';
+import Highlight from '@tiptap/extension-highlight';
+import SubscriptExtension from '@tiptap/extension-subscript';
+import SuperscriptExtension from '@tiptap/extension-superscript';
+import TextAlign from '@tiptap/extension-text-align';
+import { TextStyle } from '@tiptap/extension-text-style';
+import UnderlineExtension from '@tiptap/extension-underline';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import TextAlign from '@tiptap/extension-text-align';
-import UnderlineExtension from '@tiptap/extension-underline';
-import { TextStyle } from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import Highlight from '@tiptap/extension-highlight';
-import FontFamily from '@tiptap/extension-font-family';
-import SuperscriptExtension from '@tiptap/extension-superscript';
-import SubscriptExtension from '@tiptap/extension-subscript';
-import { Extension } from '@tiptap/core';
 
 import EditorToolbar from './EditorToolbar';
 import FractionModal from './FractionModal';
-import RootModal from './RootModal';
 import { MathInline } from './MathNode';
+import RootModal from './RootModal';
 
 // CSS imports are in _app.tsx (Next.js 12 requires global CSS imports there)
 
@@ -131,7 +132,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     if (!wrapper) return;
 
     const handleMathEdit = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
+      const { detail } = e as CustomEvent;
       if (!detail) return;
 
       const { latex, pos } = detail;
@@ -186,10 +187,14 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         // Inserting new node — restore cursor position first
         const pos = savedSelectionRef.current;
         if (pos !== null) {
-          editor.chain().focus().insertContentAt(pos, {
-            type: 'mathInline',
-            attrs: { latex },
-          }).run();
+          editor
+            .chain()
+            .focus()
+            .insertContentAt(pos, {
+              type: 'mathInline',
+              attrs: { latex },
+            })
+            .run();
         } else {
           editor.chain().focus().insertMath(latex).run();
         }
@@ -223,7 +228,10 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }, [editor]);
 
   return (
-    <div ref={wrapperRef} className={`tiptap-editor-wrapper border rounded-lg overflow-hidden bg-white transition-all ${borderColor}`}>
+    <div
+      ref={wrapperRef}
+      className={`tiptap-editor-wrapper border rounded-lg overflow-hidden bg-white transition-all ${borderColor}`}
+    >
       {/* Toolbar */}
       <EditorToolbar
         editor={editor}

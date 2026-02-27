@@ -156,10 +156,12 @@ const AdminAnuncios = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation: If price > 0, phone is required
     if (formData.precio > 0 && !formData.telefono && !formData.celular) {
-      alert('Para anuncios con precio mayor a 0, es obligatorio agregar un número de celular o teléfono de contacto.');
+      alert(
+        'Para anuncios con precio mayor a 0, es obligatorio agregar un número de celular o teléfono de contacto.'
+      );
       return;
     }
 

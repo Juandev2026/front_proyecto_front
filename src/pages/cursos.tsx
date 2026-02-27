@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import Link from 'next/link';
 import { SearchIcon } from '@heroicons/react/solid';
-
+import Link from 'next/link';
 
 import AdSidebar from '../components/AdSidebar';
 import CommunitySection from '../components/CommunitySection';
-import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import { useAuth } from '../hooks/useAuth';
 import { categoriaService, Categoria } from '../services/categoriaService';
-import { createSlug } from '../utils/urlUtils';
 import { cursoService, Curso } from '../services/cursoService';
-
-
+import { createSlug } from '../utils/urlUtils';
 
 const Cursos = () => {
   const [courses, setCourses] = useState<Curso[]>([]);
@@ -39,12 +36,12 @@ const Cursos = () => {
         }
 
         const [categoriesData] = await Promise.all([categoriaService.getAll()]);
-        
+
         // Filter by state "PUBLICADO"
         const publishedCourses = coursesData.filter(
           (c) => c.estado?.nombre?.toUpperCase() === 'PUBLICADO'
         );
-        
+
         // Sort by ID descending (newest first)
         setCourses(publishedCourses.sort((a, b) => b.id - a.id));
         setCategories(categoriesData);
@@ -78,9 +75,11 @@ const Cursos = () => {
     // Filter by Search Query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter((course) => 
-        course.nombre.toLowerCase().includes(query) || 
-        (course.descripcion && course.descripcion.toLowerCase().includes(query))
+      result = result.filter(
+        (course) =>
+          course.nombre.toLowerCase().includes(query) ||
+          (course.descripcion &&
+            course.descripcion.toLowerCase().includes(query))
       );
     }
 
@@ -172,47 +171,62 @@ const Cursos = () => {
               </button>
             ))}
 
-             {/* Dropdown for the rest */}
-             {categoryNames.length > 6 && (
-                <div className="relative">
-                  <select
-                    className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
-                      categoryNames.slice(6).includes(selectedCategory)
-                        ? 'bg-primary text-white border-primary shadow-md'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                    }`}
-                    value={categoryNames.slice(6).includes(selectedCategory) ? selectedCategory : ''}
-                    onChange={(e) => {
-                       if (e.target.value) {
-                         setSelectedCategory(e.target.value);
-                       }
-                    }}
-                  >
-                    <option value="" disabled className="text-gray-500 bg-white">
-                      {categoryNames.slice(6).includes(selectedCategory)  
-                        ? selectedCategory 
-                        : 'Más...'}
+            {/* Dropdown for the rest */}
+            {categoryNames.length > 6 && (
+              <div className="relative">
+                <select
+                  className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
+                    categoryNames.slice(6).includes(selectedCategory)
+                      ? 'bg-primary text-white border-primary shadow-md'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                  }`}
+                  value={
+                    categoryNames.slice(6).includes(selectedCategory)
+                      ? selectedCategory
+                      : ''
+                  }
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedCategory(e.target.value);
+                    }
+                  }}
+                >
+                  <option value="" disabled className="text-gray-500 bg-white">
+                    {categoryNames.slice(6).includes(selectedCategory)
+                      ? selectedCategory
+                      : 'Más...'}
+                  </option>
+                  {categoryNames.slice(6).map((cat) => (
+                    <option
+                      key={cat}
+                      value={cat}
+                      className="text-gray-900 bg-white"
+                    >
+                      {cat}
                     </option>
-                    {categoryNames.slice(6).map((cat) => (
-                      <option key={cat} value={cat} className="text-gray-900 bg-white">
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                   <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
-                      categoryNames.slice(6).includes(selectedCategory) ? 'text-white' : 'text-gray-600'
-                   }`}>
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                      </svg>
-                    </div>
+                  ))}
+                </select>
+                <div
+                  className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                    categoryNames.slice(6).includes(selectedCategory)
+                      ? 'text-white'
+                      : 'text-gray-600'
+                  }`}
+                >
+                  <svg
+                    className="fill-current h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
                 </div>
-             )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-9">
-
               {loading ? (
                 <div className="text-center py-20">
                   <p className="text-xl text-gray-500">Cargando cursos...</p>
@@ -223,7 +237,12 @@ const Cursos = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
                     {displayedCourses.map((course, index) => (
                       <FadeIn key={course.id} delay={index * 0.1}>
-                        <Link href={`/cursos/${createSlug(course.nombre, course.id)}`}>
+                        <Link
+                          href={`/cursos/${createSlug(
+                            course.nombre,
+                            course.id
+                          )}`}
+                        >
                           <a className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full border border-gray-100 overflow-hidden transform hover:-translate-y-2">
                             <div className="relative h-64 overflow-hidden">
                               <img
@@ -291,7 +310,10 @@ const Cursos = () => {
                               <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                   <span className="text-lg font-bold text-gray-900">
-                                    S/ {course.precioOferta > 0 ? course.precioOferta : course.precio}
+                                    S/{' '}
+                                    {course.precioOferta > 0
+                                      ? course.precioOferta
+                                      : course.precio}
                                   </span>
                                   {course.precioOferta > 0 && (
                                     <span className="text-sm text-gray-500 line-through">
@@ -327,9 +349,9 @@ const Cursos = () => {
                     <div className="mt-12 text-center">
                       <div className="bg-blue-50 rounded-2xl p-8 md:p-12 shadow-lg border border-blue-100">
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                           ¿Quieres descargar recursos personalizados?
+                          ¿Quieres descargar recursos personalizados?
                         </h3>
-                       
+
                         <Link href="/register">
                           <a className="inline-block bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-secondary transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             Regístrate Gratis
@@ -378,10 +400,7 @@ const Cursos = () => {
               <AdSidebar />
             </div>
           </div>
-          
-
         </div>
-
       </main>
 
       <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 pb-12">
@@ -390,7 +409,6 @@ const Cursos = () => {
           <RelevantInfoCarousel />
         </div>
       </div>
-
 
       <Footer />
     </div>

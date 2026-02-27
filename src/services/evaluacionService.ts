@@ -1,9 +1,14 @@
 import { API_BASE_URL } from '../config/api';
+import {
+  SolucionExamenRequest,
+  ResultadoExamenResponse,
+} from '../types/examen';
 import { getAuthHeaders } from '../utils/apiUtils';
-import { SolucionExamenRequest, ResultadoExamenResponse } from '../types/examen';
 
 export const evaluacionService = {
-  calificar: async (payload: SolucionExamenRequest): Promise<ResultadoExamenResponse> => {
+  calificar: async (
+    payload: SolucionExamenRequest
+  ): Promise<ResultadoExamenResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/Evaluacion/calificar`, {
         method: 'POST',

@@ -20,7 +20,7 @@ export interface Pregunta {
   imagen?: string;
   tipoPreguntaId: number;
   preguntaId?: number; // ID del Padre (si existe)
-  numero?: number;     // Orden de la sub-pregunta
+  numero?: number; // Orden de la sub-pregunta
   year?: string;
   enunciados?: EnunciadoItem[];
   subPreguntas?: any[];
@@ -66,7 +66,7 @@ export const preguntaService = {
       throw error;
     }
   },
-  
+
   create: async (item: Omit<Pregunta, 'id'>): Promise<Pregunta> => {
     try {
       const response = await fetch(API_URL, {
@@ -86,11 +86,15 @@ export const preguntaService = {
     }
   },
 
-  update: async (examenId: number, id: number, item: Partial<Pregunta>): Promise<Pregunta> => {
+  update: async (
+    examenId: number,
+    id: number,
+    item: Partial<Pregunta>
+  ): Promise<Pregunta> => {
     try {
       // Stripping 'id' from the body as per the provided API schema
       const { id: _ignoredId, ...payload } = item;
-      
+
       const response = await fetch(`${API_URL}/${examenId}/${id}`, {
         method: 'PUT',
         headers: {
@@ -102,10 +106,10 @@ export const preguntaService = {
       if (!response.ok) {
         throw new Error('Error al actualizar la pregunta');
       }
-      
+
       const text = await response.text();
       const updatedData = text ? JSON.parse(text) : payload;
-      
+
       // Ensure the returned object has the ID so UI components can update correctly
       return { ...updatedData, id } as Pregunta;
     } catch (error) {
@@ -155,42 +159,45 @@ export const preguntaService = {
   getByExamenId: async (examenId: number): Promise<Pregunta[]> => {
     try {
       const response = await fetch(`${API_URL}/examen/${examenId}`, {
-         headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
       });
 
       if (response.status === 404) {
-         // Exam not found or handled by API returning 404
-         return [];
+        // Exam not found or handled by API returning 404
+        return [];
       }
       if (!response.ok) {
-         throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       return await response.json();
     } catch (error) {
-       console.error("Error fetching questions by exam:", error);
-       return [];
+      console.error('Error fetching questions by exam:', error);
+      return [];
     }
   },
 
-  createForExamen: async (examenId: number, questions: Partial<Pregunta>[]): Promise<Pregunta[]> => {
-     try {
-        const response = await fetch(`${API_URL}/examen/${examenId}`, {
-           method: 'POST',
-           headers: {
-              ...getAuthHeaders(),
-              'Content-Type': 'application/json'
-           },
-           body: JSON.stringify(questions)
-        });
+  createForExamen: async (
+    examenId: number,
+    questions: Partial<Pregunta>[]
+  ): Promise<Pregunta[]> => {
+    try {
+      const response = await fetch(`${API_URL}/examen/${examenId}`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(questions),
+      });
 
-        if (!response.ok) {
-           const err = await response.text();
-           throw new Error(`Error creating questions: ${err}`);
-        }
-        return await response.json();
-     } catch (error) {
-        throw error;
-     }
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Error creating questions: ${err}`);
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
   },
 
   examenFilter: async (filter: ExamenFilterRequest): Promise<Pregunta[]> => {
@@ -208,8 +215,8 @@ export const preguntaService = {
       }
       return await response.json();
     } catch (error) {
-      console.error("Error in examenFilter:", error);
+      console.error('Error in examenFilter:', error);
       return [];
     }
-  }
+  },
 };

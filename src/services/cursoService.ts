@@ -1,5 +1,9 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders, getAuthHeadersFormData, getPublicHeaders } from '../utils/apiUtils';
+import {
+  getAuthHeaders,
+  getAuthHeadersFormData,
+  getPublicHeaders,
+} from '../utils/apiUtils';
 
 export interface Tema {
   id: number;
@@ -102,7 +106,7 @@ export const cursoService = {
           fd.delete('nivelId');
         }
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId');
+          fd.delete('estadoId');
         }
         if (!fd.has('usuarioEdicionId') || fd.get('usuarioEdicionId') === '0') {
           // optional handling
@@ -157,7 +161,7 @@ export const cursoService = {
           fd.delete('nivelId');
         }
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId');
+          fd.delete('estadoId');
         }
         body = fd;
       } else {

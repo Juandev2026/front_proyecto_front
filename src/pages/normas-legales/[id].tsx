@@ -1,12 +1,16 @@
 import React from 'react';
-import Head from 'next/head';
-import { GetServerSideProps } from 'next';
-import { DocumentTextIcon } from '@heroicons/react/outline';
 
-import MainLayout from '../../components/MainLayout';
+import { DocumentTextIcon } from '@heroicons/react/outline';
+import { GetServerSideProps } from 'next';
+import Head from 'next/head';
+
 import AdSidebar from '../../components/AdSidebar';
+import MainLayout from '../../components/MainLayout';
 import ShareButton from '../../components/ShareButton';
-import { NormaLegal, normasLegalesService } from '../../services/normasLegalesService';
+import {
+  NormaLegal,
+  normasLegalesService,
+} from '../../services/normasLegalesService';
 import { stripHtml } from '../../utils/urlUtils';
 
 interface NormaLegalDetailProps {
@@ -21,8 +25,12 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Norma no encontrada</h1>
-            <p className="text-gray-500 mb-6">{error || 'La norma que buscas no existe o ha sido eliminada.'}</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Norma no encontrada
+            </h1>
+            <p className="text-gray-500 mb-6">
+              {error || 'La norma que buscas no existe o ha sido eliminada.'}
+            </p>
             <a href="/normas-legales" className="text-primary hover:underline">
               Volver a Normas Legales
             </a>
@@ -31,8 +39,6 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
       </MainLayout>
     );
   }
-
-
 
   const plainDescription = stripHtml(norma.descripcion);
   // Ensure image URL is absolute for OG tags if possible, or use a default
@@ -46,20 +52,30 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
       <Head>
         <title>{stripHtml(norma.nombre)} | Normas Legales</title>
         <meta name="description" content={plainDescription.substring(0, 160)} />
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="article" />
         <meta property="og:url" content={url} />
         <meta property="og:title" content={stripHtml(norma.nombre)} />
-        <meta property="og:description" content={plainDescription.substring(0, 160)} />
-        {norma.imagenUrl && <meta property="og:image" content={norma.imagenUrl} />}
+        <meta
+          property="og:description"
+          content={plainDescription.substring(0, 160)}
+        />
+        {norma.imagenUrl && (
+          <meta property="og:image" content={norma.imagenUrl} />
+        )}
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={url} />
         <meta property="twitter:title" content={stripHtml(norma.nombre)} />
-        <meta property="twitter:description" content={plainDescription.substring(0, 160)} />
-        {norma.imagenUrl && <meta property="twitter:image" content={norma.imagenUrl} />}
+        <meta
+          property="twitter:description"
+          content={plainDescription.substring(0, 160)}
+        />
+        {norma.imagenUrl && (
+          <meta property="twitter:image" content={norma.imagenUrl} />
+        )}
       </Head>
 
       <div className="bg-gray-50 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
@@ -82,7 +98,7 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
-                  <h1 
+                  <h1
                     className="text-3xl sm:text-4xl font-extrabold text-white leading-tight shadow-sm"
                     dangerouslySetInnerHTML={{ __html: norma.nombre }}
                   />
@@ -102,22 +118,29 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
                       Descargar PDF
                     </a>
                   </div>
-                  <ShareButton 
-                    title={stripHtml(norma.nombre)} 
-                    url={url} 
+                  <ShareButton
+                    title={stripHtml(norma.nombre)}
+                    url={url}
                     className="w-full sm:w-auto"
                   />
                 </div>
 
                 <div className="prose prose-lg max-w-none text-gray-600">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Descripción</h3>
-                  <div dangerouslySetInnerHTML={{ __html: norma.descripcion }} />
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    Descripción
+                  </h3>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: norma.descripcion }}
+                  />
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-gray-100">
-                    <a href="/normas-legales" className="text-primary font-semibold hover:text-blue-700 inline-flex items-center">
-                        &larr; Volver a la lista de normas
-                    </a>
+                  <a
+                    href="/normas-legales"
+                    className="text-primary font-semibold hover:text-blue-700 inline-flex items-center"
+                  >
+                    &larr; Volver a la lista de normas
+                  </a>
                 </div>
               </div>
             </div>
@@ -140,7 +163,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Construct absolute URL for OG tags
   // host includes port in dev, domain in prod
   const protocol = context.req.headers['x-forwarded-proto'] || 'http';
-  const host = context.req.headers.host;
+  const { host } = context.req.headers;
   const url = `${protocol}://${host}/normas-legales/${id}`;
 
   try {

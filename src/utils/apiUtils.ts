@@ -1,5 +1,3 @@
-
-
 // Headers for public data (always use the fixed token)
 export const getPublicHeaders = () => {
   const token = '3231232141346';

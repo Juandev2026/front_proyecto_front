@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 import katex from 'katex';
+
 import MathInputAdornment from './MathInputAdornment';
 
 interface FractionModalProps {
@@ -16,7 +17,9 @@ interface FractionModalProps {
  * Parse a \frac{num}{den} string and extract numerator + denominator.
  * Returns null if it doesn't match the fraction pattern.
  */
-function parseFraction(latex: string): { numerator: string; denominator: string } | null {
+function parseFraction(
+  latex: string
+): { numerator: string; denominator: string } | null {
   // Match \frac{...}{...} — handles nested braces via simple extraction
   const match = latex.match(/^\\frac\{(.*)\}\{(.*)\}$/);
   if (!match) return null;
@@ -78,7 +81,10 @@ const FractionModal: React.FC<FractionModalProps> = ({
   const previewHtml = useMemo(() => {
     const latex = `\\frac{${numerator || '?'}}{${denominator || '?'}}`;
     try {
-      return katex.renderToString(latex, { throwOnError: false, displayMode: false });
+      return katex.renderToString(latex, {
+        throwOnError: false,
+        displayMode: false,
+      });
     } catch {
       return '<span style="color: #ef4444;">Error de sintaxis</span>';
     }
@@ -98,7 +104,10 @@ const FractionModal: React.FC<FractionModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black bg-opacity-40" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black bg-opacity-40"
+        onClick={onClose}
+      />
 
       {/* Modal */}
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
@@ -111,7 +120,21 @@ const FractionModal: React.FC<FractionModalProps> = ({
             onClick={onClose}
             className="p-1 hover:bg-gray-200 rounded-full transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-500"><path d="M18 6 6 18"/><path d="m6 6 18 18"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4 text-gray-500"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 18 18" />
+            </svg>
           </button>
         </div>
 
@@ -121,8 +144,8 @@ const FractionModal: React.FC<FractionModalProps> = ({
           <div className="bg-white rounded-lg border border-primary/30 p-3 text-center min-h-[48px] flex items-center justify-center">
             <span className="text-gray-700 text-sm">
               Texto ejemplo{' '}
-              <span dangerouslySetInnerHTML={{ __html: previewHtml }} />{' '}
-              más texto
+              <span dangerouslySetInnerHTML={{ __html: previewHtml }} /> más
+              texto
             </span>
           </div>
         </div>

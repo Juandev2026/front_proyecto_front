@@ -18,11 +18,10 @@ import {
   categoriaSimpleService,
   CategoriaSimple,
 } from '../../services/categoriaSimpleService';
+import { estadoService, Estado } from '../../services/estadoService';
 import { materialService, Material } from '../../services/materialService';
 import { uploadService } from '../../services/uploadService';
-import { estadoService, Estado } from '../../services/estadoService';
 import 'react-quill/dist/quill.snow.css';
-
 
 // Dynamic import for ReactQuill
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -161,7 +160,9 @@ const AdminMaterials = () => {
     setFile(null);
     setImageFile(null);
 
-    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+    const estadoPublicado = estados.find(
+      (e) => e.nombre.toLowerCase() === 'publicado'
+    );
     setNewMaterial({
       titulo: '',
       descripcion: '',
@@ -373,7 +374,15 @@ const AdminMaterials = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" style={{ backgroundColor: item.estado?.colorHex ? item.estado.colorHex + '20' : '#e5e7eb', color: item.estado?.colorHex || '#374151' }}>
+                      <span
+                        className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        style={{
+                          backgroundColor: item.estado?.colorHex
+                            ? `${item.estado.colorHex}20`
+                            : '#e5e7eb',
+                          color: item.estado?.colorHex || '#374151',
+                        }}
+                      >
                         {item.estado?.nombre || 'Sin Estado'}
                       </span>
                     </td>
@@ -442,16 +451,20 @@ const AdminMaterials = () => {
             <button
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               Anterior
             </button>
             <button
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === totalPages
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+              }`}
             >
               Siguiente
             </button>
@@ -459,11 +472,13 @@ const AdminMaterials = () => {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
+                Mostrando{' '}
+                <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
                 <span className="font-medium">
                   {Math.min(indexOfLastItem, materials.length)}
                 </span>{' '}
-                de <span className="font-medium">{materials.length}</span> resultados
+                de <span className="font-medium">{materials.length}</span>{' '}
+                resultados
               </p>
             </div>
             <div>
@@ -474,8 +489,9 @@ const AdminMaterials = () => {
                 <button
                   onClick={() => paginate(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <span className="sr-only">Anterior</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -492,7 +508,10 @@ const AdminMaterials = () => {
                   })
                   .map((page, index, array) => {
                     const prevPage = array[index - 1];
-                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
+                    const showEllipsis =
+                      index > 0 &&
+                      prevPage !== undefined &&
+                      page - prevPage > 1;
                     return (
                       <React.Fragment key={page}>
                         {showEllipsis && (
@@ -502,11 +521,14 @@ const AdminMaterials = () => {
                         )}
                         <button
                           onClick={() => paginate(page)}
-                          aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page
-                            ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                            }`}
+                          aria-current={
+                            currentPage === page ? 'page' : undefined
+                          }
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                          }`}
                         >
                           {page}
                         </button>
@@ -514,10 +536,15 @@ const AdminMaterials = () => {
                     );
                   })}
                 <button
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    paginate(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
                 >
                   <span className="sr-only">Siguiente</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -568,7 +595,8 @@ const AdminMaterials = () => {
                   {/* Image URL */}
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Imagen de Portada (URL) (Dimensiones recomendadas: 3:2, ej. 1200x800px)
+                      Imagen de Portada (URL) (Dimensiones recomendadas: 3:2,
+                      ej. 1200x800px)
                     </label>
                     <input
                       type="text"
@@ -606,8 +634,8 @@ const AdminMaterials = () => {
                         if (e.target.files && e.target.files[0]) {
                           const file = e.target.files[0];
                           setImageFile(file);
-                          // Optional: Preview immediately via object URL if desired, 
-                          // but for now we rely on the URL field which will be updated on save? 
+                          // Optional: Preview immediately via object URL if desired,
+                          // but for now we rely on the URL field which will be updated on save?
                           // Or we can set a temp preview.
                           // Let's just set the URL field to a temp object URL for preview purposes
                           const tempUrl = URL.createObjectURL(file);
@@ -616,7 +644,8 @@ const AdminMaterials = () => {
                       }}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      O selecciona un archivo para subir (reemplazará la URL al guardar).
+                      O selecciona un archivo para subir (reemplazará la URL al
+                      guardar).
                     </p>
                   </div>
 

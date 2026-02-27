@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline';
+
 import {
   informacionRelevanteService,
   InformacionRelevante,
@@ -39,7 +41,9 @@ const RelevantInfoCarousel = () => {
   }, [items, isHovered]);
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + items.length) % items.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + items.length) % items.length
+    );
   };
 
   const handleNext = () => {
@@ -47,9 +51,11 @@ const RelevantInfoCarousel = () => {
   };
 
   if (loading) {
-    return <div className="h-64 flex items-center justify-center">Cargando...</div>; 
+    return (
+      <div className="h-64 flex items-center justify-center">Cargando...</div>
+    );
   }
-  
+
   if (items.length === 0) {
     return null;
   }
@@ -64,7 +70,7 @@ const RelevantInfoCarousel = () => {
       <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center uppercase tracking-wide">
         INFORMACIÓN RELEVANTE
       </h2>
-      
+
       <div
         className="relative w-full bg-white rounded-2xl shadow-xl overflow-hidden group flex flex-col md:flex-row h-auto min-h-[500px] border border-gray-100"
         onMouseEnter={() => setIsHovered(true)}
@@ -74,7 +80,7 @@ const RelevantInfoCarousel = () => {
       >
         {/* Left: Image Section */}
         <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden">
-          <div 
+          <div
             className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-in-out hover:scale-105"
             style={{ backgroundImage: `url(${currentItem.urlImagen})` }}
           />
@@ -91,50 +97,55 @@ const RelevantInfoCarousel = () => {
 
           {/* Buttons / Actions */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-6 w-full">
-              <div className="flex gap-2 flex-1">
-                {/* WhatsApp / Buy Button - Moved First */}
-                {currentItem.telefono && (
-                    <a 
-                    href={`https://wa.me/${currentItem.telefono.replace(/\s+/g, '')}?text=Hola, estoy interesado en ${encodeURIComponent(currentItem.titulo)}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                    >
-                      <span>Comprar</span>
-                    </a>
-                )}
-
-                {/* Ver más - Moved Second (Right) */}
-                {currentItem.url && (
-                    <a 
-                    href={currentItem.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
-                    >
-                    Ver más
-                    </a>
-                )}
-              </div>
-
-              {/* Price Display */}
-              {currentItem.precio > 0 && (
-                  <div className="flex justify-center sm:justify-start">
-                    <span className="text-xl font-bold text-gray-800 bg-blue-50 px-5 py-2 rounded-lg border border-blue-100 shadow-sm whitespace-nowrap">
-                        S/. {currentItem.precio.toFixed(2)}
-                    </span>
-                  </div>
+            <div className="flex gap-2 flex-1">
+              {/* WhatsApp / Buy Button - Moved First */}
+              {currentItem.telefono && (
+                <a
+                  href={`https://wa.me/${currentItem.telefono.replace(
+                    /\s+/g,
+                    ''
+                  )}?text=Hola, estoy interesado en ${encodeURIComponent(
+                    currentItem.titulo
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  <span>Comprar</span>
+                </a>
               )}
+
+              {/* Ver más - Moved Second (Right) */}
+              {currentItem.url && (
+                <a
+                  href={currentItem.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
+                >
+                  Ver más
+                </a>
+              )}
+            </div>
+
+            {/* Price Display */}
+            {currentItem.precio > 0 && (
+              <div className="flex justify-center sm:justify-start">
+                <span className="text-xl font-bold text-gray-800 bg-blue-50 px-5 py-2 rounded-lg border border-blue-100 shadow-sm whitespace-nowrap">
+                  S/. {currentItem.precio.toFixed(2)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Global Arrows - Visible on all screens now */ }
+
+        {/* Global Arrows - Visible on all screens now */}
         {items.length > 1 && (
           <>
             <button
               onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrev();
+                e.stopPropagation();
+                handlePrev();
               }}
               className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg z-20 active:scale-95 transition-all duration-200 focus:outline-none flex items-center justify-center backdrop-blur-sm"
               aria-label="Anterior"
@@ -144,8 +155,8 @@ const RelevantInfoCarousel = () => {
 
             <button
               onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
+                e.stopPropagation();
+                handleNext();
               }}
               className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg z-20 active:scale-95 transition-all duration-200 focus:outline-none flex items-center justify-center backdrop-blur-sm"
               aria-label="Siguiente"
@@ -166,8 +177,8 @@ const RelevantInfoCarousel = () => {
                   setCurrentIndex(index);
                 }}
                 className={`transition-all duration-300 shadow-sm ${
-                  index === currentIndex 
-                    ? 'bg-blue-600 w-8 h-2 rounded-full' 
+                  index === currentIndex
+                    ? 'bg-blue-600 w-8 h-2 rounded-full'
                     : 'bg-gray-300 w-2 h-2 rounded-full hover:bg-gray-400'
                 }`}
                 aria-label={`Ir a diapositiva ${index + 1}`}
@@ -175,7 +186,6 @@ const RelevantInfoCarousel = () => {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

@@ -148,11 +148,14 @@ const AdminCategories = () => {
   const handleCreate = async () => {
     // Check for duplicate category name (case-insensitive)
     const duplicateExists = categories.some(
-      (cat) => cat.nombre.trim().toLowerCase() === formData.nombre.trim().toLowerCase()
+      (cat) =>
+        cat.nombre.trim().toLowerCase() === formData.nombre.trim().toLowerCase()
     );
 
     if (duplicateExists) {
-      alert('Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.');
+      alert(
+        'Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.'
+      );
       return;
     }
 
@@ -162,10 +165,14 @@ const AdminCategories = () => {
           await categoriaService.create({ nombre: formData.nombre.trim() });
           break;
         case 'general':
-          await categoriaGeneralService.create({ nombre: formData.nombre.trim() });
+          await categoriaGeneralService.create({
+            nombre: formData.nombre.trim(),
+          });
           break;
         case 'simple':
-          await categoriaSimpleService.create({ nombre: formData.nombre.trim() });
+          await categoriaSimpleService.create({
+            nombre: formData.nombre.trim(),
+          });
           break;
         default:
           break;
@@ -181,16 +188,18 @@ const AdminCategories = () => {
 
   const handleUpdate = async () => {
     if (!editingId) return;
-    
+
     // Check for duplicate category name (case-insensitive), excluding the current item being edited
     const duplicateExists = categories.some(
-      (cat) => 
-        cat.id !== editingId && 
+      (cat) =>
+        cat.id !== editingId &&
         cat.nombre.trim().toLowerCase() === formData.nombre.trim().toLowerCase()
     );
 
     if (duplicateExists) {
-      alert('Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.');
+      alert(
+        'Ya existe una categoría con ese nombre. Por favor, elige un nombre diferente.'
+      );
       return;
     }
 
@@ -295,7 +304,6 @@ const AdminCategories = () => {
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <div className="flex space-x-4">
-
           <TabButton type="general" label="Categoría de Noticias" />
           <TabButton type="simple" label="Categoría de Recursos" />
           <TabButton type="standard" label="Categoría de Cursos" />
@@ -336,83 +344,89 @@ const AdminCategories = () => {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading && (
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  Cargando...
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            )}
-            {!loading && categories.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  No hay categorías registradas.
-                </td>
-              </tr>
-            )}
-            {!loading &&
-              categories.length > 0 &&
-              categories.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleView(item)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                      title="Ver Detalles"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => openModal(item)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      title="Editar"
-                    >
-                      <PencilIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Eliminar"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    Cargando...
                   </td>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              )}
+              {!loading && categories.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    No hay categorías registradas.
+                  </td>
+                </tr>
+              )}
+              {!loading &&
+                categories.length > 0 &&
+                categories.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.nombre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleView(item)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        title="Ver Detalles"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => openModal(item)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        title="Editar"
+                      >
+                        <PencilIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

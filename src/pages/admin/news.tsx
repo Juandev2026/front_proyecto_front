@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../hooks/useAuth';
 
 import {
   PencilIcon,
@@ -16,6 +15,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/outline';
+
+import { useAuth } from '../../hooks/useAuth';
+
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 
@@ -24,12 +26,11 @@ import {
   categoriaGeneralService,
   CategoriaGeneral,
 } from '../../services/categoriaGeneralService';
+import { estadoService, Estado } from '../../services/estadoService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import { noticiaService, Noticia } from '../../services/noticiaService';
 import { uploadService } from '../../services/uploadService';
-import { estadoService, Estado } from '../../services/estadoService';
-
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -77,7 +78,9 @@ const AdminNews = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [archivoFile, setArchivoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewArchivoUrl, setPreviewArchivoUrl] = useState<string | null>(null);
+  const [previewArchivoUrl, setPreviewArchivoUrl] = useState<string | null>(
+    null
+  );
 
   const modules = {
     toolbar: [
@@ -173,7 +176,13 @@ const AdminNews = () => {
     fetchModalidades();
     fetchNiveles();
     fetchEstados();
-  }, [fetchNews, fetchCategories, fetchModalidades, fetchNiveles, fetchEstados]);
+  }, [
+    fetchNews,
+    fetchCategories,
+    fetchModalidades,
+    fetchNiveles,
+    fetchEstados,
+  ]);
 
   // Filter levels when modality changes or modal opens with data
   // Filter levels when modality changes or modal opens with data
@@ -209,7 +218,7 @@ const AdminNews = () => {
     if (
       !isAdmin &&
       new Date().getTime() - new Date(item.fecha).getTime() >
-      7 * 24 * 60 * 60 * 1000
+        7 * 24 * 60 * 60 * 1000
     ) {
       // eslint-disable-next-line no-alert
       alert('No puedes eliminar noticias con más de 7 días de antigüedad.');
@@ -300,7 +309,9 @@ const AdminNews = () => {
 
   const handleAddNew = () => {
     setEditingId(null);
-    const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+    const estadoPublicado = estados.find(
+      (e) => e.nombre.toLowerCase() === 'publicado'
+    );
     setFormData({
       titulo: '',
       descripcion: '',
@@ -342,7 +353,9 @@ const AdminNews = () => {
     const descriptionText = stripHtml(formData.descripcion || '');
     if (descriptionText.length > 800) {
       // eslint-disable-next-line no-alert
-      alert(`La descripción no puede exceder los 800 caracteres. Actual: ${descriptionText.length} caracteres.`);
+      alert(
+        `La descripción no puede exceder los 800 caracteres. Actual: ${descriptionText.length} caracteres.`
+      );
       return;
     }
 
@@ -503,7 +516,7 @@ const AdminNews = () => {
                       className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                       style={{
                         backgroundColor: item.estado?.colorHex
-                          ? item.estado.colorHex + '20'
+                          ? `${item.estado.colorHex}20`
                           : '#e5e7eb',
                         color: item.estado?.colorHex || '#374151',
                       }}
@@ -528,15 +541,16 @@ const AdminNews = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
-                      className={`mr-4 ${user?.role?.toUpperCase() !== 'ADMIN' &&
-                          new Date().getTime() - new Date(item.fecha).getTime() >
+                      className={`mr-4 ${
+                        user?.role?.toUpperCase() !== 'ADMIN' &&
+                        new Date().getTime() - new Date(item.fecha).getTime() >
                           7 * 24 * 60 * 60 * 1000
                           ? 'text-gray-400 cursor-not-allowed'
                           : 'text-red-600 hover:text-red-900'
-                        }`}
+                      }`}
                       title={
                         user?.role?.toUpperCase() !== 'ADMIN' &&
-                          new Date().getTime() - new Date(item.fecha).getTime() >
+                        new Date().getTime() - new Date(item.fecha).getTime() >
                           7 * 24 * 60 * 60 * 1000
                           ? 'No se puede eliminar después de 7 días'
                           : 'Eliminar'
@@ -544,7 +558,7 @@ const AdminNews = () => {
                       disabled={
                         user?.role?.toUpperCase() !== 'ADMIN' &&
                         new Date().getTime() - new Date(item.fecha).getTime() >
-                        7 * 24 * 60 * 60 * 1000
+                          7 * 24 * 60 * 60 * 1000
                       }
                     >
                       <TrashIcon className="w-5 h-5" />
@@ -564,16 +578,20 @@ const AdminNews = () => {
             <button
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               Anterior
             </button>
             <button
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
+                currentPage === totalPages
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+              }`}
             >
               Siguiente
             </button>
@@ -581,7 +599,8 @@ const AdminNews = () => {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
+                Mostrando{' '}
+                <span className="font-medium">{indexOfFirstItem + 1}</span> a{' '}
                 <span className="font-medium">
                   {Math.min(indexOfLastItem, news.length)}
                 </span>{' '}
@@ -596,8 +615,9 @@ const AdminNews = () => {
                 <button
                   onClick={() => paginate(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <span className="sr-only">Anterior</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -615,7 +635,10 @@ const AdminNews = () => {
                   .map((page, index, array) => {
                     // Add ellipsis if there are gaps
                     const prevPage = array[index - 1];
-                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
+                    const showEllipsis =
+                      index > 0 &&
+                      prevPage !== undefined &&
+                      page - prevPage > 1;
                     return (
                       <React.Fragment key={page}>
                         {showEllipsis && (
@@ -625,11 +648,14 @@ const AdminNews = () => {
                         )}
                         <button
                           onClick={() => paginate(page)}
-                          aria-current={currentPage === page ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === page
+                          aria-current={
+                            currentPage === page ? 'page' : undefined
+                          }
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === page
                               ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                               : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                            }`}
+                          }`}
                         >
                           {page}
                         </button>
@@ -637,10 +663,15 @@ const AdminNews = () => {
                     );
                   })}
                 <button
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    paginate(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
                 >
                   <span className="sr-only">Siguiente</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -650,7 +681,6 @@ const AdminNews = () => {
           </div>
         </div>
       )}
-
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
@@ -707,12 +737,14 @@ const AdminNews = () => {
                   </div>
                   <div className="flex justify-end mb-4 -mt-6 mr-1">
                     <span
-                      className={`text-sm font-medium ${stripHtml(formData.descripcion || '').length > 800
+                      className={`text-sm font-medium ${
+                        stripHtml(formData.descripcion || '').length > 800
                           ? 'text-red-600'
                           : 'text-gray-500'
-                        }`}
+                      }`}
                     >
-                      {stripHtml(formData.descripcion || '').length} / 800 caracteres
+                      {stripHtml(formData.descripcion || '').length} / 800
+                      caracteres
                     </span>
                   </div>
                 </div>
@@ -931,7 +963,8 @@ const AdminNews = () => {
                           if (e.target.files && e.target.files[0]) {
                             const file = e.target.files[0];
                             // Revoke old URL to prevent memory leak
-                            if (previewArchivoUrl) URL.revokeObjectURL(previewArchivoUrl);
+                            if (previewArchivoUrl)
+                              URL.revokeObjectURL(previewArchivoUrl);
                             setArchivoFile(file);
                             setPreviewArchivoUrl(URL.createObjectURL(file));
                           }
@@ -967,7 +1000,8 @@ const AdminNews = () => {
                     placeholder="https://drive.google.com/..."
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Enlace externo para descargar el contenido (ej: Google Drive)
+                    Enlace externo para descargar el contenido (ej: Google
+                    Drive)
                   </p>
                 </div>
 
@@ -1233,8 +1267,18 @@ const AdminNews = () => {
                   className="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center gap-2 shadow-lg hover:shadow-xl"
                 >
                   {viewingItem.textoBotonDescarga || 'CLICK AQUÍ'}
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
                   </svg>
                 </a>
               </div>

@@ -36,7 +36,10 @@ export const nivelService = {
         if (typeof n.modalidadIds === 'number') {
           return n.modalidadIds === modalidadId;
         }
-        return n.modalidadId === modalidadId || (n.modalidadIds && n.modalidadIds.includes(modalidadId));
+        return (
+          n.modalidadId === modalidadId ||
+          (n.modalidadIds && n.modalidadIds.includes(modalidadId))
+        );
       });
     } catch (error) {
       // Log removed
@@ -44,9 +47,10 @@ export const nivelService = {
     }
   },
 
-  create: async (
-    nivel: { nombre: string; modalidadId: number }
-  ): Promise<Nivel> => {
+  create: async (nivel: {
+    nombre: string;
+    modalidadId: number;
+  }): Promise<Nivel> => {
     try {
       const payload = {
         nombre: nivel.nombre,

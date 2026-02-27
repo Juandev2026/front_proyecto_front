@@ -13,7 +13,7 @@ export interface SubPreguntaExamen {
 export interface PreguntaExamen {
   id: number;
   preguntaId: number; // Alias de id, usar este para enviar respuestas
-  examenId: number;   // Importante: Necesario para agrupar respuestas
+  examenId: number; // Importante: Necesario para agrupar respuestas
   enunciado: string;
   alternativaA: string;
   alternativaB: string;
@@ -22,11 +22,13 @@ export interface PreguntaExamen {
   imagen: string;
   puntos: number;
   tiempoPregunta: number;
-  clasificacionNombre?: string; 
+  clasificacionNombre?: string;
   respuesta?: string;
   sustento?: string;
   clasificacionId?: number;
   tipoPreguntaId?: number;
+  year?: number | string;
+  anio?: number | string;
   subPreguntas?: SubPreguntaExamen[]; // Nueva propiedad para sub-preguntas
 }
 
@@ -51,9 +53,9 @@ export interface ExamenResultado {
   cantidadCorrectas: number;
   cantidadIncorrectas: number;
   cantidadOmitidas: number;
-  idsCorrectas: string[];   // Cambiado a string[] para soportar "105-1"
+  idsCorrectas: string[]; // Cambiado a string[] para soportar "105-1"
   idsIncorrectas: string[]; // Cambiado a string[]
-  idsOmitidas: string[];    // Cambiado a string[]
+  idsOmitidas: string[]; // Cambiado a string[]
 }
 
 export interface ResultadoExamenResponse {
