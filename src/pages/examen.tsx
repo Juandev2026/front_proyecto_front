@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
 
 import {
   ClockIcon,
@@ -11,20 +10,18 @@ import {
   StarIcon as Star,
   TicketIcon as TargetIcon,
 } from '@heroicons/react/outline';
+import { AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
+import Toast from '../components/Toast';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { evaluacionService } from '../services/evaluacionService';
-import {
-  PreguntaExamen,
-  ResultadoExamenResponse,
-} from '../types/examen';
-import Toast from '../components/Toast';
+import { PreguntaExamen, ResultadoExamenResponse } from '../types/examen';
 
 const ExamenPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
 
   // Data State
@@ -34,7 +31,10 @@ const ExamenPage = () => {
 
   // { "preguntaId" o "preguntaId_subNumero": { examenId: number, alternativa: string } }
   const [respuestas, setRespuestas] = useState<
-    Record<string, { examenId: number; alternativa: string; isCorrect?: boolean }>
+    Record<
+      string,
+      { examenId: number; alternativa: string; isCorrect?: boolean }
+    >
   >({}); // Results State
   const [examResult, setExamResult] = useState<ResultadoExamenResponse | null>(
     null
@@ -52,7 +52,9 @@ const ExamenPage = () => {
   const [showQuestionPanel, setShowQuestionPanel] = useState(true);
 
   // Toast State
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' }[]>([]);
+  const [toasts, setToasts] = useState<
+    { id: string; message: string; type: 'success' | 'error' | 'info' }[]
+  >([]);
 
   const addToast = (message: string, type: 'success' | 'error' | 'info') => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -179,7 +181,9 @@ const ExamenPage = () => {
     } else if (currentQuestion) {
       let textToRead = '';
       if ((currentQuestion as any).parentEnunciado) {
-        textToRead += `Texto de lectura: ${(currentQuestion as any).parentEnunciado}. `;
+        textToRead += `Texto de lectura: ${
+          (currentQuestion as any).parentEnunciado
+        }. `;
       }
       textToRead += `Pregunta: ${currentQuestion.enunciado || ''}. `;
 
@@ -233,7 +237,7 @@ const ExamenPage = () => {
       const isCorrect =
         respuestas[key].alternativa.toUpperCase() ===
         currentQuestion.respuesta?.toUpperCase();
-      
+
       setRespuestas((prev) => {
         const current = prev[key];
         if (!current) return prev;
@@ -295,41 +299,36 @@ const ExamenPage = () => {
       setIsSubmitting(true);
       window.speechSynthesis.cancel();
 
-      const payloadMap: Record<number, any[]> = {};
+      const firstQuestion = questions[0];
+      const examYearRaw = String(metadata?.year || firstQuestion?.year || '0')
+        .split(',')[0]
+        .trim();
+      const examYear = parseInt(examYearRaw, 10) || 0;
 
-      Object.entries(respuestas).forEach(([key, data]) => {
-        if (!data) return;
-        const index = Number(key);
-        const q = questions[index];
-        if (!q) return;
+      const respuestasPayload = questions.map((q, index) => {
+        const key = String(index);
+        const data = respuestas[key];
 
-        const preguntaId = q.id;
-        const subNum = (q as any).numeroSubPregunta;
-        const eid = q.examenId;
-
-        if (!payloadMap[eid]) {
-          payloadMap[eid] = [];
-        }
-
-        payloadMap[eid].push({
-          preguntaId,
-          numeroSubPregunta: subNum,
-          alternativaMarcada: data.alternativa,
-        });
-      });
-
-      const examenesPayload = Object.keys(payloadMap).map((examenIdStr) => {
-        const eid = Number(examenIdStr);
         return {
-          examenId: eid,
-          respuestas: payloadMap[eid] || [],
+          preguntaId: q.preguntaId || q.id,
+          subPreguntaNumero: (q as any).numeroSubPregunta || null,
+          alternativaMarcada: data?.alternativa || '',
         };
       });
 
-      const payload = { examenes: examenesPayload };
-      console.log('Payload prepared:', JSON.stringify(payload, null, 2));
+      const payload: SolucionExamenRequest = {
+        examenId: firstQuestion?.examenId || 0,
+        userId: user?.id || 0,
+        year: examYear,
+        respuestas: respuestasPayload as any[], // Safe cast as we've matched documentation
+      };
 
-      if (examenesPayload.length === 0) {
+      console.log(
+        'Payload prepared for grading:',
+        JSON.stringify(payload, null, 2)
+      );
+
+      if (payload.respuestas.length === 0) {
         console.warn('Payload is empty! No answers recorded?');
         alert(
           'Advertencia: No se han registrado respuestas. ¿Estás seguro de que marcaste alguna alternativa?'
@@ -389,9 +388,7 @@ const ExamenPage = () => {
 
     const subNum = (q as any).numeroSubPregunta;
     // Backend returns IDs like "100" or "100-1"
-    const backendKey = subNum !== undefined
-      ? `${q.id}-${subNum}`
-      : `${q.id}`;
+    const backendKey = subNum !== undefined ? `${q.id}-${subNum}` : `${q.id}`;
 
     if (
       result.idsCorrectas.includes(backendKey) ||
@@ -626,7 +623,8 @@ const ExamenPage = () => {
                   );
                 })()}
                 {(() => {
-                  const isAnyAnswered = respuestas[String(currentIndex)] !== undefined;
+                  const isAnyAnswered =
+                    respuestas[String(currentIndex)] !== undefined;
                   return (
                     <span
                       className={`${
@@ -694,7 +692,8 @@ const ExamenPage = () => {
                     if (!content) return null;
 
                     const answerKey = String(currentIndex);
-                    const isSelected = respuestas[answerKey]?.alternativa === opt;
+                    const isSelected =
+                      respuestas[answerKey]?.alternativa === opt;
                     const isAnswered = respuestas[answerKey] !== undefined;
                     const status = getQuestionStatus(currentIndex);
 
@@ -710,14 +709,16 @@ const ExamenPage = () => {
 
                       // Real-time or Final result coloring
                       if (status === 'correct') {
-                        containerClass = 'bg-green-600 border-green-600 text-white';
+                        containerClass =
+                          'bg-green-600 border-green-600 text-white';
                       } else if (status === 'incorrect') {
                         containerClass = 'bg-red-500 border-red-500 text-white';
                       }
                     } else if (isAnswered && !isSelected) {
-                        // De-emphasize other options when answered
-                        containerClass = 'bg-gray-50 border-gray-100 text-gray-400 opacity-60';
-                        letterClass = 'bg-gray-100 border-gray-200 text-gray-300';
+                      // De-emphasize other options when answered
+                      containerClass =
+                        'bg-gray-50 border-gray-100 text-gray-400 opacity-60';
+                      letterClass = 'bg-gray-100 border-gray-200 text-gray-300';
                     }
 
                     return (
@@ -914,7 +915,8 @@ const ExamenPage = () => {
                   } else if (status === 'incorrect') {
                     btnClass = 'bg-red-100 border-red-300 text-red-700';
                   } else if (status === 'omitted') {
-                    btnClass = 'bg-orange-100 border-orange-300 text-orange-700';
+                    btnClass =
+                      'bg-orange-100 border-orange-300 text-orange-700';
                   } else if (isAnswered) {
                     btnClass =
                       'bg-blue-50 border-blue-200 text-[#002B6B] hover:border-blue-400';
