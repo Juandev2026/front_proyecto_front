@@ -444,7 +444,32 @@ const Recursos = () => {
     return allYears.sort((a, b) => Number(b) - Number(a)).map(y => ({ year: y.toString() }));
   }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, allExams, loginExamenes, userRole]);
 
-  const currentItems = filteredItems;
+  // --- CONTINUOUS INDEXING LOGIC ---
+  const itemsWithIndices = useMemo(() => {
+    let globalCounter = 0;
+    return filteredItems.map(item => {
+      const isParent = item.tipoPreguntaId === 2;
+      let mainIdx = null;
+      
+      if (!isParent) {
+        globalCounter++;
+        mainIdx = globalCounter;
+      }
+      
+      const subPreguntas = item.subPreguntas || subQuestionsMap[item.id] || [];
+      // Sort subs by order (numero) then by id
+      const sortedSubs = [...subPreguntas].sort((a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id);
+      
+      const subsWithIdx = sortedSubs.map(s => {
+        globalCounter++;
+        return { ...s, displayIndex: globalCounter };
+      });
+      
+      return { ...item, displayIndex: mainIdx, subsWithIdx };
+    });
+  }, [filteredItems, subQuestionsMap]);
+
+  const currentItems = itemsWithIndices;
 
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
@@ -810,7 +835,7 @@ const Recursos = () => {
              };
              
              const data = await preguntaService.examenFilter(filterData);
-             setItems(data.sort((a, b) => b.id - a.id));
+             setItems(data.sort((a, b) => a.id - b.id));
           } catch (err) {
              console.error('Error fetching questions with filter:', err);
              setItems([]);
@@ -819,7 +844,7 @@ const Recursos = () => {
           try {
              setItemsLoading(true);
              const data = await preguntaService.getAll();
-             setItems(data.sort((a, b) => b.id - a.id));
+             setItems(data.sort((a, b) => a.id - b.id));
           } catch (err) {
              console.error('Error fetching all questions:', err);
              setItems([]);
@@ -1721,11 +1746,10 @@ const Recursos = () => {
           </div>
         ) : (
           <div className="space-y-6 mt-6">
-            {currentItems.map((item, index) => {
+            {currentItems.map((item) => {
               const isParent = item.tipoPreguntaId === 2;
               const isLoadingSubs = loadingSubIds.has(item.id);
-              const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
-              const subCount = item.subPreguntas ? item.subPreguntas.length : (subCountsMap[item.id] ?? 0);
+              const subCount = item.subsWithIdx ? item.subsWithIdx.length : (subCountsMap[item.id] ?? 0);
 
               return (
               <div
@@ -1735,9 +1759,11 @@ const Recursos = () => {
                 {/* --- HEADER --- */}
                 <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                      {index + 1}
-                    </span>
+                    {item.displayIndex && (
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
+                        {item.displayIndex}
+                        </span>
+                    )}
                     <div className="flex flex-col">
                         <h3 className="font-bold text-lg text-gray-900 leading-tight">
                         {isParent ? 'Comprensión Lectora' : 'Pregunta Individual'}
@@ -1813,19 +1839,19 @@ const Recursos = () => {
                               </svg>
                               <span className="font-medium">Cargando sub-preguntas...</span>
                             </div>
-                          ) : subs.length === 0 ? (
+                          ) : item.subsWithIdx.length === 0 ? (
                             <div className="text-center p-6 text-gray-400 italic">
                                No se encontraron sub-preguntas.
                             </div>
                           ) : (
-                            subs.map((sub, idx) => (
-                              <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            item.subsWithIdx.map((sub, sIdx) => (
+                              <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero || sIdx}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                                   {/* Header mini */}
                                   <div className="flex items-center gap-2 mb-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                      {sub.numero || idx + 1}
+                                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
+                                      {sub.displayIndex}
                                     </span>
-                                    <span className="text-xs font-bold text-gray-500 uppercase">Sub-Pregunta {sub.numero || idx + 1}</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sub-Pregunta {sub.displayIndex}</span>
                                     
                                     <div className="ml-auto flex gap-2">
                                         <button 
