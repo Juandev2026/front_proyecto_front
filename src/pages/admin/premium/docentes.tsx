@@ -329,7 +329,9 @@ const AdminPremiumDocentes = () => {
       const users = await userService.getAll();
       // Filter by role 'Premium' AND NOT expired
       const premiumUsers = users.filter(u => 
-        u.role === 'Premium' || (u.role === 'Client' && u.fechaExpiracion && u.fechaExpiracion !== '-')
+        u.role?.toUpperCase() === 'PREMIUM' || 
+        u.role?.toUpperCase() === 'DOCENTE' || 
+        (u.fechaExpiracion && u.fechaExpiracion !== '-')
       );
 
       // Map to Docente interface

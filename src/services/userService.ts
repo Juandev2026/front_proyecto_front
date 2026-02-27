@@ -64,15 +64,37 @@ export interface User {
 export const userService = {
   getAll: async (): Promise<User[]> => {
     try {
-      const response = await fetch(`${API_URL}?page=1&pageSize=9999`, {
-        headers: getPublicHeaders(),
-      });
-      if (!response.ok) {
-        throw new Error('Error al obtener usuarios');
+      let allUsers: User[] = [];
+      let currentPage = 1;
+      const pageSize = 100; // Máximo permitido por el backend
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await fetch(`${API_URL}?page=${currentPage}&pageSize=${pageSize}`, {
+          headers: getPublicHeaders(),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener usuarios');
+        }
+
+        const result = await response.json();
+        const users = Array.isArray(result) ? result : (result.data ?? []);
+        
+        allUsers = [...allUsers, ...users];
+
+        // Verificar si hay más páginas
+        if (result.totalPages && currentPage < result.totalPages) {
+          currentPage++;
+        } else if (users.length === pageSize) {
+          // Fallback por si no viene totalPages pero la página está llena
+          currentPage++;
+        } else {
+          hasMore = false;
+        }
       }
-      const result = await response.json();
-      // El backend puede devolver { data: [] } o directamente []
-      return Array.isArray(result) ? result : (result.data ?? []);
+
+      return allUsers;
     } catch (error) {
       throw error;
     }

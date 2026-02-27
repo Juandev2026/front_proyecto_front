@@ -7,7 +7,6 @@ import {
   PlusIcon,
   DocumentTextIcon,
   ChevronLeftIcon,
-  ChevronRightIcon,
   SparklesIcon,
   ChevronDownIcon,
   PhotographIcon,
@@ -33,6 +32,7 @@ import { aiService } from '../../../services/aiService';
 import HtmlMathRenderer from '../../../components/common/HtmlMathRenderer';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
+import { ADMIN_CATALOG } from '../../../data/adminCatalog';
 
 
 // Dynamic import for ReactQuill
@@ -50,7 +50,118 @@ const Recursos = () => {
   // --- ESTADOS LOGICOS (CRUD) ---
   const [items, setItems] = useState<Pregunta[]>([]);
 
-  const [groupedData, setGroupedData] = useState<ExamenGrouped[]>([]);
+  const [rawGroupedData, setRawGroupedData] = useState<ExamenGrouped[]>([]);
+  const [loginExamenes, setLoginExamenes] = useState<any[]>([]);
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const examenesStr = localStorage.getItem('loginExamenes');
+      const role = localStorage.getItem('role');
+      
+      if (examenesStr) setLoginExamenes(JSON.parse(examenesStr));
+      if (role) setUserRole(role);
+    }
+  }, []);
+
+  const groupedData = useMemo(() => {
+    // 1. Iniciamos con una copia del catálogo general
+    let combined = JSON.parse(JSON.stringify(rawGroupedData)) as ExamenGrouped[];
+
+    // 2. Normalizamos la lista de exámenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
+    const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
+
+    // 3. Fusionamos con la información de userExamsList para asegurar que no falte nada (como "Directivos")
+    if (userExamsList && userExamsList.length > 0) {
+      userExamsList.forEach((le: any) => {
+        const tId = Number(le.tipoExamenId);
+        if (!tId) return;
+
+        let tipo = combined.find(t => t.tipoExamenId === tId);
+        if (!tipo) {
+          tipo = {
+            tipoExamenId: tId,
+            tipoExamenNombre: le.tipoExamenNombre || 'Sin nombre',
+            fuentes: []
+          };
+          combined.push(tipo);
+        }
+
+        const fId = Number(le.fuenteId);
+        let fuente = tipo.fuentes.find(f => f.fuenteId === fId);
+        if (!fuente) {
+          fuente = {
+            fuenteId: fId,
+            fuenteNombre: le.fuenteNombre || 'Sin nombre',
+            modalidades: []
+          };
+          tipo.fuentes.push(fuente);
+        }
+
+        const mId = Number(le.modalidadId);
+        let mod = fuente.modalidades.find(m => m.modalidadId === mId);
+        if (!mod) {
+          mod = {
+            modalidadId: mId,
+            modalidadNombre: le.modalidadNombre || 'Sin nombre',
+            niveles: []
+          };
+          fuente.modalidades.push(mod);
+        }
+
+        const nId = Number(le.nivelId);
+        let niv = mod.niveles.find(n => n.nivelId === nId);
+        if (!niv) {
+          niv = {
+            nivelId: nId,
+            nivelNombre: le.nivelNombre || 'Sin nombre',
+            especialidades: []
+          };
+          mod.niveles.push(niv);
+        }
+
+        const eId = (le.especialidadId === null || le.especialidadId === undefined) ? null : Number(le.especialidadId);
+        const hasEsp = niv.especialidades.some(e => 
+            (e.especialidadId === eId) || (eId === null && e.especialidadId === null)
+        );
+        if (!hasEsp) {
+          niv.especialidades.push({
+            especialidadId: eId,
+            especialidadNombre: le.especialidadNombre || 'General'
+          });
+        }
+      });
+    }
+
+    // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado (ADMIN_CATALOG)
+    if (userRole === 'Admin') return ADMIN_CATALOG;
+
+    // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
+    return combined.filter(tipo => 
+      userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId)
+    ).map(tipo => ({
+      ...tipo,
+      fuentes: tipo.fuentes.filter(f => 
+        userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId)
+      ).map(f => ({
+        ...f,
+        modalidades: f.modalidades.filter(m => 
+           userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId)
+        ).map(m => ({
+          ...m,
+          niveles: m.niveles.filter(n => 
+            userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId && le.nivelId === n.nivelId)
+          ).map(n => ({
+            ...n,
+            especialidades: n.especialidades.filter(e => 
+              userExamsList.some((le: any) => le.tipoExamenId === tipo.tipoExamenId && le.fuenteId === f.fuenteId && le.modalidadId === m.modalidadId && le.nivelId === n.nivelId && (e.especialidadId === null ? le.especialidadId === null : le.especialidadId === e.especialidadId))
+            )
+          }))
+        }))
+      }))
+    }));
+  }, [rawGroupedData, loginExamenes, userRole]);
+
   const [allExams, setAllExams] = useState<Examen[]>([]);
   const [tipoPreguntas, setTipoPreguntas] = useState<TipoPregunta[]>([]);
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
@@ -75,8 +186,7 @@ const Recursos = () => {
   const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+
 
   // --- ESTADOS VISUALES (FILTROS UI) ---
   const [selectedTipo, setSelectedTipo] = useState<number | ''>('');
@@ -250,55 +360,91 @@ const Recursos = () => {
 
   const availableModalidades = useMemo(() => {
     if (!selectedFuente) return [];
-    const mods = availableFuentes.find(f => f.fuenteId === Number(selectedFuente))?.modalidades || [];
-    return [...mods].reverse();
+    const mods = availableFuentes.find((f: any) => f.fuenteId === Number(selectedFuente))?.modalidades || [];
+    return [...mods];
   }, [availableFuentes, selectedFuente]);
 
   const availableNiveles = useMemo(() => {
     if (!selectedModalidad) return [];
-    return availableModalidades.find(m => m.modalidadId === Number(selectedModalidad))?.niveles || [];
+    return availableModalidades.find((m: any) => m.modalidadId === Number(selectedModalidad))?.niveles || [];
   }, [availableModalidades, selectedModalidad]);
 
   const availableEspecialidades = useMemo(() => {
     if (!selectedNivel) return [];
-    return availableNiveles.find(n => n.nivelId === Number(selectedNivel))?.especialidades || [];
+    return availableNiveles.find((n: any) => n.nivelId === Number(selectedNivel))?.especialidades || [];
   }, [availableNiveles, selectedNivel]);
+
+  // Auto-select level if only one is available and it's "NINGUNO" (hidden)
+  useEffect(() => {
+    const firstNivel = availableNiveles[0];
+    if (availableNiveles.length === 1 && firstNivel?.nivelNombre?.toUpperCase() === 'NINGUNO' && selectedNivel === '') {
+      setSelectedNivel(firstNivel.nivelId);
+    }
+  }, [availableNiveles, selectedNivel]);
+
+  // Auto-select specialty if only one is available and it's null/empty (hidden)
+  useEffect(() => {
+    const firstEsp = availableEspecialidades[0];
+    if (availableEspecialidades.length === 1 && (!firstEsp?.especialidadId) && selectedEspecialidad === '') {
+      setSelectedEspecialidad(firstEsp?.especialidadId === null ? 0 : (firstEsp?.especialidadId ?? ''));
+    }
+  }, [availableEspecialidades, selectedEspecialidad]);
 
   const availableYears = useMemo(() => {
     if (!selectedTipo || !selectedFuente) return [];
 
-    let effectiveEspecialidadId: number = 0;
-    if (selectedEspecialidad) {
-      effectiveEspecialidadId = Number(selectedEspecialidad);
-    } else if (availableEspecialidades.length === 1 && (!availableEspecialidades[0]?.especialidadId || availableEspecialidades[0].especialidadId === 0)) {
-      effectiveEspecialidadId = 0;
-    } else if (availableEspecialidades.length > 0) {
-      return [];
+    // Prioridad 1: Si es Admin, usamos la jerarquía de ADMIN_CATALOG
+    if (userRole === 'Admin') {
+        const tipo = ADMIN_CATALOG.find(t => t.tipoExamenId === Number(selectedTipo));
+        const fuente = tipo?.fuentes.find(f => f.fuenteId === Number(selectedFuente));
+        const modalidad = fuente?.modalidades.find(m => m.modalidadId === Number(selectedModalidad));
+        const nivel = modalidad?.niveles.find(n => n.nivelId === Number(selectedNivel));
+        const especialidad = nivel?.especialidades.find(e => 
+            (selectedEspecialidad === '') 
+                ? (e.especialidadId === null || e.especialidadId === 0)
+                : e.especialidadId === Number(selectedEspecialidad)
+        );
+
+        if (especialidad?.years) {
+            return especialidad.years.map(y => ({ year: y.year }));
+        }
+        
+        // Fallback for NINGUNO level if no specialty selected
+        if (!especialidad && nivel && !selectedEspecialidad) {
+            const defaultEsp = nivel.especialidades[0];
+            if (defaultEsp?.years) return defaultEsp.years.map(y => ({ year: y.year }));
+        }
     }
 
+    // Prioridad 2: Lógica actual para usuarios no-admin o fallback
+    const effEspecialidadId = selectedEspecialidad ? Number(selectedEspecialidad) : 0;
     const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
     const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
 
-    const filtered = allExams.filter(e => 
+    const filteredFromCatalog = allExams.filter(e => 
       e.tipoExamenId === Number(selectedTipo) &&
       e.fuenteId === Number(selectedFuente) &&
       (effModalidadId === 0 ? (!e.modalidadId || e.modalidadId === 0) : e.modalidadId === effModalidadId) &&
       (effNivelId === 0 ? (!e.nivelId || e.nivelId === 0) : e.nivelId === effNivelId) &&
-      (effectiveEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effectiveEspecialidadId) &&
-      e.year
-    );
+      (effEspecialidadId === 0 ? (!e.especialidadId || e.especialidadId === 0) : e.especialidadId === effEspecialidadId)
+    ).flatMap(e => (e as any).years ? (e as any).years.map((y: any) => y.year) : [e.year]);
 
-    const yearsSet = Array.from(new Set(filtered.map(e => e.year)));
-    return yearsSet.sort().reverse().map(y => ({ year: y }));
-  }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, availableEspecialidades, allExams]);
+    const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
+    const filteredFromUser = userExamsList.filter((le: any) => 
+      Number(le.tipoExamenId) === Number(selectedTipo) &&
+      Number(le.fuenteId) === Number(selectedFuente) &&
+      (effModalidadId === 0 || Number(le.modalidadId) === effModalidadId) &&
+      (effNivelId === 0 || (le.nivelId !== null && Number(le.nivelId) === effNivelId)) &&
+      (effEspecialidadId === 0 || (le.especialidadId !== null && Number(le.especialidadId) === effEspecialidadId))
+    ).flatMap((le: any) => le.years?.map((y: any) => y.year) || (le.year !== undefined ? [le.year] : []));
 
-  // --- PAGINATION LÓGICA ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const allYears = Array.from(new Set([...filteredFromCatalog, ...filteredFromUser]))
+      .filter(y => y !== null && y !== undefined && y !== '' && y !== 0 && y !== '0');
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    return allYears.sort((a, b) => Number(b) - Number(a)).map(y => ({ year: y.toString() }));
+  }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, allExams, loginExamenes, userRole]);
+
+  const currentItems = filteredItems;
 
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
@@ -614,10 +760,10 @@ const Recursos = () => {
       }
       // Actually we need them to populate dropdowns.
       // Maybe we can split this? For now, keep loading controls.
-      if (groupedData.length === 0) {
+      if (rawGroupedData.length === 0) {
           try {
             const grouped = await examenService.getGrouped();
-            setGroupedData(grouped);
+            setRawGroupedData(grouped);
           } catch (err: any) {
              console.error('Examen Service Error:', err);
           }
@@ -670,8 +816,15 @@ const Recursos = () => {
              setItems([]);
           }
       } else {
-         setItems([]);
-      }
+          try {
+             setItemsLoading(true);
+             const data = await preguntaService.getAll();
+             setItems(data.sort((a, b) => b.id - a.id));
+          } catch (err) {
+             console.error('Error fetching all questions:', err);
+             setItems([]);
+          }
+       }
 
     } catch (err: any) {
       console.error('Unexpected Error:', err);
@@ -853,7 +1006,7 @@ const Recursos = () => {
   );
 
   // --- RENDER ---
-  if (loading && groupedData.length === 0)
+  if (loading && rawGroupedData.length === 0)
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-64">
@@ -1216,11 +1369,10 @@ const Recursos = () => {
                   setSelectedNivel('');
                   setSelectedEspecialidad('');
                   setSelectedYear('');
-                  setCurrentPage(1);
                 }}
               >
                 <option value="">Seleccionar Tipo Exámen</option>
-                {groupedData.map((t) => (
+                {groupedData.map((t: any) => (
                   <option key={t.tipoExamenId} value={t.tipoExamenId}>
                     {t.tipoExamenNombre}
                   </option>
@@ -1242,7 +1394,6 @@ const Recursos = () => {
                   setSelectedNivel('');
                   setSelectedEspecialidad('');
                   setSelectedYear('');
-                  setCurrentPage(1);
                 }}
                 disabled={!selectedTipo}
               >
@@ -1251,7 +1402,7 @@ const Recursos = () => {
                     ? 'Selecciona una sección'
                     : 'Primero selecciona el tipo de examen'}
                 </option>
-                {availableFuentes.map((f) => (
+                {availableFuentes.map((f: any) => (
                   <option key={f.fuenteId} value={f.fuenteId}>
                     {f.fuenteNombre}
                   </option>
@@ -1276,7 +1427,7 @@ const Recursos = () => {
                 disabled={!selectedFuente || availableModalidades.length === 0}
               >
                 <option value="" disabled hidden>Seleccionar modalidad</option>
-                {availableModalidades.map((m) => (
+                {availableModalidades.map((m: any) => (
                   <option key={m.modalidadId} value={m.modalidadId}>
                     {m.modalidadNombre}
                   </option>
@@ -1285,7 +1436,8 @@ const Recursos = () => {
             </div>
 
             {/* 4. Nivel */}
-            {availableNiveles.length > 0 && (
+            {availableNiveles.length > 0 && 
+             !(availableNiveles.length === 1 && availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO') && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
                   {isDirectivo ? 'Examen Directivo' : 'Nivel'}
@@ -1301,7 +1453,7 @@ const Recursos = () => {
                   disabled={!selectedModalidad}
                 >
                   <option value="" disabled hidden>Seleccionar nivel</option>
-                  {availableNiveles.map((n) => (
+                  {availableNiveles.map((n: any) => (
                     <option key={n.nivelId} value={n.nivelId}>
                       {n.nivelNombre}
                     </option>
@@ -1328,7 +1480,7 @@ const Recursos = () => {
                   disabled={!selectedNivel}
                 >
                   <option value="" disabled hidden>Seleccionar especialidad</option>
-                  {availableEspecialidades.map((e, idx) => (
+                  {availableEspecialidades.map((e: any, idx: any) => (
                     <option key={e.especialidadId !== null ? e.especialidadId : `null-${idx}`} value={e.especialidadId !== null ? e.especialidadId.toString() : ''}>
                       {e.especialidadNombre ?? 'General'}
                     </option>
@@ -1338,7 +1490,7 @@ const Recursos = () => {
             )}
 
             {/* 6. Año */}
-            {(selectedEspecialidad || (selectedNivel && (availableEspecialidades.length === 0 || (availableEspecialidades.length === 1 && !availableEspecialidades[0]?.especialidadId))) || (selectedModalidad && availableNiveles.length === 0)) && (
+            {selectedModalidad && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
                   Año
@@ -1360,7 +1512,7 @@ const Recursos = () => {
           </div>
 
           {/* New Row for Year Management */}
-          {(selectedEspecialidad || (selectedNivel && (availableEspecialidades.length === 0 || (availableEspecialidades.length === 1 && !availableEspecialidades[0]?.especialidadId))) || (selectedModalidad && availableNiveles.length === 0)) && (
+          {selectedModalidad && (
              <div className="flex items-end gap-2 mt-4">
                  <input 
                      type="text"
@@ -1584,7 +1736,7 @@ const Recursos = () => {
                 <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="flex items-center gap-3">
                     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                      {indexOfFirstItem + index + 1}
+                      {index + 1}
                     </span>
                     <div className="flex flex-col">
                         <h3 className="font-bold text-lg text-gray-900 leading-tight">
@@ -1773,97 +1925,6 @@ const Recursos = () => {
               );
             })}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm">
-                <div className="flex flex-1 justify-between sm:hidden">
-                  <button
-                    onClick={() => paginate(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    onClick={() =>
-                      paginate(Math.min(totalPages, currentPage + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Mostrando{' '}
-                      <span className="font-medium">
-                        {indexOfFirstItem + 1}
-                      </span>{' '}
-                      a{' '}
-                      <span className="font-medium">
-                        {Math.min(indexOfLastItem, filteredItems.length)}
-                      </span>{' '}
-                      de{' '}
-                      <span className="font-medium">
-                        {filteredItems.length}
-                      </span>{' '}
-                      resultados
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                      >
-                        <span className="sr-only">Anterior</span>
-                        <ChevronLeftIcon
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                        />
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <button
-                            key={page}
-                            onClick={() => paginate(page)}
-                            aria-current={
-                              currentPage === page ? 'page' : undefined
-                            }
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                              currentPage === page
-                                ? 'bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0'
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )
-                      )}
-                      <button
-                        onClick={() =>
-                          paginate(Math.min(totalPages, currentPage + 1))
-                        }
-                        disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                      >
-                        <span className="sr-only">Siguiente</span>
-                        <ChevronRightIcon
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
         </div>

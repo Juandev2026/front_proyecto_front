@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import AdminLayout from '../../components/AdminLayout';
 import { regionService, Region } from '../../services/regionService';
@@ -22,7 +22,6 @@ interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId:
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [serverPage, setServerPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
   const PAGE_SIZE = 20;
@@ -105,23 +104,11 @@ const UsersPage = () => {
   };
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchDebounced, setSearchDebounced] = useState('');
 
-  // Debounce del buscador: espera 800ms antes de disparar la búsqueda
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchDebounced(searchTerm);
-      setServerPage(1); // volver a página 1 al buscar
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Al cambiar el rol, volver a página 1 y recargar
+  // Al cambiar el rol o búsqueda, volver a página 1
   useEffect(() => {
     setServerPage(1);
-  }, [selectedRole]);
-
-  const abortControllerRef = useRef<AbortController | null>(null);
+  }, [selectedRole, searchTerm]);
 
   const getEffectiveRole = (user: User) => {
     if (user.role?.toUpperCase() === 'PREMIUM') {
@@ -158,7 +145,6 @@ const UsersPage = () => {
         ]);
 
       setUsers(usersData);
-      setTotalUsers(usersData.length);
       setRegions(regionsData);
       setModalidades(hierarchyData.modalidades.reverse() as any);
       setNiveles(hierarchyData.niveles as any);
@@ -262,7 +248,7 @@ const UsersPage = () => {
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
-      await loadUsersOnly(serverPage, searchDebounced);
+      await loadUsersOnly();
     } catch (error: any) {
       console.error('Error in handleSubmit:', error);
       alert(`Error al guardar usuario: ${error.message || error}`);
@@ -308,7 +294,7 @@ const UsersPage = () => {
     if (window.confirm('¿Está seguro de que desea eliminar este usuario?')) {
       try {
         await userService.delete(id);
-        await loadUsersOnly(serverPage, searchDebounced);
+        await loadUsersOnly();
       } catch (error) {
         // Error deleting user
       }
@@ -329,7 +315,13 @@ const UsersPage = () => {
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
     
-    // Filtro por Rol (Dropdown)
+    // REGLA: En esta página NO se muestran los Docentes/Premium.
+    const isPremium = user.role?.toUpperCase() === 'PREMIUM' || 
+                      user.role?.toUpperCase() === 'DOCENTE' || 
+                      (user.fechaExpiracion && user.fechaExpiracion !== '-');
+    if (isPremium) return false;
+
+    // Filtro por Rol (Dropdown opcional para Admin/Client)
     if (selectedRole && effectiveRole !== selectedRole) return false;
 
     // Filtro por Búsqueda (Input)
