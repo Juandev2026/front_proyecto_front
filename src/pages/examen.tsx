@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
 import {
   ClockIcon,
@@ -20,6 +21,7 @@ import {
   PreguntaExamen,
   ResultadoExamenResponse,
 } from '../types/examen';
+import Toast from '../components/Toast';
 
 const ExamenPage = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -48,6 +50,18 @@ const ExamenPage = () => {
     useState<SpeechSynthesisVoice | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [showQuestionPanel, setShowQuestionPanel] = useState(true);
+
+  // Toast State
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' }[]>([]);
+
+  const addToast = (message: string, type: 'success' | 'error' | 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   // Auth Guard & Data Loading
   useEffect(() => {
@@ -94,6 +108,9 @@ const ExamenPage = () => {
     if (savedMetadata) {
       setMetadata(JSON.parse(savedMetadata));
     }
+
+    // Trigger start toast
+    addToast('Examen iniciado correctamente.', 'success');
   }, [loading, isAuthenticated, router]);
 
   // Timer Effect
@@ -228,6 +245,12 @@ const ExamenPage = () => {
           },
         };
       });
+
+      if (isCorrect) {
+        addToast('¡Respuesta correcta!', 'success');
+      } else {
+        addToast('Respuesta incorrecta.', 'error');
+      }
     }
   };
 
@@ -930,6 +953,20 @@ const ExamenPage = () => {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <div key={toast.id} className="pointer-events-auto">
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => removeToast(toast.id)}
+              />
+            </div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <style jsx global>{`
