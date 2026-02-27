@@ -8,6 +8,12 @@ export const getPublicHeaders = () => {
 };
 
 export const getAuthHeaders = () => {
+  if (typeof window === 'undefined') {
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer 3231232141346`,
+    };
+  }
   const token = localStorage.getItem('token') || '3231232141346';
 
   const headers: any = {
@@ -18,6 +24,11 @@ export const getAuthHeaders = () => {
 };
 
 export const getAuthHeadersFormData = () => {
+  if (typeof window === 'undefined') {
+    return {
+      Authorization: `Bearer 3231232141346`,
+    };
+  }
   const token = localStorage.getItem('token') || '3231232141346';
 
   const headers: any = {};

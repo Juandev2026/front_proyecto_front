@@ -313,10 +313,22 @@ const ExamenPage = () => {
         const key = String(index);
         const data = respuestas[key];
 
+        // El backend espera números (1, 2, 3) para preguntas regulares, pero letras (A, B) para sub-preguntas.
+        let finalAnswer = data?.alternativa || '';
+        if (finalAnswer && !(q as any).isSubPregunta) {
+          const charMap: Record<string, string> = {
+            A: '1',
+            B: '2',
+            C: '3',
+            D: '4',
+          };
+          finalAnswer = charMap[finalAnswer] || finalAnswer;
+        }
+
         return {
           preguntaId: q.preguntaId || q.id,
           subPreguntaNumero: (q as any).numeroSubPregunta || null,
-          alternativaMarcada: data?.alternativa || '',
+          alternativaMarcada: finalAnswer,
         };
       });
 
@@ -703,7 +715,8 @@ const ExamenPage = () => {
                     const answerKey = String(currentIndex);
                     const isSelected =
                       respuestas[answerKey]?.alternativa === opt;
-                    const isAnswered = respuestas[answerKey] !== undefined;
+                    const isLocked =
+                      respuestas[answerKey]?.isCorrect !== undefined;
                     const status = getQuestionStatus(currentIndex);
 
                     let containerClass =
@@ -723,8 +736,8 @@ const ExamenPage = () => {
                       } else if (status === 'incorrect') {
                         containerClass = 'bg-red-500 border-red-500 text-white';
                       }
-                    } else if (isAnswered && !isSelected) {
-                      // De-emphasize other options when answered
+                    } else if (isLocked && !isSelected) {
+                      // De-emphasize other options ONLY when locked/reviewed
                       containerClass =
                         'bg-gray-50 border-gray-100 text-gray-400 opacity-60';
                       letterClass = 'bg-gray-100 border-gray-200 text-gray-300';
@@ -734,7 +747,7 @@ const ExamenPage = () => {
                       <button
                         key={`${currentQuestion.id}-${opt}`}
                         onClick={() => handleSelectOption(opt)}
-                        disabled={!!examResult || isAnswered}
+                        disabled={!!examResult || isLocked}
                         className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group ${containerClass}`}
                       >
                         <div

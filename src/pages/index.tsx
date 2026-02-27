@@ -27,8 +27,10 @@ const App = () => {
   >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const fetchAnuncios = async () => {
       try {
         const anuncios = await anuncioService.getAll();
@@ -86,7 +88,7 @@ const App = () => {
 
   const displaySlides = slides.length > 0 ? slides : fallbackSlide;
 
-  // If we are using the fallback, we effectively have 1 slide, so currentIndex 0 is correct.
+  if (!isMounted) return null;
 
   return (
     <div className={`bg-background grid gap-y-4 md:gap-y-16 overflow-hidden`}>

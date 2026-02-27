@@ -20,8 +20,13 @@ export const evaluacionService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Error al calificar el examen');
+        const errorText = await response.text();
+        console.error('Full grade error response:', errorText);
+        let errorData: any = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {}
+        throw new Error(errorData.message || errorData.title || errorText || 'Error al calificar el examen');
       }
 
       return await response.json();

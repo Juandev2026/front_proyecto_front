@@ -27,8 +27,11 @@ const ResultadoPage = () => {
   );
   const [respuestas, setRespuestas] = useState<Record<string, any>>({});
   const [timeTaken, setTimeTaken] = useState<number>(0);
+  const [examMetadata, setExamMetadata] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     if (!loading && !isAuthenticated) {
       router.push('/login');
       return;
@@ -38,8 +41,39 @@ const ResultadoPage = () => {
     const savedResult = localStorage.getItem('lastExamResult');
     const savedRespuestas = localStorage.getItem('lastRespuestas');
     const savedTime = localStorage.getItem('lastExamTime');
+    const savedMetadata = localStorage.getItem('currentExamMetadata');
 
-    if (savedQuestions) setQuestions(JSON.parse(savedQuestions));
+    if (savedMetadata) setExamMetadata(JSON.parse(savedMetadata));
+    if (savedQuestions) {
+      const rawQuestions = JSON.parse(savedQuestions);
+      const flattened: PreguntaExamen[] = [];
+
+      rawQuestions.forEach((q: any) => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          q.subPreguntas.forEach((sub: any) => {
+            flattened.push({
+              ...q,
+              enunciado: sub.enunciado,
+              parentEnunciado: q.enunciado,
+              alternativaA: sub.alternativaA,
+              alternativaB: sub.alternativaB,
+              alternativaC: sub.alternativaC,
+              alternativaD: sub.alternativaD,
+              puntos: sub.puntos || q.puntos,
+              tiempoPregunta: sub.tiempoPregunta || q.tiempoPregunta,
+              numeroSubPregunta: sub.numero,
+              respuesta: sub.respuesta,
+              isSubPregunta: true,
+              subPreguntas: [],
+            } as any);
+          });
+        } else {
+          flattened.push({ ...q, isSubPregunta: false });
+        }
+      });
+      setQuestions(flattened);
+    }
+
     if (savedResult) setExamResult(JSON.parse(savedResult));
     if (savedRespuestas) setRespuestas(JSON.parse(savedRespuestas));
     if (savedTime) setTimeTaken(parseInt(savedTime, 10));
@@ -48,6 +82,7 @@ const ResultadoPage = () => {
   const stats = useMemo(() => {
     if (!examResult) return null;
 
+    // 1. Estadísticas Globales (desde el backend)
     const global = examResult.resultados.reduce(
       (acc, r) => ({
         correctas: acc.correctas + r.cantidadCorrectas,
@@ -60,17 +95,18 @@ const ResultadoPage = () => {
     const total = questions.length;
     const answered = global.correctas + global.incorrectas;
 
-    // Calculate classification averages/points
+    // 2. Cálculo por Clasificación (Manual para el desglose)
     const classificationStats: Record<
       string,
-      { points: number; correct: number; total: number }
+      { points: number; correct: number; total: number; earnedPoints: number }
     > = {};
 
-    questions.forEach((q, _idx) => {
+    questions.forEach((q) => {
       const className = q.clasificacionNombre || 'Otros';
       if (!classificationStats[className]) {
         classificationStats[className] = {
           points: q.puntos || 0,
+          earnedPoints: 0,
           correct: 0,
           total: 0,
         };
@@ -78,17 +114,15 @@ const ResultadoPage = () => {
       classificationStats[className].total += 1;
 
       const subNum = (q as any).numeroSubPregunta;
-      const backendKey = subNum !== undefined ? `${q.id}-${subNum}` : `${q.id}`;
+      const backendKey = subNum ? `${q.id}-${subNum}` : String(q.id);
 
-      const isCorrect = examResult.resultados.some((r) => {
-        return (
-          r.idsCorrectas.includes(backendKey) ||
-          r.idsCorrectas.includes(String(q.id))
-        );
-      });
+      const isCorrect = examResult.resultados.some((r) =>
+        r.idsCorrectas.some((id) => String(id) === backendKey)
+      );
 
       if (isCorrect) {
         classificationStats[className].correct += 1;
+        classificationStats[className].earnedPoints += q.puntos || 0;
       }
     });
 
@@ -111,30 +145,34 @@ const ResultadoPage = () => {
     if (!examResult) return 'omitted';
 
     const subNum = (q as any).numeroSubPregunta;
-    const backendKey = subNum !== undefined ? `${q.id}-${subNum}` : `${q.id}`;
+    const backendKey = subNum ? `${q.id}-${subNum}` : String(q.id);
 
-    let finalResult: 'correct' | 'incorrect' | 'omitted' = 'incorrect';
-
-    examResult.resultados.forEach((r) => {
-      if (
-        r.idsCorrectas.includes(backendKey) ||
-        r.idsCorrectas.includes(String(q.id))
-      ) {
-        finalResult = 'correct';
-      } else if (
-        r.idsIncorrectas.includes(backendKey) ||
-        r.idsIncorrectas.includes(String(q.id))
-      ) {
-        finalResult = 'incorrect';
-      } else if (
-        r.idsOmitidas.includes(backendKey) ||
-        r.idsOmitidas.includes(String(q.id))
-      ) {
-        finalResult = 'omitted';
-      }
+    // Buscamos en todos los bloques de resultados (por clasificación)
+    const matchedResult = examResult.resultados.find((r) => {
+      return (
+        r.idsCorrectas.some((id) => String(id) === backendKey) ||
+        r.idsIncorrectas.some((id) => String(id) === backendKey) ||
+        r.idsOmitidas.some((id) => String(id) === backendKey)
+      );
     });
 
-    return finalResult;
+    if (matchedResult) {
+      if (matchedResult.idsCorrectas.some((id) => String(id) === backendKey)) {
+        return 'correct';
+      }
+      if (
+        matchedResult.idsIncorrectas.some((id) => String(id) === backendKey)
+      ) {
+        return 'incorrect';
+      }
+      if (matchedResult.idsOmitidas.some((id) => String(id) === backendKey)) {
+        return 'omitted';
+      }
+    }
+
+    // Fallback: tratar como incorrecta si se respondió algo o omitida si no
+    const userAnswer = respuestas[String(_index)]?.alternativa;
+    return userAnswer ? 'incorrect' : 'omitted';
   };
 
   const formatTime = (seconds: number) => {
@@ -143,7 +181,7 @@ const ResultadoPage = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (loading || !isAuthenticated || !examResult) {
+  if (!isMounted || loading || !isAuthenticated || !examResult) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#002B6B]"></div>
@@ -268,10 +306,10 @@ const ResultadoPage = () => {
                 {stats?.classStats.map((c) => (
                   <div key={c.name} className="space-y-1">
                     <p className="text-xl font-bold text-[#002B6B]">
-                      {c.points.toFixed(1)}
+                      {c.earnedPoints.toFixed(1)}
                     </p>
                     <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                      {c.name}
+                      {c.name} (Pts)
                     </p>
                   </div>
                 ))}
@@ -455,23 +493,30 @@ const ResultadoPage = () => {
             </h2>
             <div className="flex flex-wrap gap-2 justify-center">
               <span className="text-[10px] text-gray-400 font-black uppercase mr-2 self-center">
-                Categorías del examen:
+                Detalles de selección:
               </span>
-              <span className="bg-blue-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                MINEDU Nombramiento
-              </span>
-              <span className="bg-green-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                Nombramiento
-              </span>
-              <span className="bg-pink-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                Educación Básica Alternativa
-              </span>
-              <span className="bg-cyan-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                Inicial - Intermedio
-              </span>
-              <span className="bg-green-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                2023
-              </span>
+              {examMetadata && (
+                <>
+                  <span className="bg-blue-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
+                    {examMetadata.modalidad || 'Examen'}
+                  </span>
+                  {examMetadata.nivel && examMetadata.nivel !== 'NINGUNO' && (
+                    <span className="bg-green-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
+                      {examMetadata.nivel}
+                    </span>
+                  )}
+                  {examMetadata.especialidad && (
+                    <span className="bg-pink-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
+                      {examMetadata.especialidad}
+                    </span>
+                  )}
+                  <span className="bg-cyan-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
+                    {examMetadata.year === '0'
+                      ? 'Año Único'
+                      : examMetadata.year}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
