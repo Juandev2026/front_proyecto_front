@@ -4,6 +4,7 @@ import { getAuthHeaders } from '../utils/apiUtils';
 export interface EspecialidadGrouped {
   especialidadId: number | null;
   especialidadNombre: string | null;
+  years?: { year: string; count: number }[];
 }
 
 export interface NivelGrouped {

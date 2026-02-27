@@ -326,6 +326,14 @@ const UsersPage = () => {
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
 
+    // REGLA: En esta página NO se muestran los Docentes/Premium.
+    const isPremium =
+      user.role?.toUpperCase() === 'PREMIUM' ||
+      user.role?.toUpperCase() === 'DOCENTE' ||
+      (user.fechaExpiracion && user.fechaExpiracion !== '-');
+    if (isPremium) return false;
+
+    // Filtro por Rol (Dropdown opcional para Admin/Client)
     if (selectedRole && effectiveRole !== selectedRole) return false;
 
     const matchesSearch =

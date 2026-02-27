@@ -17,7 +17,17 @@ export const regionService = {
       if (!response.ok) {
         throw new Error('Error al obtener regiones');
       }
-      return await response.json();
+      const data: Region[] = await response.json();
+      // Sort: LIMA METROPOLITANA first, then the rest alphabetically
+      return data.sort((a, b) => {
+        const nameA = a.nombre?.toUpperCase() || '';
+        const nameB = b.nombre?.toUpperCase() || '';
+        
+        if (nameA === 'LIMA METROPOLITANA') return -1;
+        if (nameB === 'LIMA METROPOLITANA') return 1;
+        
+        return nameA.localeCompare(nameB);
+      });
     } catch (error) {
       // Log removed
       throw error;
