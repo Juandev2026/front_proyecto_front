@@ -69,13 +69,15 @@ const Login = () => {
       if (finalRole) localStorage.setItem('role', finalRole);
       if (response.fechaExpiracion)
         localStorage.setItem('fechaExpiracion', response.fechaExpiracion);
-      if (response.accesoNombres)
+      if (response.accesoNombres) {
         localStorage.setItem(
           'accesoNombres',
           JSON.stringify(response.accesoNombres)
         );
-      if (response.accesoIds)
+      }
+      if (response.accesoIds) {
         localStorage.setItem('accesoIds', JSON.stringify(response.accesoIds));
+      }
       if (response.especialidad)
         localStorage.setItem('especialidad', response.especialidad);
       if (response.especialidadId)
@@ -131,8 +133,8 @@ const Login = () => {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                 Bienvenido de nuevo
               </h1>
-              <div className="text-base sm:text-lg text-gray-600 flex flex-col items-center">
-                <span>¿Aún no tienes una cuenta?</span>
+              <p className="text-base sm:text-lg text-gray-600">
+                ¿Aún no tienes una cuenta?{' '}
                 <Link
                   href={`/register${
                     planName
@@ -150,7 +152,7 @@ const Login = () => {
                     Regístrate gratis aquí
                   </a>
                 </Link>
-              </div>
+              </p>
             </div>
 
             {isRedirectingToWsp && (
@@ -176,7 +178,8 @@ const Login = () => {
                   ¡Felicitaciones!
                 </h3>
                 <p className="text-green-700">
-                  Redirigiéndote para activar tu {planName}...
+                  Acceso concedido. Estamos redirigiéndote al chat con Juan para
+                  activar tu {planName}...
                 </p>
               </div>
             )}
@@ -239,15 +242,44 @@ const Login = () => {
                   </div>
                 </div>
               </div>
-              <button
-                type="submit"
-                className={`w-full py-3 px-4 text-sm font-bold rounded-lg text-white ${
-                  loading ? 'bg-gray-400' : 'bg-primary hover:bg-secondary'
-                }`}
-                disabled={loading}
-              >
-                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-              </button>
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <Link href="/forgot-password">
+                    <a className="font-medium text-primary hover:text-secondary">
+                      ¿Olvidaste tu contraseña?
+                    </a>
+                  </Link>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${
+                    loading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-primary hover:bg-secondary'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
+                  disabled={loading}
+                >
+                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                    <svg
+                      className="h-5 w-5 text-blue-300 group-hover:text-blue-200 transition-colors duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      ></path>
+                    </svg>
+                  </span>
+                  {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

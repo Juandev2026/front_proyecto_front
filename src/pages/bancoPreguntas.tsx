@@ -254,26 +254,31 @@ const BancoPreguntasPage = () => {
           if (name) {
             // Buscar la cantidad exacta para el año seleccionado
             let cantidadExacta = 0;
-            if (
-              selectedYear === 'Único' ||
-              !item.years ||
-              item.years.length === 0
-            ) {
-              cantidadExacta = item.cantidadPreguntas; // Si es examen único, usa el total global
+            const isUnico = selectedYear === 'Único';
+
+            if (isUnico || !item.years || item.years.length === 0) {
+              cantidadExacta = item.cantidadPreguntas;
             } else {
+              // Buscar específicamente el año en el array de la clasificación
               const yearData = item.years.find(
                 (y: any) => String(y.year) === selectedYear
               );
+              // Si encontramos el año, usamos su cantidad. Si no, pero existe el array,
+              // podríamos decidir si usar 0 o el total. El usuario dice que debe ser el del año.
               cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
             }
 
-            countMap[name] = {
-              cantidad: (countMap[name]?.cantidad || 0) + cantidadExacta, // Accumulate safely in case there are multiple matching classes
-              puntos: item.puntos || countMap[name]?.puntos || 0,
-              tiempoPregunta:
-                item.tiempoPregunta || countMap[name]?.tiempoPregunta || 0,
-              minimo: item.minimo || countMap[name]?.minimo || 0,
-            };
+            // Evitar duplicados si la API mandara la misma clasificación dos veces por error
+            if (!countMap[name]) {
+              countMap[name] = {
+                cantidad: cantidadExacta,
+                puntos: item.puntos || 0,
+                tiempoPregunta: item.tiempoPregunta || 0,
+                minimo: item.minimo || 0,
+              };
+            } else {
+              countMap[name].cantidad += cantidadExacta;
+            }
           }
         });
         setConteoPreguntas(countMap);

@@ -148,7 +148,7 @@ const Register = () => {
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
       number: /[0-9]/.test(password),
-      special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
+      special: /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(password),
     };
     setPasswordRequirements(requirements);
     return Object.values(requirements).every((req) => req);
@@ -207,17 +207,17 @@ const Register = () => {
         especialidadId: Number(formData.especialidadId),
         ie: formData.ie,
       });
-<<<<<<< Updated upstream
-      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `${planName ? '&' : '?'}redirect=${encodeURIComponent(redirect)}` : ''}`);
-=======
       router.push(
         `/login${
           planName
             ? `?planId=${planId}&planName=${encodeURIComponent(planName)}`
             : ''
+        }${
+          !planName && redirect
+            ? `${planName ? '&' : '?'}redirect=${encodeURIComponent(redirect)}`
+            : ''
         }`
       );
->>>>>>> Stashed changes
     } catch (err: any) {
       setError(
         err.message || 'Error al registrarse. Por favor intente de nuevo.'
@@ -244,9 +244,6 @@ const Register = () => {
               </h1>
               <p className="text-sm text-gray-600">
                 ¿Ya tienes una cuenta?{' '}
-<<<<<<< Updated upstream
-                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>
-=======
                 <Link
                   href={`/login${
                     planName
@@ -254,9 +251,12 @@ const Register = () => {
                           planName
                         )}`
                       : ''
+                  }${
+                    !planName && redirect
+                      ? `?redirect=${encodeURIComponent(redirect)}`
+                      : ''
                   }`}
                 >
->>>>>>> Stashed changes
                   <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
                     Inicia sesión aquí
                   </a>
@@ -547,20 +547,17 @@ const Register = () => {
                     </button>
                   </div>
 
-<<<<<<< Updated upstream
                   {/* Password Example and Requirements */}
                   <div className="mt-3 space-y-3">
                     <p className="text-sm font-bold text-gray-900">
-                      Ejemplo: <span className="font-normal text-gray-600">Escala2026*</span>
+                      Ejemplo:{' '}
+                      <span className="font-normal text-gray-600">
+                        Escala2026*
+                      </span>
                     </p>
-                    <p className="text-xs font-medium text-gray-700">La contraseña debe contener:</p>
-=======
-                  {/* Password Requirements */}
-                  <div className="mt-3 space-y-2">
                     <p className="text-xs font-medium text-gray-700">
                       La contraseña debe contener:
                     </p>
->>>>>>> Stashed changes
                     <div className="space-y-1">
                       <div className="flex items-center text-xs">
                         {passwordRequirements.length ? (

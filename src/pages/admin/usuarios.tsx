@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { EyeIcon, XIcon } from '@heroicons/react/outline';
+import { CreditCardIcon, EyeIcon, XIcon } from '@heroicons/react/outline';
 import {
   UserIcon,
   AcademicCapIcon,
@@ -10,6 +10,7 @@ import {
 
 import AdminLayout from '../../components/AdminLayout';
 import { examenService } from '../../services/examenService';
+import { premiumService, PremiumContent } from '../../services/premiumService';
 import { regionService, Region } from '../../services/regionService';
 import {
   tipoAccesoService,
@@ -27,8 +28,7 @@ interface AcademicAccess {
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [serverPage, setServerPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
   const PAGE_SIZE = 20;
   const [regions, setRegions] = useState<Region[]>([]);
@@ -43,6 +43,7 @@ const UsersPage = () => {
     []
   );
   const [showPassword, setShowPassword] = useState(false);
+  const [plans, setPlans] = useState<PremiumContent[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,15 +65,17 @@ const UsersPage = () => {
     tiempo: 0,
     ie: '',
     observaciones: '',
-  });
-
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingUser, setViewingUser] = useState<User | null>(null);
+    planId: 0,
+    fechaInicio: '',
+    fechaFin: '',
+    estadoPago: '',
+  } as any);
 
   const [expirationMode, setExpirationMode] = useState<
     '1year' | '5months' | '10months' | 'custom'
   >('custom');
   const [userExamenes, setUserExamenes] = useState<AcademicAccess[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleExpirationPresetChange = (
     mode: '1year' | '5months' | '10months'
@@ -118,28 +121,10 @@ const UsersPage = () => {
     setUserExamenes([]);
   };
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchDebounced, setSearchDebounced] = useState('');
-
-  // Debounce del buscador: espera 800ms antes de disparar la búsqueda
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchDebounced(searchTerm);
-      setServerPage(1); // volver a página 1 al buscar
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Al cambiar el rol, volver a página 1 y recargar
-  useEffect(() => {
-    setServerPage(1);
-  }, [selectedRole]);
-
-  const abortControllerRef = useRef<AbortController | null>(null);
-
   const getEffectiveRole = (user: User) => {
     if (user.role?.toUpperCase() === 'PREMIUM') {
-      if (!user.fechaExpiracion || user.fechaExpiracion === '-') return 'Client';
+      if (!user.fechaExpiracion || user.fechaExpiracion === '-')
+        return 'Client';
       const expDate = new Date(user.fechaExpiracion);
       if (expDate < new Date()) {
         return 'Client';
@@ -163,21 +148,27 @@ const UsersPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, regionsData, tiposAccesoData, hierarchyData] =
-        await Promise.all([
-          userService.getAll(),
-          regionService.getAll(),
-          tipoAccesoService.getAll(),
-          examenService.getSimplifiedHierarchy(),
-        ]);
+      const [
+        usersData,
+        regionsData,
+        tiposAccesoData,
+        hierarchyData,
+        plansData,
+      ] = await Promise.all([
+        userService.getAll(),
+        regionService.getAll(),
+        tipoAccesoService.getAll(),
+        examenService.getSimplifiedHierarchy(),
+        premiumService.getAll(),
+      ]);
 
       setUsers(usersData);
-      setTotalUsers(usersData.length);
       setRegions(regionsData);
       setModalidades(hierarchyData.modalidades.reverse() as any);
       setNiveles(hierarchyData.niveles as any);
       setEspecialidades(hierarchyData.especialidades as any);
       setTiposAcceso(tiposAccesoData);
+      setPlans(plansData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -186,8 +177,8 @@ const UsersPage = () => {
   };
 
   useEffect(() => {
-    console.log('UsersPage mounted');
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -221,7 +212,6 @@ const UsersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Confirmación al asignar rol Admin
       if (formData.role === 'Admin') {
         const confirmed = window.confirm(
           '¿Estás seguro que quieres hacer Administrador a este usuario?'
@@ -231,17 +221,14 @@ const UsersPage = () => {
       const payload: any = { ...formData };
       console.log('Payload original (pre-sanitización):', payload);
 
-      // Ensure IDs are numbers
       payload.regionId = Number(payload.regionId || 0);
       payload.modalidadId = Number(payload.modalidadId || 0);
       payload.nivelId = Number(payload.nivelId || 0);
       payload.especialidadId = Number(payload.especialidadId || 0);
 
-      // Default values
       if (!payload.estado) payload.estado = 'Activo';
       if (!payload.tiempo) payload.tiempo = 1;
 
-      // Handle Role constraints
       if (payload.role !== 'Premium' && payload.role !== 'Admin') {
         payload.ie = '';
         payload.observaciones = '';
@@ -258,7 +245,6 @@ const UsersPage = () => {
         payload.userExamenes = userExamenes;
       }
 
-      // Cleanup payload for backend
       delete payload.passwordHash;
       delete payload.region;
       delete payload.modalidad;
@@ -282,7 +268,7 @@ const UsersPage = () => {
       setIsModalOpen(false);
       setEditingUser(null);
       resetForm();
-      await loadUsersOnly(serverPage, searchDebounced);
+      await loadUsersOnly();
     } catch (error: any) {
       console.error('Error in handleSubmit:', error);
       alert(`Error al guardar usuario: ${error.message || error}`);
@@ -294,7 +280,6 @@ const UsersPage = () => {
     const apiExamenes = (user as any).userExamenes || [];
     const firstExamen = apiExamenes[0];
 
-    // Populate userExamenes uniformly so if switched to Premium, past accesses are retained
     setUserExamenes(
       apiExamenes.map((e: any) => ({
         modalidadId: e.modalidadId || 0,
@@ -323,7 +308,7 @@ const UsersPage = () => {
           : tiposAcceso.map((t) => Number(t.id)),
     });
 
-    setExpirationMode('custom'); // Default to custom when editing, or we could check if it matches a preset
+    setExpirationMode('custom');
     setIsModalOpen(true);
   };
 
@@ -331,48 +316,18 @@ const UsersPage = () => {
     if (window.confirm('¿Está seguro de que desea eliminar este usuario?')) {
       try {
         await userService.delete(id);
-        await loadUsersOnly(serverPage, searchDebounced);
+        await loadUsersOnly();
       } catch (error) {
-        // Error deleting user
+        console.error('Error deleting user:', error);
       }
     }
   };
 
-  const handleView = async (id: number) => {
-    try {
-      const user = await userService.getById(id);
-      setViewingUser(user);
-      setIsViewModalOpen(true);
-    } catch (error) {
-      // Error fetching user details
-    }
-  };
-
-<<<<<<< Updated upstream
-  // Filtrado local (Instantáneo)
-=======
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const getEffectiveRole = (user: User) => {
-    if (user.role?.toUpperCase() === 'PREMIUM') {
-      if (!user.fechaExpiracion || user.fechaExpiracion === '-')
-        return 'Client';
-      const expDate = new Date(user.fechaExpiracion);
-      if (expDate < new Date()) {
-        return 'Client';
-      }
-    }
-    return user.role;
-  };
-
->>>>>>> Stashed changes
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
-    
-    // Filtro por Rol (Dropdown)
+
     if (selectedRole && effectiveRole !== selectedRole) return false;
 
-    // Filtro por Búsqueda (Input)
     const matchesSearch =
       user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -381,56 +336,32 @@ const UsersPage = () => {
     return matchesSearch;
   });
 
-  // Paginación local
   const currentItems = filteredUsers.slice(
-    (serverPage - 1) * PAGE_SIZE,
-    serverPage * PAGE_SIZE
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
   );
-  
+
   const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
 
-  // Recargar datos (Solo al inicio o cuando sea necesario)
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Volver a pág 1 si cambia el filtro
-  useEffect(() => {
-    setServerPage(1);
+    setCurrentPage(1);
   }, [searchTerm, selectedRole]);
 
   const nextPage = () => {
-    if (serverPage < totalPages) setServerPage(serverPage + 1);
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
   const prevPage = () => {
-    if (serverPage > 1) setServerPage(serverPage - 1);
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   const handleExportExcel = async () => {
     try {
       const allUsers = await userService.getAll();
-      // On this page we show Admin and Client, but maybe the export should include all or follow the same filter?
-      // Usually export should match what's visible or all. I'll export all and let them filter in Excel.
 
       const dataToExport = allUsers.map((u) => ({
         ID: u.id,
         'Nombre Completo': u.nombreCompleto,
-<<<<<<< Updated upstream
-        'Teléfono': u.celular || '-',
-        'Email': u.email,
-        'Rol': u.role,
-        'Estado': u.estado || 'Activo',
-        'Fecha Registro': u.fechaCreacion || u.fecha_creacion ? new Date(u.fechaCreacion || u.fecha_creacion!).toLocaleDateString() : '-',
-        'Suscripciones Activas': u.accesoNombres && u.accesoNombres.length > 0 ? u.accesoNombres.join(', ') : '-',
-        'Modalidades': u.modalidadNombres && u.modalidadNombres.length > 0 ? u.modalidadNombres.join(', ') : (u.modalidad?.nombre || '-'),
-        'Niveles': u.nivelNombres && u.nivelNombres.length > 0 ? u.nivelNombres.join(', ') : (u.nivel?.nombre || '-'),
-        'Especialidades': u.especialidadNombres && u.especialidadNombres.length > 0 ? u.especialidadNombres.join(', ') : (u.especialidad?.nombre || '-'),
-        'Región': u.region?.nombre || '-',
-        'IE': u.ie || '-',
-        'Observaciones': u.observaciones || '-'
-=======
         Teléfono: u.celular || '-',
         Email: u.email,
         Rol:
@@ -465,7 +396,6 @@ const UsersPage = () => {
         Región: u.region?.nombre || '-',
         IE: u.ie || '-',
         Observaciones: u.observaciones || '-',
->>>>>>> Stashed changes
       }));
 
       const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
@@ -591,14 +521,9 @@ const UsersPage = () => {
                   </td>
                 </tr>
               ) : (
-<<<<<<< Updated upstream
-                currentItems.map((user: User) => {
-                  const regionName = user.region?.nombre || user.regionId?.toString() || '-';
-=======
                 currentItems.map((user) => {
                   const regionName =
                     user.region?.nombre || user.regionId?.toString() || '-';
->>>>>>> Stashed changes
                   return (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -624,25 +549,6 @@ const UsersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-3">
-                          <button
-                            onClick={() => handleView(user.id)}
-                            className="text-blue-600 hover:text-blue-900 focus:outline-none"
-                            title="Ver Detalles"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                              <path
-                                fillRule="evenodd"
-                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
                           <button
                             onClick={() => handleEdit(user)}
                             className="text-green-600 hover:text-green-900 focus:outline-none"
@@ -689,18 +595,6 @@ const UsersPage = () => {
         <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 bg-gray-50">
           <button
             onClick={prevPage}
-<<<<<<< Updated upstream
-            disabled={serverPage === 1}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            Anterior
-          </button>
-          <span className="text-sm text-gray-700">Página {serverPage} de {totalPages || 1} &bull; {filteredUsers.length} encontrados</span>
-          <button
-            onClick={nextPage}
-            disabled={serverPage === totalPages || totalPages === 0}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-=======
             disabled={currentPage === 1}
             className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${
               currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
@@ -709,7 +603,8 @@ const UsersPage = () => {
             Anterior
           </button>
           <span className="text-sm text-gray-700">
-            Page {currentPage} de {totalPages}
+            Página {currentPage} de {totalPages} &bull; {filteredUsers.length}{' '}
+            encontrados
           </span>
           <button
             onClick={nextPage}
@@ -719,7 +614,6 @@ const UsersPage = () => {
                 ? 'opacity-50 cursor-not-allowed'
                 : ''
             }`}
->>>>>>> Stashed changes
           >
             Siguiente
           </button>
@@ -852,11 +746,7 @@ const UsersPage = () => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                          {showPassword ? (
-                            <EyeIcon className="h-5 w-5" />
-                          ) : (
-                            <EyeIcon className="h-5 w-5 opacity-50" />
-                          )}
+                          <EyeIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </div>
@@ -1025,7 +915,7 @@ const UsersPage = () => {
                       )}
 
                     {/* Botones académicos */}
-                    <div className="space-y-2">
+                    <div className="mt-3 space-y-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -1046,7 +936,6 @@ const UsersPage = () => {
                                   },
                                 ];
 
-                          // Evitar duplicados
                           setUserExamenes((prev) => {
                             const newAccesos = [...prev];
                             espsToAdd.forEach((acc) => {
@@ -1078,7 +967,6 @@ const UsersPage = () => {
                             especialidadId:
                               Number(formData.especialidadId) || 0,
                           };
-                          // Evitar duplicados
                           setUserExamenes((prev) => {
                             if (
                               prev.some(
@@ -1099,34 +987,22 @@ const UsersPage = () => {
                       </button>
                     </div>
 
-                    {/* Lista de accesos configurados - DEBAJO */}
+                    {/* Lista de accesos configurados */}
                     {userExamenes.length > 0 && (
                       <div className="mt-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
-                            <svg
-                              className="w-4 h-4"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                              <path
-                                fillRule="evenodd"
-                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
                             Accesos configurados ({userExamenes.length})
                           </span>
                           <button
                             type="button"
                             onClick={() => setUserExamenes([])}
-                            className="text-xs text-red-500 hover:text-red-700 font-bold bg-white px-2 py-1 rounded border border-red-100 shadow-sm transition-colors"
+                            className="text-xs text-red-500 hover:text-red-700 font-bold bg-white px-2 py-1 rounded border border-red-100 shadow-sm"
                           >
                             Limpiar todo
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
                           {userExamenes.map((ex, idx) => {
                             const mod = modalidades.find(
                               (m) => m.id === ex.modalidadId
@@ -1146,12 +1022,10 @@ const UsersPage = () => {
                                   <span className="text-[10px] font-bold text-blue-600 uppercase leading-none mb-1">
                                     {mod?.nombre || 'Sin modalidad'}
                                   </span>
-                                  {(niv?.nombre || esp) && (
-                                    <span className="text-xs font-medium text-gray-700">
-                                      {niv?.nombre || ''}
-                                      {esp ? ` - ${esp.nombre}` : ''}
-                                    </span>
-                                  )}
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {niv?.nombre || 'General'}
+                                    {esp ? ` - ${esp.nombre}` : ''}
+                                  </span>
                                 </div>
                                 <button
                                   type="button"
@@ -1160,8 +1034,7 @@ const UsersPage = () => {
                                       prev.filter((_, i) => i !== idx)
                                     )
                                   }
-                                  className="text-gray-300 hover:text-red-500 transition-colors p-1"
-                                  title="Eliminar"
+                                  className="text-gray-300 hover:text-red-500 transition-colors"
                                 >
                                   <svg
                                     className="w-4 h-4"
@@ -1186,7 +1059,75 @@ const UsersPage = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 3: TIPO DE ACCESO (Solo Premium o Admin) === */}
+                {/* === SECCIÓN 3: INFORMACIÓN DE PAGO (Premium o Admin) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CreditCardIcon className="w-5 h-5 text-[#002B6B]" />
+                      <h4 className="font-bold text-[#002B6B]">
+                        Información de Pago
+                      </h4>
+                    </div>
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Plan
+                      </label>
+                      <select
+                        value={(formData as any).planId ?? 0}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            [e.target.name || 'planId']: Number(e.target.value),
+                          } as any)
+                        }
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      >
+                        <option value={0}>Seleccionar Plan</option>
+                        {plans.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.titulo} - ${p.precio}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                          F. Inicio
+                        </label>
+                        <input
+                          type="date"
+                          value={(formData as any).fechaInicio ?? ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              fechaInicio: e.target.value,
+                            } as any)
+                          }
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                          F. Fin
+                        </label>
+                        <input
+                          type="date"
+                          value={(formData as any).fechaFin ?? ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              fechaFin: e.target.value,
+                            } as any)
+                          }
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* === SECCIÓN 5: TIPO DE ACCESO (Solo Premium o Admin) === */}
                 {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -1231,13 +1172,10 @@ const UsersPage = () => {
                         </label>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      * Selecciona al menos un tipo de acceso
-                    </p>
                   </div>
                 )}
 
-                {/* === SECCIÓN 4: FECHA EXPIRACIÓN (Solo Premium o Admin) === */}
+                {/* === SECCIÓN 6: FECHA EXPIRACIÓN (Solo Premium o Admin) === */}
                 {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -1246,7 +1184,7 @@ const UsersPage = () => {
                         Fecha de expiración
                       </h4>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 mb-3">
                       {[
                         { key: '1year', label: '1 año desde hoy' },
                         { key: '5months', label: '5 meses desde hoy' },
@@ -1261,13 +1199,11 @@ const UsersPage = () => {
                             type="radio"
                             name="expiration-preset"
                             checked={expirationMode === key}
-                            onChange={() => {
-                              if (key === 'custom') {
-                                setExpirationMode('custom');
-                              } else {
-                                handleExpirationPresetChange(key as any);
-                              }
-                            }}
+                            onChange={() =>
+                              key !== 'custom'
+                                ? handleExpirationPresetChange(key as any)
+                                : setExpirationMode('custom')
+                            }
                             className="w-4 h-4 accent-[#002B6B]"
                           />
                           <span className="text-sm text-gray-800">{label}</span>
@@ -1286,13 +1222,13 @@ const UsersPage = () => {
                             ),
                           })
                         }
-                        className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       />
                     )}
                   </div>
                 )}
 
-                {/* === BOTÓN GUARDAR === */}
+                {/* Botón Guardar */}
                 <button
                   type="submit"
                   className="w-full bg-[#002B6B] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
@@ -1300,133 +1236,6 @@ const UsersPage = () => {
                   {editingUser ? 'Actualizar usuario' : 'Guardar usuario'}
                 </button>
               </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Details Modal */}
-      {isViewModalOpen && viewingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4">
-          <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-lg my-8">
-            <div className="flex items-center justify-between rounded-t border-b p-4">
-              <h3 className="text-xl font-semibold text-gray-900">
-                Detalles del Usuario
-              </h3>
-              <button
-                onClick={() => {
-                  setIsViewModalOpen(false);
-                  setViewingUser(null);
-                }}
-                className="ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">ID</h4>
-                  <p className="mt-1 text-sm text-gray-900">{viewingUser.id}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Rol</h4>
-                  <p className="mt-1 text-sm text-gray-900 font-semibold">
-                    {viewingUser.role}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Nombre Completo
-                  </h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.nombreCompleto}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">Email</h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.email}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Celular</h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.celular || '-'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Región</h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.region?.nombre || '-'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Modalidad
-                  </h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.modalidad?.nombre || '-'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Nivel</h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.nivel?.nombre || '-'}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">
-                    Especialidad
-                  </h4>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {viewingUser.especialidad?.nombre || '-'}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">Accesos</h4>
-                  <div className="mt-1 flex flex-wrap gap-2">
-                    {viewingUser.accesoIds &&
-                    viewingUser.accesoIds.length > 0 ? (
-                      viewingUser.accesoIds.map((id) => {
-                        const tipo = tiposAcceso.find((t) => t.id === id);
-                        return (
-                          <span
-                            key={id}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {tipo ? tipo.descripcion : `ID: ${id}`}
-                          </span>
-                        );
-                      })
-                    ) : (
-                      <span className="text-sm text-gray-500">-</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-              <button
-                onClick={() => {
-                  setIsViewModalOpen(false);
-                  setViewingUser(null);
-                }}
-                type="button"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-              >
-                Cerrar
-              </button>
             </div>
           </div>
         </div>
