@@ -415,7 +415,7 @@ const SimulacroExamenPage = () => {
         <title>Simulacro de Examen - AVENDOCENTE</title>
       </Head>
 
-      <div className="w-full max-w-7xl mx-auto space-y-6 px-4">
+      <div className="w-full space-y-6 px-4 md:px-6">
         {/* Main Box: Bloque I */}
         <div className="border border-blue-400 rounded-lg overflow-hidden bg-white shadow-sm">
           <div className="bg-white border-b border-blue-100 px-6 py-3 flex items-center gap-2">
