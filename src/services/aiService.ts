@@ -3,7 +3,7 @@ export interface PreguntaAI {
   alternativaA: string;
   alternativaB: string;
   alternativaC: string;
-  alternativaD: string;
+  alternativaD?: string;
   respuesta: string;
   sustento: string;
 }
@@ -17,14 +17,14 @@ export const aiService = {
   ): Promise<PreguntaAI> => {
     try {
       const prompt = `Genera una pregunta de opción múltiple para un examen de docentes en Perú sobre el tema: "${topic}".
+      Debes generar exactamente 3 alternativas plausibles (A, B, C).
       La respuesta debe ser un objeto JSON con el siguiente formato, sin markdown ni texto adicional:
       {
         "enunciado": "Texto de la pregunta...",
         "alternativaA": "Opción A...",
         "alternativaB": "Opción B...",
         "alternativaC": "Opción C...",
-        "alternativaD": "Opción D...",
-        "respuesta": "A", // O "B", "C", "D"
+        "respuesta": "A", // O "B", "C"
         "sustento": "Explicación breve de por qué es la respuesta correcta..."
       }`;
 
@@ -51,12 +51,13 @@ export const aiService = {
       const data = await response.json();
       const { content } = data.choices[0].message;
       try {
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+        return { ...parsed, alternativaD: parsed.alternativaD || '' };
       } catch (e) {
-        // Fallback or retry logic if needed, simple slice for JSON extraction if wrapped in code blocks
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          const parsed = JSON.parse(jsonMatch[0]);
+          return { ...parsed, alternativaD: parsed.alternativaD || '' };
         }
         throw new Error('Formato de respuesta inválido');
       }
@@ -72,14 +73,13 @@ export const aiService = {
   ): Promise<PreguntaAI> => {
     try {
       const prompt = `Dada la siguiente pregunta: "${enunciado}".
-        Genera 4 alternativas plausibles (A, B, C, D), identifica la correcta y proporciona un sustento breve.
+        Genera exactamente 3 alternativas plausibles (A, B, C), identifica la correcta y proporciona un sustento breve.
         La respuesta debe ser un objeto JSON con el siguiente formato, sin markdown ni texto adicional:
         {
           "alternativaA": "Opción A...",
           "alternativaB": "Opción B...",
           "alternativaC": "Opción C...",
-          "alternativaD": "Opción D...",
-          "respuesta": "A", // O "B", "C", "D"
+          "respuesta": "A", // O "B", "C"
           "sustento": "Explicación..."
         }`;
 
@@ -108,16 +108,16 @@ export const aiService = {
 
       try {
         const parsed = JSON.parse(content);
-        // Return incomplete object merged with existing enunciado
         return {
           enunciado,
           ...parsed,
+          alternativaD: parsed.alternativaD || '',
         };
       } catch (e) {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          return { enunciado, ...parsed };
+          return { enunciado, ...parsed, alternativaD: parsed.alternativaD || '' };
         }
         throw new Error('Formato de respuesta inválido');
       }

@@ -221,7 +221,6 @@ const Recursos = () => {
     { id: '1', contenido: '', esCorrecta: false },
     { id: '2', contenido: '', esCorrecta: false },
     { id: '3', contenido: '', esCorrecta: false },
-    { id: '4', contenido: '', esCorrecta: false },
   ]);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -481,7 +480,13 @@ const Recursos = () => {
   // --- CONTINUOUS INDEXING LOGIC ---
   const itemsWithIndices = useMemo(() => {
     let globalCounter = 0;
-    return filteredItems.map(item => {
+    const sortedItems = [...filteredItems].sort((a, b) => {
+      const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
+      const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
+      return numA - numB || a.id - b.id;
+    });
+    
+    return sortedItems.map(item => {
       const isParent = item.tipoPreguntaId === 2;
       let mainIdx = null;
       
@@ -566,6 +571,7 @@ const Recursos = () => {
 
   const handleEdit = async (item: Pregunta) => {
     setEditingId(item.id);
+    setNumeroPregunta(item.numero?.toString() || '');
 
     // If it's a grouped question, we might need to fetch sub-questions if they aren't loaded
     if (item.tipoPreguntaId === 2) {
@@ -600,34 +606,59 @@ const Recursos = () => {
       tipoPreguntaId: item.tipoPreguntaId,
     });
 
-    // ... existing logic ...
-    setAlternatives([
-      {
-        id: '1',
-        contenido: item.alternativaA || '',
-        esCorrecta: item.respuesta === 'A',
-      },
-      {
-        id: '2',
-        contenido: item.alternativaB || '',
-        esCorrecta: item.respuesta === 'B',
-      },
-      {
-        id: '3',
-        contenido: item.alternativaC || '',
-        esCorrecta: item.respuesta === 'C',
-      },
-      {
-        id: '4',
-        contenido: item.alternativaD || '',
-        esCorrecta: item.respuesta === 'D',
-      },
-    ]);
+    // Populate alternatives intelligently
+    if (item.alternativas && item.alternativas.length > 0) {
+      const mappedAlts = item.alternativas.map((alt: any, idx: number) => ({
+        id: (idx + 1).toString(),
+        contenido: alt.contenido || '',
+        esCorrecta:
+          item.respuesta === String.fromCharCode(65 + idx) ||
+          String(item.respuesta) === String(alt.id),
+      }));
+      setAlternatives(mappedAlts);
+    } else {
+      setAlternatives([
+        {
+          id: '1',
+          contenido: item.alternativaA || '',
+          esCorrecta: item.respuesta === 'A',
+        },
+        {
+          id: '2',
+          contenido: item.alternativaB || '',
+          esCorrecta: item.respuesta === 'B',
+        },
+        {
+          id: '3',
+          contenido: item.alternativaC || '',
+          esCorrecta: item.respuesta === 'C',
+        },
+        // Only add D if it has content or was previously there
+        ...(item.alternativaD
+          ? [
+              {
+                id: '4',
+                contenido: item.alternativaD,
+                esCorrecta: item.respuesta === 'D',
+              },
+            ]
+          : []),
+      ]);
+    }
 
     setImageFile(null);
-    // Parse Justification
+
+    // Parse Justification prioritising the array if it exists
     const blocks: JustificationBlock[] = [];
-    if (item.sustento) {
+    if (item.justificaciones && item.justificaciones.length > 0) {
+      item.justificaciones.forEach((j: any) => {
+        blocks.push({
+          id: j.id?.toString() || Math.random().toString(),
+          type: 'text', // Backend usually sends text, improve if it supports images
+          content: j.contenido || '',
+        });
+      });
+    } else if (item.sustento) {
       if (typeof window !== 'undefined') {
         const div = document.createElement('div');
         div.innerHTML = item.sustento;
@@ -684,7 +715,6 @@ const Recursos = () => {
       { id: '1', contenido: '', esCorrecta: false },
       { id: '2', contenido: '', esCorrecta: false },
       { id: '3', contenido: '', esCorrecta: false },
-      { id: '4', contenido: '', esCorrecta: false },
     ]);
   };
 
@@ -730,12 +760,19 @@ const Recursos = () => {
           contenido: generated.alternativaC,
           esCorrecta: generated.respuesta === 'C',
         },
-        {
-          id: '4',
-          contenido: generated.alternativaD,
-          esCorrecta: generated.respuesta === 'D',
-        },
       ]);
+      
+      // Si por alguna razón la IA devolvió una cuarta
+      if (generated.alternativaD) {
+        setAlternatives(prev => [
+            ...prev,
+            {
+                id: '4',
+                contenido: generated.alternativaD!,
+                esCorrecta: generated.respuesta === 'D',
+            }
+        ]);
+      }
 
       setIsAiModalOpen(false);
       setAiTopic('');
@@ -788,12 +825,18 @@ const Recursos = () => {
           contenido: generated.alternativaC,
           esCorrecta: generated.respuesta === 'C',
         },
-        {
-          id: '4',
-          contenido: generated.alternativaD,
-          esCorrecta: generated.respuesta === 'D',
-        },
       ]);
+
+      if (generated.alternativaD) {
+        setAlternatives(prev => [
+            ...prev,
+            {
+                id: '4',
+                contenido: generated.alternativaD!,
+                esCorrecta: generated.respuesta === 'D',
+            }
+        ]);
+      }
       alert('Respuestas generadas con éxito.');
     } catch (error) {
       alert('Error generando respuestas con IA.');
@@ -1123,15 +1166,11 @@ const Recursos = () => {
         return;
       }
 
-      // Ensure we always have 4 alternatives
-      const safeAlts = [...alternatives];
-      while (safeAlts.length < 4) {
-        safeAlts.push({
-          id: Math.random().toString(),
-          contenido: '',
-          esCorrecta: false,
-        });
-      }
+      // Ensure we have up to 4 alternatives (A, B, C, D) but only those with content
+      const safeAlts = alternatives.map(a => ({ ...a }));
+      // The API expects exactly A, B, C, D fields. If less than 4, D will be empty.
+      // However, the mapping below already handles indexing.
+      // If we have > 4, the backend might only take the first 4.
 
       const mappedAlts = {
         alternativaA: safeAlts[0]?.contenido || '',
@@ -1995,7 +2034,7 @@ const Recursos = () => {
                           
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
-                              {item.displayIndex || '-'}
+                              {!isParent ? (item.numero || item.displayIndex || '-') : ''}
                             </div>
                             
                             <span className="text-sm font-bold text-gray-900">

@@ -25,6 +25,7 @@ export interface Pregunta {
   enunciados?: EnunciadoItem[];
   subPreguntas?: any[];
   alternativas?: any[];
+  justificaciones?: any[];
   clasificacionNombre?: string;
 }
 
@@ -88,7 +89,7 @@ export const preguntaService = {
   },
 
   update: async (
-    examenId: number,
+    _examenId: number, // Kept for signature compatibility with components
     id: number,
     item: Partial<Pregunta>
   ): Promise<Pregunta> => {
@@ -96,13 +97,18 @@ export const preguntaService = {
       // Stripping 'id' from the body as per the provided API schema
       const { id: _ignoredId, ...payload } = item;
 
-      const response = await fetch(`${API_URL}/${examenId}/${id}`, {
+      const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...payload,
+          numero: Number(payload.numero),
+          clasificacionId: Number(payload.clasificacionId),
+          tipoPreguntaId: Number(payload.tipoPreguntaId),
+        }),
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la pregunta');
@@ -234,37 +240,50 @@ export const preguntaService = {
         return sAns;
       };
 
-      return rawData.map((q: any) => {
-        const mapped: Pregunta = {
-          id: q.id,
-          examenId: q.examenId,
-          year: q.year,
-          enunciado: (q.enunciados || [])
-            .map((e: any) => e.contenido)
-            .join('<br/>'),
-          alternativaA: q.alternativas?.[0]?.contenido || '',
-          alternativaB: q.alternativas?.[1]?.contenido || '',
-          alternativaC: q.alternativas?.[2]?.contenido || '',
-          alternativaD: q.alternativas?.[3]?.contenido || '',
-          respuesta: getLetter(q.respuesta, q.alternativas || []),
-          tipoPreguntaId: q.tipoPreguntaId,
-          clasificacionId: q.clasificacionId,
-          clasificacionNombre: q.clasificacionNombre,
-          imagen: q.imagen || '',
-          subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
-            ...sub,
-            enunciado: (sub.enunciados || [])
+      return rawData
+        .map((q: any) => {
+          const mapped: Pregunta = {
+            id: q.id,
+            examenId: q.examenId,
+            year: q.year,
+            numero: q.numero,
+            enunciado: (q.enunciados || [])
               .map((e: any) => e.contenido)
               .join('<br/>'),
-            alternativaA: sub.alternativas?.[0]?.contenido || '',
-            alternativaB: sub.alternativas?.[1]?.contenido || '',
-            alternativaC: sub.alternativas?.[2]?.contenido || '',
-            alternativaD: sub.alternativas?.[3]?.contenido || '',
-            respuesta: getLetter(sub.respuestaCorrecta || sub.respuesta, sub.alternativas || []),
-          })),
-        };
-        return mapped;
-      });
+            alternativaA: q.alternativas?.[0]?.contenido || '',
+            alternativaB: q.alternativas?.[1]?.contenido || '',
+            alternativaC: q.alternativas?.[2]?.contenido || '',
+            alternativaD: q.alternativas?.[3]?.contenido || '',
+            respuesta: getLetter(q.respuesta, q.alternativas || []),
+            tipoPreguntaId: q.tipoPreguntaId,
+            clasificacionId: q.clasificacionId,
+            clasificacionNombre: q.clasificacionNombre,
+            imagen: q.imagen || '',
+            alternativas: q.alternativas,
+            justificaciones: q.justificaciones,
+            enunciados: q.enunciados,
+            subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
+              ...sub,
+              enunciado: (sub.enunciados || [])
+                .map((e: any) => e.contenido)
+                .join('<br/>'),
+              alternativaA: sub.alternativas?.[0]?.contenido || '',
+              alternativaB: sub.alternativas?.[1]?.contenido || '',
+              alternativaC: sub.alternativas?.[2]?.contenido || '',
+              alternativaD: sub.alternativas?.[3]?.contenido || '',
+              respuesta: getLetter(
+                sub.respuestaCorrecta || sub.respuesta,
+                sub.alternativas || []
+              ),
+            })),
+          };
+          return mapped;
+        })
+        .sort((a, b) => {
+          const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
+          const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
+          return numA - numB || a.id - b.id;
+        });
     } catch (error) {
       console.error('Error in examenFilter:', error);
       return [];
