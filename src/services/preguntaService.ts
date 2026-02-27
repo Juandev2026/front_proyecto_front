@@ -214,7 +214,57 @@ export const preguntaService = {
       if (!response.ok) {
         throw new Error('Error filtering questions');
       }
-      return await response.json();
+      const rawData = await response.json();
+      if (!Array.isArray(rawData)) return [];
+
+      const getLetter = (ans: any, alts: any[]) => {
+        if (ans === undefined || ans === null || ans === '') return '';
+        const sAns = String(ans).toUpperCase();
+
+        if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
+        if (!alts || alts.length === 0) return '';
+
+        const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
+        if (idxById !== -1) return String.fromCharCode(65 + idxById);
+
+        const numAns = Number(ans);
+        if (!isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
+          return String.fromCharCode(65 + numAns);
+        }
+        return sAns;
+      };
+
+      return rawData.map((q: any) => {
+        const mapped: Pregunta = {
+          id: q.id,
+          examenId: q.examenId,
+          year: q.year,
+          enunciado: (q.enunciados || [])
+            .map((e: any) => e.contenido)
+            .join('<br/>'),
+          alternativaA: q.alternativas?.[0]?.contenido || '',
+          alternativaB: q.alternativas?.[1]?.contenido || '',
+          alternativaC: q.alternativas?.[2]?.contenido || '',
+          alternativaD: q.alternativas?.[3]?.contenido || '',
+          respuesta: getLetter(q.respuesta, q.alternativas || []),
+          tipoPreguntaId: q.tipoPreguntaId,
+          clasificacionId: q.clasificacionId,
+          clasificacionNombre: q.clasificacionNombre,
+          imagen: q.imagen || '',
+          subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
+            ...sub,
+            enunciado: (sub.enunciados || [])
+              .map((e: any) => e.contenido)
+              .join('<br/>'),
+            alternativaA: sub.alternativas?.[0]?.contenido || '',
+            alternativaB: sub.alternativas?.[1]?.contenido || '',
+            alternativaC: sub.alternativas?.[2]?.contenido || '',
+            alternativaD: sub.alternativas?.[3]?.contenido || '',
+            respuesta: getLetter(sub.respuestaCorrecta || sub.respuesta, sub.alternativas || []),
+          })),
+        };
+        return mapped;
+      });
     } catch (error) {
       console.error('Error in examenFilter:', error);
       return [];

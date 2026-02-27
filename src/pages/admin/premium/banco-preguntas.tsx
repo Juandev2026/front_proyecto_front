@@ -189,7 +189,7 @@ const Recursos = () => {
 
 
   // --- ESTADOS VISUALES (FILTROS UI) ---
-  const [selectedTipo, setSelectedTipo] = useState<number | ''>('');
+  const [selectedTipo, setSelectedTipo] = useState<number | ''>(2);
   const [selectedFuente, setSelectedFuente] = useState<number | ''>('');
   const [selectedModalidad, setSelectedModalidad] = useState<number | ''>('');
   const [selectedNivel, setSelectedNivel] = useState<number | ''>('');
@@ -957,66 +957,30 @@ const Recursos = () => {
       }
       
       // 2. Load Questions - Use the new filter API
-      if (selectedTipo || selectedFuente || selectedModalidad || selectedNivel || selectedEspecialidad || selectedYear) {
-          try {
-             setItemsLoading(true);
-             const filterData = {
-                tipoExamenId: selectedTipo ? Number(selectedTipo) : undefined,
-                fuenteId: selectedFuente ? Number(selectedFuente) : undefined,
-                modalidadId: selectedModalidad ? Number(selectedModalidad) : undefined,
-                nivelId: selectedNivel ? Number(selectedNivel) : undefined,
-                especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : undefined,
-                year: selectedYear || undefined
-             };
-             
-             const data = await preguntaService.examenFilter(filterData);
-             setItems(data.sort((a, b) => a.id - b.id));
-          } catch (err) {
-             console.error('Error fetching questions with filter:', err);
-             setItems([]);
-          }
-      } else {
-          try {
-             setItemsLoading(true);
-             const data = await preguntaService.getAll();
-             setItems(data.sort((a, b) => a.id - b.id));
-          } catch (err) {
-             console.error('Error fetching all questions:', err);
-             setItems([]);
-          }
-       }
-
-      // 2. Load Questions - Use the new filter API
-      if (
-        selectedTipo ||
-        selectedFuente ||
-        selectedModalidad ||
-        selectedNivel ||
-        selectedEspecialidad ||
-        selectedYear
-      ) {
-        try {
-          setItemsLoading(true);
+      const hasFilter = selectedTipo || selectedFuente || selectedModalidad || selectedNivel || selectedEspecialidad || selectedYear;
+      
+      try {
+        setItemsLoading(true);
+        let data: Pregunta[] = [];
+        
+        if (hasFilter) {
           const filterData = {
             tipoExamenId: selectedTipo ? Number(selectedTipo) : undefined,
             fuenteId: selectedFuente ? Number(selectedFuente) : undefined,
-            modalidadId: selectedModalidad
-              ? Number(selectedModalidad)
-              : undefined,
+            modalidadId: selectedModalidad ? Number(selectedModalidad) : undefined,
             nivelId: selectedNivel ? Number(selectedNivel) : undefined,
-            especialidadId: selectedEspecialidad
-              ? Number(selectedEspecialidad)
-              : undefined,
+            especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : undefined,
             year: selectedYear || undefined,
           };
-
-          const data = await preguntaService.examenFilter(filterData);
-          setItems(data.sort((a, b) => b.id - a.id));
-        } catch (err) {
-          console.error('Error fetching questions with filter:', err);
-          setItems([]);
+          data = await preguntaService.examenFilter(filterData);
+        } else {
+          data = await preguntaService.getAll();
         }
-      } else {
+        
+        // Sort by ID descending (newest first)
+        setItems(data.sort((a, b) => b.id - a.id));
+      } catch (err) {
+        console.error('Error fetching questions:', err);
         setItems([]);
       }
     } catch (err: any) {

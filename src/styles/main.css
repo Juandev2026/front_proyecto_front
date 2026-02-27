@@ -84,3 +84,49 @@ a:hover {
   transform: rotate(45deg);
   animation: shine 3s infinite;
 }
+
+/* Editor & Lexical Styles */
+.editor-paragraph {
+  @apply mb-2 leading-relaxed;
+}
+
+/* Lexical Decimal/Fraction Support */
+[data-lexical-fraction="true"] {
+  display: inline-grid !important;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  vertical-align: middle;
+  font-size: 0.9em;
+  margin: 0 2px;
+  transform: translateY(-0.1em);
+  gap: 0px;
+  white-space: nowrap;
+}
+
+[data-lexical-fraction="true"] span:first-child {
+  border-bottom: 1px solid currentColor;
+  padding: 1px 3px;
+  line-height: 0.9;
+  grid-row: 1;
+}
+
+[data-lexical-fraction="true"] span:last-child {
+  padding: 1px 3px;
+  line-height: 0.9;
+  grid-row: 2;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.alternative-content p {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+.force-black-text, .force-black-text * {
+  color: black !important;
+}
+
+

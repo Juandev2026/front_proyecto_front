@@ -8,6 +8,7 @@ export interface SubPreguntaExamen {
   alternativaD: string;
   puntos: number;
   tiempoPregunta: number;
+  respuesta?: string;
 }
 
 export interface PreguntaExamen {

@@ -145,22 +145,97 @@ export const estructuraAcademicaService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener preguntas');
-      const data = (await response.json()) as PreguntaExamen[];
-
-      const subEnunciados = new Set<string>();
-      data.forEach((q) => {
-        if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach((sub) => {
-            if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
-          });
-        }
-      });
-
-      return data.filter((q) => !subEnunciados.has(q.enunciado?.trim()));
+      const data = (await response.json()) as any[];
+      return estructuraAcademicaService.mapPreguntas(data);
     } catch (error) {
-      console.error('Error fetching questions:', error);
-      throw error;
+      console.error('Error in getPreguntas:', error);
+      return [];
     }
+  },
+
+  // Helper function to map raw API data to PreguntaExamen[]
+  mapPreguntas: (rawData: any[]): PreguntaExamen[] => {
+    if (!Array.isArray(rawData)) return [];
+
+    const unescapeHTML = (str: string) => {
+      if (!str) return '';
+      return str
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
+    };
+
+    const cleanAlternative = (str: string) => {
+      if (!str) return '';
+      const unescaped = unescapeHTML(str);
+      return unescaped
+        .replace(/^(<p[^>]*>)?\s*<strong>[A-Z]\s*[.):]\s*<\/strong>\s*/i, '$1')
+        .replace(/^\s*[A-Z]\s*[.):]\s*/i, '');
+    };
+
+    const getLetter = (ans: any, alts: any[]) => {
+      if (ans === undefined || ans === null || ans === '') return '';
+      const sAns = String(ans).toUpperCase();
+      if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
+      if (!alts || alts.length === 0) return '';
+      const idxById = alts.findIndex((a) => String(a.id) === String(ans));
+      if (idxById !== -1) return String.fromCharCode(65 + idxById);
+      const numAns = Number(ans);
+      if (!isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
+        return String.fromCharCode(65 + numAns);
+      }
+      return sAns;
+    };
+
+    const mappedData: PreguntaExamen[] = rawData.map((q: any) => {
+      return {
+        id: q.id,
+        preguntaId: q.id,
+        examenId: q.examenId,
+        year: q.year,
+        enunciado: unescapeHTML(
+          (q.enunciados || []).map((e: any) => e.contenido).join('<br/>') || q.enunciado || ''
+        ),
+        alternativaA: cleanAlternative(q.alternativas?.[0]?.contenido || q.alternativaA || ''),
+        alternativaB: cleanAlternative(q.alternativas?.[1]?.contenido || q.alternativaB || ''),
+        alternativaC: cleanAlternative(q.alternativas?.[2]?.contenido || q.alternativaC || ''),
+        alternativaD: cleanAlternative(q.alternativas?.[3]?.contenido || q.alternativaD || ''),
+        imagen: q.imagen || '',
+        puntos: q.puntos || 0,
+        tiempoPregunta: q.tiempoPregunta || 0,
+        clasificacionId: q.clasificacionId,
+        clasificacionNombre: q.clasificacionNombre,
+        tipoPreguntaId: q.tipoPreguntaId,
+        respuesta: getLetter(q.respuesta, q.alternativas || []),
+        subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
+          numero: sub.numero,
+          enunciado: unescapeHTML(
+            (sub.enunciados || []).map((e: any) => e.contenido).join('<br/>') || sub.enunciado || ''
+          ),
+          alternativaA: cleanAlternative(sub.alternativas?.[0]?.contenido || sub.alternativaA || ''),
+          alternativaB: cleanAlternative(sub.alternativas?.[1]?.contenido || sub.alternativaB || ''),
+          alternativaC: cleanAlternative(sub.alternativas?.[2]?.contenido || sub.alternativaC || ''),
+          alternativaD: cleanAlternative(sub.alternativas?.[3]?.contenido || sub.alternativaD || ''),
+          imagen: sub.imagen || '',
+          puntos: sub.puntos || 0,
+          tiempoPregunta: sub.tiempoPregunta || 0,
+          respuesta: getLetter(sub.respuestaCorrecta || sub.respuesta, sub.alternativas || []),
+        })),
+      };
+    });
+
+    const subEnunciados = new Set<string>();
+    mappedData.forEach((q) => {
+      if (q.subPreguntas && q.subPreguntas.length > 0) {
+        q.subPreguntas.forEach((sub) => {
+          if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
+        });
+      }
+    });
+
+    return mappedData.filter((q) => !subEnunciados.has(q.enunciado?.trim()));
   },
 
   // --- NUEVA FUNCIÓN AÑADIDA AQUÍ ---
@@ -187,22 +262,11 @@ export const estructuraAcademicaService = {
         throw new Error('Error al obtener preguntas filtradas');
       }
 
-      const data = (await response.json()) as PreguntaExamen[];
-
-      // Mantenemos la misma lógica de deduplicación que usabas en getPreguntas
-      const subEnunciados = new Set<string>();
-      data.forEach((q) => {
-        if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach((sub) => {
-            if (sub.enunciado) subEnunciados.add(sub.enunciado.trim());
-          });
-        }
-      });
-
-      return data.filter((q) => !subEnunciados.has(q.enunciado?.trim()));
+      const rawData = await response.json();
+      return estructuraAcademicaService.mapPreguntas(rawData);
     } catch (error) {
-      console.error('Error fetching questions by filter:', error);
-      throw error;
+      console.error('Error in getPreguntasByFilter:', error);
+      return [];
     }
   },
 };

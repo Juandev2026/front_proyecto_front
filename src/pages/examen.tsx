@@ -19,7 +19,6 @@ import { evaluacionService } from '../services/evaluacionService';
 import {
   PreguntaExamen,
   ResultadoExamenResponse,
-  SubPreguntaExamen,
 } from '../types/examen';
 
 const ExamenPage = () => {
@@ -33,7 +32,7 @@ const ExamenPage = () => {
 
   // { "preguntaId" o "preguntaId_subNumero": { examenId: number, alternativa: string } }
   const [respuestas, setRespuestas] = useState<
-    Record<string, { examenId: number; alternativa: string }>
+    Record<string, { examenId: number; alternativa: string; isCorrect?: boolean }>
   >({}); // Results State
   const [examResult, setExamResult] = useState<ResultadoExamenResponse | null>(
     null
@@ -62,16 +61,35 @@ const ExamenPage = () => {
 
     if (savedQuestions) {
       const parsedQuestions = JSON.parse(savedQuestions);
-      console.log('Loaded questions:', parsedQuestions);
+      const flattened: any[] = [];
 
-      const ids = parsedQuestions.map((q: any) => q.id);
-      const uniqueIds = new Set(ids);
-      if (ids.length !== uniqueIds.size) {
-        console.warn('DUPLICATE QUESTION IDS FOUND!', ids);
-        // Alert removed to allow user to continue despite bad data
-      }
+      parsedQuestions.forEach((q: any) => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          q.subPreguntas.forEach((sub: any) => {
+            flattened.push({
+              ...q,
+              enunciado: sub.enunciado,
+              parentEnunciado: q.enunciado,
+              alternativaA: sub.alternativaA,
+              alternativaB: sub.alternativaB,
+              alternativaC: sub.alternativaC,
+              alternativaD: sub.alternativaD,
+              puntos: sub.puntos || q.puntos,
+              tiempoPregunta: sub.tiempoPregunta || q.tiempoPregunta,
+              numeroSubPregunta: sub.numero,
+              respuesta: sub.respuesta, // CRITICAL: Map sub-question answer
+              isSubPregunta: true,
+              subPreguntasOriginal: q.subPreguntas, // Keep a ref if needed
+              subPreguntas: [], // Clear this to avoid duplicate rendering logic
+            });
+          });
+        } else {
+          flattened.push({ ...q, isSubPregunta: false });
+        }
+      });
 
-      setQuestions(parsedQuestions);
+      console.log('Flattened questions:', flattened);
+      setQuestions(flattened);
     }
     if (savedMetadata) {
       setMetadata(JSON.parse(savedMetadata));
@@ -142,26 +160,17 @@ const ExamenPage = () => {
       window.speechSynthesis.cancel();
       setIsReading(false);
     } else if (currentQuestion) {
-      let textToRead = `${currentQuestion.enunciado || ''}. `;
-      if (
-        currentQuestion.subPreguntas &&
-        currentQuestion.subPreguntas.length > 0
-      ) {
-        currentQuestion.subPreguntas.forEach((sub) => {
-          textToRead += `Pregunta ${sub.numero}: ${sub.enunciado || ''}. `;
-          textToRead += `Alternativa A: ${sub.alternativaA || ''}. `;
-          textToRead += `Alternativa B: ${sub.alternativaB || ''}. `;
-          textToRead += `Alternativa C: ${sub.alternativaC || ''}. `;
-          if (sub.alternativaD)
-            textToRead += `Alternativa D: ${sub.alternativaD}. `;
-        });
-      } else {
-        textToRead += `Alternativa A: ${currentQuestion.alternativaA || ''}. `;
-        textToRead += `Alternativa B: ${currentQuestion.alternativaB || ''}. `;
-        textToRead += `Alternativa C: ${currentQuestion.alternativaC || ''}. `;
-        if (currentQuestion.alternativaD)
-          textToRead += `Alternativa D: ${currentQuestion.alternativaD}. `;
+      let textToRead = '';
+      if ((currentQuestion as any).parentEnunciado) {
+        textToRead += `Texto de lectura: ${(currentQuestion as any).parentEnunciado}. `;
       }
+      textToRead += `Pregunta: ${currentQuestion.enunciado || ''}. `;
+
+      textToRead += `Alternativa A: ${currentQuestion.alternativaA || ''}. `;
+      textToRead += `Alternativa B: ${currentQuestion.alternativaB || ''}. `;
+      textToRead += `Alternativa C: ${currentQuestion.alternativaC || ''}. `;
+      if (currentQuestion.alternativaD)
+        textToRead += `Alternativa D: ${currentQuestion.alternativaD}. `;
       const stripHtml = (html: string) => {
         const tmp = document.createElement('DIV');
         tmp.innerHTML = html;
@@ -176,16 +185,17 @@ const ExamenPage = () => {
     }
   };
 
-  const handleSelectOption = (option: string, subQuestionNumber?: number) => {
+  const handleSelectOption = (option: string) => {
     if (!currentQuestion) return;
-    if (examResult) return; // Disable changes if exam is finished
+    if (examResult) return;
 
-    const key = subQuestionNumber
-      ? `${currentQuestion.id}_${subQuestionNumber}`
-      : `${currentQuestion.id}`;
+    const key = String(currentIndex);
+
+    // LOCK: If already answered and reviewed, don't allow change
+    if (respuestas[key]?.isCorrect !== undefined) return;
 
     console.log(
-      `Setting answer for Examen ${currentQuestion.examenId}, UniqueKey ${key}: ${option}`
+      `Selecting answer for Index ${currentIndex} (ID: ${currentQuestion.id}): ${option}`
     );
 
     setRespuestas((prev) => ({
@@ -197,7 +207,33 @@ const ExamenPage = () => {
     }));
   };
 
+  const reviewCurrentQuestion = () => {
+    if (!currentQuestion) return;
+
+    const key = String(currentIndex);
+
+    if (respuestas[key] && respuestas[key].isCorrect === undefined) {
+      const isCorrect =
+        respuestas[key].alternativa.toUpperCase() ===
+        currentQuestion.respuesta?.toUpperCase();
+      
+      setRespuestas((prev) => {
+        const current = prev[key];
+        if (!current) return prev;
+        return {
+          ...prev,
+          [key]: {
+            ...current,
+            isCorrect,
+          },
+        };
+      });
+    }
+  };
+
   const handleNext = () => {
+    reviewCurrentQuestion();
+
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       window.speechSynthesis.cancel();
@@ -229,6 +265,8 @@ const ExamenPage = () => {
       return;
     }
 
+    reviewCurrentQuestion();
+
     try {
       console.log('Setting isSubmitting to true...');
       setIsSubmitting(true);
@@ -237,25 +275,33 @@ const ExamenPage = () => {
       const payloadMap: Record<number, any[]> = {};
 
       Object.entries(respuestas).forEach(([key, data]) => {
-        const parts = key.split('_');
-        const preguntaId = Number(parts[0]);
-        const subNum = parts.length > 1 ? Number(parts[1]) : undefined;
+        if (!data) return;
+        const index = Number(key);
+        const q = questions[index];
+        if (!q) return;
 
-        if (!payloadMap[data.examenId]) {
-          payloadMap[data.examenId] = [];
+        const preguntaId = q.id;
+        const subNum = (q as any).numeroSubPregunta;
+        const eid = q.examenId;
+
+        if (!payloadMap[eid]) {
+          payloadMap[eid] = [];
         }
 
-        payloadMap[data.examenId].push({
+        payloadMap[eid].push({
           preguntaId,
           numeroSubPregunta: subNum,
           alternativaMarcada: data.alternativa,
         });
       });
 
-      const examenesPayload = Object.keys(payloadMap).map((examenId) => ({
-        examenId: Number(examenId),
-        respuestas: payloadMap[Number(examenId)],
-      }));
+      const examenesPayload = Object.keys(payloadMap).map((examenIdStr) => {
+        const eid = Number(examenIdStr);
+        return {
+          examenId: eid,
+          respuestas: payloadMap[eid] || [],
+        };
+      });
 
       const payload = { examenes: examenesPayload };
       console.log('Payload prepared:', JSON.stringify(payload, null, 2));
@@ -287,19 +333,11 @@ const ExamenPage = () => {
   };
 
   const stats = useMemo(() => {
-    // El total debe ser la suma de todas las preguntas individuales (incluyendo subpreguntas)
-    const totalIndividualQuestions = questions.reduce((acc, q) => {
-      if (q.subPreguntas && q.subPreguntas.length > 0) {
-        return acc + q.subPreguntas.length;
-      }
-      return acc + 1;
-    }, 0);
-
-    const total = totalIndividualQuestions;
+    const total = questions.length;
     let answeredCount = 0;
-
-    answeredCount = Object.keys(respuestas).length;
-
+    Object.keys(respuestas).forEach((key) => {
+      if (respuestas[key]?.alternativa) answeredCount++;
+    });
     const percentage = total > 0 ? (answeredCount / total) * 100 : 0;
 
     return {
@@ -311,33 +349,40 @@ const ExamenPage = () => {
   }, [questions, respuestas]);
 
   // Helper to check if a question is correct/incorrect based on results
-  const getQuestionStatus = (
-    examenId: number,
-    questionId: number,
-    subQuestionNumber?: number
-  ) => {
+  const getQuestionStatus = (index: number) => {
+    const q = questions[index];
+    if (!q) return null;
+
+    // 1. Check local immediate feedback (index-based)
+    const localKey = String(index);
+    if (respuestas[localKey]?.isCorrect !== undefined) {
+      return respuestas[localKey].isCorrect ? 'correct' : 'incorrect';
+    }
+
+    // 2. Fallback to global exam result (ID-based)
     if (!examResult) return null;
-    const result = examResult.resultados.find((r) => r.examenId === examenId);
+    const result = examResult.resultados.find((r) => r.examenId === q.examenId);
     if (!result) return null;
 
+    const subNum = (q as any).numeroSubPregunta;
     // Backend returns IDs like "100" or "100-1"
-    const key = subQuestionNumber
-      ? `${questionId}-${subQuestionNumber}`
-      : `${questionId}`;
+    const backendKey = subNum !== undefined
+      ? `${q.id}-${subNum}`
+      : `${q.id}`;
 
     if (
-      result.idsCorrectas.includes(key) ||
-      result.idsCorrectas.includes(String(questionId))
+      result.idsCorrectas.includes(backendKey) ||
+      result.idsCorrectas.includes(String(q.id))
     )
       return 'correct';
     if (
-      result.idsIncorrectas.includes(key) ||
-      result.idsIncorrectas.includes(String(questionId))
+      result.idsIncorrectas.includes(backendKey) ||
+      result.idsIncorrectas.includes(String(q.id))
     )
       return 'incorrect';
     if (
-      result.idsOmitidas.includes(key) ||
-      result.idsOmitidas.includes(String(questionId))
+      result.idsOmitidas.includes(backendKey) ||
+      result.idsOmitidas.includes(String(q.id))
     )
       return 'omitted';
     return null;
@@ -558,15 +603,7 @@ const ExamenPage = () => {
                   );
                 })()}
                 {(() => {
-                  const isAnyAnswered =
-                    currentQuestion &&
-                    (respuestas[`${currentQuestion.id}`] !== undefined ||
-                      (currentQuestion.subPreguntas &&
-                        currentQuestion.subPreguntas.some(
-                          (s) =>
-                            respuestas[`${currentQuestion.id}_${s.numero}`] !==
-                            undefined
-                        )));
+                  const isAnyAnswered = respuestas[String(currentIndex)] !== undefined;
                   return (
                     <span
                       className={`${
@@ -582,7 +619,23 @@ const ExamenPage = () => {
               </div>
             </div>
 
-            <div className="space-y-6 text-justify mb-8 font-serif text-lg leading-relaxed text-[#4790FD]">
+            {/* Reading Text (if sub-question) */}
+            {(currentQuestion as any)?.parentEnunciado && (
+              <div className="bg-gray-100/50 p-6 md:p-8 rounded-2xl border border-blue-100 mb-8 text-gray-800 font-serif leading-relaxed shadow-sm force-black-text">
+                <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-blue-600"></div>
+                  Texto de Referencia
+                </div>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: (currentQuestion as any).parentEnunciado,
+                  }}
+                  className="text-base md:text-lg"
+                />
+              </div>
+            )}
+
+            <div className="space-y-6 text-justify mb-8 font-serif text-lg leading-relaxed text-black">
               {currentQuestion?.imagen && (
                 <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-md">
                   <img
@@ -593,191 +646,80 @@ const ExamenPage = () => {
                 </div>
               )}
               {currentQuestion && (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: currentQuestion.enunciado,
-                  }}
-                />
+                <div className="force-black-text">
+                  {(currentQuestion as any).isSubPregunta && (
+                    <span className="bg-blue-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-md mb-4 inline-block shadow-sm">
+                      Pregunta {(currentQuestion as any).numeroSubPregunta}
+                    </span>
+                  )}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: currentQuestion.enunciado,
+                    }}
+                  />
+                </div>
               )}
             </div>
 
             {/* Alternatives Area */}
             <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 font-sans shadow-inner">
               <div className="space-y-3">
-                {currentQuestion && (
-                  <>
-                    {/* Case 1: Sub-questions exist */}
-                    {currentQuestion.subPreguntas &&
-                    currentQuestion.subPreguntas.length > 0 ? (
-                      <div className="space-y-8">
-                        {currentQuestion.subPreguntas.map((sub) => (
-                          <div
-                            key={sub.numero}
-                            className="bg-white rounded-xl p-4 border border-gray-200"
-                          >
-                            <div className="mb-4">
-                              <span className="bg-blue-100 text-[#002B6B] text-xs font-bold px-2 py-1 rounded mb-2 inline-block">
-                                Pregunta {sub.numero}
-                              </span>
-                              <div
-                                dangerouslySetInnerHTML={{
-                                  __html: sub.enunciado,
-                                }}
-                                className="text-gray-800 font-serif"
-                              />
-                              {sub.imagen && (
-                                <img
-                                  src={sub.imagen}
-                                  alt={`Imagen sub-pregunta ${sub.numero}`}
-                                  className="mt-2 rounded-lg max-w-full h-auto"
-                                />
-                              )}
-                            </div>
+                {currentQuestion &&
+                  ['A', 'B', 'C', 'D'].map((opt) => {
+                    const optKey = `alternativa${opt}` as keyof PreguntaExamen;
+                    const content = currentQuestion[optKey] as string;
+                    if (!content) return null;
 
-                            <div className="space-y-2">
-                              {['A', 'B', 'C', 'D'].map((opt) => {
-                                const optKey =
-                                  `alternativa${opt}` as keyof SubPreguntaExamen;
-                                const content = sub[optKey] as string;
-                                if (!content) return null;
+                    const answerKey = String(currentIndex);
+                    const isSelected = respuestas[answerKey]?.alternativa === opt;
+                    const isAnswered = respuestas[answerKey] !== undefined;
+                    const status = getQuestionStatus(currentIndex);
 
-                                const answerKey = `${currentQuestion.id}_${sub.numero}`;
-                                const isSelected =
-                                  respuestas[answerKey]?.alternativa === opt;
-                                const status = getQuestionStatus(
-                                  currentQuestion.examenId,
-                                  currentQuestion.id,
-                                  sub.numero
-                                );
+                    let containerClass =
+                      'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30';
+                    let letterClass =
+                      'bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500';
 
-                                let containerClass =
-                                  'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30';
-                                let letterClass =
-                                  'bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500';
+                    if (isSelected) {
+                      containerClass =
+                        'bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5';
+                      letterClass = 'bg-white/20 border-white/40 text-white';
 
-                                if (isSelected) {
-                                  containerClass =
-                                    'bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5';
-                                  letterClass =
-                                    'bg-white/20 border-white/40 text-white';
-                                }
+                      // Real-time or Final result coloring
+                      if (status === 'correct') {
+                        containerClass = 'bg-green-600 border-green-600 text-white';
+                      } else if (status === 'incorrect') {
+                        containerClass = 'bg-red-500 border-red-500 text-white';
+                      }
+                    } else if (isAnswered && !isSelected) {
+                        // De-emphasize other options when answered
+                        containerClass = 'bg-gray-50 border-gray-100 text-gray-400 opacity-60';
+                        letterClass = 'bg-gray-100 border-gray-200 text-gray-300';
+                    }
 
-                                if (examResult && status) {
-                                  if (status === 'correct' && isSelected) {
-                                    containerClass =
-                                      'bg-green-600 border-green-600 text-white';
-                                    letterClass =
-                                      'bg-white/20 border-white/40 text-white';
-                                  } else if (
-                                    status === 'incorrect' &&
-                                    isSelected
-                                  ) {
-                                    containerClass =
-                                      'bg-red-500 border-red-500 text-white';
-                                    letterClass =
-                                      'bg-white/20 border-white/40 text-white';
-                                  }
-                                }
-
-                                return (
-                                  <button
-                                    key={`${currentQuestion.id}-${sub.numero}-${opt}`}
-                                    onClick={() =>
-                                      handleSelectOption(opt, sub.numero)
-                                    }
-                                    disabled={!!examResult}
-                                    className={`w-full flex items-center gap-4 p-3 border rounded-lg transition-all duration-200 text-left group ${containerClass}`}
-                                  >
-                                    <div
-                                      className={`w-8 h-8 flex items-center justify-center border rounded font-bold text-sm flex-shrink-0 transition-colors ${letterClass}`}
-                                    >
-                                      {opt}
-                                    </div>
-                                    <span className="font-medium text-sm flex-1">
-                                      {content}
-                                    </span>
-                                    {examResult &&
-                                      isSelected &&
-                                      status === 'correct' && (
-                                        <CheckCircleIcon className="w-5 h-5 text-white" />
-                                      )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      /* Case 2: Standard Question */
-                      ['A', 'B', 'C', 'D'].map((opt) => {
-                        const optKey =
-                          `alternativa${opt}` as keyof PreguntaExamen;
-                        const content = currentQuestion[optKey] as string;
-                        if (!content) return null;
-
-                        const answerKey = `${currentQuestion.id}`;
-                        const isSelected =
-                          respuestas[answerKey]?.alternativa === opt;
-                        const status = getQuestionStatus(
-                          currentQuestion.examenId,
-                          currentQuestion.id
-                        );
-
-                        let containerClass =
-                          'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/30';
-                        let letterClass =
-                          'bg-gray-50 border-gray-300 text-gray-500 group-hover:border-blue-300 group-hover:text-blue-500';
-
-                        if (isSelected) {
-                          containerClass =
-                            'bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5';
-                          letterClass =
-                            'bg-white/20 border-white/40 text-white';
-                        }
-
-                        // Apply result styling
-                        if (examResult && status) {
-                          if (status === 'correct' && isSelected) {
-                            containerClass =
-                              'bg-green-600 border-green-600 text-white';
-                            letterClass =
-                              'bg-white/20 border-white/40 text-white';
-                          } else if (status === 'incorrect' && isSelected) {
-                            containerClass =
-                              'bg-red-500 border-red-500 text-white';
-                            letterClass =
-                              'bg-white/20 border-white/40 text-white';
-                          }
-                        }
-
-                        return (
-                          <button
-                            key={`${currentQuestion.id}-${opt}`}
-                            onClick={() => handleSelectOption(opt)}
-                            disabled={!!examResult}
-                            className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group ${containerClass}`}
-                          >
-                            <div
-                              className={`w-10 h-10 flex items-center justify-center border rounded-lg font-bold text-lg flex-shrink-0 transition-colors ${letterClass}`}
-                            >
-                              {opt}
-                            </div>
-                            <span className="font-medium text-base flex-1">
-                              {content}
-                            </span>
-                            {/* Icons for results */}
-                            {examResult &&
-                              isSelected &&
-                              status === 'correct' && (
-                                <CheckCircleIcon className="w-6 h-6 text-white" />
-                              )}
-                          </button>
-                        );
-                      })
-                    )}
-                  </>
-                )}
+                    return (
+                      <button
+                        key={`${currentQuestion.id}-${opt}`}
+                        onClick={() => handleSelectOption(opt)}
+                        disabled={!!examResult || isAnswered}
+                        className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group ${containerClass}`}
+                      >
+                        <div
+                          className={`w-10 h-10 flex items-center justify-center border rounded-lg font-bold text-lg flex-shrink-0 transition-colors ${letterClass}`}
+                        >
+                          {opt}
+                        </div>
+                        <span
+                          className="font-medium text-base flex-1 alternative-content"
+                          dangerouslySetInnerHTML={{ __html: content }}
+                        />
+                        {/* Icons for results */}
+                        {examResult && isSelected && status === 'correct' && (
+                          <CheckCircleIcon className="w-6 h-6 text-white" />
+                        )}
+                      </button>
+                    );
+                  })}
               </div>
 
               <div className="mt-8 flex items-center justify-between gap-4">
@@ -813,7 +755,7 @@ const ExamenPage = () => {
               {/* Brand Signature */}
               <div className="flex justify-end mt-6">
                 <div className="flex flex-col items-end opacity-70">
-                  <span className="font-handwriting text-3xl text-[#4790FD] transform -rotate-2">
+                  <span className="font-handwriting text-3xl text-black transform -rotate-2">
                     Juan Avendaño
                   </span>
                   <div className="bg-[#1DA1F2] text-white p-1 rounded-full w-6 h-6 flex items-center justify-center mt-1 shadow-sm">
@@ -935,14 +877,9 @@ const ExamenPage = () => {
               </div>
 
               <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                {questions.map((q, i) => {
-                  const status = getQuestionStatus(q.examenId, q.id);
-                  const isAnswered =
-                    respuestas[`${q.id}`] !== undefined ||
-                    (q.subPreguntas &&
-                      q.subPreguntas.some(
-                        (s) => respuestas[`${q.id}_${s.numero}`] !== undefined
-                      ));
+                {questions.map((_, i) => {
+                  const status = getQuestionStatus(i);
+                  const isAnswered = respuestas[String(i)] !== undefined;
 
                   let btnClass =
                     'bg-white border-gray-100 text-gray-400 hover:border-gray-300 hover:bg-gray-50';
@@ -953,6 +890,8 @@ const ExamenPage = () => {
                     btnClass = 'bg-green-100 border-green-300 text-green-700';
                   } else if (status === 'incorrect') {
                     btnClass = 'bg-red-100 border-red-300 text-red-700';
+                  } else if (status === 'omitted') {
+                    btnClass = 'bg-orange-100 border-orange-300 text-orange-700';
                   } else if (isAnswered) {
                     btnClass =
                       'bg-blue-50 border-blue-200 text-[#002B6B] hover:border-blue-400';
@@ -960,8 +899,9 @@ const ExamenPage = () => {
 
                   return (
                     <button
-                      key={q.id}
+                      key={i}
                       onClick={() => {
+                        reviewCurrentQuestion();
                         setCurrentIndex(i);
                         window.speechSynthesis.cancel();
                         setIsReading(false);
@@ -969,7 +909,7 @@ const ExamenPage = () => {
                       className={`
                              h-10 w-full rounded-xl flex items-center justify-center text-sm font-black transition-all duration-200 border-2
                              ${btnClass}
-                          `}
+                           `}
                     >
                       {i + 1}
                     </button>

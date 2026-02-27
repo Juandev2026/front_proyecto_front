@@ -29,7 +29,7 @@ const BancoPreguntasPage = () => {
   const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
 
   // Current Selection State (Using strings for consistency with <select> values)
-  const [selectedTipoExamenId, setSelectedTipoExamenId] = useState<string>('');
+  const [selectedTipoExamenId, setSelectedTipoExamenId] = useState<string>('2');
   const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
@@ -193,7 +193,7 @@ const BancoPreguntasPage = () => {
   // 1. Auto-select Tipo de Examen
   useEffect(() => {
     if (tiposExamenData.length === 1 && !selectedTipoExamenId) {
-      setSelectedTipoExamenId(String(tiposExamenData[0].id));
+      setSelectedTipoExamenId(String(tiposExamenData[0]?.id));
     }
   }, [tiposExamenData, selectedTipoExamenId]);
 
@@ -212,7 +212,7 @@ const BancoPreguntasPage = () => {
   // 3. Auto-select Especialidad
   useEffect(() => {
     if (especialidadesData.length === 1 && !selectedEspecialidadId) {
-      setSelectedEspecialidadId(String(especialidadesData[0].id));
+      setSelectedEspecialidadId(String(especialidadesData[0]?.id));
     }
   }, [especialidadesData, selectedEspecialidadId]);
 
@@ -464,33 +464,7 @@ const BancoPreguntasPage = () => {
         </div>
 
         <div className="space-y-4">
-          {tiposExamenData.length > 1 && (
-            <div className="border border-primary rounded-lg p-4 bg-white">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                <AcademicCapIcon className="h-5 w-5" />
-                <span>Tipo de Examen</span>
-              </div>
-              <select
-                value={selectedTipoExamenId}
-                onChange={(e) => {
-                  setSelectedTipoExamenId(e.target.value);
-                  setSelectedModalidadId('');
-                  setSelectedNivelId('');
-                  setSelectedEspecialidadId('');
-                  setSelectedYear('');
-                }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                disabled={isLoading}
-              >
-                <option value="">Selecciona Tipo</option>
-                {tiposExamenData.map((t) => (
-                  <option key={t.id} value={String(t.id)}>
-                    {t.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Tipo de Examen is hidden as Nombramiento is the default */}
 
           <div className="border border-primary rounded-lg p-4 bg-white transition-all">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
@@ -731,7 +705,7 @@ const BancoPreguntasPage = () => {
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <span className="bg-[#5A9CF8]/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                           <span>📝</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
@@ -740,7 +714,7 @@ const BancoPreguntasPage = () => {
                           )}{' '}
                           preguntas totales
                         </span>
-                        <span className="bg-[#48BB78]/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                        <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                           <span>⏱️</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
@@ -751,7 +725,7 @@ const BancoPreguntasPage = () => {
                           )}{' '}
                           min totales
                         </span>
-                        <span className="bg-[#B794F4]/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                        <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                           <span>🎯</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
@@ -762,7 +736,7 @@ const BancoPreguntasPage = () => {
                           )}{' '}
                           pts máximo
                         </span>
-                        <span className="bg-[#F6AD55]/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                        <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                           <span>✅</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
@@ -794,20 +768,7 @@ const BancoPreguntasPage = () => {
               </div>
 
               <div className="space-y-5">
-                {selectedTipoExamenId && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">
-                      Tipo de Examen
-                    </p>
-                    <span className="inline-block px-4 py-1.5 border border-[#8ec7ed] text-[#4299E1] bg-[#eef6fc] rounded-md text-sm font-medium">
-                      {
-                        tiposExamenData.find(
-                          (t) => String(t.id) === selectedTipoExamenId
-                        )?.nombre
-                      }
-                    </span>
-                  </div>
-                )}
+                {/* Tipo de Examen is hidden in summary as it is fixed to Nombramiento */}
                 {selectedModalidadId && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1.5 ml-1">
