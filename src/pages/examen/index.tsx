@@ -14,11 +14,15 @@ import { AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import Toast from '../components/Toast';
-import { useAuth } from '../hooks/useAuth';
-import PremiumLayout from '../layouts/PremiumLayout';
-import { evaluacionService } from '../services/evaluacionService';
-import { PreguntaExamen, ResultadoExamenResponse } from '../types/examen';
+import Toast from '../../components/Toast';
+import { useAuth } from '../../hooks/useAuth';
+import PremiumLayout from '../../layouts/PremiumLayout';
+import { evaluacionService } from '../../services/evaluacionService';
+import {
+  PreguntaExamen,
+  ResultadoExamenResponse,
+  SolucionExamenRequest,
+} from '../../types/examen';
 
 const ExamenPage = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -340,9 +344,14 @@ const ExamenPage = () => {
       console.log('Service returned result:', result);
 
       setExamResult(result);
-      console.log('State examResult updated.');
 
-      alert('¡Examen calificado exitosamente!');
+      // Persist results and answers for the dedicated results page
+      localStorage.setItem('lastExamResult', JSON.stringify(result));
+      localStorage.setItem('lastRespuestas', JSON.stringify(respuestas));
+      localStorage.setItem('lastExamTime', String(seconds));
+
+      console.log('Redirecting to results page...');
+      router.push('/examen/resultado');
     } catch (error: any) {
       console.error('Error in handleFinishExam:', error);
       const errorMessage =

@@ -14,6 +14,10 @@ import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin } from '../services/authService';
 import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import {
+  preguntaService,
+  ClasificacionExamen,
+} from '../services/preguntaService';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -27,6 +31,9 @@ const BancoPreguntasPage = () => {
 
   // Examenes from login response
   const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
+  const [allClasificaciones, setAllClasificaciones] = useState<
+    ClasificacionExamen[]
+  >([]);
 
   // Current Selection State (Using strings for consistency with <select> values)
   const [selectedTipoExamenId, setSelectedTipoExamenId] = useState<string>('2');
@@ -69,6 +76,12 @@ const BancoPreguntasPage = () => {
           console.error('Error parsing loginExamenes:', e);
         }
       }
+
+      // Fetch dynamic classifications from API
+      preguntaService
+        .getClasificaciones()
+        .then((data) => setAllClasificaciones(data))
+        .catch((err) => console.error('Error fetching classifications:', err));
     }
   }, [isAuthenticated]);
 
@@ -252,6 +265,11 @@ const BancoPreguntasPage = () => {
           const name = item.clasificacionNombre;
 
           if (name) {
+            // Find metadata from dynamic API classifications if available
+            const meta = allClasificaciones.find(
+              (c) => c.clasificacionNombre === name
+            );
+
             // Buscar la cantidad exacta para el año seleccionado
             let cantidadExacta = 0;
             const isUnico = selectedYear === 'Único';
@@ -263,8 +281,6 @@ const BancoPreguntasPage = () => {
               const yearData = item.years.find(
                 (y: any) => String(y.year) === selectedYear
               );
-              // Si encontramos el año, usamos su cantidad. Si no, pero existe el array,
-              // podríamos decidir si usar 0 o el total. El usuario dice que debe ser el del año.
               cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
             }
 
@@ -272,9 +288,10 @@ const BancoPreguntasPage = () => {
             if (!countMap[name]) {
               countMap[name] = {
                 cantidad: cantidadExacta,
-                puntos: item.puntos || 0,
-                tiempoPregunta: item.tiempoPregunta || 0,
-                minimo: item.minimo || 0,
+                puntos: meta?.puntos || item.puntos || 0,
+                tiempoPregunta:
+                  meta?.tiempoPregunta || item.tiempoPregunta || 0,
+                minimo: meta?.minimo || item.minimo || 0,
               };
             } else {
               countMap[name].cantidad += cantidadExacta;
@@ -313,6 +330,7 @@ const BancoPreguntasPage = () => {
     selectedYear,
     loginExamenes,
     nivelesData,
+    allClasificaciones,
   ]);
 
   // --- Handlers ---
