@@ -883,16 +883,11 @@ const BancoPreguntasPage = () => {
                 (especialidadesData.length > 0 && !selectedEspecialidadId) ||
                 (aniosData.length > 0 && !selectedYear) ||
                 // 2. NUEVA VALIDACIÓN: Bloquear si el total de preguntas es 0
-                (tiposPregunta.conocimientos
-                  ? conteoPreguntas['conocimientos pedagógicos']?.cantidad || 0
-                  : 0) +
-                  (tiposPregunta.razonamiento
-                    ? conteoPreguntas['razonamiento lógico']?.cantidad || 0
-                    : 0) +
-                  (tiposPregunta.comprension
-                    ? conteoPreguntas['comprensión lectora']?.cantidad || 0
-                    : 0) ===
+                Object.entries(conteoPreguntas).reduce(
+                  (acc, [name, curr]: [string, any]) =>
+                    tiposPregunta[name] ? acc + curr.cantidad : acc,
                   0
+                ) === 0
               }
               className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
