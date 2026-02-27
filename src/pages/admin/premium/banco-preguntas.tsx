@@ -479,7 +479,32 @@ const Recursos = () => {
     return allYears.sort((a, b) => Number(b) - Number(a)).map(y => ({ year: y.toString() }));
   }, [selectedTipo, selectedFuente, selectedModalidad, selectedNivel, selectedEspecialidad, allExams, loginExamenes, userRole]);
 
-  const currentItems = filteredItems;
+  // --- CONTINUOUS INDEXING LOGIC ---
+  const itemsWithIndices = useMemo(() => {
+    let globalCounter = 0;
+    return filteredItems.map(item => {
+      const isParent = item.tipoPreguntaId === 2;
+      let mainIdx = null;
+      
+      if (!isParent) {
+        globalCounter++;
+        mainIdx = globalCounter;
+      }
+      
+      const subPreguntas = item.subPreguntas || subQuestionsMap[item.id] || [];
+      // Sort subs by order (numero) then by id
+      const sortedSubs = [...subPreguntas].sort((a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id);
+      
+      const subsWithIdx = sortedSubs.map(s => {
+        globalCounter++;
+        return { ...s, displayIndex: globalCounter };
+      });
+      
+      return { ...item, displayIndex: mainIdx, subsWithIdx };
+    });
+  }, [filteredItems, subQuestionsMap]);
+
+  const currentItems = itemsWithIndices;
 
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
@@ -946,7 +971,7 @@ const Recursos = () => {
              };
              
              const data = await preguntaService.examenFilter(filterData);
-             setItems(data.sort((a, b) => b.id - a.id));
+             setItems(data.sort((a, b) => a.id - b.id));
           } catch (err) {
              console.error('Error fetching questions with filter:', err);
              setItems([]);
@@ -955,7 +980,7 @@ const Recursos = () => {
           try {
              setItemsLoading(true);
              const data = await preguntaService.getAll();
-             setItems(data.sort((a, b) => b.id - a.id));
+             setItems(data.sort((a, b) => a.id - b.id));
           } catch (err) {
              console.error('Error fetching all questions:', err);
              setItems([]);
@@ -2149,28 +2174,113 @@ const Recursos = () => {
           <div>
             {/* RESULT HEADER & CRITERIA */}
             <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm flex items-center gap-4">
-              <button
-                onClick={() => setShowResults(false)}
-                className="text-white hover:text-gray-200 font-medium flex items-center gap-1"
+                 <button onClick={() => setShowResults(false)} className="text-white hover:text-gray-200 font-medium flex items-center gap-1">
+                    <ChevronLeftIcon className="w-5 h-5" /> Volver
+                 </button>
+                 <h1 className="text-xl font-bold text-white flex-1 text-center">Ver preguntas</h1>
+            </div>
+            
+            <div className="bg-white border border-gray-200 p-4 rounded-b-lg mb-6 shadow-sm">
+                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                     <div className="flex flex-wrap gap-2 items-center">
+                         <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
+                         <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
+                             {filteredItems.length} {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
+                         </span>
+                         {/* Display Selected Criteria as Pills */}
+                         {groupedData.find(t => t.tipoExamenId === selectedTipo) && (
+                            <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
+                                {groupedData.find(t => t.tipoExamenId === selectedTipo)?.tipoExamenNombre}
+                            </span>
+                         )}
+                         {/* We could map other selected IDs to names here if available in state arrays or lookups */}
+                         {selectedModalidad && (
+                             <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">Modalidad ID: {selectedModalidad}</span>
+                         )}
+                         {selectedYear && (
+                             <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">{selectedYear}</span>
+                         )}
+                     </div>
+                     <button
+                        onClick={() => {
+                            setNewItem({
+                                ...newItem,
+                                examenId: Number(selectedFuente) || 0, // Pre-fill if needed
+                            });
+                            setViewMode('create');
+                        }}
+                        className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
+                     >
+                        <PlusIcon className="w-5 h-5" />
+                        Añadir preguntas
+                     </button>
+                 </div>
+            </div>
+        {itemsLoading ? (
+          <div className="bg-white rounded-lg p-12 text-center text-primary border border-gray-200 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
+            <p className="font-medium">Cargando preguntas...</p>
+          </div>
+        ) : currentItems.length === 0 ? (
+          <div className="bg-white rounded-lg p-12 text-center text-gray-500 border border-gray-200">
+            No se encontraron preguntas.
+          </div>
+        ) : (
+          <div className="space-y-6 mt-6">
+            {currentItems.map((item) => {
+              const isParent = item.tipoPreguntaId === 2;
+              const isLoadingSubs = loadingSubIds.has(item.id);
+              const subCount = item.subsWithIdx ? item.subsWithIdx.length : (subCountsMap[item.id] ?? 0);
+
+              return (
+              <div
+                key={item.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-hidden"
               >
                 {/* --- HEADER --- */}
                 <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                      {index + 1}
-                    </span>
-                  )}
-                  {/* We could map other selected IDs to names here if available in state arrays or lookups */}
-                  {selectedModalidad && (
-                    <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">
-                      Modalidad ID: {selectedModalidad}
-                    </span>
-                  )}
-                  {selectedYear && (
-                    <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
-                      {selectedYear}
-                    </span>
-                  )}
+                    {item.displayIndex && (
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
+                        {item.displayIndex}
+                        </span>
+                    )}
+                    <div className="flex flex-col">
+                        <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                        {isParent ? 'Comprensión Lectora' : 'Pregunta Individual'}
+                        </h3>
+                        <span className="text-xs text-gray-500 font-medium mt-1">
+                            ID: {item.id} {isParent ? `• ${subCount} sub-preguntas` : '• Simple'}
+                        </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                     <span className={`text-xs px-2 py-1 rounded font-bold border ${isParent 
+                        ? 'bg-indigo-100 text-indigo-700 border-indigo-200' 
+                        : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                        {isParent ? 'AGRUPADA' : 'INDIVIDUAL'}
+                     </span>
+                    
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <PencilIcon className="w-3 h-3" /> Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      disabled={deletingIds.has(item.id)}
+                      className="text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {deletingIds.has(item.id) ? (
+                          <span className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
+                      ) : (
+                          <TrashIcon className="w-3 h-3" />
+                      )}
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
                 <button
                   onClick={() => {
@@ -2233,16 +2343,39 @@ const Recursos = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-xs px-2 py-1 rounded font-bold border ${
-                              isParent
-                                ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
-                                : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                            }`}
-                          >
-                            {isParent ? 'AGRUPADA' : 'INDIVIDUAL'}
-                          </span>
+                        <div className="space-y-4 pl-4 border-l-2 border-indigo-200">
+                          {isLoadingSubs ? (
+                            <div className="flex items-center justify-center p-8 text-indigo-500">
+                              <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              <span className="font-medium">Cargando sub-preguntas...</span>
+                            </div>
+                          ) : item.subsWithIdx.length === 0 ? (
+                            <div className="text-center p-6 text-gray-400 italic">
+                               No se encontraron sub-preguntas.
+                            </div>
+                          ) : (
+                            item.subsWithIdx.map((sub, sIdx) => (
+                              <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero || sIdx}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                  {/* Header mini */}
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
+                                      {sub.displayIndex}
+                                    </span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sub-Pregunta {sub.displayIndex}</span>
+                                    
+                                    <div className="ml-auto flex gap-2">
+                                        <button 
+                                          onClick={() => handleDeleteSub(sub.examenId, sub.preguntaId, sub.numero)}
+                                          disabled={deletingIds.has(`${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any)}
+                                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                        >
+                                            <TrashIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                  </div>
 
                           <button
                             onClick={() => handleEdit(item)}
