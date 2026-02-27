@@ -14,7 +14,6 @@ import {
   Clasificacion,
 } from '../../services/clasificacionService';
 import { preguntaService } from '../../services/preguntaService';
-import { subPreguntaService } from '../../services/subPreguntaService';
 import { uploadService } from '../../services/uploadService';
 
 // Dynamic import for Tiptap Editor
@@ -425,119 +424,67 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
     const commonHtml = serializeBlocks(commonStatement);
 
-    console.log('=== GUARDANDO PREGUNTA AGRUPADA (PADRE-HIJOS) ===');
-    console.log('Examen ID resuelto:', examenId);
-
+    console.log('=== GUARDANDO PREGUNTA AGRUPADA (ATÓMICA) ===');
     setSaving(true);
 
     try {
-      // === PASO 1: Crear PADRE ===
-      const parentPayload = {
-        enunciado: commonHtml,
+      // Construction of ATOMIC Payload
+      const payload = {
+        id: initialParent ? initialParent.id : 0,
         examenId,
+        year: initialParent?.year || "2024", // Fallback
         tipoPreguntaId: 2,
-        clasificacionId: subQuestions[0]?.clasificacionId || 0,
-        sustento: '',
-        imagen: '',
-        alternativaA: '',
-        alternativaB: '',
-        alternativaC: '',
-        alternativaD: '',
-        respuesta: '',
-      };
-
-      console.log(
-        initialParent ? 'Editando Padre...' : 'Enviando Padre...',
-        parentPayload
-      );
-      const parentResponse = initialParent
-        ? await preguntaService.update(
-            examenId,
-            initialParent.id,
-            parentPayload
-          )
-        : await preguntaService.createSingle(parentPayload);
-
-      const parentId = initialParent ? initialParent.id : parentResponse.id;
-      console.log(
-        `Padre ${initialParent ? 'actualizado' : 'creado'} con ID: ${parentId}`
-      );
-
-      try {
-        // === PASO 2: Crear HIJOS en paralelo ===
-        const childPayloads = subQuestions.map((q, index) => {
+        numero: 0,
+        enunciados: [
+          {
+            id: 0,
+            contenido: commonHtml,
+          },
+        ],
+        subPreguntas: subQuestions.map((q, index) => {
           const correctIndex = q.alternatives.findIndex((a) => a.esCorrecta);
           const respuestaChar =
             correctIndex !== -1 ? ['A', 'B', 'C', 'D'][correctIndex] || '' : '';
 
           return {
-            examenId,
-            preguntaId: parentId,
+            id: (q as any).id || 0,
             numero: index + 1,
-            enunciado: serializeBlocks(q.specificStatement),
-            alternativaA: q.alternatives[0]?.contenido || '',
-            alternativaB: q.alternatives[1]?.contenido || '',
-            alternativaC: q.alternatives[2]?.contenido || '',
-            alternativaD: q.alternatives[3]?.contenido || '',
             respuestaCorrecta: respuestaChar,
-            sustento: q.sustento || '',
             clasificacionId: q.clasificacionId,
-            imagen: '',
+            enunciados: [
+              {
+                id: 0,
+                contenido: serializeBlocks(q.specificStatement),
+              },
+            ],
+            alternativas: q.alternatives.map((alt, altIdx) => ({
+                id: isNaN(Number(alt.id)) ? altIdx + 1 : Number(alt.id),
+                contenido: alt.contenido || ''
+            })),
+            justificaciones: [
+              {
+                id: 0,
+                contenido: q.sustento || '',
+              },
+            ],
           };
-        });
+        }),
+      };
 
-        console.log(`Enviando ${childPayloads.length} Hijos...`, childPayloads);
+      console.log('Payload Atómico:', payload);
 
-        // If editing, we use update for existing ones and create for new ones
-        const promises = childPayloads.map(async (payload, idx) => {
-          const original = subQuestions[idx];
-          // @ts-ignore - check if it has a real database ID
-          if (original && original.id) {
-            return subPreguntaService.update(
-              payload.examenId,
-              payload.preguntaId,
-              payload.numero,
-              payload
-            );
-          }
-          return subPreguntaService.create(payload);
-        });
-
-        await Promise.all(promises);
-
-        console.log('=== PREGUNTA AGRUPADA GUARDADA EXITOSAMENTE ===');
-        console.log('Padre ID:', parentId, '| Hijos:', childPayloads.length);
-
-        alert(
-          `Pregunta agrupada ${
-            initialParent ? 'actualizada' : 'guardada'
-          } correctamente.\nPadre ID: ${parentId}\nSub-preguntas: ${
-            subQuestions.length
-          }`
-        );
-        onSuccess();
-      } catch (childError) {
-        // === ROLLBACK: Eliminar Padre si fallan los Hijos ===
-        console.error(
-          'Error creando hijos, ejecutando rollback del padre...',
-          childError
-        );
-        try {
-          await preguntaService.delete(parentId);
-          console.log('Rollback exitoso: Padre eliminado.');
-        } catch (rollbackError) {
-          console.error(
-            'Error en rollback (no se pudo eliminar el padre):',
-            rollbackError
-          );
-        }
-        alert(
-          'Error al guardar las sub-preguntas. Se canceló la operación completa.'
-        );
+      if (initialParent) {
+          await preguntaService.update(examenId, initialParent.id, payload);
+          alert('Pregunta común actualizada con éxito');
+      } else {
+          await preguntaService.create(payload as any);
+          alert('Pregunta común creada con éxito (Padre e Hijos)');
       }
-    } catch (parentError) {
-      console.error('Error creando pregunta padre:', parentError);
-      alert('Error al guardar el enunciado principal. Intente nuevamente.');
+
+      onSuccess();
+    } catch (saveError) {
+      console.error('Error al guardar pregunta común atómica:', saveError);
+      alert('Error técnico al guardar la pregunta agrupada. Revisa la consola para más detalles.');
     } finally {
       setSaving(false);
     }

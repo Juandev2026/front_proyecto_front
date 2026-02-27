@@ -8,24 +8,24 @@ export interface EnunciadoItem {
 
 export interface Pregunta {
   id: number;
+  examenId: number;
+  year?: string;
+  numero: number;
+  clasificacionId: number;
+  tipoPreguntaId: number;
+  respuesta: string | number;
   enunciado?: string;
   alternativaA?: string;
   alternativaB?: string;
   alternativaC?: string;
   alternativaD?: string;
-  respuesta?: string | number;
   sustento?: string;
-  examenId: number;
-  clasificacionId?: number;
   imagen?: string;
-  tipoPreguntaId: number;
-  preguntaId?: number; // ID del Padre (si existe)
-  numero?: number; // Orden de la sub-pregunta
-  year?: string;
   enunciados?: EnunciadoItem[];
+  alternativas?: EnunciadoItem[];
+  justificaciones?: EnunciadoItem[];
+  respuestaCorrecta?: string | number;
   subPreguntas?: any[];
-  alternativas?: any[];
-  justificaciones?: any[];
   clasificacionNombre?: string;
 }
 
@@ -94,31 +94,13 @@ export const preguntaService = {
     item: Partial<Pregunta>
   ): Promise<Pregunta> => {
     try {
-      const payload = {
-        numero: Number(item.numero),
-        clasificacionId: Number(item.clasificacionId),
-        tipoPreguntaId: Number(item.tipoPreguntaId),
-        respuesta: item.respuesta, // Can be string or number
-        enunciado: item.enunciado,
-        alternativaA: item.alternativaA,
-        alternativaB: item.alternativaB,
-        alternativaC: item.alternativaC,
-        alternativaD: item.alternativaD,
-        sustento: item.sustento,
-        examenId: Number(item.examenId),
-        imagen: item.imagen,
-        enunciados: item.enunciados,
-        alternativas: item.alternativas,
-        justificaciones: item.justificaciones,
-      };
-
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(item),
       });
 
       if (!response.ok) {
@@ -126,9 +108,8 @@ export const preguntaService = {
       }
 
       const text = await response.text();
-      const updatedData = text ? JSON.parse(text) : payload;
-
-      return { ...updatedData, id } as Pregunta;
+      const result = text ? JSON.parse(text) : { ...item, id };
+      return result as Pregunta;
     } catch (error) {
       throw error;
     }
@@ -143,29 +124,6 @@ export const preguntaService = {
       if (!response.ok) {
         throw new Error('Error al eliminar la pregunta');
       }
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Crear una sola pregunta (Padre) y retornar el objeto con ID
-   */
-  createSingle: async (item: Partial<Pregunta>): Promise<Pregunta> => {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(item),
-      });
-      if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`Error al crear pregunta padre: ${err}`);
-      }
-      return await response.json();
     } catch (error) {
       throw error;
     }
@@ -238,7 +196,7 @@ export const preguntaService = {
         const sAns = String(ans).toUpperCase();
 
         if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
-        if (!alts || alts.length === 0) return '';
+        if (!alts || alts.length === 0) return sAns; // Return original if no alts to map from
 
         const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
         if (idxById !== -1) return String.fromCharCode(65 + idxById);
@@ -265,6 +223,7 @@ export const preguntaService = {
             alternativaC: q.alternativas?.[2]?.contenido || '',
             alternativaD: q.alternativas?.[3]?.contenido || '',
             respuesta: getLetter(q.respuesta, q.alternativas || []),
+            respuestaCorrecta: q.respuesta,
             tipoPreguntaId: q.tipoPreguntaId,
             clasificacionId: q.clasificacionId,
             clasificacionNombre: q.clasificacionNombre,

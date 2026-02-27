@@ -720,6 +720,10 @@ const Recursos = () => {
 
   const handleAddNew = () => {
     resetForm();
+    setNewItem(prev => ({
+        ...prev,
+        examenId: Number(selectedFuente) || 0
+    }));
     setViewMode('create');
   };
 
@@ -1166,39 +1170,56 @@ const Recursos = () => {
         return;
       }
 
-      // Format alternatives for rich payload
+      if (Number(newItem.clasificacionId) <= 0) {
+        alert('Por favor selecciona una Clasificación para la pregunta.');
+        return;
+      }
+
+      // Format alternatives with temporary IDs (1, 2, 3...) 
+      // strictly for linking with 'respuesta' in the same save operation.
       const safeAlts = alternatives.map(a => ({ ...a }));
-      const mappedAlternativas = safeAlts.map((alt, idx) => ({
-        id: isNaN(Number(alt.id)) ? 0 : Number(alt.id),
-        contenido: alt.contenido || '',
-        esCorrecta: alt.esCorrecta,
-      }));
+      const mappedAlternativas = safeAlts.map((alt, idx) => {
+        const tempId = isNaN(Number(alt.id)) || Number(alt.id) < 1 
+            ? idx + 1 
+            : Number(alt.id);
+        
+        return {
+            id: tempId,
+            contenido: alt.contenido || ''
+        };
+      });
 
-      // Find the answer ID or use original letter/index
-      const finalRespuesta = correctAlt 
-        ? (!isNaN(Number(correctAlt.id)) && Number(correctAlt.id) !== 0 ? Number(correctAlt.id) : ['A', 'B', 'C', 'D'][safeAlts.indexOf(correctAlt)])
-        : '';
+      // Find the answer referencing our mapped items
+      let finalRespuesta: number = 0;
+      const correctIdx = safeAlts.findIndex(a => a.esCorrecta);
+      if (correctIdx !== -1) {
+          const matchedAlt = mappedAlternativas[correctIdx];
+          if (matchedAlt) {
+              finalRespuesta = matchedAlt.id;
+          }
+      }
 
+      // STRICT PAYLOAD as per Latest Schema
       const payload = {
-        numero: numPreguntaParsed,
-        enunciado: newItem.enunciado,
-        alternativaA: safeAlts[0]?.contenido || '',
-        alternativaB: safeAlts[1]?.contenido || '',
-        alternativaC: safeAlts[2]?.contenido || '',
-        alternativaD: safeAlts[3]?.contenido || '',
-        respuesta: finalRespuesta,
-        sustento: serializeJustification(),
+        id: editingId || 0, // Mandatory 0 for POST
         examenId: targetExamenId,
+        year: selectedYear || "2024", 
+        numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
-        imagen: finalUrl,
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
+        respuesta: finalRespuesta,
         enunciados: [
           {
-            id: 0, // Server will handle this
+            id: 0, // Server manages sequence
             contenido: newItem.enunciado,
           },
         ],
         alternativas: mappedAlternativas,
+        justificaciones: justificationBlocks.map((b) => ({
+            id: 0, // Server manages sequence
+            contenido: b.content
+        })),
+        imagen: finalUrl || ""
       };
 
       if (editingId) {
@@ -1216,7 +1237,7 @@ const Recursos = () => {
       } else {
         // POST /api/Preguntas — examenId va dentro del body
         const created = await preguntaService.create(
-          payload as Omit<Pregunta, 'id'>
+          payload as any
         );
         if (created) {
           setItems((prev) => [created, ...prev]);
@@ -2007,16 +2028,10 @@ const Recursos = () => {
                              <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">{selectedYear}</span>
                          )}
                      </div>
-                     <button
-                        onClick={() => {
-                            setNewItem({
-                                ...newItem,
-                                examenId: Number(selectedFuente) || 0, // Pre-fill if needed
-                            });
-                            setViewMode('create');
-                        }}
+                      <button
+                        onClick={handleAddNew}
                         className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
-                     >
+                      >
                         <PlusIcon className="w-5 h-5" />
                         Añadir preguntas
                      </button>
@@ -2037,7 +2052,7 @@ const Recursos = () => {
                           
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
-                              {!isParent ? (item.numero || item.displayIndex || '-') : ''}
+                              {!isParent ? (item.displayIndex || item.numero || '-') : ''}
                             </div>
                             
                             <span className="text-sm font-bold text-gray-900">
@@ -2311,7 +2326,8 @@ const Recursos = () => {
                             <div className="grid grid-cols-1 gap-3 mb-4">
                               {item.alternativas && item.alternativas.length > 0 ? (
                                 item.alternativas.map((alt: any) => {
-                                  const isCorrect = alt.id.toString() === item.respuesta?.toString();
+                                  // Use the raw ID for comparison, same as sub-questions
+                                  const isCorrect = alt.id.toString() === item.respuestaCorrecta?.toString();
                                   return (
                                     <div
                                       key={alt.id}
