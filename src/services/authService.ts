@@ -72,13 +72,14 @@ export interface LoginResponse {
   email: string;
   role: string;
   id: number;
-  nivelId: number | null;
+  nivelId?: number | null;
   modalidadId?: number | null;
   especialidad?: string;
   especialidadId?: number | null;
   accesoIds?: number[];
   accesoNombres?: string[];
   fechaExpiracion?: string;
+  userExamenes?: any[];
 }
 
 export interface LoginApiResponse {
@@ -140,7 +141,7 @@ export const authService = {
     }
   },
 
-  login: async (data: LoginRequest): Promise<LoginApiResponse> => {
+  login: async (data: LoginRequest): Promise<LoginResponse> => {
     try {
       const response = await fetch(`${apiAuth}/login`, {
         method: 'POST',
@@ -159,7 +160,43 @@ export const authService = {
 
       return await response.json();
     } catch (error) {
-      // // Log removed
+      throw error;
+    }
+  },
+
+  getUserFilters: async (
+    userId: number,
+    token?: string
+  ): Promise<LoginApiResponse> => {
+    try {
+      if (userId === undefined || userId === null || isNaN(userId)) {
+        console.error('getUserFilters called with invalid userId:', userId);
+        throw new Error('ID de usuario no válido');
+      }
+
+      const headers: any = {
+        Accept: 'application/json',
+      };
+
+      const authToken = token || localStorage.getItem('token');
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
+      console.log(`Fetching filters for user ${userId}...`);
+      const response = await fetch(`${apiAuth}/user-filters/${userId}`, {
+        method: 'GET',
+        headers: headers,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error fetching user filters:', response.status, errorText);
+        throw new Error('Error al obtener filtros del usuario');
+      }
+
+      return await response.json();
+    } catch (error) {
       throw error;
     }
   },
@@ -209,13 +246,18 @@ export const authService = {
 
   checkStatus: async (): Promise<LoginResponse> => {
     try {
+      const headers: any = {
+        Accept: 'application/json',
+      };
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${apiAuth}/status`, {
         method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: headers,
       });
 
       if (!response.ok) {

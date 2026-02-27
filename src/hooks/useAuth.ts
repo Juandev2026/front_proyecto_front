@@ -183,8 +183,11 @@ export const useAuth = () => {
             if (status.fechaExpiracion)
               localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
 
+            // Update state metadata
+            const syncUser = (status as any).user || status;
+
             // Role override logic: if expired, force Client in frontend
-            let currentRole = status.role || role;
+            let currentRole = syncUser.role || role;
             if (
               status.fechaExpiracion &&
               status.fechaExpiracion !== '-' &&
@@ -198,15 +201,35 @@ export const useAuth = () => {
 
             // Update state
             setUser({
-              name: status.fullName || fullName || 'Usuario',
-              id: status.id || parsedId,
-              nivelId: status.nivelId || parsedNivelId,
+              name: syncUser.fullName || fullName || 'Usuario',
+              id: syncUser.id || parsedId,
+              nivelId: syncUser.nivelId || parsedNivelId,
               role: currentRole || undefined,
-              accesoNombres: status.accesoNombres || accesoNombres,
-              accesoIds: status.accesoIds || accesoIds,
-              especialidad: status.especialidad || especialidad || undefined,
-              especialidadId: status.especialidadId || parsedEspecialidadId,
+              accesoNombres: syncUser.accesoNombres || accesoNombres,
+              accesoIds: syncUser.accesoIds || accesoIds,
+              especialidad: syncUser.especialidad || especialidad || undefined,
+              especialidadId: syncUser.especialidadId || parsedEspecialidadId,
             });
+
+            // Sincronizar también los exámenes del usuario para Banco de Preguntas
+            const syncUserId = syncUser.id;
+            if (syncUserId) {
+              try {
+                const currentToken = localStorage.getItem('token');
+                const filters = await authService.getUserFilters(
+                  status.id,
+                  currentToken || undefined
+                );
+                if (filters.examenes && filters.examenes.length > 0) {
+                  localStorage.setItem(
+                    'loginExamenes',
+                    JSON.stringify(filters.examenes)
+                  );
+                }
+              } catch (e) {
+                console.error('Error syncing user exams in useAuth:', e);
+              }
+            }
           }
         } catch (error) {
           // If status fails, token might be invalid/expired

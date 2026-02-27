@@ -37,16 +37,34 @@ const Login = () => {
     setError('');
 
     try {
-      const rawResponse = await authService.login({
+      const loginPayload = await authService.login({
         email: formData.email,
         password: formData.password,
       });
 
-      const response = rawResponse.user;
-      const examenes = rawResponse.examenes || [];
+      console.log('Login successful, payload:', loginPayload);
+
+      // Extraer datos de manera resiliente (por si el backend devuelve plano o anidado)
+      const loginUser = (loginPayload as any).user || loginPayload;
+      const token = (loginPayload as any).token || loginUser.token;
+      const userId = loginUser.id;
+
+      if (!token) throw new Error('No se recibió el token de autenticación');
+      if (!userId) throw new Error('No se recibió el ID de usuario');
+
+      // Guardamos el token inmediatamente para que las siguientes peticiones lo tengan
+      localStorage.setItem('token', token);
+
+      // Ahora obtenemos los filtros/exámenes específicos del usuario
+      console.log('Fetching user filters with ID:', userId);
+      const fullResponse = await authService.getUserFilters(userId, token);
+      const response = {
+        ...fullResponse.user,
+        token: token, // Aseguramos que el token de login se mantenga
+      };
+      const examenes = fullResponse.examenes || [];
       const fullName = response.fullName || response.email;
 
-      localStorage.setItem('token', response.token);
       if (fullName) localStorage.setItem('fullName', fullName);
       if (response.id) localStorage.setItem('userId', String(response.id));
       if (response.nivelId)
