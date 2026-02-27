@@ -36,6 +36,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const planName = router.query.planName as string;
   const planId = router.query.planId as string;
+  const redirect = router.query.redirect as string;
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: true,
     uppercase: false,
@@ -176,7 +177,7 @@ const Register = () => {
         especialidadId: Number(formData.especialidadId),
         ie: formData.ie,
       });
-      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`);
+      router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `${planName ? '&' : '?'}redirect=${encodeURIComponent(redirect)}` : ''}`);
     } catch (err: any) {
       setError(
         err.message || 'Error al registrarse. Por favor intente de nuevo.'
@@ -203,7 +204,7 @@ const Register = () => {
               </h1>
               <p className="text-sm text-gray-600">
                 ¿Ya tienes una cuenta?{' '}
-                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}`}>
+                <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>
                   <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
                     Inicia sesión aquí
                   </a>
@@ -434,7 +435,7 @@ const Register = () => {
                       type="text"
                       value={formData.ie}
                       onChange={handleChange}
-                      placeholder="Ej. IE 001, Universidad Nacional..."
+                      placeholder="Ej. I.E. 169 San Carlos"
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm"
                     />
                   </div>
@@ -474,8 +475,11 @@ const Register = () => {
                     </button>
                   </div>
 
-                  {/* Password Requirements */}
-                  <div className="mt-3 space-y-2">
+                  {/* Password Example and Requirements */}
+                  <div className="mt-3 space-y-3">
+                    <p className="text-sm font-bold text-gray-900">
+                      Ejemplo: <span className="font-normal text-gray-600">Escala2026*</span>
+                    </p>
                     <p className="text-xs font-medium text-gray-700">La contraseña debe contener:</p>
                     <div className="space-y-1">
                       <div className="flex items-center text-xs">

@@ -44,6 +44,28 @@ const SocialMediaFrames = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide">SÍGUENOS EN:</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
+          {/* Facebook Frame */}
+          <div className="fb-page" data-href="https://www.facebook.com/Avendocenteperu" data-tabs="timeline" data-width="600" data-height="" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true">
+            <blockquote cite="https://www.facebook.com/Avendocenteperu" className="fb-xfbml-parse-ignore">
+              <a href="https://www.facebook.com/Avendocenteperu">Avendocente</a>
+            </blockquote>
+          </div>
+
+          {/* TikTok Frame */}
+          <div className="flex justify-center h-[500px] overflow-hidden">
+            <blockquote 
+              className="tiktok-embed" 
+              cite="https://www.tiktok.com/@juan_avend" 
+              data-unique-id="juan_avend" 
+              data-embed-type="creator" 
+              style={{ maxWidth: '780px', minWidth: '288px', margin: 0 }} 
+            > 
+              <section> 
+                <a target="_blank" href="https://www.tiktok.com/@juan_avend?refer=creator_embed" rel="noreferrer">@juan_avend</a> 
+              </section> 
+            </blockquote>
+          </div>
+
           {/* Youtube Frame */}
           <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white flex flex-col h-[500px] hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.open(socials.youtube, '_blank')}>
             <div className="bg-[#cc0000] p-2 px-3 flex justify-between items-center text-white h-10">
@@ -68,24 +90,6 @@ const SocialMediaFrames = () => {
                 <h3 className="font-bold text-gray-900 text-sm">Juan Avend</h3>
                 <p className="text-xs text-gray-500">Suscríbete a nuestro canal para más contenido.</p>
             </div>
-          </div>
-
-          {/* Facebook Frame */}
-          <div className="fb-page" data-href="https://www.facebook.com/Avendocenteperu" data-tabs="timeline" data-width="600" data-height="" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/Avendocenteperu" className="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/Avendocenteperu">Avendocente</a></blockquote></div>
-
-          {/* TikTok Frame */}
-          <div className="flex justify-center h-[500px] overflow-hidden">
-            <blockquote 
-              className="tiktok-embed" 
-              cite="https://www.tiktok.com/@juan_avend" 
-              data-unique-id="juan_avend" 
-              data-embed-type="creator" 
-              style={{ maxWidth: '780px', minWidth: '288px', margin: 0 }} 
-            > 
-              <section> 
-                <a target="_blank" href="https://www.tiktok.com/@juan_avend?refer=creator_embed" rel="noreferrer">@juan_avend</a> 
-              </section> 
-            </blockquote>
           </div>
 
         </div>

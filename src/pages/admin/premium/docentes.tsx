@@ -581,7 +581,7 @@ const AdminPremiumDocentes = () => {
     <AdminLayout>
       {/* Header Banner */}
       <div className="bg-primary text-white p-6 rounded-t-lg mb-6 flex justify-center items-center">
-        <h1 className="text-2xl font-bold">Administrar docentes</h1>
+        <h1 className="text-2xl font-bold text-center">Administrar docentes - AVEND ESCALA</h1>
       </div>
 
       {/* Sticky Filters & Controls */}
