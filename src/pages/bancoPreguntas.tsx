@@ -336,7 +336,7 @@ const BancoPreguntasPage = () => {
   // --- Handlers ---
 
   const handleClear = () => {
-    setSelectedTipoExamenId('');
+    setSelectedTipoExamenId('2');
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
@@ -482,8 +482,8 @@ const BancoPreguntasPage = () => {
         </div>
 
         <div className="space-y-4">
-          {/* 1. Tipo de Examen */}
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+          {/* 1. Tipo de Examen - Locked to Nombramiento */}
+          {/* <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <FilterIcon className="h-5 w-5" />
               <span>Tipo de Examen habilitado</span>
@@ -508,7 +508,7 @@ const BancoPreguntasPage = () => {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
