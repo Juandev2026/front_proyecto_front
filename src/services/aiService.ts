@@ -1,4 +1,3 @@
-
 export interface PreguntaAI {
   enunciado: string;
   alternativaA: string;
@@ -11,9 +10,11 @@ export interface PreguntaAI {
 
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
 
-
 export const aiService = {
-  generateFullQuestion: async (topic: string, apiKey: string): Promise<PreguntaAI> => {
+  generateFullQuestion: async (
+    topic: string,
+    apiKey: string
+  ): Promise<PreguntaAI> => {
     try {
       const prompt = `Genera una pregunta de opción múltiple para un examen de docentes en Perú sobre el tema: "${topic}".
       La respuesta debe ser un objeto JSON con el siguiente formato, sin markdown ni texto adicional:
@@ -27,32 +28,35 @@ export const aiService = {
         "sustento": "Explicación breve de por qué es la respuesta correcta..."
       }`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7
-        })
-      });
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.7,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Error en la API de OpenAI');
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
+      const { content } = data.choices[0].message;
       try {
         return JSON.parse(content);
       } catch (e) {
         // Fallback or retry logic if needed, simple slice for JSON extraction if wrapped in code blocks
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-             return JSON.parse(jsonMatch[0]);
+          return JSON.parse(jsonMatch[0]);
         }
         throw new Error('Formato de respuesta inválido');
       }
@@ -62,9 +66,12 @@ export const aiService = {
     }
   },
 
-  generateAnswers: async (enunciado: string, apiKey: string): Promise<PreguntaAI> => {
-      try {
-        const prompt = `Dada la siguiente pregunta: "${enunciado}".
+  generateAnswers: async (
+    enunciado: string,
+    apiKey: string
+  ): Promise<PreguntaAI> => {
+    try {
+      const prompt = `Dada la siguiente pregunta: "${enunciado}".
         Genera 4 alternativas plausibles (A, B, C, D), identifica la correcta y proporciona un sustento breve.
         La respuesta debe ser un objeto JSON con el siguiente formato, sin markdown ni texto adicional:
         {
@@ -75,46 +82,48 @@ export const aiService = {
           "respuesta": "A", // O "B", "C", "D"
           "sustento": "Explicación..."
         }`;
-  
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7
-          })
-        });
-  
-        if (!response.ok) {
-          throw new Error('Error en la API de OpenAI');
+            model: 'gpt-3.5-turbo',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.7,
+          }),
         }
-  
-        const data = await response.json();
-        const content = data.choices[0].message.content;
-        
-        try {
-            const parsed = JSON.parse(content);
-            // Return incomplete object merged with existing enunciado
-            return {
-                enunciado: enunciado,
-                ...parsed
-            };
-        } catch (e) {
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                 const parsed = JSON.parse(jsonMatch[0]);
-                 return { enunciado: enunciado, ...parsed };
-            }
-            throw new Error('Formato de respuesta inválido');
-        }
+      );
 
-      } catch (error) {
-        console.error('AI Service Error:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error('Error en la API de OpenAI');
       }
+
+      const data = await response.json();
+      const { content } = data.choices[0].message;
+
+      try {
+        const parsed = JSON.parse(content);
+        // Return incomplete object merged with existing enunciado
+        return {
+          enunciado,
+          ...parsed,
+        };
+      } catch (e) {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return { enunciado, ...parsed };
+        }
+        throw new Error('Formato de respuesta inválido');
+      }
+    } catch (error) {
+      console.error('AI Service Error:', error);
+      throw error;
     }
+  },
 };

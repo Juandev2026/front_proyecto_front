@@ -1,8 +1,7 @@
 import React from 'react';
 
+import CommunitySection from './CommunitySection';
 import config from '../config/index.json';
-import SEO from '../components/SEO';
-import CommunitySection from '../components/CommunitySection';
 
 const About = () => {
   const { company, about } = config;

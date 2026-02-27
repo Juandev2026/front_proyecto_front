@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-
-import { publicidadService, Publicidad } from '../services/publicidadService';
 import { useAuth } from '../hooks/useAuth';
-import { error } from 'console';
+import { publicidadService, Publicidad } from '../services/publicidadService';
 
 const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
   const [ads, setAds] = useState<Publicidad[]>([]);
@@ -12,7 +10,8 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        let fetchedAds: Publicidad[] | Publicidad = await publicidadService.getAll();
+        const fetchedAds: Publicidad[] | Publicidad =
+          await publicidadService.getAll();
 
         // Normalize to array
         let adsArray = Array.isArray(fetchedAds) ? fetchedAds : [fetchedAds];
@@ -26,31 +25,30 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
         if (!forceGeneral && isAuthenticated && user?.nivelId) {
           adsArray = adsArray.filter((ad) => ad.nivelId === user.nivelId);
         }
-        
-        
-         // Sort by Orden ASC, then ID DESC
+
+        // Sort by Orden ASC, then ID DESC
         // Sort by Orden ASC, then ID DESC
         // Logic: Valid positive orders (1, 2, 3) come first. 0 or undefined come last.
         adsArray.sort((a, b) => {
-           const ordenA = Number(a.orden);
-           const ordenB = Number(b.orden);
-           
-           // Check if they have specific positive priority
-           const hasPriorityA = !isNaN(ordenA) && ordenA > 0;
-           const hasPriorityB = !isNaN(ordenB) && ordenB > 0;
+          const ordenA = Number(a.orden);
+          const ordenB = Number(b.orden);
 
-           if (hasPriorityA && hasPriorityB) {
-              return ordenA - ordenB; // Both have priority: 1 before 2
-           }
-           if (hasPriorityA && !hasPriorityB) {
-              return -1; // A has priority, B doesn't: A comes first
-           }
-           if (!hasPriorityA && hasPriorityB) {
-              return 1; // B has priority, A doesn't: B comes first
-           }
+          // Check if they have specific positive priority
+          const hasPriorityA = !isNaN(ordenA) && ordenA > 0;
+          const hasPriorityB = !isNaN(ordenB) && ordenB > 0;
 
-           // Neither has priority (both 0 or invalid): Tie-breaker Newest First
-           return b.id - a.id; 
+          if (hasPriorityA && hasPriorityB) {
+            return ordenA - ordenB; // Both have priority: 1 before 2
+          }
+          if (hasPriorityA && !hasPriorityB) {
+            return -1; // A has priority, B doesn't: A comes first
+          }
+          if (!hasPriorityA && hasPriorityB) {
+            return 1; // B has priority, A doesn't: B comes first
+          }
+
+          // Neither has priority (both 0 or invalid): Tie-breaker Newest First
+          return b.id - a.id;
         });
 
         // Limit to 5 ads total
@@ -87,13 +85,13 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
       {ads.map((ad, index) => {
         // Only show price if it's strictly greater than 0
         const hasPrice = typeof ad.precio === 'number' && ad.precio > 0;
-        
+
         // Define links
         const whatsappLink = ad.telefono
-            ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(
-                `Me interesa este anuncio: ${ad.titulo}`
-              )}`
-            : null;
+          ? `https://wa.me/${ad.telefono}?text=${encodeURIComponent(
+              `Me interesa este anuncio: ${ad.titulo}`
+            )}`
+          : null;
 
         const webLink = ad.enlace;
 
@@ -107,84 +105,107 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
           >
             {/* Image Area */}
             <div className="relative">
-                {imageClickLink ? (
-                    <a href={imageClickLink} target="_blank" rel="noopener noreferrer" className="block">
-                         {ad.imageUrl ? (
-                            <img
-                                src={ad.imageUrl}
-                                alt={ad.titulo || 'Publicidad'}
-                                className="w-full h-auto object-cover"
-                            />
-                            ) : (
-                            <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-400 p-4 text-center text-sm">
-                                {ad.titulo || 'Publicidad'}
-                            </div>
-                            )}
-                    </a>
-                ) : (
-                     <div className="block">
-                         {ad.imageUrl ? (
-                            <img
-                                src={ad.imageUrl}
-                                alt={ad.titulo || 'Publicidad'}
-                                className="w-full h-auto object-cover"
-                            />
-                            ) : (
-                            <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-400 p-4 text-center text-sm">
-                                {ad.titulo || 'Publicidad'}
-                            </div>
-                            )}
-                     </div>
-                )}
-               
-
-
-                {/* Badge: Always "PUBLICIDAD" */}
-                <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none">
-                  PUBLICIDAD
+              {imageClickLink ? (
+                <a
+                  href={imageClickLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  {ad.imageUrl ? (
+                    <img
+                      src={ad.imageUrl}
+                      alt={ad.titulo || 'Publicidad'}
+                      className="w-full h-auto object-cover"
+                    />
+                  ) : (
+                    <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-400 p-4 text-center text-sm">
+                      {ad.titulo || 'Publicidad'}
+                    </div>
+                  )}
+                </a>
+              ) : (
+                <div className="block">
+                  {ad.imageUrl ? (
+                    <img
+                      src={ad.imageUrl}
+                      alt={ad.titulo || 'Publicidad'}
+                      className="w-full h-auto object-cover"
+                    />
+                  ) : (
+                    <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-400 p-4 text-center text-sm">
+                      {ad.titulo || 'Publicidad'}
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Badge: Always "PUBLICIDAD" */}
+              <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none">
+                PUBLICIDAD
+              </div>
             </div>
 
             {/* Content & Buttons Area */}
             <div className="p-3 bg-white relative pb-12">
-                {ad.titulo && (
-                  imageClickLink ? (
-                    <a href={imageClickLink} target="_blank" rel="noopener noreferrer">
-                      <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1 hover:text-primary transition-colors cursor-pointer">{ad.titulo}</h4>
-                    </a>
-                  ) : (
-                    <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1">{ad.titulo}</h4>
-                  )
-                )}
-                
-                <div className="flex flex-col gap-2">
-                    {/* Primary Action (WhatsApp/Buy) */}
-                    {whatsappLink && (
-                        <a 
-                            href={whatsappLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-2 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            {hasPrice ? `Comprar (S/ ${ad.precio})` : 'Contactar WhatsApp'}
-                        </a>
-                    )}
+              {ad.titulo &&
+                (imageClickLink ? (
+                  <a
+                    href={imageClickLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1 hover:text-primary transition-colors cursor-pointer">
+                      {ad.titulo}
+                    </h4>
+                  </a>
+                ) : (
+                  <h4 className="text-sm font-bold text-gray-800 mb-2 line-clamp-1">
+                    {ad.titulo}
+                  </h4>
+                ))}
 
-                    {/* Secondary Action (Web Link) - Bottom Right Corner */}
-                    {webLink && (
-                         <a 
-                            href={webLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute bottom-3 right-3 bg-primary hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
-                        >
-                            VER MÁS
-                        </a>
-                    )}
-                </div>
+              <div className="flex flex-col gap-2">
+                {/* Primary Action (WhatsApp/Buy) */}
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    {hasPrice
+                      ? `Comprar (S/ ${ad.precio})`
+                      : 'Contactar WhatsApp'}
+                  </a>
+                )}
+
+                {/* Secondary Action (Web Link) - Bottom Right Corner */}
+                {webLink && (
+                  <a
+                    href={webLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-3 right-3 bg-primary hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
+                  >
+                    VER MÁS
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         );

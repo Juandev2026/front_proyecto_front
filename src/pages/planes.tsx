@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { Disclosure } from '@headlessui/react';
 import { XIcon } from '@heroicons/react/outline';
 import { ChevronUpIcon, CheckCircleIcon, StarIcon, DeviceMobileIcon, DesktopComputerIcon, DeviceTabletIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
-import MainLayout from '../components/MainLayout';
 import { useRouter } from 'next/router';
+
+import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/useAuth';
 
 interface Plan {
@@ -31,7 +33,8 @@ const planes: Plan[] = [
     type: 'gratuito',
     price: 0,
     duration: 'por 7 días',
-    description: 'Acceso inicial para conocer la plataforma y empezar a practicar.',
+    description:
+      'Acceso inicial para conocer la plataforma y empezar a practicar.',
     ctaText: 'Comenzar Gratis',
     features: [
       'Banco de preguntas MINEDU (acceso limitado)',
@@ -47,7 +50,12 @@ const planes: Plan[] = [
     type: 'semestral',
     price: 35,
     duration: 'por 6 meses',
+<<<<<<< Updated upstream
     description: 'Preparación durante 6 meses para avanzar con enfoque.',
+=======
+    description:
+      'Preparación estratégica durante 6 meses para avanzar con enfoque.',
+>>>>>>> Stashed changes
     ctaText: 'Comenzar Ahora',
     features: [
       'Nombramiento',
@@ -67,7 +75,12 @@ const planes: Plan[] = [
     price: 49,
     originalPrice: 70,
     duration: 'por 12 meses',
+<<<<<<< Updated upstream
     description: 'Preparación estratégica durante 12 meses (un solo pago) en todos los procesos.',
+=======
+    description:
+      'Preparación integral durante todo el año en todos los procesos.',
+>>>>>>> Stashed changes
     highlighted: true,
     discount: '🔥 Más elegido',
     ctaText: 'Solicitar acceso ahora',
@@ -108,7 +121,8 @@ const Planes = () => {
             Elige el Plan Perfecto para Ti
           </h1>
           <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
-            Invierte en tu desarrollo profesional con nuestros planes diseñados para docentes comprometidos
+            Invierte en tu desarrollo profesional con nuestros planes diseñados
+            para docentes comprometidos
           </p>
         </div>
 
@@ -118,19 +132,28 @@ const Planes = () => {
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-100">
               <div className="bg-blue-600 py-3 px-6 flex items-center justify-between">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-6 h-6"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   Recorrido por la Plataforma AVEND ESCALA
                 </h2>
                 <button
-                  onClick={() => router.push('/planes', undefined, { shallow: true })}
+                  onClick={() =>
+                    router.push('/planes', undefined, { shallow: true })
+                  }
                   className="text-white/80 hover:text-white transition-colors"
                 >
                   <XIcon className="w-6 h-6" />
                 </button>
               </div>
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <div
+                className="relative w-full"
+                style={{ paddingBottom: '56.25%' }}
+              >
                 <iframe
                   className="absolute top-0 left-0 w-full h-full"
                   src="https://www.youtube.com/embed/dQw4w9WgXcQ"
@@ -142,7 +165,8 @@ const Planes = () => {
               </div>
               <div className="p-4 bg-gray-50 border-t border-gray-100">
                 <p className="text-sm text-gray-600 font-medium text-center">
-                  Descubre todo lo que puedes lograr con AVEND ESCALA. Prepárate con simulacros reales y banco de preguntas actualizado.
+                  Descubre todo lo que puedes lograr con AVEND ESCALA. Prepárate
+                  con simulacros reales y banco de preguntas actualizado.
                 </p>
               </div>
             </div>
@@ -154,8 +178,14 @@ const Planes = () => {
           {planes.map((plan: Plan) => (
             <div
               key={plan.id}
+<<<<<<< Updated upstream
               className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.highlighted ? 'ring-2 ring-blue-600 ring-inset ring-opacity-50 shadow-blue-100/50' : ''
                 } ${plan.highlighted ? 'bg-gradient-to-br from-blue-100/80 via-white to-white' : ''}`}
+=======
+              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
+                plan.highlighted ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
+              }`}
+>>>>>>> Stashed changes
             >
               {/* Decorative top gradient bar for highlighted plan */}
               {plan.highlighted && (
@@ -181,9 +211,7 @@ const Planes = () => {
                 )}
 
                 {/* Description */}
-                <p className="text-gray-600 mb-6 text-sm">
-                  {plan.description}
-                </p>
+                <p className="text-gray-600 mb-6 text-sm">{plan.description}</p>
 
                 {/* Price */}
                 <div className="mb-6">
@@ -205,7 +233,9 @@ const Planes = () => {
                 {/* CTA Button */}
                 {isAuthenticated ? (
                   <a
-                    href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(plan.name)}`}
+                    href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(
+                      plan.name
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${plan.highlighted ? 'animate-shine' : ''}`}
@@ -214,7 +244,11 @@ const Planes = () => {
                     {plan.ctaText}
                   </a>
                 ) : (
-                  <Link href={`/login?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}`}>
+                  <Link
+                    href={`/login?planId=${
+                      plan.id
+                    }&planName=${encodeURIComponent(plan.name)}`}
+                  >
                     <a
                       className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${plan.highlighted ? 'animate-shine' : ''}`}
                       style={{ backgroundColor: plan.highlighted ? '#1e40af' : '#2b7fff', boxShadow: plan.highlighted ? '0 10px 15px -3px rgba(30, 64, 175, 0.3)' : undefined }}
@@ -232,8 +266,15 @@ const Planes = () => {
                   <div className="space-y-2">
                     {plan.features.map((feature: string, index: number) => (
                       <div key={index} className="flex items-start gap-3">
+<<<<<<< Updated upstream
                         <CheckCircleIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
                         <span className="text-gray-700 text-sm leading-tight">{feature}</span>
+=======
+                        <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
+                        <span className="text-gray-700 text-sm leading-tight">
+                          {feature}
+                        </span>
+>>>>>>> Stashed changes
                       </div>
                     ))}
                   </div>
@@ -246,12 +287,25 @@ const Planes = () => {
                       Beneficios exclusivos del Plan Anual:
                     </p>
                     <div className="space-y-3">
+<<<<<<< Updated upstream
                       {plan.extraBenefits.map((benefit: string, index: number) => (
                         <div key={index} className="flex items-start gap-3">
                           <CheckCircleIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
                           <span className="text-gray-700 text-xs leading-normal">{benefit}</span>
                         </div>
                       ))}
+=======
+                      {plan.extraBenefits.map(
+                        (benefit: string, index: number) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <CheckIcon className="h-4 w-4 text-blue-500 flex-shrink-0 mt-1" />
+                            <span className="text-gray-700 text-xs leading-normal">
+                              {benefit}
+                            </span>
+                          </div>
+                        )
+                      )}
+>>>>>>> Stashed changes
                     </div>
                   </div>
                 )}
@@ -266,6 +320,7 @@ const Planes = () => {
             Preguntas Frecuentes
           </h2>
           <div className="space-y-4">
+<<<<<<< Updated upstream
             {faqs.map((faq, index) => (
               <Disclosure as="div" key={index} className="mt-2">
                 {({ open }: { open: boolean }) => (
@@ -284,6 +339,90 @@ const Planes = () => {
                 )}
               </Disclosure>
             ))}
+=======
+            <Disclosure as="div" className="mt-2">
+              {({ open }: { open: boolean }) => (
+                <>
+                  <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
+                    <span>¿Cuáles son los métodos de pago aceptados?</span>
+                    <ChevronUpIcon
+                      className={`${
+                        open ? 'transform rotate-180' : ''
+                      } w-6 h-6 text-blue-500`}
+                    />
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
+                    Aceptamos todas las tarjetas de crédito y débito,
+                    transferencias bancarias (BCP, Interbank, BBVA) y billeteras
+                    digitales como Yape y Plin. El acceso es inmediato tras
+                    confirmar tu pago.
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+
+            <Disclosure as="div" className="mt-2">
+              {({ open }: { open: boolean }) => (
+                <>
+                  <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
+                    <span>¿Puedo acceder desde mi celular?</span>
+                    <ChevronUpIcon
+                      className={`${
+                        open ? 'transform rotate-180' : ''
+                      } w-6 h-6 text-blue-500`}
+                    />
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
+                    ¡Por supuesto! Nuestra plataforma es 100% responsiva y
+                    podrás estudiar cómodamente desde tu computadora, tablet o
+                    teléfono móvil en cualquier momento.
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+
+            <Disclosure as="div" className="mt-2">
+              {({ open }: { open: boolean }) => (
+                <>
+                  <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
+                    <span>¿Qué incluye la mentoría personalizada?</span>
+                    <ChevronUpIcon
+                      className={`${
+                        open ? 'transform rotate-180' : ''
+                      } w-6 h-6 text-blue-500`}
+                    />
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
+                    En los planes Semestral y Anual, tendrás sesiones en vivo
+                    con expertos para resolver dudas específicas sobre tu
+                    práctica pedagógica, preparación para nombramientos o
+                    gestión escolar.
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+
+            <Disclosure as="div" className="mt-2">
+              {({ open }: { open: boolean }) => (
+                <>
+                  <Disclosure.Button className="flex justify-between w-full px-6 py-4 text-left text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-sm">
+                    <span>¿Tengo garantía si no estoy satisfecho?</span>
+                    <ChevronUpIcon
+                      className={`${
+                        open ? 'transform rotate-180' : ''
+                      } w-6 h-6 text-blue-500`}
+                    />
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="px-6 pt-4 pb-6 text-gray-600 bg-white rounded-b-lg -mt-2 shadow-sm border-t border-gray-100">
+                    Estamos seguros de la calidad de nuestro contenido. Si
+                    sientes que no es lo que buscabas, ofrecemos una garantía de
+                    devolución del 100% de tu dinero durante los primeros 7
+                    días.
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+>>>>>>> Stashed changes
           </div>
         </div>
       </div>

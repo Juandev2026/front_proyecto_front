@@ -1,24 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import AdminLayout from '../../components/AdminLayout';
-import { regionService, Region } from '../../services/regionService';
-import { userService, User } from '../../services/userService';
-import { tipoAccesoService, TipoAcceso } from '../../services/tipoAccesoService';
-import { exportToExcel } from '../../utils/excelUtils';
-import { examenService } from '../../services/examenService';
-import {
-  EyeIcon,
-  XIcon
-} from '@heroicons/react/outline';
+import { EyeIcon, XIcon } from '@heroicons/react/outline';
 import {
   UserIcon,
   AcademicCapIcon,
   LockClosedIcon,
-  CalendarIcon
+  CalendarIcon,
 } from '@heroicons/react/solid';
-import { formatDateForInput, parseInputDateToISO } from '../../utils/dateUtils';
 
-interface AcademicAccess { modalidadId: number; nivelId: number; especialidadId: number; }
+import AdminLayout from '../../components/AdminLayout';
+import { examenService } from '../../services/examenService';
+import { regionService, Region } from '../../services/regionService';
+import {
+  tipoAccesoService,
+  TipoAcceso,
+} from '../../services/tipoAccesoService';
+import { userService, User } from '../../services/userService';
+import { formatDateForInput, parseInputDateToISO } from '../../utils/dateUtils';
+import { exportToExcel } from '../../utils/excelUtils';
+
+interface AcademicAccess {
+  modalidadId: number;
+  nivelId: number;
+  especialidadId: number;
+}
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -34,7 +39,9 @@ const UsersPage = () => {
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
 
   const [filteredNiveles, setFilteredNiveles] = useState<any[]>([]);
-  const [filteredEspecialidades, setFilteredEspecialidades] = useState<any[]>([]);
+  const [filteredEspecialidades, setFilteredEspecialidades] = useState<any[]>(
+    []
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -62,13 +69,17 @@ const UsersPage = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
 
-  const [expirationMode, setExpirationMode] = useState<'1year' | '5months' | '10months' | 'custom'>('custom');
+  const [expirationMode, setExpirationMode] = useState<
+    '1year' | '5months' | '10months' | 'custom'
+  >('custom');
   const [userExamenes, setUserExamenes] = useState<AcademicAccess[]>([]);
 
-  const handleExpirationPresetChange = (mode: '1year' | '5months' | '10months') => {
+  const handleExpirationPresetChange = (
+    mode: '1year' | '5months' | '10months'
+  ) => {
     setExpirationMode(mode);
     const today = new Date();
-    let newDate = new Date(today);
+    const newDate = new Date(today);
 
     if (mode === '1year') {
       newDate.setFullYear(today.getFullYear() + 1);
@@ -78,7 +89,10 @@ const UsersPage = () => {
       newDate.setMonth(today.getMonth() + 10);
     }
 
-    setFormData(prev => ({ ...prev, fechaExpiracion: newDate.toISOString() }));
+    setFormData((prev) => ({
+      ...prev,
+      fechaExpiracion: newDate.toISOString(),
+    }));
   };
 
   const resetForm = () => {
@@ -98,7 +112,7 @@ const UsersPage = () => {
       tiempo: 0,
       ie: '',
       observaciones: '',
-      accesoIds: tiposAcceso.map(t => Number(t.id)),
+      accesoIds: tiposAcceso.map((t) => Number(t.id)),
     });
     setExpirationMode('custom');
     setUserExamenes([]);
@@ -172,7 +186,7 @@ const UsersPage = () => {
   };
 
   useEffect(() => {
-    console.log("UsersPage mounted");
+    console.log('UsersPage mounted');
     loadData();
   }, []);
 
@@ -209,11 +223,13 @@ const UsersPage = () => {
     try {
       // Confirmación al asignar rol Admin
       if (formData.role === 'Admin') {
-        const confirmed = window.confirm('¿Estás seguro que quieres hacer Administrador a este usuario?');
+        const confirmed = window.confirm(
+          '¿Estás seguro que quieres hacer Administrador a este usuario?'
+        );
         if (!confirmed) return;
       }
       const payload: any = { ...formData };
-      console.log("Payload original (pre-sanitización):", payload);
+      console.log('Payload original (pre-sanitización):', payload);
 
       // Ensure IDs are numbers
       payload.regionId = Number(payload.regionId || 0);
@@ -227,14 +243,18 @@ const UsersPage = () => {
 
       // Handle Role constraints
       if (payload.role !== 'Premium' && payload.role !== 'Admin') {
-        payload.ie = "";
-        payload.observaciones = "";
+        payload.ie = '';
+        payload.observaciones = '';
         payload.accesoIds = [];
       } else if (!Array.isArray(payload.accesoIds)) {
         payload.accesoIds = [];
       }
 
-      if (payload.role === 'Premium' || payload.role === 'Admin' || payload.role === 'Client') {
+      if (
+        payload.role === 'Premium' ||
+        payload.role === 'Admin' ||
+        payload.role === 'Client'
+      ) {
         payload.userExamenes = userExamenes;
       }
 
@@ -247,10 +267,10 @@ const UsersPage = () => {
 
       if (editingUser) {
         delete payload.password;
-        console.log("Modo edición: Removiendo campo password del payload");
+        console.log('Modo edición: Removiendo campo password del payload');
       }
 
-      console.log("Payload final que se enviará al Backend:", payload);
+      console.log('Payload final que se enviará al Backend:', payload);
 
       if (editingUser) {
         await userService.update(editingUser.id, payload);
@@ -275,11 +295,13 @@ const UsersPage = () => {
     const firstExamen = apiExamenes[0];
 
     // Populate userExamenes uniformly so if switched to Premium, past accesses are retained
-    setUserExamenes(apiExamenes.map((e: any) => ({
-      modalidadId: e.modalidadId || 0,
-      nivelId: e.nivelId || 0,
-      especialidadId: e.especialidadId || 0,
-    })));
+    setUserExamenes(
+      apiExamenes.map((e: any) => ({
+        modalidadId: e.modalidadId || 0,
+        nivelId: e.nivelId || 0,
+        especialidadId: e.especialidadId || 0,
+      }))
+    );
 
     setFormData({
       nombreCompleto: user.nombreCompleto,
@@ -295,9 +317,10 @@ const UsersPage = () => {
       especialidadId: firstExamen?.especialidadId || user.especialidadId || 0,
       passwordHash: user.passwordHash || '',
       fechaExpiracion: user.fechaExpiracion,
-      accesoIds: user.accesoIds && user.accesoIds.length > 0 
-        ? user.accesoIds.map(Number) 
-        : tiposAcceso.map(t => Number(t.id)),
+      accesoIds:
+        user.accesoIds && user.accesoIds.length > 0
+          ? user.accesoIds.map(Number)
+          : tiposAcceso.map((t) => Number(t.id)),
     });
 
     setExpirationMode('custom'); // Default to custom when editing, or we could check if it matches a preset
@@ -325,7 +348,24 @@ const UsersPage = () => {
     }
   };
 
+<<<<<<< Updated upstream
   // Filtrado local (Instantáneo)
+=======
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const getEffectiveRole = (user: User) => {
+    if (user.role?.toUpperCase() === 'PREMIUM') {
+      if (!user.fechaExpiracion || user.fechaExpiracion === '-')
+        return 'Client';
+      const expDate = new Date(user.fechaExpiracion);
+      if (expDate < new Date()) {
+        return 'Client';
+      }
+    }
+    return user.role;
+  };
+
+>>>>>>> Stashed changes
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
     
@@ -374,9 +414,10 @@ const UsersPage = () => {
       // On this page we show Admin and Client, but maybe the export should include all or follow the same filter?
       // Usually export should match what's visible or all. I'll export all and let them filter in Excel.
 
-      const dataToExport = allUsers.map(u => ({
-        'ID': u.id,
+      const dataToExport = allUsers.map((u) => ({
+        ID: u.id,
         'Nombre Completo': u.nombreCompleto,
+<<<<<<< Updated upstream
         'Teléfono': u.celular || '-',
         'Email': u.email,
         'Rol': u.role,
@@ -389,13 +430,49 @@ const UsersPage = () => {
         'Región': u.region?.nombre || '-',
         'IE': u.ie || '-',
         'Observaciones': u.observaciones || '-'
+=======
+        Teléfono: u.celular || '-',
+        Email: u.email,
+        Rol:
+          u.role +
+          (getEffectiveRole(u) === 'Client' &&
+          u.role?.toUpperCase() === 'PREMIUM'
+            ? ' (Expirado)'
+            : ''),
+        Estado: u.estado || 'Activo',
+        'Fecha Registro':
+          u.fechaCreacion || u.fecha_creacion
+            ? new Date(
+                u.fechaCreacion || u.fecha_creacion!
+              ).toLocaleDateString()
+            : '-',
+        'Suscripciones Activas':
+          u.accesoNombres && u.accesoNombres.length > 0
+            ? u.accesoNombres.join(', ')
+            : '-',
+        Modalidades:
+          u.modalidadNombres && u.modalidadNombres.length > 0
+            ? u.modalidadNombres.join(', ')
+            : u.modalidad?.nombre || '-',
+        Niveles:
+          u.nivelNombres && u.nivelNombres.length > 0
+            ? u.nivelNombres.join(', ')
+            : u.nivel?.nombre || '-',
+        Especialidades:
+          u.especialidadNombres && u.especialidadNombres.length > 0
+            ? u.especialidadNombres.join(', ')
+            : u.especialidad?.nombre || '-',
+        Región: u.region?.nombre || '-',
+        IE: u.ie || '-',
+        Observaciones: u.observaciones || '-',
+>>>>>>> Stashed changes
       }));
 
       const today = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
       exportToExcel(dataToExport, `Reporte_Usuarios_${today}`, 'Usuarios');
     } catch (error) {
-      console.error("Error exporting to Excel:", error);
-      alert("Error al exportar a Excel");
+      console.error('Error exporting to Excel:', error);
+      alert('Error al exportar a Excel');
     }
   };
 
@@ -415,8 +492,18 @@ const UsersPage = () => {
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -441,8 +528,18 @@ const UsersPage = () => {
             onClick={handleExportExcel}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
           >
-            <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <svg
+              className="-ml-1 mr-2 h-5 w-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
             </svg>
             Exportar Excel
           </button>
@@ -494,8 +591,14 @@ const UsersPage = () => {
                   </td>
                 </tr>
               ) : (
+<<<<<<< Updated upstream
                 currentItems.map((user: User) => {
                   const regionName = user.region?.nombre || user.regionId?.toString() || '-';
+=======
+                currentItems.map((user) => {
+                  const regionName =
+                    user.region?.nombre || user.regionId?.toString() || '-';
+>>>>>>> Stashed changes
                   return (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -509,11 +612,12 @@ const UsersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {user.role}
-                        {getEffectiveRole(user) === 'Client' && user.role?.toUpperCase() === 'PREMIUM' && (
-                          <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
-                            Expirado
-                          </span>
-                        )}
+                        {getEffectiveRole(user) === 'Client' &&
+                          user.role?.toUpperCase() === 'PREMIUM' && (
+                            <span className="text-red-600 font-bold text-[10px] ml-2 px-1.5 py-0.5 bg-red-50 border border-red-200 rounded uppercase">
+                              Expirado
+                            </span>
+                          )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {regionName}
@@ -585,6 +689,7 @@ const UsersPage = () => {
         <div className="py-4 flex items-center justify-center space-x-4 border-t border-gray-200 bg-gray-50">
           <button
             onClick={prevPage}
+<<<<<<< Updated upstream
             disabled={serverPage === 1}
             className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
@@ -595,6 +700,26 @@ const UsersPage = () => {
             onClick={nextPage}
             disabled={serverPage === totalPages || totalPages === 0}
             className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${serverPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+=======
+            disabled={currentPage === 1}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${
+              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            Anterior
+          </button>
+          <span className="text-sm text-gray-700">
+            Page {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${
+              currentPage === totalPages || totalPages === 0
+                ? 'opacity-50 cursor-not-allowed'
+                : ''
+            }`}
+>>>>>>> Stashed changes
           >
             Siguiente
           </button>
@@ -611,7 +736,10 @@ const UsersPage = () => {
                 {editingUser ? 'Editar Usuario' : 'Crear Usuario'}
               </h3>
               <button
-                onClick={() => { setIsModalOpen(false); resetForm(); }}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  resetForm();
+                }}
                 className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full p-1 transition-colors"
               >
                 <XIcon className="h-5 w-5" />
@@ -620,13 +748,16 @@ const UsersPage = () => {
 
             <div className="p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
-
                 {/* Role Selection */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol*
+                  </label>
                   <select
                     value={formData.role ?? 'Client'}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, role: e.target.value })
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                   >
                     <option value="Admin">Admin</option>
@@ -639,17 +770,26 @@ const UsersPage = () => {
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <UserIcon className="w-5 h-5 text-[#002B6B]" />
-                    <h4 className="font-bold text-[#002B6B]">Información personal</h4>
+                    <h4 className="font-bold text-[#002B6B]">
+                      Información personal
+                    </h4>
                   </div>
 
                   {/* Nombre completo */}
                   <div className="mb-3">
-                    <label className="block text-sm text-gray-700 mb-1">Nombre completo*</label>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Nombre completo*
+                    </label>
                     <input
                       type="text"
                       placeholder="Nombre completo"
                       value={formData.nombreCompleto}
-                      onChange={(e) => setFormData({ ...formData, nombreCompleto: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          nombreCompleto: e.target.value,
+                        })
+                      }
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       required
                     />
@@ -657,23 +797,31 @@ const UsersPage = () => {
                   {/* Correo + Celular */}
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Correo*</label>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Correo*
+                      </label>
                       <input
                         type="email"
                         placeholder="Correo"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Celular</label>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Celular
+                      </label>
                       <input
                         type="text"
                         placeholder="Teléfono"
                         value={formData.celular}
-                        onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, celular: e.target.value })
+                        }
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       />
                     </div>
@@ -690,7 +838,12 @@ const UsersPage = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Contraseña"
                           value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              password: e.target.value,
+                            })
+                          }
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] pr-10"
                           required
                         />
@@ -699,7 +852,11 @@ const UsersPage = () => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                          {showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5 opacity-50" />}
+                          {showPassword ? (
+                            <EyeIcon className="h-5 w-5" />
+                          ) : (
+                            <EyeIcon className="h-5 w-5 opacity-50" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -707,39 +864,65 @@ const UsersPage = () => {
 
                   {/* Región */}
                   <div className="mb-3">
-                    <label className="block text-sm text-gray-700 mb-1">Región</label>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Región
+                    </label>
                     <select
                       value={formData.regionId ?? 0}
-                      onChange={(e) => setFormData({ ...formData, regionId: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          regionId: Number(e.target.value),
+                        })
+                      }
                       className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
                     >
-                      <option value={0} disabled hidden>Seleccionar región</option>
-                      {regions.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                      <option value={0} disabled hidden>
+                        Seleccionar región
+                      </option>
+                      {regions.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.nombre}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
                   {/* IE (Solo Premium o Admin) */}
-                  {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                  {(formData.role === 'Premium' ||
+                    formData.role === 'Admin') && (
                     <div className="mb-3">
-                      <label className="block text-sm text-gray-700 mb-1">Institución Educativa</label>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Institución Educativa
+                      </label>
                       <input
                         type="text"
                         placeholder="Institución Educativa"
                         value={formData.ie}
-                        onChange={(e) => setFormData({ ...formData, ie: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, ie: e.target.value })
+                        }
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       />
                     </div>
                   )}
 
                   {/* Observaciones (Solo Premium o Admin) */}
-                  {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                  {(formData.role === 'Premium' ||
+                    formData.role === 'Admin') && (
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Observaciones</label>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Observaciones
+                      </label>
                       <textarea
                         placeholder="Observaciones"
                         value={formData.observaciones}
-                        onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            observaciones: e.target.value,
+                          })
+                        }
                         rows={3}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] resize-none"
                       />
@@ -748,74 +931,133 @@ const UsersPage = () => {
                 </div>
 
                 {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Premium, Admin o Client) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Client') && (
+                {(formData.role === 'Premium' ||
+                  formData.role === 'Admin' ||
+                  formData.role === 'Client') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <AcademicCapIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">Información Académica</h4>
+                      <h4 className="font-bold text-[#002B6B]">
+                        Información Académica
+                      </h4>
                     </div>
-
 
                     {/* Modalidad */}
                     <div className="mb-3">
-                      <label className="block text-sm text-gray-700 mb-1">Modalidad</label>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Modalidad
+                      </label>
                       <select
                         value={formData.modalidadId ?? 0}
-                        onChange={(e) => setFormData({ ...formData, modalidadId: Number(e.target.value), nivelId: 0, especialidadId: 0 })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            modalidadId: Number(e.target.value),
+                            nivelId: 0,
+                            especialidadId: 0,
+                          })
+                        }
                         className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
                       >
                         <option value={0}>Seleccionar Modalidad</option>
-                        {modalidades.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                        {modalidades.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.nombre}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     {/* Nivel */}
                     {!!formData.modalidadId && filteredNiveles.length > 0 && (
-                    <div className="mb-3">
-                      <label className="block text-sm text-gray-700 mb-1">Nivel</label>
-                      <select
-                        value={formData.nivelId ?? 0}
-                        onChange={(e) => setFormData({ ...formData, nivelId: Number(e.target.value), especialidadId: 0 })}
-                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
-                        disabled={!formData.modalidadId}
-                      >
-                        <option value={0}>Seleccionar Nivel</option>
-                        {filteredNiveles.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}
-                      </select>
-                    </div>
+                      <div className="mb-3">
+                        <label className="block text-sm text-gray-700 mb-1">
+                          Nivel
+                        </label>
+                        <select
+                          value={formData.nivelId ?? 0}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              nivelId: Number(e.target.value),
+                              especialidadId: 0,
+                            })
+                          }
+                          className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                          disabled={!formData.modalidadId}
+                        >
+                          <option value={0}>Seleccionar Nivel</option>
+                          {filteredNiveles.map((n) => (
+                            <option key={n.id} value={n.id}>
+                              {n.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     )}
 
                     {/* Especialidad */}
-                    {!!formData.nivelId && filteredEspecialidades.length > 0 && (
-                    <div className="mb-4">
-                      <label className="block text-sm text-gray-700 mb-1">Especialidad</label>
-                      <select
-                        value={formData.especialidadId ?? 0}
-                        onChange={(e) => setFormData({ ...formData, especialidadId: Number(e.target.value) })}
-                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
-                        disabled={!formData.nivelId}
-                      >
-                        <option value={0}>Seleccionar especialidad</option>
-                        {filteredEspecialidades.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                      </select>
-                    </div>
-                    )}
+                    {!!formData.nivelId &&
+                      filteredEspecialidades.length > 0 && (
+                        <div className="mb-4">
+                          <label className="block text-sm text-gray-700 mb-1">
+                            Especialidad
+                          </label>
+                          <select
+                            value={formData.especialidadId ?? 0}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                especialidadId: Number(e.target.value),
+                              })
+                            }
+                            className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                            disabled={!formData.nivelId}
+                          >
+                            <option value={0}>Seleccionar especialidad</option>
+                            {filteredEspecialidades.map((e) => (
+                              <option key={e.id} value={e.id}>
+                                {e.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
                     {/* Botones académicos */}
                     <div className="space-y-2">
                       <button
                         type="button"
                         onClick={() => {
-                          if (!formData.modalidadId || !formData.nivelId) return;
-                          const espsToAdd = filteredEspecialidades.length > 0
-                            ? filteredEspecialidades.map(e => ({ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: e.id }))
-                            : [{ modalidadId: Number(formData.modalidadId), nivelId: Number(formData.nivelId), especialidadId: 0 }];
+                          if (!formData.modalidadId || !formData.nivelId)
+                            return;
+                          const espsToAdd =
+                            filteredEspecialidades.length > 0
+                              ? filteredEspecialidades.map((e) => ({
+                                  modalidadId: Number(formData.modalidadId),
+                                  nivelId: Number(formData.nivelId),
+                                  especialidadId: e.id,
+                                }))
+                              : [
+                                  {
+                                    modalidadId: Number(formData.modalidadId),
+                                    nivelId: Number(formData.nivelId),
+                                    especialidadId: 0,
+                                  },
+                                ];
 
                           // Evitar duplicados
-                          setUserExamenes(prev => {
+                          setUserExamenes((prev) => {
                             const newAccesos = [...prev];
-                            espsToAdd.forEach(acc => {
-                              if (!newAccesos.some(a => a.modalidadId === acc.modalidadId && a.nivelId === acc.nivelId && a.especialidadId === acc.especialidadId)) {
+                            espsToAdd.forEach((acc) => {
+                              if (
+                                !newAccesos.some(
+                                  (a) =>
+                                    a.modalidadId === acc.modalidadId &&
+                                    a.nivelId === acc.nivelId &&
+                                    a.especialidadId === acc.especialidadId
+                                )
+                              ) {
                                 newAccesos.push(acc);
                               }
                             });
@@ -833,11 +1075,19 @@ const UsersPage = () => {
                           const acceso = {
                             modalidadId: Number(formData.modalidadId),
                             nivelId: Number(formData.nivelId) || 0,
-                            especialidadId: Number(formData.especialidadId) || 0,
+                            especialidadId:
+                              Number(formData.especialidadId) || 0,
                           };
                           // Evitar duplicados
-                          setUserExamenes(prev => {
-                            if (prev.some(a => a.modalidadId === acceso.modalidadId && a.nivelId === acceso.nivelId && a.especialidadId === acceso.especialidadId)) {
+                          setUserExamenes((prev) => {
+                            if (
+                              prev.some(
+                                (a) =>
+                                  a.modalidadId === acceso.modalidadId &&
+                                  a.nivelId === acceso.nivelId &&
+                                  a.especialidadId === acceso.especialidadId
+                              )
+                            ) {
                               return prev;
                             }
                             return [...prev, acceso];
@@ -854,9 +1104,17 @@ const UsersPage = () => {
                       <div className="mt-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <svg
+                              className="w-4 h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                              <path
+                                fillRule="evenodd"
+                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             Accesos configurados ({userExamenes.length})
                           </span>
@@ -870,29 +1128,53 @@ const UsersPage = () => {
                         </div>
                         <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
                           {userExamenes.map((ex, idx) => {
-                            const mod = modalidades.find(m => m.id === ex.modalidadId);
-                            const niv = niveles.find(n => n.id === ex.nivelId);
-                            const esp = especialidades.find(e => e.id === ex.especialidadId);
+                            const mod = modalidades.find(
+                              (m) => m.id === ex.modalidadId
+                            );
+                            const niv = niveles.find(
+                              (n) => n.id === ex.nivelId
+                            );
+                            const esp = especialidades.find(
+                              (e) => e.id === ex.especialidadId
+                            );
                             return (
-                              <div key={idx} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm group">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm group"
+                              >
                                 <div className="flex flex-col">
-                                   <span className="text-[10px] font-bold text-blue-600 uppercase leading-none mb-1">
-                                     {mod?.nombre || 'Sin modalidad'}
-                                   </span>
-                                   {(niv?.nombre || esp) && (
-                                     <span className="text-xs font-medium text-gray-700">
-                                       {niv?.nombre || ''}{esp ? ` - ${esp.nombre}` : ''}
-                                     </span>
-                                   )}
+                                  <span className="text-[10px] font-bold text-blue-600 uppercase leading-none mb-1">
+                                    {mod?.nombre || 'Sin modalidad'}
+                                  </span>
+                                  {(niv?.nombre || esp) && (
+                                    <span className="text-xs font-medium text-gray-700">
+                                      {niv?.nombre || ''}
+                                      {esp ? ` - ${esp.nombre}` : ''}
+                                    </span>
+                                  )}
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => setUserExamenes(prev => prev.filter((_, i) => i !== idx))}
+                                  onClick={() =>
+                                    setUserExamenes((prev) =>
+                                      prev.filter((_, i) => i !== idx)
+                                    )
+                                  }
                                   className="text-gray-300 hover:text-red-500 transition-colors p-1"
                                   title="Eliminar"
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
                                   </svg>
                                 </button>
                               </div>
@@ -909,30 +1191,49 @@ const UsersPage = () => {
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <LockClosedIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">Tipo de Acceso*</h4>
+                      <h4 className="font-bold text-[#002B6B]">
+                        Tipo de Acceso*
+                      </h4>
                     </div>
                     <div className="space-y-2">
                       {tiposAcceso.map((tipo) => (
-                        <label key={tipo.id} className="flex items-center gap-3 cursor-pointer">
+                        <label
+                          key={tipo.id}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
                           <input
                             type="checkbox"
-                            checked={formData.accesoIds?.map(Number).includes(Number(tipo.id))}
+                            checked={formData.accesoIds
+                              ?.map(Number)
+                              .includes(Number(tipo.id))}
                             onChange={(e) => {
                               const currentIds = formData.accesoIds || [];
                               const id = Number(tipo.id);
                               if (e.target.checked) {
-                                setFormData({ ...formData, accesoIds: [...currentIds.map(Number), id] });
+                                setFormData({
+                                  ...formData,
+                                  accesoIds: [...currentIds.map(Number), id],
+                                });
                               } else {
-                                setFormData({ ...formData, accesoIds: currentIds.map(Number).filter(cid => cid !== id) });
+                                setFormData({
+                                  ...formData,
+                                  accesoIds: currentIds
+                                    .map(Number)
+                                    .filter((cid) => cid !== id),
+                                });
                               }
                             }}
                             className="w-4 h-4 accent-red-500 rounded"
                           />
-                          <span className="text-sm text-gray-800">{tipo.descripcion}</span>
+                          <span className="text-sm text-gray-800">
+                            {tipo.descripcion}
+                          </span>
                         </label>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">* Selecciona al menos un tipo de acceso</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      * Selecciona al menos un tipo de acceso
+                    </p>
                   </div>
                 )}
 
@@ -941,7 +1242,9 @@ const UsersPage = () => {
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <CalendarIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">Fecha de expiración</h4>
+                      <h4 className="font-bold text-[#002B6B]">
+                        Fecha de expiración
+                      </h4>
                     </div>
                     <div className="space-y-2">
                       {[
@@ -950,14 +1253,20 @@ const UsersPage = () => {
                         { key: '10months', label: '10 meses desde hoy' },
                         { key: 'custom', label: 'Elegir fecha específica' },
                       ].map(({ key, label }) => (
-                        <label key={key} className="flex items-center gap-3 cursor-pointer">
+                        <label
+                          key={key}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name="expiration-preset"
                             checked={expirationMode === key}
                             onChange={() => {
-                              if (key === 'custom') { setExpirationMode('custom'); }
-                              else { handleExpirationPresetChange(key as any); }
+                              if (key === 'custom') {
+                                setExpirationMode('custom');
+                              } else {
+                                handleExpirationPresetChange(key as any);
+                              }
                             }}
                             className="w-4 h-4 accent-[#002B6B]"
                           />
@@ -969,7 +1278,14 @@ const UsersPage = () => {
                       <input
                         type="datetime-local"
                         value={formatDateForInput(formData.fechaExpiracion)}
-                        onChange={(e) => setFormData({ ...formData, fechaExpiracion: parseInputDateToISO(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            fechaExpiracion: parseInputDateToISO(
+                              e.target.value
+                            ),
+                          })
+                        }
                         className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
                       />
                     )}
@@ -1080,11 +1396,15 @@ const UsersPage = () => {
                 <div className="col-span-2">
                   <h4 className="text-sm font-medium text-gray-500">Accesos</h4>
                   <div className="mt-1 flex flex-wrap gap-2">
-                    {viewingUser.accesoIds && viewingUser.accesoIds.length > 0 ? (
-                      viewingUser.accesoIds.map(id => {
-                        const tipo = tiposAcceso.find(t => t.id === id);
+                    {viewingUser.accesoIds &&
+                    viewingUser.accesoIds.length > 0 ? (
+                      viewingUser.accesoIds.map((id) => {
+                        const tipo = tiposAcceso.find((t) => t.id === id);
                         return (
-                          <span key={id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <span
+                            key={id}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          >
                             {tipo ? tipo.descripcion : `ID: ${id}`}
                           </span>
                         );

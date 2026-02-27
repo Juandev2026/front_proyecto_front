@@ -14,7 +14,10 @@ const CustomRedo = () => (
 
 // Componente de Barra de Herramientas Personalizada
 const CustomToolbar = ({ id }: { id: string }) => (
-  <div id={id} className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-white border-b border-gray-200 px-3 py-2 rounded-t-lg">
+  <div
+    id={id}
+    className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-white border-b border-gray-200 px-3 py-2 rounded-t-lg"
+  >
     {/* Grupo 1: Undo/Redo */}
     <span className="ql-formats flex gap-1">
       <button className="ql-undo hover:bg-gray-100 rounded" title="Deshacer">
@@ -83,7 +86,10 @@ const CustomToolbar = ({ id }: { id: string }) => (
       {/* a/b y raiz cuadrada se manejan via Formula en Quill estándar, pero agregamos script super/sub */}
       <button className="ql-script" value="sub" title="Subíndice" />
       <button className="ql-script" value="super" title="Superíndice" />
-      <button className="ql-formula" title="Insertar Fórmula (Fractions, Roots, Symbols)" />
+      <button
+        className="ql-formula"
+        title="Insertar Fórmula (Fractions, Roots, Symbols)"
+      />
     </span>
   </div>
 );

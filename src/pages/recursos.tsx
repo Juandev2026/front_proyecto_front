@@ -1,30 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/router';
 
 import { EyeIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
 import Head from 'next/head';
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import AdSidebar from '../components/AdSidebar';
+import AuthModal from '../components/AuthModal';
 import CommunitySection from '../components/CommunitySection';
-import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../hooks/useAuth';
 import {
   categoriaSimpleService,
   CategoriaSimple,
 } from '../services/categoriaSimpleService';
-import { createSlug } from '../utils/urlUtils';
 import { materialService, Material } from '../services/materialService';
-
+import { createSlug } from '../utils/urlUtils';
 
 const ITEMS_PER_PAGE = 9;
-
-import AuthModal from '../components/AuthModal';
 
 const Materials = () => {
   const router = useRouter();
@@ -42,9 +39,9 @@ const Materials = () => {
 
   const handleCardClick = (material: Material) => {
     if ((material.precio && material.precio > 0) || isAuthenticated) {
-       router.push(`/recursos/${createSlug(material.titulo, material.id)}`);
+      router.push(`/recursos/${createSlug(material.titulo, material.id)}`);
     } else {
-       setIsAuthModalOpen(true);
+      setIsAuthModalOpen(true);
     }
   };
   // Removed viewingPdf state as it is no longer needed
@@ -93,7 +90,7 @@ const Materials = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    
+
     // Track search event
     if (query.trim()) {
       track('busqueda', {
@@ -228,7 +225,7 @@ const Materials = () => {
           >
             Todos
           </button>
-          
+
           {categories.slice(0, 2).map((cat) => (
             <button
               key={cat.id}
@@ -251,36 +248,53 @@ const Materials = () => {
             <div className="relative">
               <select
                 className={`appearance-none pl-4 pr-8 py-2 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-primary ${
-                   categories.slice(2).some(c => c.id === selectedCategoryId)
+                  categories.slice(2).some((c) => c.id === selectedCategoryId)
                     ? 'bg-primary text-white border-primary shadow-md'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
                 }`}
-                value={categories.slice(2).some(c => c.id === selectedCategoryId) ? selectedCategoryId! : ''}
+                value={
+                  categories.slice(2).some((c) => c.id === selectedCategoryId)
+                    ? selectedCategoryId!
+                    : ''
+                }
                 onChange={(e) => {
-                   if (e.target.value) {
-                     setSelectedCategoryId(Number(e.target.value));
-                     setCurrentPage(1);
-                   }
+                  if (e.target.value) {
+                    setSelectedCategoryId(Number(e.target.value));
+                    setCurrentPage(1);
+                  }
                 }}
               >
                 <option value="" disabled className="text-gray-500 bg-white">
-                  {categories.slice(2).some(c => c.id === selectedCategoryId) 
-                    ? categories.find(c => c.id === selectedCategoryId)?.nombre 
+                  {categories.slice(2).some((c) => c.id === selectedCategoryId)
+                    ? categories.find((c) => c.id === selectedCategoryId)
+                        ?.nombre
                     : 'Más...'}
                 </option>
                 {categories.slice(2).map((cat) => (
-                  <option key={cat.id} value={cat.id} className="text-gray-900 bg-white">
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className="text-gray-900 bg-white"
+                  >
                     {cat.nombre}
                   </option>
                 ))}
               </select>
-               <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
-                  categories.slice(2).some(c => c.id === selectedCategoryId) ? 'text-white' : 'text-gray-600'
-               }`}>
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
+              <div
+                className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                  categories.slice(2).some((c) => c.id === selectedCategoryId)
+                    ? 'text-white'
+                    : 'text-gray-600'
+                }`}
+              >
+                <svg
+                  className="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
             </div>
           )}
         </div>
@@ -306,7 +320,7 @@ const Materials = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedItems.map((item, index) => (
                   <FadeIn key={item.id} direction="up" delay={index * 0.05}>
-                    <div 
+                    <div
                       onClick={() => handleCardClick(item)}
                       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full relative cursor-pointer"
                     >
@@ -315,9 +329,13 @@ const Materials = () => {
                       <div className="h-56 relative bg-gray-100 overflow-hidden group-hover:opacity-90 transition-opacity">
                         {(() => {
                           // Priority: imageUrl > url (if image) > placeholder
-                          const thumbnailImage = item.imageUrl || 
-                            (item.url && /\.(jpeg|jpg|gif|png|webp)$/i.test(item.url) ? item.url : null);
-                          
+                          const thumbnailImage =
+                            item.imageUrl ||
+                            (item.url &&
+                            /\.(jpeg|jpg|gif|png|webp)$/i.test(item.url)
+                              ? item.url
+                              : null);
+
                           if (thumbnailImage) {
                             return (
                               <img
@@ -330,23 +348,22 @@ const Materials = () => {
                                 }}
                               />
                             );
-                          } else {
-                            // Placeholder for resources without images
-                            return (
-                              <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center relative p-4">
-                                {/* Center Icon */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
-                                  <svg
-                                    className="w-20 h-20 text-primary"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-                                  </svg>
-                                </div>
-                              </div>
-                            );
                           }
+                          // Placeholder for resources without images
+                          return (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center relative p-4">
+                              {/* Center Icon */}
+                              <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                                <svg
+                                  className="w-20 h-20 text-primary"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                                </svg>
+                              </div>
+                            </div>
+                          );
                         })()}
 
                         {/* Badges Overlay */}
@@ -354,7 +371,6 @@ const Materials = () => {
                           <span className="bg-white/90 backdrop-blur text-primary text-xs px-2 py-1 rounded font-bold uppercase shadow-sm border border-white/50">
                             {getCategoryName(item.categoriaId)}
                           </span>
-
                         </div>
                       </div>
 
@@ -362,7 +378,7 @@ const Materials = () => {
                         <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
                           {stripHtml(item.titulo)}
                         </h3>
-                        <div 
+                        <div
                           className="text-gray-500 text-sm mb-4 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar"
                           dangerouslySetInnerHTML={{ __html: item.descripcion }}
                         />
@@ -381,26 +397,34 @@ const Materials = () => {
                           </div>
 
                           {item.precio && item.precio > 0 ? (
-                              <span className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md cursor-pointer">
-                                Comprar
-                              </span>
+                            <span className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md cursor-pointer">
+                              Comprar
+                            </span>
                           ) : isAuthenticated ? (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
-                                className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
-                              >
-                                <EyeIcon className="w-4 h-4 mr-1.5" />
-                                Ver
-                              </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCardClick(item);
+                              }}
+                              className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center shadow-sm hover:shadow-md"
+                            >
+                              <EyeIcon className="w-4 h-4 mr-1.5" />
+                              Ver
+                            </button>
                           ) : (
-                             <button 
-                               onClick={(e) => { e.stopPropagation(); setIsAuthModalOpen(true); }}
-                               className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-colors flex items-center shadow-sm hover:shadow-md whitespace-nowrap"
-                             >
-                               <EyeIcon className="w-4 h-4 mr-1 flex-shrink-0" />
-                               <span className="hidden sm:inline">Ingresa para ver</span>
-                               <span className="sm:hidden">Ingresar</span>
-                             </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsAuthModalOpen(true);
+                              }}
+                              className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-colors flex items-center shadow-sm hover:shadow-md whitespace-nowrap"
+                            >
+                              <EyeIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+                              <span className="hidden sm:inline">
+                                Ingresa para ver
+                              </span>
+                              <span className="sm:hidden">Ingresar</span>
+                            </button>
                           )}
                         </div>
                       </div>
@@ -409,10 +433,10 @@ const Materials = () => {
                 ))}
               </div>
             )}
-            
-            <AuthModal 
-              isOpen={isAuthModalOpen} 
-              onClose={() => setIsAuthModalOpen(false)} 
+
+            <AuthModal
+              isOpen={isAuthModalOpen}
+              onClose={() => setIsAuthModalOpen(false)}
             />
 
             {/* Pagination */}

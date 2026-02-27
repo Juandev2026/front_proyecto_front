@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 import Link from 'next/link';
 
+import CommunitySection from '../components/CommunitySection';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import CommunitySection from '../components/CommunitySection';
 import { authService } from '../services/authService';
 
 const ForgotPassword = () => {

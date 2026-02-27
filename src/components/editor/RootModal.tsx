@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 import katex from 'katex';
+
 import MathInputAdornment from './MathInputAdornment';
 
 interface RootModalProps {
@@ -75,7 +76,10 @@ const RootModal: React.FC<RootModalProps> = ({
     const rad = radicand || '?';
     const latex = index ? `\\sqrt[${index}]{${rad}}` : `\\sqrt{${rad}}`;
     try {
-      return katex.renderToString(latex, { throwOnError: false, displayMode: false });
+      return katex.renderToString(latex, {
+        throwOnError: false,
+        displayMode: false,
+      });
     } catch {
       return '<span style="color: #ef4444;">Error de sintaxis</span>';
     }
@@ -101,7 +105,10 @@ const RootModal: React.FC<RootModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black bg-opacity-40" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black bg-opacity-40"
+        onClick={onClose}
+      />
 
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
@@ -109,14 +116,33 @@ const RootModal: React.FC<RootModalProps> = ({
           <h3 className="text-base font-semibold text-gray-800">
             {isEditing ? 'Editar Raíz' : 'Crear Raíz'}
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-500"><path d="M18 6 6 18"/><path d="m6 6 18 18"/></svg>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4 text-gray-500"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 18 18" />
+            </svg>
           </button>
         </div>
 
         {/* Presets */}
         <div className="px-5 py-3 border-b border-gray-100 bg-white">
-          <p className="text-xs text-gray-500 mb-2 font-medium">Accesos rápidos</p>
+          <p className="text-xs text-gray-500 mb-2 font-medium">
+            Accesos rápidos
+          </p>
           <div className="flex gap-2">
             {PRESETS.map((preset) => (
               <button
@@ -125,9 +151,10 @@ const RootModal: React.FC<RootModalProps> = ({
                 onClick={() => handlePreset(preset.index)}
                 title={preset.tooltip}
                 className={`px-4 py-2 text-lg rounded-lg border transition-all font-medium
-                  ${index === preset.index
-                    ? 'bg-blue-50 border-primary text-secondary'
-                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+                  ${
+                    index === preset.index
+                      ? 'bg-blue-50 border-primary text-secondary'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
                   }`}
               >
                 {preset.label}
@@ -142,8 +169,8 @@ const RootModal: React.FC<RootModalProps> = ({
           <div className="bg-white rounded-lg border border-primary/30 p-3 text-center min-h-[48px] flex items-center justify-center">
             <span className="text-gray-700 text-sm">
               Texto ejemplo{' '}
-              <span dangerouslySetInnerHTML={{ __html: previewHtml }} />{' '}
-              más texto
+              <span dangerouslySetInnerHTML={{ __html: previewHtml }} /> más
+              texto
             </span>
           </div>
         </div>
@@ -153,7 +180,10 @@ const RootModal: React.FC<RootModalProps> = ({
           {/* Index */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-              Índice <span className="text-gray-400 normal-case font-normal">(opcional)</span>
+              Índice{' '}
+              <span className="text-gray-400 normal-case font-normal">
+                (opcional)
+              </span>
             </label>
             <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white transition-all">
               <input

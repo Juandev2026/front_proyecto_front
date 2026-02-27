@@ -1,5 +1,6 @@
-import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment } from 'react';
+
+import { Dialog, Transition } from '@headlessui/react';
 import Link from 'next/link';
 
 interface AuthModalProps {
@@ -53,7 +54,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               </Dialog.Title>
               <div className="mt-4">
                 <p className="text-sm text-gray-500 text-center">
-                  Para acceder a este contenido, necesitas iniciar sesión o registrarte en nuestra plataforma.
+                  Para acceder a este contenido, necesitas iniciar sesión o
+                  registrarte en nuestra plataforma.
                 </p>
               </div>
 

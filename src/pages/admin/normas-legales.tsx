@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import {
   PencilIcon,
   TrashIcon,
@@ -6,6 +7,7 @@ import {
   XIcon,
   DocumentTextIcon,
 } from '@heroicons/react/outline';
+
 import AdminLayout from '../../components/AdminLayout';
 import {
   normasLegalesService,
@@ -95,8 +97,8 @@ const AdminNormasLegales = () => {
       }
 
       if (!finalUrl) {
-         alert('Por favor, suba un PDF o ingrese una URL.');
-         return;
+        alert('Por favor, suba un PDF o ingrese una URL.');
+        return;
       }
 
       const payload = {
@@ -135,9 +137,9 @@ const AdminNormasLegales = () => {
 
   if (error)
     return (
-        <AdminLayout>
-            <div className="text-red-500">Error: {error}</div>
-        </AdminLayout>
+      <AdminLayout>
+        <div className="text-red-500">Error: {error}</div>
+      </AdminLayout>
     );
 
   return (
@@ -150,7 +152,12 @@ const AdminNormasLegales = () => {
           onClick={() => {
             setIsModalOpen(true);
             setEditingId(null);
-            setFormData({ nombre: '', descripcion: '', url: '', imagenUrl: '' });
+            setFormData({
+              nombre: '',
+              descripcion: '',
+              url: '',
+              imagenUrl: '',
+            });
             setFile(null);
             setImageFile(null);
           }}
@@ -186,12 +193,20 @@ const AdminNormasLegales = () => {
                   <div dangerouslySetInnerHTML={{ __html: item.nombre }} />
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                  <div className="truncate" dangerouslySetInnerHTML={{ __html: item.descripcion }} />
+                  <div
+                    className="truncate"
+                    dangerouslySetInnerHTML={{ __html: item.descripcion }}
+                  />
                 </td>
                 <td className="px-6 py-4 text-sm text-blue-600">
-                   <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
-                      <DocumentTextIcon className="w-4 h-4"/> Ver PDF
-                   </a>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline flex items-center gap-1"
+                  >
+                    <DocumentTextIcon className="w-4 h-4" /> Ver PDF
+                  </a>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -259,7 +274,7 @@ const AdminNormasLegales = () => {
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                   Imagen de Portada
+                  Imagen de Portada
                 </label>
                 <input
                   type="file"
@@ -271,7 +286,9 @@ const AdminNormasLegales = () => {
                     }
                   }}
                 />
-                <div className="text-xs text-gray-500 mb-1">O ingrese URL de imagen:</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  O ingrese URL de imagen:
+                </div>
                 <input
                   type="text"
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -285,7 +302,7 @@ const AdminNormasLegales = () => {
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                   Subir PDF (o Imagen)
+                  Subir PDF (o Imagen)
                 </label>
                 <input
                   type="file"
@@ -297,7 +314,9 @@ const AdminNormasLegales = () => {
                     }
                   }}
                 />
-                <div className="text-xs text-gray-500 mb-1">O ingrese URL directa:</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  O ingrese URL directa:
+                </div>
                 <input
                   type="text"
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"

@@ -20,7 +20,8 @@ export const contenidoIntroductorioService = {
       const response = await fetch(`${API_BASE_URL}/ContenidoIntroductorio`, {
         headers: getAuthHeaders(),
       });
-      if (!response.ok) throw new Error('Failed to fetch contenido introductorio');
+      if (!response.ok)
+        throw new Error('Failed to fetch contenido introductorio');
       return await response.json();
     } catch (error) {
       console.error('Error in getAll ContenidoIntroductorio:', error);
@@ -30,9 +31,12 @@ export const contenidoIntroductorioService = {
 
   getById: async (id: number): Promise<ContenidoIntroductorio> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ContenidoIntroductorio/${id}`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/ContenidoIntroductorio/${id}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Failed to fetch content item');
       return await response.json();
     } catch (error) {
@@ -43,18 +47,21 @@ export const contenidoIntroductorioService = {
 
   update: async (id: number, data: UpdateContenidoRequest): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ContenidoIntroductorio/${id}`, {
-        method: 'PUT',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/ContenidoIntroductorio/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        }
+      );
       if (!response.ok) throw new Error('Failed to update content item');
     } catch (error) {
       console.error(`Error in update ContenidoIntroductorio (${id}):`, error);
       throw error;
     }
-  }
+  },
 };

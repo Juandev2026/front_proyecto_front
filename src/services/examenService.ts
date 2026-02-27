@@ -32,7 +32,6 @@ export interface ExamenGrouped {
 
 const API_URL = `${API_BASE_URL}/Examenes`;
 
-
 export interface Examen {
   id: number;
   year: string;
@@ -68,30 +67,43 @@ export const examenService = {
   getSimplifiedHierarchy: async (): Promise<SimplifiedHierarchy> => {
     const grouped = await examenService.getGrouped();
     const modsMap = new Map<number, { id: number; nombre: string }>();
-    const nivsMap = new Map<number, { id: number; nombre: string; modIds: Set<number> }>();
-    const espsMap = new Map<string, { id: number; nombre: string; nivelId: number }>();
+    const nivsMap = new Map<
+      number,
+      { id: number; nombre: string; modIds: Set<number> }
+    >();
+    const espsMap = new Map<
+      string,
+      { id: number; nombre: string; nivelId: number }
+    >();
 
-    grouped.forEach(tipo => {
-      tipo.fuentes.forEach(fuente => {
-        fuente.modalidades.forEach(m => {
+    grouped.forEach((tipo) => {
+      tipo.fuentes.forEach((fuente) => {
+        fuente.modalidades.forEach((m) => {
           if (!modsMap.has(m.modalidadId)) {
-            modsMap.set(m.modalidadId, { id: m.modalidadId, nombre: m.modalidadNombre });
+            modsMap.set(m.modalidadId, {
+              id: m.modalidadId,
+              nombre: m.modalidadNombre,
+            });
           }
-          
-          m.niveles.forEach(n => {
+
+          m.niveles.forEach((n) => {
             if (!nivsMap.has(n.nivelId)) {
-              nivsMap.set(n.nivelId, { id: n.nivelId, nombre: n.nivelNombre, modIds: new Set() });
+              nivsMap.set(n.nivelId, {
+                id: n.nivelId,
+                nombre: n.nivelNombre,
+                modIds: new Set(),
+              });
             }
             nivsMap.get(n.nivelId)!.modIds.add(m.modalidadId);
-            
-            n.especialidades.forEach(e => {
+
+            n.especialidades.forEach((e) => {
               if (e.especialidadId !== null) {
                 const key = `${e.especialidadId}-${n.nivelId}`;
                 if (!espsMap.has(key)) {
                   espsMap.set(key, {
                     id: e.especialidadId,
                     nombre: e.especialidadNombre || '',
-                    nivelId: n.nivelId
+                    nivelId: n.nivelId,
                   });
                 }
               }
@@ -104,10 +116,15 @@ export const examenService = {
     return {
       modalidades: Array.from(modsMap.values()),
       niveles: Array.from(nivsMap.values())
-                 .map(n => ({ id: n.id, nombre: n.nombre, modalidadIds: Array.from(n.modIds) }))
-                 .filter(n => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO'),
-      especialidades: Array.from(espsMap.values())
-                        .filter(e => e.nombre && e.nombre.toUpperCase() !== 'NINGUNO')
+        .map((n) => ({
+          id: n.id,
+          nombre: n.nombre,
+          modalidadIds: Array.from(n.modIds),
+        }))
+        .filter((n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO'),
+      especialidades: Array.from(espsMap.values()).filter(
+        (e) => e.nombre && e.nombre.toUpperCase() !== 'NINGUNO'
+      ),
     };
   },
 
@@ -121,8 +138,11 @@ export const examenService = {
       }
       return await response.json();
     } catch (error) {
-       console.warn("Could not fetch all exams, possibly endpoint not supported", error);
-       return [];
+      console.warn(
+        'Could not fetch all exams, possibly endpoint not supported',
+        error
+      );
+      return [];
     }
   },
 
@@ -137,8 +157,8 @@ export const examenService = {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-         const err = await response.text();
-         throw new Error(`Error al crear examen: ${err}`);
+        const err = await response.text();
+        throw new Error(`Error al crear examen: ${err}`);
       }
       return await response.json();
     } catch (error) {
@@ -160,4 +180,3 @@ export const examenService = {
     }
   },
 };
-

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 
-import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+import CommunitySection from '../components/CommunitySection';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import CommunitySection from '../components/CommunitySection';
 import { authService } from '../services/authService';
 
 const ResetPassword = () => {
@@ -98,39 +98,53 @@ const ResetPassword = () => {
     } catch (err: any) {
       // Intentar extraer mensaje de error amigable si es un objeto JSON plano
       let errorMessage = 'Ocurrió un error al restablecer la contraseña.';
-      
+
       if (err.message) {
         // A veces el mensaje es un JSON stringificado como en la captura
         if (typeof err.message === 'string' && err.message.includes('{')) {
           try {
-             // Intentar limpiar si empieza con texto raro
-             // En la captura se ve: {"type":... "errors":{"NewPassword":...}}
-             // A veces axios devuelve el mensaje dentro de response.data
-             // Si el err.message es literalmente el JSON
-             const parsed = JSON.parse(err.message);
-             if (parsed.errors && parsed.errors.NewPassword) {
-                 errorMessage = parsed.errors.NewPassword[0];
-                 // Traducir mensaje común de Identity
-                 if (errorMessage.includes("must be a string or array type with a minimum length of '6'")) {
-                     errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-                 }
-                 else if (errorMessage.includes("Passwords must have at least one non alphanumeric character")) {
-                     errorMessage = 'La contraseña debe tener al menos un carácter no alfanumérico (símbolo).';
-                 }
-                 else if (errorMessage.includes("Passwords must have at least one digit")) {
-                     errorMessage = 'La contraseña debe tener al menos un número.';
-                 }
-                 else if (errorMessage.includes("Passwords must have at least one uppercase")) {
-                     errorMessage = 'La contraseña debe tener al menos una mayúscula.';
-                 }
-             } else if (parsed.title) {
-                 errorMessage = parsed.title;
-             }
+            // Intentar limpiar si empieza con texto raro
+            // En la captura se ve: {"type":... "errors":{"NewPassword":...}}
+            // A veces axios devuelve el mensaje dentro de response.data
+            // Si el err.message es literalmente el JSON
+            const parsed = JSON.parse(err.message);
+            if (parsed.errors && parsed.errors.NewPassword) {
+              errorMessage = parsed.errors.NewPassword[0];
+              // Traducir mensaje común de Identity
+              if (
+                errorMessage.includes(
+                  "must be a string or array type with a minimum length of '6'"
+                )
+              ) {
+                errorMessage =
+                  'La contraseña debe tener al menos 6 caracteres.';
+              } else if (
+                errorMessage.includes(
+                  'Passwords must have at least one non alphanumeric character'
+                )
+              ) {
+                errorMessage =
+                  'La contraseña debe tener al menos un carácter no alfanumérico (símbolo).';
+              } else if (
+                errorMessage.includes('Passwords must have at least one digit')
+              ) {
+                errorMessage = 'La contraseña debe tener al menos un número.';
+              } else if (
+                errorMessage.includes(
+                  'Passwords must have at least one uppercase'
+                )
+              ) {
+                errorMessage =
+                  'La contraseña debe tener al menos una mayúscula.';
+              }
+            } else if (parsed.title) {
+              errorMessage = parsed.title;
+            }
           } catch (e) {
-             errorMessage = err.message;
+            errorMessage = err.message;
           }
         } else {
-             errorMessage = err.message;
+          errorMessage = err.message;
         }
       }
 

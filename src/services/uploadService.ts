@@ -11,7 +11,7 @@ export const uploadService = {
     try {
       const response = await fetch(`${API_BASE_URL}/Upload/image`, {
         method: 'POST',
-        headers: headers,
+        headers,
         body: formData,
       });
 

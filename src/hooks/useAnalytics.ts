@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
+
 import { useRouter } from 'next/router';
+
 import { trackEvent, GAEventName, GAEventParams } from '../lib/analytics';
 
 /**
@@ -16,7 +18,7 @@ export const useAnalytics = () => {
 
     return () => {
       const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      
+
       // Only track if user spent more than 5 seconds
       if (timeSpent > 5 && typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'user_engagement', {
@@ -28,12 +30,12 @@ export const useAnalytics = () => {
   }, [router.pathname]);
 
   // Type-safe event tracking function
-  const track = useCallback(<T extends GAEventName>(
-    eventName: T,
-    params: GAEventParams[T]
-  ) => {
-    trackEvent(eventName, params);
-  }, []);
+  const track = useCallback(
+    <T extends GAEventName>(eventName: T, params: GAEventParams[T]) => {
+      trackEvent(eventName, params);
+    },
+    []
+  );
 
   return { track };
 };
@@ -42,7 +44,11 @@ export const useAnalytics = () => {
  * Hook specifically for tracking video progress
  * Automatically tracks 25%, 50%, 75%, 100% milestones
  */
-export const useVideoTracking = (videoId: string, videoTitle: string, courseId?: string) => {
+export const useVideoTracking = (
+  videoId: string,
+  videoTitle: string,
+  courseId?: string
+) => {
   const trackedMilestones = useRef<Set<number>>(new Set());
 
   const trackVideoStart = useCallback(() => {
@@ -54,24 +60,27 @@ export const useVideoTracking = (videoId: string, videoTitle: string, courseId?:
     trackedMilestones.current.clear();
   }, [videoId, videoTitle, courseId]);
 
-  const trackVideoProgress = useCallback((progressPercent: number) => {
-    // Track milestones: 25, 50, 75, 100
-    const milestones = [25, 50, 75, 100];
-    
-    for (const milestone of milestones) {
-      if (
-        progressPercent >= milestone &&
-        !trackedMilestones.current.has(milestone)
-      ) {
-        trackEvent('progreso_video', {
-          id_video: videoId,
-          titulo_video: videoTitle,
-          porcentaje_progreso: milestone as 25 | 50 | 75 | 100,
-        });
-        trackedMilestones.current.add(milestone);
+  const trackVideoProgress = useCallback(
+    (progressPercent: number) => {
+      // Track milestones: 25, 50, 75, 100
+      const milestones = [25, 50, 75, 100];
+
+      for (const milestone of milestones) {
+        if (
+          progressPercent >= milestone &&
+          !trackedMilestones.current.has(milestone)
+        ) {
+          trackEvent('progreso_video', {
+            id_video: videoId,
+            titulo_video: videoTitle,
+            porcentaje_progreso: milestone as 25 | 50 | 75 | 100,
+          });
+          trackedMilestones.current.add(milestone);
+        }
       }
-    }
-  }, [videoId, videoTitle]);
+    },
+    [videoId, videoTitle]
+  );
 
   return {
     trackVideoStart,

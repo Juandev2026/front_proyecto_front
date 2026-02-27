@@ -1,15 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import MainLayout from '../components/MainLayout';
-import { normasLegalesService, NormaLegal } from '../services/normasLegalesService';
+
 import { DocumentTextIcon, SearchIcon } from '@heroicons/react/outline';
-import CommunitySection from '../components/CommunitySection';
-import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
-import { useAuth } from '../hooks/useAuth';
-import AuthModal from '../components/AuthModal';
+import { useRouter } from 'next/router';
+
 import AdSidebar from '../components/AdSidebar';
+import AuthModal from '../components/AuthModal';
+import CommunitySection from '../components/CommunitySection';
+import MainLayout from '../components/MainLayout';
+import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import ShareButton from '../components/ShareButton';
+import { useAuth } from '../hooks/useAuth';
+import {
+  normasLegalesService,
+  NormaLegal,
+} from '../services/normasLegalesService';
 
 const NormasLegalesPage = () => {
   const router = useRouter();
@@ -71,7 +75,10 @@ const NormasLegalesPage = () => {
           <div className="max-w-xl mx-auto mb-10">
             <div className="relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <SearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                <SearchIcon
+                  className="h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
               </div>
               <input
                 type="text"
@@ -84,70 +91,79 @@ const NormasLegalesPage = () => {
           </div>
 
           {loading ? (
-             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-             </div>
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               {/* Main Content - 3 columns */}
               <div className="lg:col-span-3">
-                 <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2">
                   {filteredNormas.map((norma) => (
                     <div
                       key={norma.id}
                       className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
                     >
-                      <div 
+                      <div
                         className="flex-1 cursor-pointer"
                         onClick={() => handleCardClick(norma.id)}
                       >
                         {norma.imagenUrl ? (
                           <div className="h-48 w-full relative">
-                            <img 
-                              src={norma.imagenUrl} 
+                            <img
+                              src={norma.imagenUrl}
                               alt={norma.nombre}
                               className="w-full h-full object-cover"
                             />
                           </div>
                         ) : (
                           <div className="h-48 w-full bg-blue-100 flex items-center justify-center">
-                             <DocumentTextIcon className="h-16 w-16 text-blue-600" />
+                            <DocumentTextIcon className="h-16 w-16 text-blue-600" />
                           </div>
                         )}
-                        
+
                         <div className="p-6">
-                           <h3 
-                             className="text-lg font-bold text-gray-900 leading-tight mb-2"
-                             dangerouslySetInnerHTML={{ __html: norma.nombre }}
-                           />
-                           {norma.fechaCreacion && (
-                             <p className="text-xs text-gray-500 mb-2">
-                               Publicado el: {new Date(norma.fechaCreacion).toLocaleDateString('es-PE')}
-                             </p>
-                           )}
-                           <div 
-                             className="text-gray-500 text-sm line-clamp-3 prose prose-sm max-w-none"
-                             dangerouslySetInnerHTML={{ __html: norma.descripcion }}
-                           />
+                          <h3
+                            className="text-lg font-bold text-gray-900 leading-tight mb-2"
+                            dangerouslySetInnerHTML={{ __html: norma.nombre }}
+                          />
+                          {norma.fechaCreacion && (
+                            <p className="text-xs text-gray-500 mb-2">
+                              Publicado el:{' '}
+                              {new Date(norma.fechaCreacion).toLocaleDateString(
+                                'es-PE'
+                              )}
+                            </p>
+                          )}
+                          <div
+                            className="text-gray-500 text-sm line-clamp-3 prose prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{
+                              __html: norma.descripcion,
+                            }}
+                          />
                         </div>
                       </div>
                       <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 mt-auto flex items-center justify-between gap-2">
                         {isAuthenticated ? (
                           <div className="flex-1 flex gap-2">
-                              <a
-                                href={`/normas-legales/${norma.id}`}
-                                className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                              >
-                                <DocumentTextIcon className="h-4 w-4 mr-2" />
-                                Ver Información
-                              </a>
-                              <div className="flex-shrink-0">
-                                <ShareButton
-                                    title={norma.nombre}
-                                    url={`${typeof window !== 'undefined' ? window.location.origin : ''}/normas-legales/${norma.id}`}
-                                    className="!p-2"
-                                />
-                              </div>
+                            <a
+                              href={`/normas-legales/${norma.id}`}
+                              className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                            >
+                              <DocumentTextIcon className="h-4 w-4 mr-2" />
+                              Ver Información
+                            </a>
+                            <div className="flex-shrink-0">
+                              <ShareButton
+                                title={norma.nombre}
+                                url={`${
+                                  typeof window !== 'undefined'
+                                    ? window.location.origin
+                                    : ''
+                                }/normas-legales/${norma.id}`}
+                                className="!p-2"
+                              />
+                            </div>
                           </div>
                         ) : (
                           <button
@@ -155,26 +171,28 @@ const NormasLegalesPage = () => {
                             className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                           >
                             <DocumentTextIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Descargar documento</span>
+                            <span className="whitespace-nowrap">
+                              Descargar documento
+                            </span>
                           </button>
                         )}
                       </div>
                     </div>
                   ))}
-                  
+
                   {filteredNormas.length === 0 && (
-                      <div className="col-span-full text-center py-12 text-gray-500">
-                          No se encontraron resultados para "{searchTerm}"
-                      </div>
+                    <div className="col-span-full text-center py-12 text-gray-500">
+                      No se encontraron resultados para "{searchTerm}"
+                    </div>
                   )}
-                 </div>
+                </div>
               </div>
 
               {/* Sidebar - 1 column */}
               <div className="lg:col-span-1">
-                 <div className="sticky top-8">
-                    <AdSidebar />
-                 </div>
+                <div className="sticky top-8">
+                  <AdSidebar />
+                </div>
               </div>
             </div>
           )}
@@ -185,12 +203,12 @@ const NormasLegalesPage = () => {
               <RelevantInfoCarousel />
             </div>
           </div>
-          
-          <AuthModal 
-            isOpen={isAuthModalOpen} 
-            onClose={() => setIsAuthModalOpen(false)} 
+
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
           />
-      </div>
+        </div>
       </div>
     </MainLayout>
   );

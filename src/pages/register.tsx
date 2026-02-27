@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-
 import { authService } from '../services/authService';
-import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { regionService, Region } from '../services/regionService';
 import { examenService } from '../services/examenService';
+import { regionService, Region } from '../services/regionService';
 
 const Register = () => {
   const router = useRouter();
@@ -27,9 +26,15 @@ const Register = () => {
   });
 
   const [regiones, setRegiones] = useState<Region[]>([]);
-  const [modalidades, setModalidades] = useState<{ id: number; nombre: string; base?: number }[]>([]);
-  const [niveles, setNiveles] = useState<{ id: number; nombre: string; modalidadIds: number[] }[]>([]);
-  const [especialidades, setEspecialidades] = useState<{ id: number; nombre: string; nivelId: number }[]>([]);
+  const [modalidades, setModalidades] = useState<
+    { id: number; nombre: string; base?: number }[]
+  >([]);
+  const [niveles, setNiveles] = useState<
+    { id: number; nombre: string; modalidadIds: number[] }[]
+  >([]);
+  const [especialidades, setEspecialidades] = useState<
+    { id: number; nombre: string; nivelId: number }[]
+  >([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -71,18 +76,22 @@ const Register = () => {
   // Helper functions for filtering
   const getNivelesForModalidad = (modId: number) => {
     if (!modId) return niveles;
-    return niveles.filter(n => {
+    return niveles.filter((n) => {
       return n.modalidadIds.includes(modId);
     });
   };
 
   const getEspecialidadesForNivel = (nivId: number) => {
     if (!nivId) return especialidades;
-    return especialidades.filter(e => e.nivelId === nivId);
+    return especialidades.filter((e) => e.nivelId === nivId);
   };
 
-  const displayedNiveles = formData.modalidadId ? getNivelesForModalidad(Number(formData.modalidadId)) : [];
-  const displayedEspecialidades = formData.nivelId ? getEspecialidadesForNivel(Number(formData.nivelId)) : [];
+  const displayedNiveles = formData.modalidadId
+    ? getNivelesForModalidad(Number(formData.modalidadId))
+    : [];
+  const displayedEspecialidades = formData.nivelId
+    ? getEspecialidadesForNivel(Number(formData.nivelId))
+    : [];
 
   // Validation Effect: Reset child fields if they become invalid for the selected parent
   useEffect(() => {
@@ -92,7 +101,9 @@ const Register = () => {
     // Validate Nivel
     if (formData.modalidadId && formData.nivelId && niveles.length > 0) {
       const validNiveles = getNivelesForModalidad(Number(formData.modalidadId));
-      const isValid = validNiveles.some(n => n.id === Number(formData.nivelId));
+      const isValid = validNiveles.some(
+        (n) => n.id === Number(formData.nivelId)
+      );
       if (!isValid) {
         // Resetting invalid NivelId
         newData.nivelId = 0;
@@ -102,9 +113,17 @@ const Register = () => {
     }
 
     // Validate Especialidad
-    if (formData.nivelId && formData.especialidadId && especialidades.length > 0) {
-      const validEspecialidades = getEspecialidadesForNivel(Number(formData.nivelId));
-      const isValid = validEspecialidades.some(e => e.id === Number(formData.especialidadId));
+    if (
+      formData.nivelId &&
+      formData.especialidadId &&
+      especialidades.length > 0
+    ) {
+      const validEspecialidades = getEspecialidadesForNivel(
+        Number(formData.nivelId)
+      );
+      const isValid = validEspecialidades.some(
+        (e) => e.id === Number(formData.especialidadId)
+      );
       if (!isValid) {
         // Resetting invalid EspecialidadId
         newData.especialidadId = 0;
@@ -116,8 +135,13 @@ const Register = () => {
       setFormData(newData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.modalidadId, formData.nivelId, formData.especialidadId, niveles, especialidades]);
-
+  }, [
+    formData.modalidadId,
+    formData.nivelId,
+    formData.especialidadId,
+    niveles,
+    especialidades,
+  ]);
 
   const validatePassword = (password: string) => {
     const requirements = {
@@ -127,11 +151,13 @@ const Register = () => {
       special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
     };
     setPasswordRequirements(requirements);
-    return Object.values(requirements).every(req => req);
+    return Object.values(requirements).every((req) => req);
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -152,13 +178,17 @@ const Register = () => {
 
     // Validate password complexity
     if (!validatePassword(formData.password)) {
-      setError('La contraseña no cumple con todos los requisitos de seguridad.');
+      setError(
+        'La contraseña no cumple con todos los requisitos de seguridad.'
+      );
       setLoading(false);
       return;
     }
 
     // Validar que Nivel sea seleccionado cuando el campo está disponible
-    const nivelesDisponibles = formData.modalidadId ? getNivelesForModalidad(Number(formData.modalidadId)) : [];
+    const nivelesDisponibles = formData.modalidadId
+      ? getNivelesForModalidad(Number(formData.modalidadId))
+      : [];
     if (nivelesDisponibles.length > 0 && !formData.nivelId) {
       setError('Por favor seleccione un nivel.');
       setLoading(false);
@@ -177,7 +207,17 @@ const Register = () => {
         especialidadId: Number(formData.especialidadId),
         ie: formData.ie,
       });
+<<<<<<< Updated upstream
       router.push(`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `${planName ? '&' : '?'}redirect=${encodeURIComponent(redirect)}` : ''}`);
+=======
+      router.push(
+        `/login${
+          planName
+            ? `?planId=${planId}&planName=${encodeURIComponent(planName)}`
+            : ''
+        }`
+      );
+>>>>>>> Stashed changes
     } catch (err: any) {
       setError(
         err.message || 'Error al registrarse. Por favor intente de nuevo.'
@@ -204,7 +244,19 @@ const Register = () => {
               </h1>
               <p className="text-sm text-gray-600">
                 ¿Ya tienes una cuenta?{' '}
+<<<<<<< Updated upstream
                 <Link href={`/login${planName ? `?planId=${planId}&planName=${encodeURIComponent(planName)}` : ''}${(!planName && redirect) ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>
+=======
+                <Link
+                  href={`/login${
+                    planName
+                      ? `?planId=${planId}&planName=${encodeURIComponent(
+                          planName
+                        )}`
+                      : ''
+                  }`}
+                >
+>>>>>>> Stashed changes
                   <a className="font-medium text-primary hover:text-secondary transition-colors duration-200">
                     Inicia sesión aquí
                   </a>
@@ -321,7 +373,9 @@ const Register = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
-                    <option value={0} disabled hidden>Seleccionar región</option>
+                    <option value={0} disabled hidden>
+                      Seleccionar región
+                    </option>
                     {regiones.map((region) => (
                       <option key={region.id} value={region.id}>
                         {region.nombre}
@@ -346,77 +400,93 @@ const Register = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
                   >
-                    <option value={0} disabled hidden>Seleccionar modalidad</option>
-                    {modalidades && modalidades.length > 0 ? modalidades.map((mod) => (
-                      <option key={mod.id} value={mod.id}>
-                        {mod.nombre}
-                      </option>
-                    )) : <option disabled>Cargando o sin datos...</option>}
+                    <option value={0} disabled hidden>
+                      Seleccionar modalidad
+                    </option>
+                    {modalidades && modalidades.length > 0 ? (
+                      modalidades.map((mod) => (
+                        <option key={mod.id} value={mod.id}>
+                          {mod.nombre}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>Cargando o sin datos...</option>
+                    )}
                   </select>
                 </div>
 
                 {/* Nivel */}
                 {displayedNiveles.length > 0 && (
-                <div>
-                  <label
-                    htmlFor="nivelId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nivel
-                  </label>
-                  <select
-                    id="nivelId"
-                    name="nivelId"
-                    required={displayedNiveles.length > 0}
-                    value={formData.nivelId}
-                    onChange={handleChange}
-                    disabled={!formData.modalidadId}
-                    className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
-                      !formData.modalidadId ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
-                    }`}
-                  >
-                    <option value={0} disabled hidden>Seleccionar nivel</option>
-                    {displayedNiveles.map((nivel) => (
-                      <option key={nivel.id} value={nivel.id}>
-                        {nivel.nombre}
+                  <div>
+                    <label
+                      htmlFor="nivelId"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Nivel
+                    </label>
+                    <select
+                      id="nivelId"
+                      name="nivelId"
+                      required={displayedNiveles.length > 0}
+                      value={formData.nivelId}
+                      onChange={handleChange}
+                      disabled={!formData.modalidadId}
+                      className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
+                        !formData.modalidadId
+                          ? 'bg-gray-100 cursor-not-allowed opacity-60'
+                          : 'bg-white'
+                      }`}
+                    >
+                      <option value={0} disabled hidden>
+                        Seleccionar nivel
                       </option>
-                    ))}
-                  </select>
-                </div>
+                      {displayedNiveles.map((nivel) => (
+                        <option key={nivel.id} value={nivel.id}>
+                          {nivel.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
 
                 {/* Especialidad */}
                 {displayedEspecialidades.length > 0 && (
-                <div>
-                  <label
-                    htmlFor="especialidadId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Especialidad{' '}
-                    <span className="text-gray-400 font-normal">
-                      (Opcional)
-                    </span>
-                  </label>
-                  <select
-                    id="especialidadId"
-                    name="especialidadId"
-                    value={formData.especialidadId}
-                    onChange={handleChange}
-                    disabled={!formData.nivelId || displayedEspecialidades.length === 0}
-                    className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
-                      !formData.nivelId || displayedEspecialidades.length === 0 ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'bg-white'
-                    }`}
-                  >
-                    <option value={0} disabled hidden>
-                      Seleccionar especialidad
-                    </option>
-                    {displayedEspecialidades.map((esp) => (
-                      <option key={esp.id} value={esp.id}>
-                        {esp.nombre}
+                  <div>
+                    <label
+                      htmlFor="especialidadId"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Especialidad{' '}
+                      <span className="text-gray-400 font-normal">
+                        (Opcional)
+                      </span>
+                    </label>
+                    <select
+                      id="especialidadId"
+                      name="especialidadId"
+                      value={formData.especialidadId}
+                      onChange={handleChange}
+                      disabled={
+                        !formData.nivelId ||
+                        displayedEspecialidades.length === 0
+                      }
+                      className={`mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md ${
+                        !formData.nivelId ||
+                        displayedEspecialidades.length === 0
+                          ? 'bg-gray-100 cursor-not-allowed opacity-60'
+                          : 'bg-white'
+                      }`}
+                    >
+                      <option value={0} disabled hidden>
+                        Seleccionar especialidad
                       </option>
-                    ))}
-                  </select>
-                </div>
+                      {displayedEspecialidades.map((esp) => (
+                        <option key={esp.id} value={esp.id}>
+                          {esp.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
 
                 {/* Institución Educativa (IE) */}
@@ -426,7 +496,9 @@ const Register = () => {
                     className="block text-sm font-medium text-gray-700"
                   >
                     Institución Educativa{' '}
-                    <span className="text-gray-400 font-normal">(Opcional)</span>
+                    <span className="text-gray-400 font-normal">
+                      (Opcional)
+                    </span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <input
@@ -475,66 +547,162 @@ const Register = () => {
                     </button>
                   </div>
 
+<<<<<<< Updated upstream
                   {/* Password Example and Requirements */}
                   <div className="mt-3 space-y-3">
                     <p className="text-sm font-bold text-gray-900">
                       Ejemplo: <span className="font-normal text-gray-600">Escala2026*</span>
                     </p>
                     <p className="text-xs font-medium text-gray-700">La contraseña debe contener:</p>
+=======
+                  {/* Password Requirements */}
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-700">
+                      La contraseña debe contener:
+                    </p>
+>>>>>>> Stashed changes
                     <div className="space-y-1">
                       <div className="flex items-center text-xs">
                         {passwordRequirements.length ? (
-                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-green-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
-                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-red-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
-                        <span className={passwordRequirements.length ? 'text-green-700' : 'text-gray-600'}>
+                        <span
+                          className={
+                            passwordRequirements.length
+                              ? 'text-green-700'
+                              : 'text-gray-600'
+                          }
+                        >
                           Mínimo 8 caracteres
                         </span>
                       </div>
                       <div className="flex items-center text-xs">
                         {passwordRequirements.uppercase ? (
-                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-green-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
-                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-red-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
-                        <span className={passwordRequirements.uppercase ? 'text-green-700' : 'text-gray-600'}>
+                        <span
+                          className={
+                            passwordRequirements.uppercase
+                              ? 'text-green-700'
+                              : 'text-gray-600'
+                          }
+                        >
                           Al menos una letra mayúscula (A-Z)
                         </span>
                       </div>
                       <div className="flex items-center text-xs">
                         {passwordRequirements.number ? (
-                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-green-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
-                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-red-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
-                        <span className={passwordRequirements.number ? 'text-green-700' : 'text-gray-600'}>
+                        <span
+                          className={
+                            passwordRequirements.number
+                              ? 'text-green-700'
+                              : 'text-gray-600'
+                          }
+                        >
                           Al menos un número (0-9)
                         </span>
                       </div>
                       <div className="flex items-center text-xs">
                         {passwordRequirements.special ? (
-                          <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-green-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
-                          <svg className="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-red-500 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
-                        <span className={passwordRequirements.special ? 'text-green-700' : 'text-gray-600'}>
+                        <span
+                          className={
+                            passwordRequirements.special
+                              ? 'text-green-700'
+                              : 'text-gray-600'
+                          }
+                        >
                           Al menos un símbolo (!@#$%^&*)
                         </span>
                       </div>
@@ -546,10 +714,11 @@ const Register = () => {
               <div>
                 <button
                   type="submit"
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${loading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-primary hover:bg-secondary'
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white ${
+                    loading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-primary hover:bg-secondary'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
                   disabled={loading}
                 >
                   {loading ? 'Registrando...' : 'Crear cuenta'}

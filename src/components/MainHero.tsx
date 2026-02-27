@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+
 import config from '../config/index.json';
 
 const MainHero = ({
@@ -24,7 +25,8 @@ const MainHero = ({
     if (textRef.current) {
       // Check if the scrollHeight is greater than the clientHeight
       // This indicates that the text is strictly clamped
-      const isOverflowing = textRef.current.scrollHeight > textRef.current.clientHeight;
+      const isOverflowing =
+        textRef.current.scrollHeight > textRef.current.clientHeight;
       setShowButton(isOverflowing);
     }
   }, [title, description, mainHero.description]);
@@ -49,11 +51,11 @@ const MainHero = ({
             className={`mt-4 text-black text-xl leading-relaxed font-bold whitespace-pre-wrap transition-all duration-300 ${
               !isExpanded ? 'line-clamp-[5]' : ''
             }`}
-             style={{
-                display: '-webkit-box',
-                WebkitLineClamp: !isExpanded ? 5 : 'unset',
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: !isExpanded ? 5 : 'unset',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
             }}
           >
             {description || mainHero.description}
@@ -67,37 +69,35 @@ const MainHero = ({
             </button>
           )}
           {precio !== undefined && precio > 0 && (
-             <p className="mt-4 text-2xl font-bold text-green-600">
-               S/ {precio.toFixed(2)}
-             </p>
+            <p className="mt-4 text-2xl font-bold text-green-600">
+              S/ {precio.toFixed(2)}
+            </p>
           )}
-           {precio !== undefined && precio === 0 && title && (
-             <p className="mt-4 text-2xl font-bold text-green-600">
-               Gratis
-             </p>
+          {precio !== undefined && precio === 0 && title && (
+            <p className="mt-4 text-2xl font-bold text-green-600">Gratis</p>
           )}
         </div>
 
         <div className="mt-8 flex gap-4 justify-end sm:justify-start">
           {celular ? (
-              <a
-                href={`https://wa.me/${celular}?text=${encodeURIComponent(
-                  'Me interesa este anuncio'
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
-              >
-                WhatsApp
-              </a>
+            <a
+              href={`https://wa.me/${celular}?text=${encodeURIComponent(
+                'Me interesa este anuncio'
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
+            >
+              WhatsApp
+            </a>
           ) : (
             !title && (
-                <a
-                  href={mainHero.primaryAction.href}
-                  className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-primary hover:bg-primary-dark md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
-                >
-                  {mainHero.primaryAction.text}
-                </a>
+              <a
+                href={mainHero.primaryAction.href}
+                className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-primary hover:bg-primary-dark md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
+              >
+                {mainHero.primaryAction.text}
+              </a>
             )
           )}
 

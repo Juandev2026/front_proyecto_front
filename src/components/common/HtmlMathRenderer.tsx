@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+
 import katex from 'katex';
 
 interface HtmlMathRendererProps {
@@ -15,7 +16,10 @@ interface HtmlMathRendererProps {
  * Usage: <HtmlMathRenderer html={item.enunciado} className="prose" />
  * Drop it in anywhere you need to display rich content with math.
  */
-const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({ html, className }) => {
+const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
+  html,
+  className,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,7 +33,9 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({ html, className }) 
     el.innerHTML = html;
 
     // 2. Find all math-inline spans and render with KaTeX
-    const mathSpans = el.querySelectorAll<HTMLSpanElement>('span[data-type="math-inline"]');
+    const mathSpans = el.querySelectorAll<HTMLSpanElement>(
+      'span[data-type="math-inline"]'
+    );
     mathSpans.forEach((span) => {
       const latex = span.getAttribute('data-latex');
       if (latex) {

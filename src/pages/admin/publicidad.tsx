@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/outline';
 
 import AdminLayout from '../../components/AdminLayout';
+import { estadoService, Estado } from '../../services/estadoService';
 import { modalidadService, Modalidad } from '../../services/modalidadService';
 import { nivelService, Nivel } from '../../services/nivelService';
 import {
@@ -17,7 +18,6 @@ import {
   Publicidad,
 } from '../../services/publicidadService';
 import { uploadService } from '../../services/uploadService';
-import { estadoService, Estado } from '../../services/estadoService';
 
 const AdminPublicidad = () => {
   const [publicidades, setPublicidades] = useState<Publicidad[]>([]);
@@ -34,7 +34,7 @@ const AdminPublicidad = () => {
   // View Modal State
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Publicidad | null>(null);
-  
+
   // Filter State
   const [selectedNivelFilter, setSelectedNivelFilter] = useState<number>(0);
 
@@ -88,7 +88,6 @@ const AdminPublicidad = () => {
       } catch (err) {
         console.error('Error fetching estados:', err);
       }
-
     } catch (err) {
       setError('Error loading data');
       console.error(err);
@@ -155,44 +154,46 @@ const AdminPublicidad = () => {
   // ... rest of handle submit ...
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate Modalidad and Nivel are selected
     if (!formData.modalidadId || formData.modalidadId === 0) {
       // eslint-disable-next-line no-alert
       alert('Por favor seleccione una Modalidad');
       return;
     }
-    
+
     if (!formData.nivelId || formData.nivelId === 0) {
       // eslint-disable-next-line no-alert
       alert('Por favor seleccione un Nivel');
       return;
     }
-    
+
     try {
-      // Validate: Max 5 publicidades PUBLICADAS per nivel 
+      // Validate: Max 5 publicidades PUBLICADAS per nivel
       // Need to find which ID corresponds to 'Publicado' - assuming based on name, or logic
       // Ideally we'd have a constant, but we'll find it from 'estados'
-      const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+      const estadoPublicado = estados.find(
+        (e) => e.nombre.toLowerCase() === 'publicado'
+      );
       const publicadoId = estadoPublicado ? estadoPublicado.id : 0; // Fallback or handle error?
 
       // Only check limit if we are trying to save as "Publicado"
       if (Number(formData.estadoId) === Number(publicadoId)) {
-          // Count how many ACTIVE (Publicado) ads exist for this level, EXCLUDING the current one if editing
-          const existingPublicadosCount = publicidades.filter(
-            (p) => 
-              Number(p.nivelId) === Number(formData.nivelId) && 
-              Number(p.estadoId) === Number(publicadoId) &&
-              (editingId ? Number(p.id) !== Number(editingId) : true)
-          ).length;
+        // Count how many ACTIVE (Publicado) ads exist for this level, EXCLUDING the current one if editing
+        const existingPublicadosCount = publicidades.filter(
+          (p) =>
+            Number(p.nivelId) === Number(formData.nivelId) &&
+            Number(p.estadoId) === Number(publicadoId) &&
+            (editingId ? Number(p.id) !== Number(editingId) : true)
+        ).length;
 
-          if (existingPublicadosCount >= 5) {
-             // eslint-disable-next-line no-alert
-             alert(
-               `Ya existen 5 publicidades PUBLICADAS para este nivel. Solo se permiten 5 publicidades activas por nivel. Puede guardar esta publicidad como "Borrador" o eliminar/desactivar otra.`
-             );
-             return;
-          }
+        if (existingPublicadosCount >= 5) {
+          // eslint-disable-next-line no-alert
+          alert(
+            `Ya existen 5 publicidades PUBLICADAS para este nivel. Solo se permiten 5 publicidades activas por nivel. Puede guardar esta publicidad como "Borrador" o eliminar/desactivar otra.`
+          );
+          return;
+        }
       }
 
       let finalUrl = formData.imageUrl;
@@ -239,9 +240,10 @@ const AdminPublicidad = () => {
   };
 
   // Pagination Logic
-  const filteredItems = selectedNivelFilter === 0 
-    ? publicidades 
-    : publicidades.filter(p => p.nivelId === selectedNivelFilter);
+  const filteredItems =
+    selectedNivelFilter === 0
+      ? publicidades
+      : publicidades.filter((p) => p.nivelId === selectedNivelFilter);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -274,7 +276,9 @@ const AdminPublicidad = () => {
             setIsModalOpen(true);
             setEditingId(null);
             setFile(null);
-            const estadoPublicado = estados.find(e => e.nombre.toLowerCase() === 'publicado');
+            const estadoPublicado = estados.find(
+              (e) => e.nombre.toLowerCase() === 'publicado'
+            );
             setFormData({
               titulo: '',
               imageUrl: '',
@@ -295,138 +299,140 @@ const AdminPublicidad = () => {
       </div>
 
       <div className="flex justify-end mb-4">
-         <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Filtrar por Nivel:</label>
-            <select
-              className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
-              value={selectedNivelFilter}
-              onChange={(e) => {
-                setSelectedNivelFilter(Number(e.target.value));
-                setCurrentPage(1); // Reset pagination when filter changes
-              }}
-            >
-              <option value={0}>Todos los Niveles</option>
-              {niveles.map((nivel) => (
-                <option key={nivel.id} value={nivel.id}>
-                  {nivel.nombre}
-                </option>
-              ))}
-            </select>
-         </div>
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-gray-700">
+            Filtrar por Nivel:
+          </label>
+          <select
+            className="border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm p-2 border"
+            value={selectedNivelFilter}
+            onChange={(e) => {
+              setSelectedNivelFilter(Number(e.target.value));
+              setCurrentPage(1); // Reset pagination when filter changes
+            }}
+          >
+            <option value={0}>Todos los Niveles</option>
+            {niveles.map((nivel) => (
+              <option key={nivel.id} value={nivel.id}>
+                {nivel.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Orden
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Posición
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Título
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Imagen
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Enlace
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentItems.map((item, index) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.orden || 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                  {indexOfFirstItem + index + 1}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {item.titulo}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.titulo}
-                    className="h-10 w-10 object-cover rounded"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <a
-                    href={item.enlace}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    Link
-                  </a>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span
-                    className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    style={{
-                      backgroundColor: item.estado?.colorHex
-                        ? item.estado.colorHex + '20'
-                        : '#e5e7eb',
-                      color: item.estado?.colorHex || '#374151',
-                    }}
-                  >
-                    {item.estado?.nombre || 'Sin Estado'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleView(item)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                    title="Ver Detalles"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path
-                        fillRule="evenodd"
-                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleEdit(item);
-                      setFile(null);
-                    }}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    title="Editar"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Eliminar"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
-                </td>
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Orden
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Posición
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Título
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Imagen
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Enlace
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentItems.map((item, index) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {item.orden || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                    {indexOfFirstItem + index + 1}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {item.titulo}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.titulo}
+                      className="h-10 w-10 object-cover rounded"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <a
+                      href={item.enlace}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Link
+                    </a>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span
+                      className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                      style={{
+                        backgroundColor: item.estado?.colorHex
+                          ? `${item.estado.colorHex}20`
+                          : '#e5e7eb',
+                        color: item.estado?.colorHex || '#374151',
+                      }}
+                    >
+                      {item.estado?.nombre || 'Sin Estado'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleView(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Ver Detalles"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleEdit(item);
+                        setFile(null);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      title="Editar"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Eliminar"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -447,7 +453,9 @@ const AdminPublicidad = () => {
               onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 ${
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                currentPage === totalPages
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
               }`}
             >
               Siguiente
@@ -456,11 +464,16 @@ const AdminPublicidad = () => {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{filteredItems.length > 0 ? indexOfFirstItem + 1 : 0}</span> a{' '}
+                Mostrando{' '}
+                <span className="font-medium">
+                  {filteredItems.length > 0 ? indexOfFirstItem + 1 : 0}
+                </span>{' '}
+                a{' '}
                 <span className="font-medium">
                   {Math.min(indexOfLastItem, filteredItems.length)}
                 </span>{' '}
-                de <span className="font-medium">{filteredItems.length}</span> resultados
+                de <span className="font-medium">{filteredItems.length}</span>{' '}
+                resultados
               </p>
             </div>
             <div>
@@ -490,7 +503,10 @@ const AdminPublicidad = () => {
                   })
                   .map((page, index, array) => {
                     const prevPage = array[index - 1];
-                    const showEllipsis = index > 0 && prevPage !== undefined && page - prevPage > 1;
+                    const showEllipsis =
+                      index > 0 &&
+                      prevPage !== undefined &&
+                      page - prevPage > 1;
                     return (
                       <React.Fragment key={page}>
                         {showEllipsis && (
@@ -500,7 +516,9 @@ const AdminPublicidad = () => {
                         )}
                         <button
                           onClick={() => paginate(page)}
-                          aria-current={currentPage === page ? 'page' : undefined}
+                          aria-current={
+                            currentPage === page ? 'page' : undefined
+                          }
                           className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                             currentPage === page
                               ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
@@ -513,10 +531,14 @@ const AdminPublicidad = () => {
                     );
                   })}
                 <button
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    paginate(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
                   }`}
                 >
                   <span className="sr-only">Siguiente</span>
@@ -830,13 +852,11 @@ const AdminPublicidad = () => {
                         : 'Gratis'}
                     </p>
                   </div>
-                   <div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Orden
                     </label>
-                    <p className="text-gray-900">
-                      {viewingItem.orden || 0}
-                    </p>
+                    <p className="text-gray-900">{viewingItem.orden || 0}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">

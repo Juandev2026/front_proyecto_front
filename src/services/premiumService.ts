@@ -59,7 +59,7 @@ export const premiumService = {
       if (isFormData) {
         const fd = item as FormData;
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId'); 
+          fd.delete('estadoId');
         }
         body = fd;
       } else {
@@ -104,7 +104,7 @@ export const premiumService = {
         const fd = item as FormData;
         if (!fd.has('id')) fd.append('id', String(id));
         if (!fd.has('estadoId') || fd.get('estadoId') === '0') {
-            fd.delete('estadoId');
+          fd.delete('estadoId');
         }
         body = fd;
       } else {

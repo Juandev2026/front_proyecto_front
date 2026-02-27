@@ -15,7 +15,7 @@ interface SymbolItem {
 }
 
 const SYMBOL_CATEGORIES: Record<string, SymbolItem[]> = {
-  'Básicos': [
+  Básicos: [
     { display: '+', latex: '+', title: 'Suma' },
     { display: '−', latex: '-', title: 'Resta' },
     { display: '×', latex: '\\times', title: 'Multiplicación' },
@@ -35,7 +35,7 @@ const SYMBOL_CATEGORIES: Record<string, SymbolItem[]> = {
     { display: '…', latex: '\\dots', title: 'Puntos suspensivos' },
     { display: '∴', latex: '\\therefore', title: 'Por lo tanto' },
   ],
-  'Álgebra': [
+  Álgebra: [
     { display: 'α', latex: '\\alpha', title: 'Alpha' },
     { display: 'β', latex: '\\beta', title: 'Beta' },
     { display: 'γ', latex: '\\gamma', title: 'Gamma' },
@@ -53,7 +53,7 @@ const SYMBOL_CATEGORIES: Record<string, SymbolItem[]> = {
     { display: 'Δ', latex: '\\Delta', title: 'Delta (mayúscula)' },
     { display: 'Π', latex: '\\Pi', title: 'Pi (mayúscula)' },
   ],
-  'Geometría': [
+  Geometría: [
     { display: '∠', latex: '\\angle', title: 'Ángulo' },
     { display: '△', latex: '\\triangle', title: 'Triángulo' },
     { display: '⊥', latex: '\\perp', title: 'Perpendicular' },
@@ -67,7 +67,7 @@ const SYMBOL_CATEGORIES: Record<string, SymbolItem[]> = {
     { display: '∈', latex: '\\in', title: 'Pertenece a' },
     { display: '∉', latex: '\\notin', title: 'No pertenece a' },
   ],
-  'Cálculo': [
+  Cálculo: [
     { display: '∫', latex: '\\int', title: 'Integral' },
     { display: '∬', latex: '\\iint', title: 'Integral doble' },
     { display: '∮', latex: '\\oint', title: 'Integral de línea' },
@@ -81,7 +81,7 @@ const SYMBOL_CATEGORIES: Record<string, SymbolItem[]> = {
     { display: '⇔', latex: '\\Leftrightarrow', title: 'Si y solo si' },
     { display: 'dx', latex: 'dx', title: 'Diferencial x' },
   ],
-  'Lógica': [
+  Lógica: [
     { display: '∧', latex: '\\land', title: 'Y lógico (AND)' },
     { display: '∨', latex: '\\lor', title: 'O lógico (OR)' },
     { display: '¬', latex: '\\neg', title: 'Negación (NOT)' },
@@ -111,7 +111,10 @@ const SymbolsPopover: React.FC<SymbolsPopoverProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         onClose();
       }
     };
@@ -153,9 +156,10 @@ const SymbolsPopover: React.FC<SymbolsPopoverProps> = ({
             type="button"
             onClick={() => setActiveTab(cat)}
             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors
-              ${activeTab === cat
-                ? 'bg-blue-50 text-secondary'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ${
+                activeTab === cat
+                  ? 'bg-blue-50 text-secondary'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
           >
             {cat}

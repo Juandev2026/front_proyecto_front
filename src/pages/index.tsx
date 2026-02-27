@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 import About from '../components/About';
 import Analytics from '../components/Analytics';
-
 import FadeIn from '../components/FadeIn';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -12,11 +11,7 @@ import MainHero from '../components/MainHero';
 import MainHeroImage from '../components/MainHeroImage';
 import RelevantInfoCarousel from '../components/RelevantInfoCarousel';
 import SEO from '../components/SEO';
-
 import { anuncioService } from '../services/anuncioService';
-
-
-
 
 const App = () => {
   // const { mainHero } = config; // Removed unused variable
@@ -76,15 +71,18 @@ const App = () => {
 
   // Determine content to display: if no slides, show fallback.
   // ONLY show fallback if NOT loading and NO slides found.
-  const fallbackSlide = [{
-    image: '/assets/images/no_ads_character.png',
-    title: 'No hay anuncios el día de hoy',
-    description: 'Mantente atento a nuestras próximas novedades y comunicados.',
-    celular: '',
-    ruta: '',
-    precio: 0,
-    objectFit: 'contain' as const
-  }];
+  const fallbackSlide = [
+    {
+      image: '/assets/images/no_ads_character.png',
+      title: 'No hay anuncios el día de hoy',
+      description:
+        'Mantente atento a nuestras próximas novedades y comunicados.',
+      celular: '',
+      ruta: '',
+      precio: 0,
+      objectFit: 'contain' as const,
+    },
+  ];
 
   const displaySlides = slides.length > 0 ? slides : fallbackSlide;
 
@@ -101,29 +99,32 @@ const App = () => {
         <div className="w-full">
           <Header />
         </div>
-        
+
         <div className="w-full px-4 md:px-8 mt-4">
           <LazyShow>
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
               {isLoading ? (
-                 /* Skeleton Loader matching Hero dimensions */
-                 <div className="grid grid-cols-1 lg:grid-cols-2 animate-pulse">
-                    <div className="relative h-auto min-h-0 lg:h-auto lg:min-h-[600px] group overflow-hidden">
-                        <div className="h-[380px] sm:h-[400px] lg:h-[600px] bg-gray-200"></div>
-                    </div>
-                    <div className="flex flex-col justify-center p-8 space-y-4">
-                       <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                       <div className="h-4 bg-gray-200 rounded w-full"></div>
-                       <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                       <div className="h-10 bg-gray-200 rounded w-1/3 mt-4"></div>
-                    </div>
-                 </div>
+                /* Skeleton Loader matching Hero dimensions */
+                <div className="grid grid-cols-1 lg:grid-cols-2 animate-pulse">
+                  <div className="relative h-auto min-h-0 lg:h-auto lg:min-h-[600px] group overflow-hidden">
+                    <div className="h-[380px] sm:h-[400px] lg:h-[600px] bg-gray-200"></div>
+                  </div>
+                  <div className="flex flex-col justify-center p-8 space-y-4">
+                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-10 bg-gray-200 rounded w-1/3 mt-4"></div>
+                  </div>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   {/* Image Column (Left) */}
                   <div className="relative h-auto min-h-0 lg:h-auto lg:min-h-[600px] group overflow-hidden">
-                    <MainHeroImage slides={displaySlides} currentIndex={currentIndex} />
-                    
+                    <MainHeroImage
+                      slides={displaySlides}
+                      currentIndex={currentIndex}
+                    />
+
                     {/* Navigation Arrows - Using actual slides length, not fallback if possible, but fallback is length 1 anyway */}
                     {slides.length > 1 && (
                       <>
@@ -152,7 +153,9 @@ const App = () => {
                         </button>
                         <button
                           onClick={() =>
-                            setCurrentIndex((prev) => (prev + 1) % displaySlides.length)
+                            setCurrentIndex(
+                              (prev) => (prev + 1) % displaySlides.length
+                            )
                           }
                           className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white/50 transition-all shadow-lg border border-white/20 opacity-0 group-hover:opacity-100"
                           aria-label="Siguiente"
@@ -200,8 +203,6 @@ const App = () => {
           <About />
         </>
       </LazyShow>
-      
-      
 
       <Analytics />
       <Footer />

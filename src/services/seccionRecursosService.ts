@@ -59,10 +59,14 @@ export const seccionRecursosService = {
 
   getBySeccion: async (idSeccion: number): Promise<SeccionRecurso[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/seccion/${idSeccion}`, {
-        headers: getAuthHeaders(),
-      });
-      if (!response.ok) throw new Error('Error al obtener recursos por sección');
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/seccion/${idSeccion}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+      if (!response.ok)
+        throw new Error('Error al obtener recursos por sección');
       return await response.json();
     } catch (error) {
       console.error('Error fetching recursos by seccion:', error);
@@ -72,10 +76,14 @@ export const seccionRecursosService = {
 
   getBySubseccion: async (idSubSeccion: number): Promise<SeccionRecurso[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/subseccion/${idSubSeccion}`, {
-        headers: getAuthHeaders(),
-      });
-      if (!response.ok) throw new Error('Error al obtener recursos por subsección');
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/subseccion/${idSubSeccion}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+      if (!response.ok)
+        throw new Error('Error al obtener recursos por subsección');
       return await response.json();
     } catch (error) {
       console.error('Error fetching recursos by subseccion:', error);
@@ -83,11 +91,17 @@ export const seccionRecursosService = {
     }
   },
 
-  getByIds: async (idSeccion: number, idSubSeccion: number): Promise<SeccionRecurso> => {
+  getByIds: async (
+    idSeccion: number,
+    idSubSeccion: number
+  ): Promise<SeccionRecurso> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al obtener el recurso');
       return await response.json();
     } catch (error) {
@@ -114,15 +128,23 @@ export const seccionRecursosService = {
     }
   },
 
-  update: async (idSeccion: number, idSubSeccion: number, numero: number, data: FormData): Promise<void> => {
+  update: async (
+    idSeccion: number,
+    idSubSeccion: number,
+    numero: number,
+    data: FormData
+  ): Promise<void> => {
     try {
       // The API expects 'multipart/form-data'. We let the browser set the Content-Type with boundary.
       // We only send Authorization header.
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`, {
-        method: 'PUT',
-        headers: getAuthHeadersFormData(), 
-        body: data,
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeadersFormData(),
+          body: data,
+        }
+      );
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Error al actualizar recurso de sección: ${errText}`);
@@ -133,12 +155,19 @@ export const seccionRecursosService = {
     }
   },
 
-  delete: async (idSeccion: number, idSubSeccion: number, numero: number): Promise<void> => {
+  delete: async (
+    idSeccion: number,
+    idSubSeccion: number,
+    numero: number
+  ): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/${idSeccion}/${idSubSeccion}/${numero}`,
+        {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al eliminar recurso de sección');
     } catch (error) {
       console.error('Error deleting seccion recurso:', error);
@@ -148,14 +177,17 @@ export const seccionRecursosService = {
 
   getDatosAnidados: async (): Promise<SeccionAnidada[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SeccionRecursos/datos-anidados`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/SeccionRecursos/datos-anidados`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al obtener datos anidados');
       return await response.json();
     } catch (error) {
       console.error('Error fetching nested data:', error);
       return [];
     }
-  }
+  },
 };

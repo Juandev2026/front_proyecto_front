@@ -7,7 +7,7 @@ interface MathInputAdornmentProps {
 }
 
 /**
- * Reusable adornment buttons (x² and x₂) that insert ^{} or _{} 
+ * Reusable adornment buttons (x² and x₂) that insert ^{} or _{}
  * at the cursor position of a target input.
  */
 const MathInputAdornment: React.FC<MathInputAdornmentProps> = ({
