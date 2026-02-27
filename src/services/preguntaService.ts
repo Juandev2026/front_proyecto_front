@@ -99,7 +99,6 @@ export const preguntaService = {
     id: number,
     item: Partial<Pregunta>
   ): Promise<Pregunta> => {
-<<<<<<< HEAD
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
@@ -119,43 +118,7 @@ export const preguntaService = {
       return result as Pregunta;
     } catch (error) {
       throw error;
-=======
-    const payload = {
-      numero: Number(item.numero),
-      clasificacionId: Number(item.clasificacionId),
-      tipoPreguntaId: Number(item.tipoPreguntaId),
-      respuesta: item.respuesta, // Can be string or number
-      enunciado: item.enunciado,
-      alternativaA: item.alternativaA,
-      alternativaB: item.alternativaB,
-      alternativaC: item.alternativaC,
-      alternativaD: item.alternativaD,
-      sustento: item.sustento,
-      examenId: Number(item.examenId),
-      imagen: item.imagen,
-      enunciados: item.enunciados,
-      alternativas: item.alternativas,
-      justificaciones: item.justificaciones,
-    };
-
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al actualizar la pregunta');
->>>>>>> a06c52d7346159fb8f03a032b606218e146ca452
     }
-
-    const text = await response.text();
-    const updatedData = text ? JSON.parse(text) : payload;
-
-    return { ...updatedData, id } as Pregunta;
   },
 
   delete: async (id: number): Promise<void> => {
@@ -168,28 +131,6 @@ export const preguntaService = {
     }
   },
 
-<<<<<<< HEAD
-=======
-  /**
-   * Crear una sola pregunta (Padre) y retornar el objeto con ID
-   */
-  createSingle: async (item: Partial<Pregunta>): Promise<Pregunta> => {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Error al crear pregunta padre: ${err}`);
-    }
-    return response.json();
-  },
-
->>>>>>> a06c52d7346159fb8f03a032b606218e146ca452
   // --- NEW ENDPOINTS FOR EXAM-CENTRIC LOGIC ---
 
   getByExamenId: async (examenId: number): Promise<Pregunta[]> => {
@@ -257,74 +198,6 @@ export const preguntaService = {
       return sAns;
     };
 
-<<<<<<< HEAD
-      const getLetter = (ans: any, alts: any[]) => {
-        if (ans === undefined || ans === null || ans === '') return '';
-        const sAns = String(ans).toUpperCase();
-
-        if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
-        if (!alts || alts.length === 0) return sAns; // Return original if no alts to map from
-
-        const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
-        if (idxById !== -1) return String.fromCharCode(65 + idxById);
-
-        const numAns = Number(ans);
-        if (!isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
-          return String.fromCharCode(65 + numAns);
-        }
-        return sAns;
-      };
-
-      return rawData
-        .map((q: any) => {
-          const mapped: Pregunta = {
-            id: q.id,
-            examenId: q.examenId,
-            year: q.year,
-            numero: q.numero,
-            enunciado: (q.enunciados || [])
-              .map((e: any) => e.contenido)
-              .join('<br/>'),
-            alternativaA: q.alternativas?.[0]?.contenido || '',
-            alternativaB: q.alternativas?.[1]?.contenido || '',
-            alternativaC: q.alternativas?.[2]?.contenido || '',
-            alternativaD: q.alternativas?.[3]?.contenido || '',
-            respuesta: getLetter(q.respuesta, q.alternativas || []),
-            respuestaCorrecta: q.respuesta,
-            tipoPreguntaId: q.tipoPreguntaId,
-            clasificacionId: q.clasificacionId,
-            clasificacionNombre: q.clasificacionNombre,
-            imagen: q.imagen || '',
-            alternativas: q.alternativas,
-            justificaciones: q.justificaciones,
-            enunciados: q.enunciados,
-            subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
-              ...sub,
-              enunciado: (sub.enunciados || [])
-                .map((e: any) => e.contenido)
-                .join('<br/>'),
-              alternativaA: sub.alternativas?.[0]?.contenido || '',
-              alternativaB: sub.alternativas?.[1]?.contenido || '',
-              alternativaC: sub.alternativas?.[2]?.contenido || '',
-              alternativaD: sub.alternativas?.[3]?.contenido || '',
-              respuesta: getLetter(
-                sub.respuestaCorrecta || sub.respuesta,
-                sub.alternativas || []
-              ),
-            })),
-          };
-          return mapped;
-        })
-        .sort((a, b) => {
-          const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
-          const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
-          return numA - numB || a.id - b.id;
-        });
-    } catch (error) {
-      console.error('Error in examenFilter:', error);
-      return [];
-    }
-=======
     return rawData
       .map((q: any) => {
         const mapped: Pregunta = {
@@ -340,6 +213,7 @@ export const preguntaService = {
           alternativaC: q.alternativas?.[2]?.contenido || '',
           alternativaD: q.alternativas?.[3]?.contenido || '',
           respuesta: getLetter(q.respuesta, q.alternativas || []),
+          respuestaCorrecta: q.respuesta,
           tipoPreguntaId: q.tipoPreguntaId,
           clasificacionId: q.clasificacionId,
           clasificacionNombre: q.clasificacionNombre,
@@ -369,6 +243,5 @@ export const preguntaService = {
         const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
         return numA - numB || a.id - b.id;
       });
->>>>>>> a06c52d7346159fb8f03a032b606218e146ca452
   },
 };
