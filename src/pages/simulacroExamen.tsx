@@ -1,34 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
-import { AcademicCapIcon, XIcon, FilterIcon } from '@heroicons/react/outline';
+import {
+  AcademicCapIcon,
+  QuestionMarkCircleIcon,
+  XIcon,
+  FilterIcon,
+  CalendarIcon,
+} from '@heroicons/react/outline';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import {
-  estructuraAcademicaService,
-  Modalidad,
-} from '../services/estructuraAcademicaService';
+import { ExamenLogin } from '../services/authService';
+import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+
+// ----- Types derived from login examenes -----
+interface FilterOption {
+  id: number;
+  nombre: string;
+}
 
 const SimulacroExamenPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-  // Form State
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
-  const [selectedModalidadId, setSelectedModalidadId] = useState<number | ''>(
-    26
-  ); // default EBR
-  const [selectedNivelId, setSelectedNivelId] = useState<number | ''>('');
-  const [selectedEspecialidadId, setSelectedEspecialidadId] = useState<
-    number | ''
-  >('');
-  const [isLoading, setIsLoading] = useState(true);
+  // Examenes from login response
+  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
 
-  // Year Checkbox State
+  // Current Selection State
+  const [selectedTipoExamenId, setSelectedTipoExamenId] = useState<string>('2');
+  const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
+  const [selectedNivelId, setSelectedNivelId] = useState<string>('');
+  const [selectedEspecialidadId, setSelectedEspecialidadId] =
+    useState<string>('');
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [conteoPreguntas, setConteoPreguntas] = useState<{
+    [key: string]: {
+      cantidad: number;
+      puntos: number;
+      tiempoPregunta: number;
+      minimo: number;
+      clasificacionId: number;
+    };
+  }>({});
+
+  // Checkbox State (Dynamic based on classifications)
+  const [tiposPregunta, setTiposPregunta] = useState<Record<string, boolean>>(
+    {}
+  );
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -36,41 +58,230 @@ const SimulacroExamenPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
+  // Load examenes from localStorage
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await estructuraAcademicaService.getAgrupados();
-        setModalidades([...data].reverse());
-      } catch (error) {
-        console.error('Error loading filters:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     if (isAuthenticated) {
-      fetchData();
+      const stored = localStorage.getItem('loginExamenes');
+      if (stored) {
+        try {
+          const parsed: ExamenLogin[] = JSON.parse(stored);
+          setLoginExamenes(parsed);
+        } catch (e) {
+          console.error('Error parsing loginExamenes:', e);
+        }
+      }
     }
   }, [isAuthenticated]);
 
-  const modalidadesData = modalidades;
-  const nivelesData = selectedModalidadId
-    ? modalidades.find((m) => m.id === selectedModalidadId)?.niveles || []
-    : [];
-  const especialidadesData = selectedNivelId
-    ? nivelesData.find((n) => n.id === selectedNivelId)?.especialidades || []
-    : [];
-  const aniosData = selectedNivelId
-    ? nivelesData.find((n) => n.id === selectedNivelId)?.anios || []
-    : [];
+  // ---------- Memoized Derived Options ----------
 
-  if (loading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
-      </div>
-    );
-  }
+  const tiposExamenData = useMemo(() => {
+    const map = new Map<number, FilterOption>();
+    loginExamenes.forEach((e) => {
+      if (!map.has(e.tipoExamenId)) {
+        map.set(e.tipoExamenId, {
+          id: e.tipoExamenId,
+          nombre: e.tipoExamenNombre || 'Sin nombre',
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [loginExamenes]);
+
+  const modalidadesData = useMemo(() => {
+    const map = new Map<number, FilterOption>();
+    loginExamenes
+      .filter(
+        (e) =>
+          !selectedTipoExamenId ||
+          String(e.tipoExamenId) === selectedTipoExamenId
+      )
+      .forEach((e) => {
+        if (!map.has(e.modalidadId)) {
+          map.set(e.modalidadId, {
+            id: e.modalidadId,
+            nombre: e.modalidadNombre,
+          });
+        }
+      });
+    return Array.from(map.values());
+  }, [loginExamenes, selectedTipoExamenId]);
+
+  const nivelesData = useMemo(() => {
+    const map = new Map<number, FilterOption>();
+    loginExamenes
+      .filter(
+        (e) =>
+          (!selectedTipoExamenId ||
+            String(e.tipoExamenId) === selectedTipoExamenId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId)
+      )
+      .forEach((e) => {
+        if (!map.has(e.nivelId)) {
+          map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
+        }
+      });
+    return Array.from(map.values());
+  }, [loginExamenes, selectedTipoExamenId, selectedModalidadId]);
+
+  const especialidadesData = useMemo(() => {
+    const map = new Map<number, FilterOption>();
+    loginExamenes
+      .filter(
+        (e) =>
+          (!selectedTipoExamenId ||
+            String(e.tipoExamenId) === selectedTipoExamenId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId)
+      )
+      .filter((e) => e.especialidadId !== null && e.especialidadNombre !== null)
+      .forEach((e) => {
+        if (!map.has(e.especialidadId!)) {
+          map.set(e.especialidadId!, {
+            id: e.especialidadId!,
+            nombre: e.especialidadNombre!,
+          });
+        }
+      });
+    return Array.from(map.values());
+  }, [
+    loginExamenes,
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+  ]);
+
+  const aniosData = useMemo(() => {
+    const set = new Set<string>();
+    loginExamenes
+      .filter(
+        (e) =>
+          (!selectedTipoExamenId ||
+            String(e.tipoExamenId) === selectedTipoExamenId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
+      )
+      .forEach((e) => {
+        if (e.years && e.years.length > 0) {
+          e.years.forEach((y) => set.add(String(y.year)));
+        } else if (e.year !== undefined && e.year !== null) {
+          set.add(String(e.year));
+        }
+      });
+    return Array.from(set)
+      .filter((y) => y !== 'null' && y !== 'undefined')
+      .map((y) => (y === '0' ? 'Único' : y))
+      .sort((a, b) => {
+        if (a === 'Único') return 1;
+        if (b === 'Único') return -1;
+        return Number(b) - Number(a);
+      });
+  }, [
+    loginExamenes,
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
+
+  // ---------- Counts & Categories Logic aggregated across selected years ----------
+
+  useEffect(() => {
+    if (selectedModalidadId && selectedYears.length > 0) {
+      const firstNivel = nivelesData[0];
+      const resolvedNivelId =
+        selectedNivelId ||
+        (nivelesData.length === 1 &&
+        firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
+          ? String(firstNivel.id)
+          : null);
+
+      if (resolvedNivelId === null) return;
+
+      const aggCountMap: any = {};
+
+      selectedYears.forEach((year) => {
+        const exams = loginExamenes.filter(
+          (e) =>
+            String(e.tipoExamenId) === selectedTipoExamenId &&
+            String(e.modalidadId) === selectedModalidadId &&
+            String(e.nivelId) === resolvedNivelId &&
+            (selectedEspecialidadId
+              ? String(e.especialidadId) === selectedEspecialidadId
+              : !e.especialidadId || e.especialidadId === 0) &&
+            ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
+              String(e.year) === year ||
+              e.years?.some((y) => String(y.year) === year))
+        );
+
+        exams.forEach((exam) => {
+          if (exam.clasificaciones) {
+            exam.clasificaciones.forEach((item) => {
+              const name = item.clasificacionNombre;
+              if (name) {
+                let cantidadExacta = 0;
+                const isUnico = year === 'Único';
+
+                if (isUnico || !item.years || item.years.length === 0) {
+                  cantidadExacta = item.cantidadPreguntas;
+                } else {
+                  const yearData = item.years.find(
+                    (y: any) => String(y.year) === year
+                  );
+                  cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
+                }
+
+                if (!aggCountMap[name]) {
+                  aggCountMap[name] = {
+                    cantidad: cantidadExacta,
+                    puntos: item.puntos || 0,
+                    tiempoPregunta: item.tiempoPregunta || 0,
+                    minimo: item.minimo || 0,
+                    clasificacionId: item.clasificacionId,
+                  };
+                } else {
+                  aggCountMap[name].cantidad += cantidadExacta;
+                  // We assume points and time are consistent or we take the first seen
+                }
+              }
+            });
+          }
+        });
+      });
+
+      setConteoPreguntas(aggCountMap);
+
+      setTiposPregunta((prev) => {
+        const nextTipos: Record<string, boolean> = { ...prev };
+        Object.keys(aggCountMap).forEach((name) => {
+          if (nextTipos[name] === undefined && aggCountMap[name].cantidad > 0) {
+            nextTipos[name] = true;
+          } else if (aggCountMap[name].cantidad === 0) {
+            nextTipos[name] = false;
+          }
+        });
+        return nextTipos;
+      });
+    } else {
+      setConteoPreguntas({});
+      setTiposPregunta({});
+    }
+  }, [
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+    selectedYears,
+    loginExamenes,
+    nivelesData,
+  ]);
+
+  // ---------- Handlers ----------
 
   const handleYearChange = (year: string) => {
     setSelectedYears((prev) =>
@@ -78,59 +289,97 @@ const SimulacroExamenPage = () => {
     );
   };
 
-  const selectedYearsList = selectedYears;
-
   const handleClear = () => {
-    setSelectedModalidadId(26);
+    setSelectedTipoExamenId('2');
+    setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
     setSelectedYears([]);
+    setTiposPregunta({});
   };
 
   const handleConfirm = async () => {
-    if (
-      selectedModalidadId &&
-      selectedNivelId &&
-      selectedYearsList.length >= 2
-    ) {
-      try {
-        setIsLoading(true);
-        const allQuestions: any[] = [];
+    if (!selectedModalidadId || selectedYears.length < 2) return;
 
-        // Fetch questions for each selected year
-        for (const year of selectedYearsList) {
-          const questions = await estructuraAcademicaService.getPreguntas(
-            Number(selectedModalidadId),
-            Number(selectedNivelId),
-            year
-          );
-          allQuestions.push(...questions);
-        }
+    try {
+      setIsLoading(true);
 
-        console.log('Total fetched questions:', allQuestions.length);
+      const firstNivel = nivelesData[0];
+      const resolvedNivelId =
+        selectedNivelId ||
+        (nivelesData.length === 1 &&
+        firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
+          ? String(firstNivel.id)
+          : '0');
 
-        const metadata = {
-          modalidad: modalidades.find(
-            (m) => m.id === Number(selectedModalidadId)
-          )?.nombre,
-          nivel: nivelesData.find((n) => n.id === Number(selectedNivelId))
-            ?.nombre,
-          especialidad: especialidadesData.find(
-            (e) => e.id === Number(selectedEspecialidadId)
-          )?.nombre,
-          year: selectedYearsList.join(', '),
-        };
+      // We need a sample exam to get fuenteId
+      const sampleExam = loginExamenes.find(
+        (e) =>
+          String(e.tipoExamenId) === selectedTipoExamenId &&
+          String(e.modalidadId) === selectedModalidadId &&
+          String(e.nivelId) === resolvedNivelId
+      );
 
-        localStorage.setItem('currentQuestions', JSON.stringify(allQuestions));
-        localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
-        router.push('/examen');
-      } catch (error) {
-        console.error('Error fetching simulation questions:', error);
-      } finally {
+      if (!sampleExam) {
+        alert('Error: No se encontró la metadata del examen.');
         setIsLoading(false);
+        return;
       }
+
+      // Map selected classifications to IDs
+      const activeClasificacionIds: number[] = [];
+      Object.entries(tiposPregunta).forEach(([name, isChecked]) => {
+        if (isChecked && conteoPreguntas[name]) {
+          activeClasificacionIds.push(conteoPreguntas[name].clasificacionId);
+        }
+      });
+
+      // Construct yearFilters
+      const yearFilters = selectedYears.map((y) => ({
+        year: y === 'Único' ? '0' : y,
+        clasificacionIds: activeClasificacionIds,
+      }));
+
+      const payload = {
+        tipoExamenId: sampleExam.tipoExamenId,
+        fuenteId: sampleExam.fuenteId || 0,
+        modalidadId: sampleExam.modalidadId,
+        nivelId: sampleExam.nivelId,
+        especialidadId: sampleExam.especialidadId || 0,
+        yearFilters,
+      };
+
+      console.log('Sending multi-year filter to API:', payload);
+
+      const questions =
+        await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
+
+      const metadata = {
+        modalidad: sampleExam.modalidadNombre,
+        nivel: sampleExam.nivelNombre || 'NINGUNO',
+        especialidad: sampleExam.especialidadNombre || null,
+        year: selectedYears.join(', '),
+      };
+
+      localStorage.setItem('currentQuestions', JSON.stringify(questions));
+      localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
+
+      router.push('/examen');
+    } catch (error) {
+      console.error('Error confirming selection:', error);
+      alert('Hubo un error al cargar los simulacros.');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <PremiumLayout
@@ -138,236 +387,309 @@ const SimulacroExamenPage = () => {
       breadcrumb="Pages / Simulacro de Examen"
     >
       <Head>
-        <title>Simulacro de Examen - Avendocente</title>
+        <title>Simulacro de Examen - AVENDOCENTE</title>
       </Head>
 
       <div className="w-full space-y-6">
-        {/* Title and subtitle */}
         <div className="text-center py-4">
-          <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">
-            Selecciona tus preferencias
+          <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
+            Configura tu Simulacro
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">
-            Puedes elegir los exámenes que consideres para poder practicar ahora
-          </p>
-          <p className="text-[#A3AED0] text-xs mt-1">
-            Debes seleccionar al menos 2 exámenes entre Bloque I y Bloque II
+            Selecciona al menos dos años para generar un simulacro personalizado
           </p>
         </div>
 
-        {/* Form Container */}
         <div className="space-y-4">
-          {/* Bloque I Container */}
-          <div className="border border-[#4790FD] rounded-lg p-6 bg-white relative mt-6">
-            <div className=" bg-white px-4 py-1 text-[#4790FD] font-bold">
-              <span className="text-xl">Bloque I - Exámenes MINEDU</span>
+          {/* Modalidad */}
+          <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
+            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+              <AcademicCapIcon className="h-5 w-5" />
+              <span>Modalidad habilitada</span>
             </div>
+            <select
+              value={selectedModalidadId}
+              onChange={(e) => {
+                setSelectedModalidadId(e.target.value);
+                setSelectedNivelId('');
+                setSelectedEspecialidadId('');
+                setSelectedYears([]);
+              }}
+              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+            >
+              <option value="">Selecciona Modalidad</option>
+              {modalidadesData.map((m) => (
+                <option key={m.id} value={String(m.id)}>
+                  {m.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div className="mt-2 space-y-4">
-              {/* Modalidad Habilitada */}
-              <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
-                <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Modalidad habilitada</span>
-                </div>
-                <select
-                  value={selectedModalidadId}
-                  onChange={(e) => {
-                    const id =
-                      e.target.value === '' ? '' : Number(e.target.value);
-                    setSelectedModalidadId(id);
-                    setSelectedNivelId('');
-                    setSelectedEspecialidadId('');
-                  }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
-                  disabled={isLoading}
-                >
-                  <option value="">Selecciona Modalidad</option>
-                  {modalidadesData.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Nivel */}
-              <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
-                <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
-                  <FilterIcon className="h-4 w-4" />
+          {/* Nivel */}
+          {nivelesData.length > 0 &&
+            !(
+              nivelesData.length === 1 &&
+              nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+            ) && (
+              <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <FilterIcon className="h-5 w-5" />
                   <span>Nivel</span>
                 </div>
                 <select
                   value={selectedNivelId}
                   onChange={(e) => {
-                    const id =
-                      e.target.value === '' ? '' : Number(e.target.value);
-                    setSelectedNivelId(id);
+                    setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
-                    setSelectedYears([]); // Clear selected years when level changes
+                    setSelectedYears([]);
                   }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
+                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
                 >
-                  <option value="">Seleccionar nivel</option>
+                  <option value="">Selecciona Nivel</option>
                   {nivelesData.map((n) => (
-                    <option key={n.id} value={n.id}>
+                    <option key={n.id} value={String(n.id)}>
                       {n.nombre}
                     </option>
                   ))}
                 </select>
               </div>
+            )}
 
-              {/* Especialidad */}
-              <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
-                <div className="flex items-center gap-2 mb-2 text-[#4790FD] font-bold text-sm">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Especialidad</span>
-                </div>
-                <select
-                  value={selectedEspecialidadId}
-                  onChange={(e) => {
-                    const id =
-                      e.target.value === '' ? '' : Number(e.target.value);
-                    setSelectedEspecialidadId(id);
-                  }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white"
-                  disabled={!selectedNivelId}
-                >
-                  <option value="">Seleccionar especialidad</option>
-                  {especialidadesData.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.nombre}
-                    </option>
-                  ))}
-                </select>
+          {/* Especialidad */}
+          {especialidadesData.length > 0 && (
+            <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Especialidad</span>
               </div>
+              <select
+                value={selectedEspecialidadId}
+                onChange={(e) => {
+                  setSelectedEspecialidadId(e.target.value);
+                  setSelectedYears([]);
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                disabled={!selectedModalidadId}
+              >
+                <option value="">Selecciona Especialidad</option>
+                {especialidadesData.map((e) => (
+                  <option key={e.id} value={String(e.id)}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-              {/* Selecciona mínimo dos años */}
-              <div className="border border-[#4790FD] rounded-lg p-3 bg-white">
-                <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold text-sm">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Selecciona mínimo dos años*</span>
+          {/* Años Checkboxes */}
+          <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
+            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+              <CalendarIcon className="h-5 w-5" />
+              <span>Selecciona los años (Mínimo 2)*</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {aniosData.map((year) => (
+                <label
+                  key={year}
+                  className={`flex items-center gap-2 p-2 border rounded-md cursor-pointer transition-colors ${
+                    selectedYears.includes(year)
+                      ? 'border-primary bg-blue-50 text-primary font-bold'
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedYears.includes(year)}
+                    onChange={() => handleYearChange(year)}
+                    className="h-4 w-4 text-primary rounded focus:ring-primary"
+                  />
+                  <span className="text-sm">{year}</span>
+                </label>
+              ))}
+            </div>
+            {aniosData.length === 0 && selectedModalidadId && (
+              <p className="text-red-500 text-xs mt-2 italic">
+                No hay años disponibles para esta selección
+              </p>
+            )}
+          </div>
+
+          {/* Tipos de Pregunta */}
+          {selectedYears.length > 0 &&
+            Object.keys(conteoPreguntas).length > 0 && (
+              <div className="border border-primary rounded-lg p-4 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                  <QuestionMarkCircleIcon className="h-5 w-5" />
+                  <span>Configurar Tipos de Pregunta</span>
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {aniosData.map((year) => (
+                <div className="space-y-3">
+                  {Object.entries(conteoPreguntas).map(([name, data]) => (
                     <label
-                      key={year}
-                      className="flex items-center gap-2 cursor-pointer"
+                      key={name}
+                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                        data.cantidad > 0
+                          ? `cursor-pointer hover:bg-gray-50 ${
+                              tiposPregunta[name]
+                                ? 'border-primary bg-blue-50 ring-1 ring-primary'
+                                : 'border-gray-200'
+                            }`
+                          : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                      }`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={selectedYears.includes(year)}
-                        onChange={() => handleYearChange(year)}
-                        className="rounded text-[#4790FD] focus:ring-[#4790FD] h-4 w-4"
-                      />
-                      <span className="text-gray-700 text-sm">{year}</span>
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
+                          checked={tiposPregunta[name] || false}
+                          disabled={data.cantidad === 0}
+                          onChange={(e) =>
+                            setTiposPregunta({
+                              ...tiposPregunta,
+                              [name]: e.target.checked,
+                            })
+                          }
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-[#2B3674] font-bold text-lg">
+                            {name}
+                          </span>
+                          <span
+                            className={`${
+                              data.cantidad > 0
+                                ? 'text-[#05CD99]'
+                                : 'text-gray-400'
+                            } text-sm font-medium`}
+                          >
+                            {data.cantidad > 0
+                              ? `${data.cantidad} preguntas acumuladas`
+                              : '0 preguntas disponibles'}
+                          </span>
+                        </div>
+                      </div>
                     </label>
                   ))}
-                  {selectedNivelId && aniosData.length === 0 && (
-                    <p className="text-gray-500 text-xs italic col-span-full">
-                      No hay años disponibles para este nivel.
-                    </p>
-                  )}
-                  {!selectedNivelId && (
-                    <p className="text-gray-500 text-xs italic col-span-full">
-                      Selecciona un nivel para ver los años disponibles.
-                    </p>
-                  )}
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
           {/* Resumen de selección */}
-          <div className="border border-[#4790FD] rounded-lg p-4 bg-white min-h-[100px]">
-            <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
-              <AcademicCapIcon className="h-5 w-5" />
-              <span>Resumen de selección</span>
-            </div>
-            <div className="text-gray-500 text-sm">
-              <div className="flex flex-col gap-1">
-                <div className="inline-block px-3 py-1 border border-[#4790FD]/20 bg-[#4790FD]/10 text-[#4790FD] rounded-md text-sm mb-2 w-max">
-                  {modalidades.find((m) => m.id === selectedModalidadId)
-                    ?.nombre || 'None'}
-                </div>
-
-                {selectedNivelId && (
-                  <p>
-                    <span className="font-semibold text-xs text-gray-600 uppercase">
-                      Nivel
-                    </span>
-                    :{' '}
-                    {nivelesData.find((n) => n.id === selectedNivelId)?.nombre}
+          {(selectedModalidadId || selectedYears.length > 0) && (
+            <div className="border border-cyan-300 rounded-xl p-6 bg-[#F8FDFF] shadow-sm mt-6">
+              <h3 className="font-bold text-[#2B3674] text-lg mb-4 flex items-center gap-2">
+                <AcademicCapIcon className="h-6 w-6" /> Resumen del Simulacro
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+                    Modalidad
                   </p>
+                  <p className="text-primary font-medium">
+                    {modalidadesData.find(
+                      (m) => String(m.id) === selectedModalidadId
+                    )?.nombre || 'Pendiente'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+                    Años Seleccionados
+                  </p>
+                  <p className="text-primary font-medium">
+                    {selectedYears.length > 0
+                      ? selectedYears.join(', ')
+                      : 'Ninguno'}
+                  </p>
+                </div>
+                {selectedNivelId && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+                      Nivel
+                    </p>
+                    <p className="text-primary font-medium">
+                      {
+                        nivelesData.find(
+                          (n) => String(n.id) === selectedNivelId
+                        )?.nombre
+                      }
+                    </p>
+                  </div>
                 )}
                 {selectedEspecialidadId && (
-                  <p>
-                    <span className="font-semibold text-xs text-gray-600 uppercase">
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
                       Especialidad
-                    </span>
-                    :{' '}
-                    {
-                      especialidadesData.find(
-                        (e) => e.id === selectedEspecialidadId
-                      )?.nombre
-                    }
-                  </p>
-                )}
-
-                {selectedYearsList.length > 0 && (
-                  <>
-                    <p>
-                      <span className="font-semibold text-xs text-gray-600 uppercase">
-                        Años seleccionados
-                      </span>
                     </p>
-                    <p>{selectedYearsList.join(', ')}</p>
-                  </>
+                    <p className="text-primary font-medium">
+                      {
+                        especialidadesData.find(
+                          (e) => String(e.id) === selectedEspecialidadId
+                        )?.nombre
+                      }
+                    </p>
+                  </div>
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Buttons */}
-          <div className="flex justify-center gap-4 mt-6">
+              {/* Counts Summary */}
+              {Object.values(tiposPregunta).some((c) => c) && (
+                <div className="mt-4 pt-4 border-t border-cyan-100 flex flex-wrap gap-3">
+                  <div className="bg-white border border-blue-100 rounded-lg px-4 py-2 shadow-sm">
+                    <span className="text-xs text-gray-500 block mb-1">
+                      Preguntas Totales
+                    </span>
+                    <span className="text-xl font-bold text-primary">
+                      {Object.entries(conteoPreguntas).reduce(
+                        (acc, [name, curr]) =>
+                          tiposPregunta[name] ? acc + curr.cantidad : acc,
+                        0
+                      )}
+                    </span>
+                  </div>
+                  <div className="bg-white border border-green-100 rounded-lg px-4 py-2 shadow-sm">
+                    <span className="text-xs text-gray-500 block mb-1">
+                      Tiempo Est.
+                    </span>
+                    <span className="text-xl font-bold text-green-600">
+                      {Object.entries(conteoPreguntas).reduce(
+                        (acc, [name, curr]) =>
+                          tiposPregunta[name]
+                            ? acc + curr.cantidad * curr.tiempoPregunta
+                            : acc,
+                        0
+                      )}{' '}
+                      min
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
             <button
               onClick={handleClear}
-              className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium text-sm md:text-base"
+              className="px-8 py-3 border-2 border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
             >
-              <XIcon className="h-4 w-4" />
-              Limpiar
+              <XIcon className="h-5 w-5" /> Limpiar Filtros
             </button>
             <button
               onClick={handleConfirm}
               disabled={
-                selectedYearsList.length < 2 ||
-                (nivelesData.length > 0 && !selectedNivelId) ||
-                (especialidadesData.length > 0 && !selectedEspecialidadId)
+                isLoading ||
+                selectedYears.length < 2 ||
+                !Object.values(tiposPregunta).some((v) => v)
               }
-              className="flex items-center gap-2 px-6 py-2 bg-[#4790FD] text-white rounded-md hover:bg-blue-600 transition-colors font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+              className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[200px]"
             >
-              Confirmar selección
+              {isLoading ? (
+                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                'Iniciar Simulacro'
+              )}
             </button>
           </div>
-
-          {/* Footer Note */}
-          <div className="flex items-start gap-2 text-xs text-gray-600 px-2 mt-4">
-            <span className="font-bold">•</span>
-            <p>
-              Si desea solo de un año determinado en específico puede ir al
-              módulo de{' '}
-              <Link href="/bancoPreguntas">
-                <a className="font-bold text-gray-800 hover:underline">
-                  Banco de preguntas
-                </a>
-              </Link>
-            </p>
-          </div>
-
-          {/* START Button (Floating or Fixed at bottom right if desired, but not in screenshot. Assuming consistency or simple note for now. Adding a button just in case is good practice, or user might ask for it later. Screenshot shows a green button cut off at the bottom right?) */}
-          {/* Looking closely at the uploaded image 'uploaded_media_1769283719704.png', there is a green circular button with a phone/whatsapp icon at the bottom right. That's likely a global support widget. */}
         </div>
       </div>
     </PremiumLayout>
