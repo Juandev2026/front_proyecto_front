@@ -18,6 +18,10 @@ interface FilterOption {
   id: number;
   nombre: string;
 }
+// If the backend may return null for id or nombre, we can safely filter those out before using them.
+// Alternatively, you could change the type to allow nulls:
+// interface FilterOption { id: number | null; nombre: string | null; }
+
 
 const BancoPreguntasAscensoPage = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -73,10 +77,13 @@ const BancoPreguntasAscensoPage = () => {
   // ---------- Derived filter options from loginExamenes ----------
   const modalidadesData: FilterOption[] = Array.from(
     new Map(
-      loginExamenes.map((e) => [
-        e.modalidadId,
-        { id: e.modalidadId, nombre: e.modalidadNombre },
-      ])
+      loginExamenes
+        // Exclude entries where id or name is null/undefined
+        .filter((e) => e.modalidadId != null && e.modalidadNombre != null)
+        .map((e) => [
+          e.modalidadId,
+          { id: e.modalidadId, nombre: e.modalidadNombre! },
+        ])
     ).values()
   ).reverse();
 
@@ -84,9 +91,10 @@ const BancoPreguntasAscensoPage = () => {
     new Map(
       loginExamenes
         .filter(
-          (e) => !selectedModalidadId || e.modalidadId === selectedModalidadId
+          (e) => (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
+                 e.nivelId != null && e.nivelNombre != null
         )
-        .map((e) => [e.nivelId, { id: e.nivelId, nombre: e.nivelNombre }])
+        .map((e) => [e.nivelId, { id: e.nivelId, nombre: e.nivelNombre! }])
     ).values()
   );
 
@@ -96,11 +104,12 @@ const BancoPreguntasAscensoPage = () => {
         .filter(
           (e) =>
             (!selectedModalidadId || e.modalidadId === selectedModalidadId) &&
-            (!selectedNivelId || e.nivelId === selectedNivelId)
+            (!selectedNivelId || e.nivelId === selectedNivelId) &&
+            e.especialidadId != null && e.especialidadNombre != null
         )
         .map((e) => [
           e.especialidadId,
-          { id: e.especialidadId, nombre: e.especialidadNombre },
+          { id: e.especialidadId!, nombre: e.especialidadNombre! },
         ])
     ).values()
   );

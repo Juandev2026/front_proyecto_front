@@ -69,13 +69,13 @@ const Recursos = () => {
   }, []);
 
   const groupedData = useMemo(() => {
-    // 1. Iniciamos con una copia del catálogo general
+    // 1. Iniciamos con una copia del cat├ílogo general
     let combined = JSON.parse(JSON.stringify(rawGroupedData)) as ExamenGrouped[];
 
-    // 2. Normalizamos la lista de exámenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
+    // 2. Normalizamos la lista de ex├ímenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
     const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
 
-    // 3. Fusionamos con la información de userExamsList para asegurar que no falte nada (como "Directivos")
+    // 3. Fusionamos con la informaci├│n de userExamsList para asegurar que no falte nada (como "Directivos")
     if (userExamsList && userExamsList.length > 0) {
       userExamsList.forEach((le: any) => {
         const tId = Number(le.tipoExamenId);
@@ -137,7 +137,7 @@ const Recursos = () => {
       });
     }
 
-    // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado (ADMIN_CATALOG)
+    // 4. Si el usuario es ADMIN, mostramos TODO el cat├ílogo propocionado (ADMIN_CATALOG)
     if (userRole === 'Admin') return ADMIN_CATALOG;
 
     // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
@@ -198,7 +198,7 @@ const Recursos = () => {
   );
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [newYearInput, setNewYearInput] = useState<string>(''); // State for input field
-  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // Número de la pregunta
+  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // N├║mero de la pregunta
 
   // Form State
   const [newItem, setNewItem] = useState({
@@ -312,13 +312,13 @@ const Recursos = () => {
   const getClasificacionFullName = (nombre: string) => {
     switch (nombre) {
       case 'CCP':
-        return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
+        return 'CONOCIMIENTO CURRICULAR Y PEDAG├ôGICO';
       case 'CG':
         return 'CONOCIMIENTOS GENERALES';
       case 'CL':
-        return 'COMPRENSIÓN LECTORA';
+        return 'COMPRENSI├ôN LECTORA';
       case 'RL':
-        return 'RAZONAMIENTO LÓGICO';
+        return 'RAZONAMIENTO L├ôGICO';
       default:
         return nombre;
     }
@@ -339,7 +339,7 @@ const Recursos = () => {
     if (parentItems.length === 0) return;
 
     parentItems.forEach(async (parent) => {
-      // Si el backend ya mandó las subPreguntas en el payload (nuevo formato):
+      // Si el backend ya mand├│ las subPreguntas en el payload (nuevo formato):
       if (parent.subPreguntas && parent.subPreguntas.length > 0) {
         setSubCountsMap((prev) => ({
           ...prev,
@@ -414,7 +414,6 @@ const Recursos = () => {
   const availableEspecialidades = useMemo(() => {
     if (!selectedNivel) return [];
     return availableNiveles.find((n: any) => n.nivelId === Number(selectedNivel))?.especialidades || [];
-      setSelectedNivel(firstNivel.nivelId);
   }, [availableNiveles, selectedNivel]);
 
   // Auto-select specialty if only one is available and it's null/empty (hidden)
@@ -428,7 +427,7 @@ const Recursos = () => {
   const availableYears = useMemo(() => {
     if (!selectedTipo || !selectedFuente) return [];
 
-    // Prioridad 1: Si es Admin, usamos la jerarquía de ADMIN_CATALOG
+    // Prioridad 1: Si es Admin, usamos la jerarqu├¡a de ADMIN_CATALOG
     if (userRole === 'Admin') {
         const tipo = ADMIN_CATALOG.find(t => t.tipoExamenId === Number(selectedTipo));
         const fuente = tipo?.fuentes.find(f => f.fuenteId === Number(selectedFuente));
@@ -451,7 +450,7 @@ const Recursos = () => {
         }
     }
 
-    // Prioridad 2: Lógica actual para usuarios no-admin o fallback
+    // Prioridad 2: L├│gica actual para usuarios no-admin o fallback
     const effEspecialidadId = selectedEspecialidad ? Number(selectedEspecialidad) : 0;
     const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
     const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
@@ -509,14 +508,14 @@ const Recursos = () => {
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
-    if (!window.confirm('¿Estás seguro de eliminar esta pregunta?')) return;
+    if (!window.confirm('┬┐Est├ís seguro de eliminar esta pregunta?')) return;
 
     setDeletingIds((prev) => new Set(prev).add(id));
     try {
       await preguntaService.delete(id);
       // Optimistic update for UI feel, followed by refresh
       setItems((prev) => prev.filter((item) => item.id !== id));
-      alert('Pregunta eliminada con éxito');
+      alert('Pregunta eliminada con ├®xito');
       fetchData();
     } catch (err) {
       alert('Error eliminando la pregunta');
@@ -534,7 +533,7 @@ const Recursos = () => {
     parentId: number,
     numero: number
   ) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta sub-pregunta?')) return;
+    if (!window.confirm('┬┐Est├ís seguro de eliminar esta sub-pregunta?')) return;
 
     const uniqueKey = `${examenId}-${parentId}-${numero}`;
     // @ts-ignore - use numero as temporary ID for the deleting set
@@ -552,7 +551,7 @@ const Recursos = () => {
         ...prev,
         [parentId]: Math.max(0, (prev[parentId] || 0) - 1),
       }));
-      alert('Sub-pregunta eliminada con éxito');
+      alert('Sub-pregunta eliminada con ├®xito');
     } catch (err) {
       alert('Error eliminando la sub-pregunta');
     } finally {
@@ -741,7 +740,7 @@ const Recursos = () => {
       setIsAiModalOpen(false);
       setAiTopic('');
       setViewMode('create');
-      alert('Pregunta generada con éxito. Revisa y guarda.');
+      alert('Pregunta generada con ├®xito. Revisa y guarda.');
     } catch (error) {
       alert(
         'Error generando pregunta con IA. Verifica tu API Key o intenta de nuevo.'
@@ -795,7 +794,7 @@ const Recursos = () => {
           esCorrecta: generated.respuesta === 'D',
         },
       ]);
-      alert('Respuestas generadas con éxito.');
+      alert('Respuestas generadas con ├®xito.');
     } catch (error) {
       alert('Error generando respuestas con IA.');
       console.error(error);
@@ -813,14 +812,14 @@ const Recursos = () => {
       !selectedEspecialidad
     ) {
       alert(
-        'Por favor selecciona todos los filtros (Tipo, Fuente, Modalidad, Nivel, Especialidad) antes de añadir un año.'
+        'Por favor selecciona todos los filtros (Tipo, Fuente, Modalidad, Nivel, Especialidad) antes de a├▒adir un a├▒o.'
       );
       return;
     }
 
     const year = newYearInput.trim();
     if (!year) {
-      alert('Por favor ingresa un año válido.');
+      alert('Por favor ingresa un a├▒o v├ílido.');
       return;
     }
 
@@ -836,12 +835,12 @@ const Recursos = () => {
         especialidadId: Number(selectedEspecialidad),
         nombre: `${year} - ${selectedEspecialidad}`, // Optional name
       });
-      alert('Año añadido con éxito.');
+      alert('A├▒o a├▒adido con ├®xito.');
       setNewYearInput(''); // Clear input
       await fetchData(); // Reload filters
       setSelectedYear(year);
     } catch (e: any) {
-      alert(`Error creando el año/examen: ${e.message}`);
+      alert(`Error creando el a├▒o/examen: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -852,7 +851,7 @@ const Recursos = () => {
     // eslint-disable-next-line no-alert
     if (
       !window.confirm(
-        `¿Seguro que deseas eliminar el año ${selectedYear} y toda su configuración? Esto no se puede deshacer.`
+        `┬┐Seguro que deseas eliminar el a├▒o ${selectedYear} y toda su configuraci├│n? Esto no se puede deshacer.`
       )
     )
       return;
@@ -892,13 +891,13 @@ const Recursos = () => {
 
       if (!targetExam) {
         alert(
-          'No se encontró el examen correspondiente para eliminar. (Asegúrate de que el endpoint getAll esté soportado)'
+          'No se encontr├│ el examen correspondiente para eliminar. (Aseg├║rate de que el endpoint getAll est├® soportado)'
         );
         return;
       }
 
       await examenService.delete(targetExam.id);
-      alert('Año eliminado correctamente.');
+      alert('A├▒o eliminado correctamente.');
       setSelectedYear('');
       await fetchData();
     } catch (e: any) {
@@ -1064,7 +1063,7 @@ const Recursos = () => {
     } else if (availableEspecialidades.length === 0) {
       effectiveEspecialidadId = 0; // no specialties at all
     } else {
-      // Multiple specialties but none chosen – cannot resolve
+      // Multiple specialties but none chosen ÔÇô cannot resolve
       return null;
     }
 
@@ -1117,14 +1116,14 @@ const Recursos = () => {
       return;
     }
 
-    // Validar Número de Pregunta
+    // Validar N├║mero de Pregunta
     const numPreguntaParsed = parseInt(numeroPregunta, 10);
     if (
       !numeroPregunta.trim() ||
       isNaN(numPreguntaParsed) ||
       numPreguntaParsed <= 0
     ) {
-      alert('El número de la pregunta es obligatorio y debe ser mayor a 0');
+      alert('El n├║mero de la pregunta es obligatorio y debe ser mayor a 0');
       return;
     }
 
@@ -1140,7 +1139,7 @@ const Recursos = () => {
       const resolvedId = await resolveCurrentExamenId();
       if (!resolvedId) {
         alert(
-          'No se pudo determinar el examen al cual asociar esta pregunta. Asegúrate de tener todos los filtros (Año incluido) seleccionados.'
+          'No se pudo determinar el examen al cual asociar esta pregunta. Aseg├║rate de tener todos los filtros (A├▒o incluido) seleccionados.'
         );
         return;
       }
@@ -1207,20 +1206,20 @@ const Recursos = () => {
 
         // Optimistic Update
         setItems((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
-        alert('Pregunta actualizada con éxito');
+        alert('Pregunta actualizada con ├®xito');
       } else {
-        // POST /api/Preguntas — examenId va dentro del body
+        // POST /api/Preguntas ÔÇö examenId va dentro del body
         const created = await preguntaService.create(
           payload as Omit<Pregunta, 'id'>
         );
         if (created) {
           setItems((prev) => [created, ...prev]);
-          alert('Pregunta creada con éxito');
+          alert('Pregunta creada con ├®xito');
         }
       }
 
       // DO NOT reset filters, keep context
-      // setViewMode('list'); // Maybe stay in create? User might want "Guardar y Añadir otra" handling
+      // setViewMode('list'); // Maybe stay in create? User might want "Guardar y A├▒adir otra" handling
       // resetForm(); // We handle this based on which button was clicked effectively
       // But for this generic handler:
       setViewMode('list');
@@ -1255,9 +1254,9 @@ const Recursos = () => {
       </AdminLayout>
     );
 
-  // ... (Tu lógica anterior se mantiene igual, solo cambia el render del formulario)
+  // ... (Tu l├│gica anterior se mantiene igual, solo cambia el render del formulario)
 
-  // --- RENDER FORM VIEW (DISEÑO MEJORADO) ---
+  // --- RENDER FORM VIEW (DISE├æO MEJORADO) ---
   if (viewMode === 'create' || viewMode === 'edit') {
     return (
       <AdminLayout>
@@ -1276,14 +1275,14 @@ const Recursos = () => {
               </button>
             </div>
             <h1 className="text-lg font-bold text-white text-center flex-1">
-              {editingId ? 'Editar pregunta' : 'Añadir preguntas'}
+              {editingId ? 'Editar pregunta' : 'A├▒adir preguntas'}
             </h1>
             <div className="w-20"></div>{' '}
-            {/* Espaciador para centrar el título */}
+            {/* Espaciador para centrar el t├¡tulo */}
           </div>
           {/* MAIN FORM CONTAINER */}
           <div className="bg-white p-6 space-y-6 max-w-7xl mx-auto">
-            {/* 2. BARRA DE SELECCIÓN DE TIPO (Dropdown estilo acordeón) */}
+            {/* 2. BARRA DE SELECCI├ôN DE TIPO (Dropdown estilo acorde├│n) */}
             <div className="border border-gray-300 rounded-lg bg-white overflow-hidden shadow-sm">
               <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100 bg-white">
                 <div className="flex-1">
@@ -1313,7 +1312,7 @@ const Recursos = () => {
 
             {/* CONDITIONAL RENDER: INDIVIDUAL vs GROUP */}
             {newItem.tipoPreguntaId === 2 ? (
-              /* --- FORMULARIO DE PREGUNTA COMÚN (Grupal) --- */
+              /* --- FORMULARIO DE PREGUNTA COM├ÜN (Grupal) --- */
               <PreguntaComunForm
                 initialParent={
                   editingId ? items.find((i) => i.id === editingId) : undefined
@@ -1330,15 +1329,15 @@ const Recursos = () => {
                 onCancel={() => setViewMode('list')}
               />
             ) : (
-              /* --- FORMULARIO INDIVIDUAL (Estándar) --- */
+              /* --- FORMULARIO INDIVIDUAL (Est├índar) --- */
               <>
-                {/* 3. FILA: NÚMERO Y TIPO DE PREGUNTA */}
+                {/* 3. FILA: N├ÜMERO Y TIPO DE PREGUNTA */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
                   <div className="flex flex-col md:flex-row gap-6">
-                    {/* Número */}
+                    {/* N├║mero */}
                     <div className="w-full md:w-1/4">
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        Número de la pregunta{' '}
+                        N├║mero de la pregunta{' '}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -1357,10 +1356,10 @@ const Recursos = () => {
                       />
                     </div>
 
-                    {/* Clasificación */}
+                    {/* Clasificaci├│n */}
                     <div className="w-full md:w-3/4">
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        Clasificación de la pregunta
+                        Clasificaci├│n de la pregunta
                       </label>
                       <div className="relative">
                         <select
@@ -1374,7 +1373,7 @@ const Recursos = () => {
                           }
                         >
                           <option value={0}>
-                            Seleccionar Clasificación...
+                            Seleccionar Clasificaci├│n...
                           </option>
                           {clasificaciones.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -1388,14 +1387,14 @@ const Recursos = () => {
                   </div>
                 </div>
 
-                {/* 4. SECCIÓN ENUNCIADO (Estilo exacto a la imagen) */}
+                {/* 4. SECCI├ôN ENUNCIADO (Estilo exacto a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
                   <div className="flex justify-between items-center mb-4">
                     <label className="text-gray-700 font-medium text-sm">
                       Enunciado de la pregunta
                     </label>
 
-                    {/* Botones de Acción */}
+                    {/* Botones de Acci├│n */}
                     <div className="flex gap-3">
                       <button
                         onClick={() =>
@@ -1406,18 +1405,18 @@ const Recursos = () => {
                         }
                         className="flex items-center gap-2 text-[#4790FD] border border-[#4790FD] px-4 py-1.5 rounded hover:bg-blue-50 text-sm font-medium transition-colors"
                       >
-                        <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
+                        <DocumentTextIcon className="w-4 h-4" /> A├▒adir Texto
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors">
                         <span className="font-bold text-lg leading-none">
                           +
                         </span>{' '}
-                        Añadir Imagen
+                        A├▒adir Imagen
                       </button>
                     </div>
                   </div>
 
-                  {/* Lógica de Visualización: Editor o Placeholder */}
+                  {/* L├│gica de Visualizaci├│n: Editor o Placeholder */}
                   {!newItem.enunciado || newItem.enunciado === '<p><br></p>' ? (
                     /* PLACEHOLDER PUNTEADO (Como la imagen) */
                     <div className="border-2 border-dashed border-gray-200 rounded-lg h-32 flex flex-col items-center justify-center text-center bg-gray-50/50">
@@ -1425,7 +1424,7 @@ const Recursos = () => {
                         No hay elementos en enunciado de la pregunta
                       </p>
                       <p className="text-xs text-gray-400">
-                        Usa los botones de arriba para añadir texto o imágenes.
+                        Usa los botones de arriba para a├▒adir texto o im├ígenes.
                       </p>
                     </div>
                   ) : (
@@ -1439,13 +1438,13 @@ const Recursos = () => {
                         }
                         modules={modules}
                         className="bg-white"
-                        placeholder="Escribe el enunciado aquí..."
+                        placeholder="Escribe el enunciado aqu├¡..."
                       />
                     </div>
                   )}
                 </div>
 
-                {/* 5. SECCIÓN ALTERNATIVAS (Diseño Idéntico a la imagen) */}
+                {/* 5. SECCI├ôN ALTERNATIVAS (Dise├▒o Id├®ntico a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm space-y-6">
                   <h3 className="text-gray-700 font-medium text-sm">
                     Alternativas
@@ -1453,7 +1452,7 @@ const Recursos = () => {
 
                   <div className="space-y-6">
                     {alternatives.map((alt, index) => (
-                      /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha/Abajo en móvil) */
+                      /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha/Abajo en m├│vil) */
                       <div
                         key={alt.id}
                         className="flex flex-col md:flex-row gap-4 md:items-center"
@@ -1478,9 +1477,9 @@ const Recursos = () => {
                           />
                         </div>
 
-                        {/* DERECHA: BOTONES DE ACCIÓN (Centrados verticalmente en desktop, fila en móvil) */}
+                        {/* DERECHA: BOTONES DE ACCI├ôN (Centrados verticalmente en desktop, fila en m├│vil) */}
                         <div className="flex items-center gap-3 shrink-0 justify-end md:justify-start">
-                          {/* Botón MARCAR (Estilo Píldora Gris/Verde) */}
+                          {/* Bot├│n MARCAR (Estilo P├¡ldora Gris/Verde) */}
                           <button
                             type="button"
                             onClick={() => {
@@ -1500,12 +1499,12 @@ const Recursos = () => {
                             {alt.esCorrecta ? 'Correcta' : 'Marcar'}
                           </button>
 
-                          {/* Botón ELIMINAR (Icono Rojo) */}
+                          {/* Bot├│n ELIMINAR (Icono Rojo) */}
                           <button
                             type="button"
                             onClick={() => {
                               if (alternatives.length <= 2) {
-                                alert('Mínimo 2 alternativas requeridas.');
+                                alert('M├¡nimo 2 alternativas requeridas.');
                                 return;
                               }
                               setAlternatives(
@@ -1522,7 +1521,7 @@ const Recursos = () => {
                     ))}
                   </div>
 
-                  {/* Botón para añadir más alternativas (Opcional, estilo link simple) */}
+                  {/* Bot├│n para a├▒adir m├ís alternativas (Opcional, estilo link simple) */}
                   <button
                     onClick={() =>
                       setAlternatives([
@@ -1536,14 +1535,14 @@ const Recursos = () => {
                     }
                     className="text-[#4790FD] text-sm font-medium hover:underline flex items-center gap-1 mt-2"
                   >
-                    <PlusIcon className="w-4 h-4" /> Añadir otra alternativa
+                    <PlusIcon className="w-4 h-4" /> A├▒adir otra alternativa
                   </button>
                 </div>
 
                 {/* JUSTIFICATION SECTION */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
                   <h3 className="text-gray-700 font-medium text-sm mb-4">
-                    Justificación de la respuesta
+                    Justificaci├│n de la respuesta
                   </h3>
 
                   {/* Controls */}
@@ -1553,14 +1552,14 @@ const Recursos = () => {
                       onClick={addJustificationText}
                       className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
                     >
-                      <MenuAlt2Icon className="w-4 h-4" /> Añadir Texto
+                      <MenuAlt2Icon className="w-4 h-4" /> A├▒adir Texto
                     </button>
                     <button
                       type="button"
                       onClick={() => justificationFileInputRef.current?.click()}
                       className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
                     >
-                      <PhotographIcon className="w-4 h-4" /> Añadir Imagen
+                      <PhotographIcon className="w-4 h-4" /> A├▒adir Imagen
                     </button>
                     <input
                       type="file"
@@ -1575,9 +1574,9 @@ const Recursos = () => {
                   <div className="space-y-4 border border-dashed border-gray-300 rounded-lg p-4 min-h-[100px] flex flex-col justify-center">
                     {justificationBlocks.length === 0 && (
                       <div className="text-center text-gray-400 text-sm py-4">
-                        No hay elementos en justificación de la respuesta
+                        No hay elementos en justificaci├│n de la respuesta
                         <br />
-                        Usa los botones de arriba para añadir texto o imágenes.
+                        Usa los botones de arriba para a├▒adir texto o im├ígenes.
                       </div>
                     )}
 
@@ -1600,7 +1599,7 @@ const Recursos = () => {
                               onChange={(val) =>
                                 updateJustificationBlock(block.id, val)
                               }
-                              placeholder="Escribe la justificación..."
+                              placeholder="Escribe la justificaci├│n..."
                               borderColor="border-gray-300"
                             />
                           </div>
@@ -1608,7 +1607,7 @@ const Recursos = () => {
                           <div className="border rounded-lg p-4 bg-gray-50 flex justify-center items-center">
                             <img
                               src={block.content}
-                              alt="Justificación"
+                              alt="Justificaci├│n"
                               className="max-h-64 rounded shadow-sm"
                             />
                           </div>
@@ -1627,7 +1626,7 @@ const Recursos = () => {
                     Guardar Pregunta
                   </button>
                   <button className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors">
-                    Guardar y Añadir otra
+                    Guardar y A├▒adir otra
                   </button>
                 </div>
               </>
@@ -1640,7 +1639,7 @@ const Recursos = () => {
   // --- RENDER LIST VIEW ---
   return (
     <AdminLayout>
-      {/* SECCIÓN 1: HEADER (Only show if NOT showing results) */}
+      {/* SECCI├ôN 1: HEADER (Only show if NOT showing results) */}
       {!showResults && (
         <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm mb-4">
           <h1 className="text-xl font-bold text-white text-center">
@@ -1650,14 +1649,14 @@ const Recursos = () => {
       )}
 
       <div className="space-y-6">
-        {/* SECCIÓN 2: FILTROS (Show only if !showResults) */}
+        {/* SECCI├ôN 2: FILTROS (Show only if !showResults) */}
         {!showResults && (
         <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
           <div className="flex flex-col gap-4 mb-6">
             {/* 1. Tipo Examen */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                Tipo Exámen <span className="text-red-500">*</span>
+                Tipo Ex├ímen <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -1671,7 +1670,7 @@ const Recursos = () => {
                   setSelectedYear('');
                 }}
               >
-                <option value="">Seleccionar Tipo Exámen</option>
+                <option value="">Seleccionar Tipo Ex├ímen</option>
                 {groupedData.map((t: any) => (
                   <option key={t.tipoExamenId} value={t.tipoExamenId}>
                     {t.tipoExamenNombre}
@@ -1680,10 +1679,10 @@ const Recursos = () => {
               </select>
             </div>
 
-            {/* 2. Sección Fuente */}
+            {/* 2. Secci├│n Fuente */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                Sección Fuente <span className="text-red-500">*</span>
+                Secci├│n Fuente <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1699,7 +1698,7 @@ const Recursos = () => {
               >
                 <option value="">
                   {selectedTipo
-                    ? 'Selecciona una sección'
+                    ? 'Selecciona una secci├│n'
                     : 'Primero selecciona el tipo de examen'}
                 </option>
                 {availableFuentes.map((f: any) => (
@@ -1713,7 +1712,7 @@ const Recursos = () => {
             {/* 3. Modalidad */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
+                {isDirectivo ? 'Secci├│n Directiva' : 'Modalidad'}
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1740,84 +1739,17 @@ const Recursos = () => {
              !(availableNiveles.length === 1 && availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO') && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Tipo Exámen <span className="text-red-500">*</span>
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  value={selectedTipo}
-                  onChange={(e) => {
-                    setSelectedTipo(
-                      e.target.value ? Number(e.target.value) : ''
-                    );
-                    setSelectedFuente('');
-                    setSelectedModalidad('');
-                    setSelectedNivel('');
-                    setSelectedEspecialidad('');
-                    setSelectedYear('');
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="">Seleccionar Tipo Exámen</option>
-                  {groupedData.map((t) => (
-                    <option key={t.tipoExamenId} value={t.tipoExamenId}>
-                      {t.tipoExamenNombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 2. Sección Fuente */}
-              <div>
-                <label className="block text-sm font-semibold text-primary mb-2">
-                  Sección Fuente <span className="text-red-500">*</span>
+                  Nivel
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedFuente}
+                  value={selectedNivel}
                   onChange={(e) => {
-                    setSelectedFuente(
-                      e.target.value ? Number(e.target.value) : ''
-                    );
-                    setSelectedModalidad('');
-                    setSelectedNivel('');
-                    setSelectedEspecialidad('');
-                    setSelectedYear('');
-                    setCurrentPage(1);
-                  }}
-                  disabled={!selectedTipo}
-                >
-                  <option value="">
-                    {selectedTipo
-                      ? 'Selecciona una sección'
-                      : 'Primero selecciona el tipo de examen'}
-                  </option>
-                  {availableFuentes.map((f) => (
-                    <option key={f.fuenteId} value={f.fuenteId}>
-                      {f.fuenteNombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 3. Modalidad */}
-              <div>
-                <label className="block text-sm font-semibold text-primary mb-2">
-                  {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedModalidad}
-                  onChange={(e) => {
-                    setSelectedModalidad(
-                      e.target.value ? Number(e.target.value) : ''
-                    );
-                    setSelectedNivel('');
+                    setSelectedNivel(e.target.value ? Number(e.target.value) : '');
                     setSelectedEspecialidad('');
                     setSelectedYear('');
                   }}
-                  disabled={
-                    !selectedFuente || availableModalidades.length === 0
-                  }
+                  disabled={!selectedModalidad}
                 >
                   <option value="" disabled hidden>Seleccionar nivel</option>
                   {availableNiveles.map((n: any) => (
@@ -1827,6 +1759,7 @@ const Recursos = () => {
                   ))}
                 </select>
               </div>
+            )}
 
             {/* 5. Especialidad */}
             {availableEspecialidades.length > 0 &&
@@ -1855,18 +1788,18 @@ const Recursos = () => {
               </div>
             )}
 
-            {/* 6. Año */}
+            {/* 6. A├▒o */}
             {selectedModalidad && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Año
+                  A├▒o
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
-                  <option value="">Seleccionar Año</option>
+                  <option value="">Seleccionar A├▒o</option>
                   {availableYears.map((y: { year: string }) => (
                     <option key={y.year} value={y.year}>
                       {y.year}
@@ -1882,7 +1815,7 @@ const Recursos = () => {
              <div className="flex items-end gap-2 mt-4">
                  <input 
                      type="text"
-                     placeholder="Nuevo año (ej: 2025)"
+                     placeholder="Nuevo a├▒o (ej: 2025)"
                      className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                      value={newYearInput}
                      onChange={(e) => setNewYearInput(e.target.value)}
@@ -1891,7 +1824,7 @@ const Recursos = () => {
                      onClick={handleAddYear}
                      className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
                  >
-                     Agregar Año
+                     Agregar A├▒o
                  </button>
                  <button
                      onClick={handleDeleteYear}
@@ -1913,7 +1846,7 @@ const Recursos = () => {
               className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
-              Añadir preguntas
+              A├▒adir preguntas
             </button>
 
             <button
@@ -1921,7 +1854,7 @@ const Recursos = () => {
               className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
-              Añadir preguntas con IA
+              A├▒adir preguntas con IA
             </button>
 
             <button
@@ -1935,169 +1868,9 @@ const Recursos = () => {
               ) : (
                   <SparklesIcon className="w-4 h-4 mr-2" />
               )}
-
-<<<<<<< HEAD
-            <button
-               disabled={!selectedTipo || itemsLoading} 
-                onClick={() => {
-                  if (items.length === 0) {
-                    alert('No se encontraron preguntas con los filtros seleccionados.');
-                  } else {
-                    setShowResults(true);
-                  }
-                }}
-               className="bg-white text-primary border border-primary px-4 py-2 rounded-lg flex items-center hover:bg-blue-50 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-               {itemsLoading ? (
-                 <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2"></span>
-               ) : (
-                 <EyeIcon className="w-4 h-4 mr-2" />
-               )}
-               Visualizar Preguntas
+              Añadir respuestas con IA
             </button>
-=======
-              {/* 5. Especialidad */}
-              {availableEspecialidades.length > 0 &&
-                // Hide if it's the "null" single option
-                !(
-                  availableEspecialidades.length === 1 &&
-                  !availableEspecialidades[0]?.especialidadId
-                ) && (
-                  <div>
-                    <label className="block text-sm font-semibold text-primary mb-2">
-                      Especialidad
-                    </label>
-                    <select
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                      value={selectedEspecialidad}
-                      onChange={(e) => {
-                        setSelectedEspecialidad(
-                          e.target.value ? Number(e.target.value) : ''
-                        );
-                        setSelectedYear('');
-                      }}
-                      disabled={!selectedNivel}
-                    >
-                      <option value="" disabled hidden>
-                        Seleccionar especialidad
-                      </option>
-                      {availableEspecialidades.map((e, idx) => (
-                        <option
-                          key={
-                            e.especialidadId !== null
-                              ? e.especialidadId
-                              : `null-${idx}`
-                          }
-                          value={
-                            e.especialidadId !== null
-                              ? e.especialidadId.toString()
-                              : ''
-                          }
-                        >
-                          {e.especialidadNombre ?? 'General'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
->>>>>>> d794d1434b2c1ce44941ed94791048d9d944ca45
 
-              {/* 6. Año */}
-              {(selectedEspecialidad ||
-                (selectedNivel &&
-                  (availableEspecialidades.length === 0 ||
-                    (availableEspecialidades.length === 1 &&
-                      !availableEspecialidades[0]?.especialidadId))) ||
-                (selectedModalidad && availableNiveles.length === 0)) && (
-                <div>
-                  <label className="block text-sm font-semibold text-primary mb-2">
-                    Año
-                  </label>
-                  <select
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                  >
-                    <option value="">Seleccionar Año</option>
-                    {availableYears.map((y: { year: string }) => (
-                      <option key={y.year} value={y.year}>
-                        {y.year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-
-            {/* New Row for Year Management */}
-            {(selectedEspecialidad ||
-              (selectedNivel &&
-                (availableEspecialidades.length === 0 ||
-                  (availableEspecialidades.length === 1 &&
-                    !availableEspecialidades[0]?.especialidadId))) ||
-              (selectedModalidad && availableNiveles.length === 0)) && (
-              <div className="flex items-end gap-2 mt-4">
-                <input
-                  type="text"
-                  placeholder="Nuevo año (ej: 2025)"
-                  className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  value={newYearInput}
-                  onChange={(e) => setNewYearInput(e.target.value)}
-                />
-                <button
-                  onClick={handleAddYear}
-                  className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
-                >
-                  Agregar Año
-                </button>
-                <button
-                  onClick={handleDeleteYear}
-                  disabled={!selectedYear}
-                  className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-md whitespace-nowrap ${
-                    !selectedYear
-                      ? 'bg-red-300 text-white cursor-not-allowed'
-                      : 'bg-red-500 text-white hover:bg-red-600'
-                  }`}
-                >
-                  Eliminar
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-wrap justify-center gap-3 mt-4">
-              <button
-                onClick={handleAddNew}
-                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-              >
-                <PlusIcon className="w-4 h-4 mr-2" />
-                Añadir preguntas
-              </button>
-
-              <button
-                onClick={() => setIsAiModalOpen(true)}
-                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-              >
-                <SparklesIcon className="w-4 h-4 mr-2" />
-                Añadir preguntas con IA
-              </button>
-
-              <button
-                onClick={handleGenerateAnswersAI}
-                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-                disabled={isGeneratingAi || viewMode === 'list'}
-                title={
-                  viewMode === 'list'
-                    ? 'Entra a modo crear/editar primero'
-                    : 'Generar respuestas para el enunciado actual'
-                }
-              >
-                {isGeneratingAi ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                ) : (
-                  <SparklesIcon className="w-4 h-4 mr-2" />
-                )}
-                Añadir respuestas con IA
-              </button>
 
               <button
                 disabled={!selectedTipo || itemsLoading}
@@ -2119,16 +1892,16 @@ const Recursos = () => {
                     className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
                   >
                     <MenuAlt2Icon className="w-4 h-4 mr-2" />
-                    Gestión de Secciones
+                    Gesti├│n de Secciones
                   </a>
                   <button
                     className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
                     onClick={() =>
-                      alert('Módulo de gestión de exámenes en desarrollo')
+                      alert('M├│dulo de gesti├│n de ex├ímenes en desarrollo')
                     }
                   >
                     <DocumentTextIcon className="w-4 h-4 mr-2" />
-                    Gestión de Exámenes
+                    Gesti├│n de Ex├ímenes
                   </button>
                 </>
               )}
@@ -2138,7 +1911,7 @@ const Recursos = () => {
           </div>
         )}
 
-        {/* SECCIÓN 3: INSTRUCCIONES (Show only if !showResults) */}
+        {/* SECCI├ôN 3: INSTRUCCIONES (Show only if !showResults) */}
         {!showResults && (
           <div className="bg-white rounded-lg shadow-sm border border-primary p-6 relative">
             <h3 className="text-primary font-bold text-lg mb-4">
@@ -2150,13 +1923,13 @@ const Recursos = () => {
                 (Ascenso, Nombramiento o Directivos)
               </li>
               <li>
-                <strong>Paso 2:</strong> Selecciona la sección fuente
-                correspondiente (se filtra automáticamente según el tipo de
+                <strong>Paso 2:</strong> Selecciona la secci├│n fuente
+                correspondiente (se filtra autom├íticamente seg├║n el tipo de
                 examen)
               </li>
               <li>
                 <strong>Paso 3:</strong> Los campos adicionales solo aparecen si
-                seleccionas una sección fuente que contenga &quot;MINEDU&quot;
+                seleccionas una secci├│n fuente que contenga &quot;MINEDU&quot;
                 en su nombre
               </li>
               <li>
@@ -2166,10 +1939,10 @@ const Recursos = () => {
                     Gestiona secciones: puedes crear nuevas secciones o editar
                     existentes
                   </li>
-                  <li>Selecciona la sección específica</li>
-                  <li>Selecciona el examen de esa sección</li>
+                  <li>Selecciona la secci├│n espec├¡fica</li>
+                  <li>Selecciona el examen de esa secci├│n</li>
                   <li>
-                    Gestiona exámenes: puedes crear nuevos exámenes o editar
+                    Gestiona ex├ímenes: puedes crear nuevos ex├ímenes o editar
                     existentes
                   </li>
                 </ul>
@@ -2180,7 +1953,7 @@ const Recursos = () => {
                   <li>Selecciona la modalidad educativa correspondiente</li>
                   <li>Para EBR, debes seleccionar el nivel correspondiente</li>
                   <li>Solo en Secundaria de EBR puedes elegir especialidad</li>
-                  <li>Selecciona el año correspondiente</li>
+                  <li>Selecciona el a├▒o correspondiente</li>
                 </ul>
               </li>
               <li className="text-gray-500 italic mt-2 list-none">
@@ -2190,7 +1963,7 @@ const Recursos = () => {
           </div>
         )}
 
-        {/* SECCIÓN 4: LISTADO DE PREGUNTAS (CARD VIEW) - Show only if showResults */}
+        {/* SECCI├ôN 4: LISTADO DE PREGUNTAS (CARD VIEW) - Show only if showResults */}
         {showResults && (
           <div>
             {/* RESULT HEADER & CRITERIA */}
@@ -2204,7 +1977,7 @@ const Recursos = () => {
             <div className="bg-white border border-gray-200 p-4 rounded-b-lg mb-6 shadow-sm">
                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                      <div className="flex flex-wrap gap-2 items-center">
-                         <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
+                         <span className="font-bold text-gray-700 mr-2">Criterios de selecci├│n</span>
                          <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
                              {filteredItems.length} {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
                          </span>
@@ -2233,231 +2006,45 @@ const Recursos = () => {
                         className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
                      >
                         <PlusIcon className="w-5 h-5" />
-                        Añadir preguntas
+                        A├▒adir preguntas
                      </button>
                  </div>
             </div>
-        {itemsLoading ? (
-          <div className="bg-white rounded-lg p-12 text-center text-primary border border-gray-200 flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
-            <p className="font-medium">Cargando preguntas...</p>
-          </div>
-        ) : currentItems.length === 0 ? (
-          <div className="bg-white rounded-lg p-12 text-center text-gray-500 border border-gray-200">
-            No se encontraron preguntas.
-          </div>
-        ) : (
-          <div className="space-y-6 mt-6">
-            {currentItems.map((item) => {
-              const isParent = item.tipoPreguntaId === 2;
-              const isLoadingSubs = loadingSubIds.has(item.id);
-              const subCount = item.subsWithIdx ? item.subsWithIdx.length : (subCountsMap[item.id] ?? 0);
 
-              return (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-hidden"
-              >
-                {/* --- HEADER --- */}
-                <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
-                  <div className="flex items-center gap-3">
-                    {item.displayIndex && (
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                        {item.displayIndex}
-                        </span>
-                    )}
-                    <div className="flex flex-col">
-                        <h3 className="font-bold text-lg text-gray-900 leading-tight">
-                        {isParent ? 'Comprensión Lectora' : 'Pregunta Individual'}
-                        </h3>
-                        <span className="text-xs text-gray-500 font-medium mt-1">
-                            ID: {item.id} {isParent ? `• ${subCount} sub-preguntas` : '• Simple'}
-                        </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                     <span className={`text-xs px-2 py-1 rounded font-bold border ${isParent 
-                        ? 'bg-indigo-100 text-indigo-700 border-indigo-200' 
-                        : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
-                        {isParent ? 'AGRUPADA' : 'INDIVIDUAL'}
-                     </span>
-                    
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
-                    >
-                      <PencilIcon className="w-3 h-3" /> Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      disabled={deletingIds.has(item.id)}
-                      className="text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
-                    >
-                      {deletingIds.has(item.id) ? (
-                          <span className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
-                      ) : (
-                          <TrashIcon className="w-3 h-3" />
-                      )}
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setNewItem({
-                      ...newItem,
-                      examenId: Number(selectedFuente) || 0, // Pre-fill if needed
-                    });
-                    setViewMode('create');
-                  }}
-                  className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
-                >
-                  <PlusIcon className="w-5 h-5" />
-                  Añadir preguntas
-                </button>
-              </div>
-            </div>
-            {itemsLoading ? (
-              <div className="bg-white rounded-lg p-12 text-center text-primary border border-gray-200 flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
-                <p className="font-medium">Cargando preguntas...</p>
-              </div>
-            ) : currentItems.length === 0 ? (
-              <div className="bg-white rounded-lg p-12 text-center text-gray-500 border border-gray-200">
-                No se encontraron preguntas.
-              </div>
-            ) : (
-              <div className="space-y-6 mt-6">
+            <div className="space-y-6">
                 {currentItems.map((item, index) => {
-                  const isParent = item.tipoPreguntaId === 2;
-                  const isLoadingSubs = loadingSubIds.has(item.id);
-                  const subs =
-                    item.subPreguntas || subQuestionsMap[item.id] || [];
-                  const subCount = item.subPreguntas
-                    ? item.subPreguntas.length
-                    : subCountsMap[item.id] ?? 0;
+                     const isParent = item.tipoPreguntaId === 2;
+                     const subCount = subCountsMap[item.id] || 0;
+                     const isLoadingSubs = loadingSubIds.has(item.id);
+                     const subs = subQuestionsMap[item.id] || [];
 
-                  return (
-                    <div
-                      key={item.id}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-hidden"
-                    >
-                      {/* --- HEADER --- */}
-                      <div className="bg-gray-50 border-b border-gray-100 p-4 flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                            {indexOfFirstItem + index + 1}
-                          </span>
-                          <div className="flex flex-col">
-                            <h3 className="font-bold text-lg text-gray-900 leading-tight">
-                              {isParent
-                                ? 'Comprensión Lectora'
-                                : 'Pregunta Individual'}
-                            </h3>
-                            <span className="text-xs text-gray-500 font-medium mt-1">
-                              ID: {item.id}{' '}
-                              {isParent
-                                ? `• ${subCount} sub-preguntas`
-                                : '• Simple'}
+                     return (
+                      <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
+                        <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
+                          
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 text-primary flex items-center justify-center font-bold text-lg shadow-inner">
+                              {item.displayIndex || '-'}
+                            </div>
+                            
+                            {item.clasificacionNombre && (
+                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                                    item.clasificacionNombre === 'CL' ? 'bg-orange-100 text-orange-700' :
+                                    item.clasificacionNombre === 'RL' ? 'bg-purple-100 text-purple-700' :
+                                    item.clasificacionNombre === 'CCP' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-200 text-gray-700'
+                                }`}>
+                                    {getClasificacionFullName(item.clasificacionNombre)}
+                                </span>
+                            )}
+                            
+                            <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border ${isParent ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-sky-50 border-sky-200 text-sky-700'}`}>
+                               {isParent ? 'Pregunta Grupal' : 'Pregunta Individual'}
                             </span>
                           </div>
-                        </div>
 
-                        <div className="space-y-4 pl-4 border-l-2 border-indigo-200">
-                          {isLoadingSubs ? (
-                            <div className="flex items-center justify-center p-8 text-indigo-500">
-                              <svg className="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                              </svg>
-                              <span className="font-medium">Cargando sub-preguntas...</span>
-                            </div>
-                          ) : item.subsWithIdx.length === 0 ? (
-                            <div className="text-center p-6 text-gray-400 italic">
-                               No se encontraron sub-preguntas.
-                            </div>
-                          ) : (
-                            item.subsWithIdx.map((sub, sIdx) => (
-                              <div key={`${sub.examenId}-${sub.preguntaId}-${sub.numero || sIdx}`} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                                  {/* Header mini */}
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm shadow-sm">
-                                      {sub.displayIndex}
-                                    </span>
-                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sub-Pregunta {sub.displayIndex}</span>
-                                    
-                                    <div className="ml-auto flex gap-2">
-                                        <button 
-                                          onClick={() => handleDeleteSub(sub.examenId, sub.preguntaId, sub.numero)}
-                                          disabled={deletingIds.has(`${sub.examenId}-${sub.preguntaId}-${sub.numero}` as any)}
-                                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-                                        >
-                                            <TrashIcon className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                  </div>
-
-<<<<<<< HEAD
-                                  {/* Enunciado */}
-                                  <div className="mb-4 text-sm text-gray-800 prose max-w-none">
-                                    {sub.enunciados && sub.enunciados.length > 0 ? (
-                                        sub.enunciados.map((e: any) => <HtmlMathRenderer key={e.id} html={e.contenido} />)
-                                    ) : (
-                                        <HtmlMathRenderer html={sub.enunciado || ''} />
-                                    )}
-                                  </div>
-
-                                  {/* Imagen */}
-                                  {sub.imagen && (
-                                    <div className="mb-3">
-                                      <img src={sub.imagen} alt="Pregunta" className="max-w-full h-auto rounded border border-gray-200 max-h-48" />
-                                    </div>
-                                  )}
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    {(sub.alternativas && sub.alternativas.length > 0) ? (
-                                        sub.alternativas.map((alt: any) => {
-                                            const isCorrect = String(alt.id) === String(sub.respuestaCorrecta);
-                                            return (
-                                                <div key={alt.id} className={`p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                                    <div className="text-sm">
-                                                        <HtmlMathRenderer html={alt.contenido || ''} />
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        ['A', 'B', 'C', 'D'].map((opt, i) => {
-                                            const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
-                                            const respString = sub.respuestaCorrecta?.toString();
-                                            const isCorrect = sub.respuestaCorrecta === opt || respString === (i + 1).toString();
-                                            
-                                            if (!altText && !isCorrect) return null;
-
-                                            return (
-                                                <div key={opt} className={`p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-600'}`}>{opt})</span>
-                                                        <div className="text-sm"><HtmlMathRenderer html={altText || ''} /></div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                  </div>
-
-                                  {/* Sustento */}
-                                  <div className="text-xs text-gray-500 border-t pt-3 border-gray-100">
-                                    <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">Sustento:</span>
-                                    <div className="italic">
-                                      {sub.sustento ? <HtmlMathRenderer html={sub.sustento} /> : 'Sin sustento disponible'}
-                                    </div>
-                                  </div>
-                              </div>
-                            ))
-                          )}
-=======
+                          <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
@@ -2476,43 +2063,9 @@ const Recursos = () => {
                             )}
                             Eliminar
                           </button>
->>>>>>> d794d1434b2c1ce44941ed94791048d9d944ca45
                         </div>
                       </div>
 
-<<<<<<< HEAD
-                    {/* --- CASO 2: PREGUNTA INDIVIDUAL --- */}
-                    {!isParent && (
-                        <div>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                {item.alternativas && item.alternativas.length > 0 ? (
-                                    item.alternativas.map((alt: any) => {
-                                        const isCorrect = String(alt.id) === String(item.respuesta);
-                                        return (
-                                            <div key={alt.id} className={`p-5 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                                <HtmlMathRenderer html={alt.contenido || ''} />
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    ['A', 'B', 'C', 'D'].map((opt, i) => {
-                                        const altText = opt === 'A' ? item.alternativaA : opt === 'B' ? item.alternativaB : opt === 'C' ? item.alternativaC : item.alternativaD;
-                                        const respString = item.respuesta?.toString();
-                                        const isCorrect = item.respuesta === opt || respString === (i + 1).toString();
-                                        
-                                        if (!altText && !isCorrect) return null;
-
-                                        return (
-                                            <div key={opt} className={`p-5 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                                <div className="flex flex-col gap-2">
-                                                    <span className={`font-bold text-lg ${isCorrect ? 'text-green-700' : 'text-gray-600'}`}>{opt})</span>
-                                                    <HtmlMathRenderer html={altText || ''} className="text-gray-800" />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
-=======
                       {/* --- CONTENIDO PRINCIPAL --- */}
                       <div className="p-6">
                         {/* Enunciado */}
@@ -2639,7 +2192,7 @@ const Recursos = () => {
                                       </div>
                                     )}
 
-                                    {/* Alternativas - mismo grid que individual pero un poco más chico */}
+                                    {/* Alternativas - mismo grid que individual pero un poco m├ís chico */}
                                     <div className="grid grid-cols-1 gap-2 mb-4">
                                       {['A', 'B', 'C', 'D'].map((opt, i) => {
                                         const altText =
@@ -2765,7 +2318,6 @@ const Recursos = () => {
                                   </div>
                                 );
                               })}
->>>>>>> d794d1434b2c1ce44941ed94791048d9d944ca45
                             </div>
 
                             <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
@@ -2788,6 +2340,7 @@ const Recursos = () => {
                 })}
 
           </div>
+          </div>
         )}
       </div>
 
@@ -2805,7 +2358,7 @@ const Recursos = () => {
             <textarea
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
               rows={4}
-              placeholder="Ej: Historia del Perú - Guerra con Chile, o Principios de la educación inclusiva..."
+              placeholder="Ej: Historia del Per├║ - Guerra con Chile, o Principios de la educaci├│n inclusiva..."
               value={aiTopic}
               onChange={(e) => setAiTopic(e.target.value)}
             />

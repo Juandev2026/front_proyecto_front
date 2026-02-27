@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
+import { EnunciadoItem } from './preguntaService';
 
 // DTO para crear una Sub-Pregunta (Hijo)
 export interface CreateSubPreguntaDTO {
@@ -19,6 +20,7 @@ export interface CreateSubPreguntaDTO {
 
 export interface SubPreguntaResponse extends CreateSubPreguntaDTO {
   // El backend puede retornar campos adicionales
+  enunciados?: EnunciadoItem[];
 }
 
 const API_URL = `${API_BASE_URL}/SubPreguntas`;
