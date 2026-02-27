@@ -69,13 +69,13 @@ const Recursos = () => {
   }, []);
 
   const groupedData = useMemo(() => {
-    // 1. Iniciamos con una copia del cat├ílogo general
+    // 1. Iniciamos con una copia del catálogo general
     let combined = JSON.parse(JSON.stringify(rawGroupedData)) as ExamenGrouped[];
 
-    // 2. Normalizamos la lista de ex├ímenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
+    // 2. Normalizamos la lista de exámenes del usuario (puede venir como array o como objeto con propiedad 'examenes')
     const userExamsList = Array.isArray(loginExamenes) ? loginExamenes : ((loginExamenes as any)?.examenes || []);
 
-    // 3. Fusionamos con la informaci├│n de userExamsList para asegurar que no falte nada (como "Directivos")
+    // 3. Fusionamos con la información de userExamsList para asegurar que no falte nada (como "Directivos")
     if (userExamsList && userExamsList.length > 0) {
       userExamsList.forEach((le: any) => {
         const tId = Number(le.tipoExamenId);
@@ -137,7 +137,7 @@ const Recursos = () => {
       });
     }
 
-    // 4. Si el usuario es ADMIN, mostramos TODO el cat├ílogo propocionado (ADMIN_CATALOG)
+    // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado (ADMIN_CATALOG)
     if (userRole === 'Admin') return ADMIN_CATALOG;
 
     // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
@@ -198,7 +198,7 @@ const Recursos = () => {
   );
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [newYearInput, setNewYearInput] = useState<string>(''); // State for input field
-  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // N├║mero de la pregunta
+  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // Número de la pregunta
 
   // Form State
   const [newItem, setNewItem] = useState({
@@ -312,13 +312,13 @@ const Recursos = () => {
   const getClasificacionFullName = (nombre: string) => {
     switch (nombre) {
       case 'CCP':
-        return 'CONOCIMIENTO CURRICULAR Y PEDAG├ôGICO';
+        return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
       case 'CG':
         return 'CONOCIMIENTOS GENERALES';
       case 'CL':
-        return 'COMPRENSI├ôN LECTORA';
+        return 'COMPRENSIÓN LECTORA';
       case 'RL':
-        return 'RAZONAMIENTO L├ôGICO';
+        return 'RAZONAMIENTO LÓGICO';
       default:
         return nombre;
     }
@@ -339,7 +339,7 @@ const Recursos = () => {
     if (parentItems.length === 0) return;
 
     parentItems.forEach(async (parent) => {
-      // Si el backend ya mand├│ las subPreguntas en el payload (nuevo formato):
+      // Si el backend ya mandó las subPreguntas en el payload (nuevo formato):
       if (parent.subPreguntas && parent.subPreguntas.length > 0) {
         setSubCountsMap((prev) => ({
           ...prev,
@@ -427,7 +427,7 @@ const Recursos = () => {
   const availableYears = useMemo(() => {
     if (!selectedTipo || !selectedFuente) return [];
 
-    // Prioridad 1: Si es Admin, usamos la jerarqu├¡a de ADMIN_CATALOG
+    // Prioridad 1: Si es Admin, usamos la jerarquía de ADMIN_CATALOG
     if (userRole === 'Admin') {
         const tipo = ADMIN_CATALOG.find(t => t.tipoExamenId === Number(selectedTipo));
         const fuente = tipo?.fuentes.find(f => f.fuenteId === Number(selectedFuente));
@@ -450,7 +450,7 @@ const Recursos = () => {
         }
     }
 
-    // Prioridad 2: L├│gica actual para usuarios no-admin o fallback
+    // Prioridad 2: Lógica actual para usuarios no-admin o fallback
     const effEspecialidadId = selectedEspecialidad ? Number(selectedEspecialidad) : 0;
     const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
     const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
@@ -508,14 +508,14 @@ const Recursos = () => {
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
-    if (!window.confirm('┬┐Est├ís seguro de eliminar esta pregunta?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta pregunta?')) return;
 
     setDeletingIds((prev) => new Set(prev).add(id));
     try {
       await preguntaService.delete(id);
       // Optimistic update for UI feel, followed by refresh
       setItems((prev) => prev.filter((item) => item.id !== id));
-      alert('Pregunta eliminada con ├®xito');
+      alert('Pregunta eliminada con éxito');
       fetchData();
     } catch (err) {
       alert('Error eliminando la pregunta');
@@ -533,7 +533,7 @@ const Recursos = () => {
     parentId: number,
     numero: number
   ) => {
-    if (!window.confirm('┬┐Est├ís seguro de eliminar esta sub-pregunta?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta sub-pregunta?')) return;
 
     const uniqueKey = `${examenId}-${parentId}-${numero}`;
     // @ts-ignore - use numero as temporary ID for the deleting set
@@ -551,7 +551,7 @@ const Recursos = () => {
         ...prev,
         [parentId]: Math.max(0, (prev[parentId] || 0) - 1),
       }));
-      alert('Sub-pregunta eliminada con ├®xito');
+      alert('Sub-pregunta eliminada con éxito');
     } catch (err) {
       alert('Error eliminando la sub-pregunta');
     } finally {
@@ -740,7 +740,7 @@ const Recursos = () => {
       setIsAiModalOpen(false);
       setAiTopic('');
       setViewMode('create');
-      alert('Pregunta generada con ├®xito. Revisa y guarda.');
+      alert('Pregunta generada con éxito. Revisa y guarda.');
     } catch (error) {
       alert(
         'Error generando pregunta con IA. Verifica tu API Key o intenta de nuevo.'
@@ -794,7 +794,7 @@ const Recursos = () => {
           esCorrecta: generated.respuesta === 'D',
         },
       ]);
-      alert('Respuestas generadas con ├®xito.');
+      alert('Respuestas generadas con éxito.');
     } catch (error) {
       alert('Error generando respuestas con IA.');
       console.error(error);
@@ -812,14 +812,14 @@ const Recursos = () => {
       !selectedEspecialidad
     ) {
       alert(
-        'Por favor selecciona todos los filtros (Tipo, Fuente, Modalidad, Nivel, Especialidad) antes de a├▒adir un a├▒o.'
+        'Por favor selecciona todos los filtros (Tipo, Fuente, Modalidad, Nivel, Especialidad) antes de añadir un año.'
       );
       return;
     }
 
     const year = newYearInput.trim();
     if (!year) {
-      alert('Por favor ingresa un a├▒o v├ílido.');
+      alert('Por favor ingresa un año válido.');
       return;
     }
 
@@ -835,12 +835,12 @@ const Recursos = () => {
         especialidadId: Number(selectedEspecialidad),
         nombre: `${year} - ${selectedEspecialidad}`, // Optional name
       });
-      alert('A├▒o a├▒adido con ├®xito.');
+      alert('Año añadido con éxito.');
       setNewYearInput(''); // Clear input
       await fetchData(); // Reload filters
       setSelectedYear(year);
     } catch (e: any) {
-      alert(`Error creando el a├▒o/examen: ${e.message}`);
+      alert(`Error creando el año/examen: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -851,7 +851,7 @@ const Recursos = () => {
     // eslint-disable-next-line no-alert
     if (
       !window.confirm(
-        `┬┐Seguro que deseas eliminar el a├▒o ${selectedYear} y toda su configuraci├│n? Esto no se puede deshacer.`
+        `¿Seguro que deseas eliminar el año ${selectedYear} y toda su configuración? Esto no se puede deshacer.`
       )
     )
       return;
@@ -891,13 +891,13 @@ const Recursos = () => {
 
       if (!targetExam) {
         alert(
-          'No se encontr├│ el examen correspondiente para eliminar. (Aseg├║rate de que el endpoint getAll est├® soportado)'
+          'No se encontró el examen correspondiente para eliminar. (Asegúrate de que el endpoint getAll esté soportado)'
         );
         return;
       }
 
       await examenService.delete(targetExam.id);
-      alert('A├▒o eliminado correctamente.');
+      alert('Año eliminado correctamente.');
       setSelectedYear('');
       await fetchData();
     } catch (e: any) {
@@ -1063,7 +1063,7 @@ const Recursos = () => {
     } else if (availableEspecialidades.length === 0) {
       effectiveEspecialidadId = 0; // no specialties at all
     } else {
-      // Multiple specialties but none chosen ÔÇô cannot resolve
+      // Multiple specialties but none chosen – cannot resolve
       return null;
     }
 
@@ -1116,14 +1116,14 @@ const Recursos = () => {
       return;
     }
 
-    // Validar N├║mero de Pregunta
+    // Validar Número de Pregunta
     const numPreguntaParsed = parseInt(numeroPregunta, 10);
     if (
       !numeroPregunta.trim() ||
       isNaN(numPreguntaParsed) ||
       numPreguntaParsed <= 0
     ) {
-      alert('El n├║mero de la pregunta es obligatorio y debe ser mayor a 0');
+      alert('El número de la pregunta es obligatorio y debe ser mayor a 0');
       return;
     }
 
@@ -1139,7 +1139,7 @@ const Recursos = () => {
       const resolvedId = await resolveCurrentExamenId();
       if (!resolvedId) {
         alert(
-          'No se pudo determinar el examen al cual asociar esta pregunta. Aseg├║rate de tener todos los filtros (A├▒o incluido) seleccionados.'
+          'No se pudo determinar el examen al cual asociar esta pregunta. Asegúrate de tener todos los filtros (Año incluido) seleccionados.'
         );
         return;
       }
@@ -1206,20 +1206,20 @@ const Recursos = () => {
 
         // Optimistic Update
         setItems((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
-        alert('Pregunta actualizada con ├®xito');
+        alert('Pregunta actualizada con éxito');
       } else {
-        // POST /api/Preguntas ÔÇö examenId va dentro del body
+        // POST /api/Preguntas — examenId va dentro del body
         const created = await preguntaService.create(
           payload as Omit<Pregunta, 'id'>
         );
         if (created) {
           setItems((prev) => [created, ...prev]);
-          alert('Pregunta creada con ├®xito');
+          alert('Pregunta creada con éxito');
         }
       }
 
       // DO NOT reset filters, keep context
-      // setViewMode('list'); // Maybe stay in create? User might want "Guardar y A├▒adir otra" handling
+      // setViewMode('list'); // Maybe stay in create? User might want "Guardar y Añadir otra" handling
       // resetForm(); // We handle this based on which button was clicked effectively
       // But for this generic handler:
       setViewMode('list');
@@ -1254,9 +1254,9 @@ const Recursos = () => {
       </AdminLayout>
     );
 
-  // ... (Tu l├│gica anterior se mantiene igual, solo cambia el render del formulario)
+  // ... (Tu lógica anterior se mantiene igual, solo cambia el render del formulario)
 
-  // --- RENDER FORM VIEW (DISE├æO MEJORADO) ---
+  // --- RENDER FORM VIEW (DISEÑO MEJORADO) ---
   if (viewMode === 'create' || viewMode === 'edit') {
     return (
       <AdminLayout>
@@ -1275,14 +1275,14 @@ const Recursos = () => {
               </button>
             </div>
             <h1 className="text-lg font-bold text-white text-center flex-1">
-              {editingId ? 'Editar pregunta' : 'A├▒adir preguntas'}
+              {editingId ? 'Editar pregunta' : 'Añadir preguntas'}
             </h1>
             <div className="w-20"></div>{' '}
-            {/* Espaciador para centrar el t├¡tulo */}
+            {/* Espaciador para centrar el título */}
           </div>
           {/* MAIN FORM CONTAINER */}
           <div className="bg-white p-6 space-y-6 max-w-7xl mx-auto">
-            {/* 2. BARRA DE SELECCI├ôN DE TIPO (Dropdown estilo acorde├│n) */}
+            {/* 2. BARRA DE SELECCIÓN DE TIPO (Dropdown estilo acordeón) */}
             <div className="border border-gray-300 rounded-lg bg-white overflow-hidden shadow-sm">
               <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100 bg-white">
                 <div className="flex-1">
@@ -1312,7 +1312,7 @@ const Recursos = () => {
 
             {/* CONDITIONAL RENDER: INDIVIDUAL vs GROUP */}
             {newItem.tipoPreguntaId === 2 ? (
-              /* --- FORMULARIO DE PREGUNTA COM├ÜN (Grupal) --- */
+              /* --- FORMULARIO DE PREGUNTA COMÚN (Grupal) --- */
               <PreguntaComunForm
                 initialParent={
                   editingId ? items.find((i) => i.id === editingId) : undefined
@@ -1329,15 +1329,15 @@ const Recursos = () => {
                 onCancel={() => setViewMode('list')}
               />
             ) : (
-              /* --- FORMULARIO INDIVIDUAL (Est├índar) --- */
+              /* --- FORMULARIO INDIVIDUAL (Estándar) --- */
               <>
-                {/* 3. FILA: N├ÜMERO Y TIPO DE PREGUNTA */}
+                {/* 3. FILA: NÚMERO Y TIPO DE PREGUNTA */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
                   <div className="flex flex-col md:flex-row gap-6">
-                    {/* N├║mero */}
+                    {/* Número */}
                     <div className="w-full md:w-1/4">
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        N├║mero de la pregunta{' '}
+                        Número de la pregunta{' '}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -1356,10 +1356,10 @@ const Recursos = () => {
                       />
                     </div>
 
-                    {/* Clasificaci├│n */}
+                    {/* Clasificación */}
                     <div className="w-full md:w-3/4">
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        Clasificaci├│n de la pregunta
+                        Clasificación de la pregunta
                       </label>
                       <div className="relative">
                         <select
@@ -1373,7 +1373,7 @@ const Recursos = () => {
                           }
                         >
                           <option value={0}>
-                            Seleccionar Clasificaci├│n...
+                            Seleccionar Clasificación...
                           </option>
                           {clasificaciones.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -1387,14 +1387,14 @@ const Recursos = () => {
                   </div>
                 </div>
 
-                {/* 4. SECCI├ôN ENUNCIADO (Estilo exacto a la imagen) */}
+                {/* 4. SECCIÓN ENUNCIADO (Estilo exacto a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
                   <div className="flex justify-between items-center mb-4">
                     <label className="text-gray-700 font-medium text-sm">
                       Enunciado de la pregunta
                     </label>
 
-                    {/* Botones de Acci├│n */}
+                    {/* Botones de Acción */}
                     <div className="flex gap-3">
                       <button
                         onClick={() =>
@@ -1405,18 +1405,18 @@ const Recursos = () => {
                         }
                         className="flex items-center gap-2 text-[#4790FD] border border-[#4790FD] px-4 py-1.5 rounded hover:bg-blue-50 text-sm font-medium transition-colors"
                       >
-                        <DocumentTextIcon className="w-4 h-4" /> A├▒adir Texto
+                        <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors">
                         <span className="font-bold text-lg leading-none">
                           +
                         </span>{' '}
-                        A├▒adir Imagen
+                        Añadir Imagen
                       </button>
                     </div>
                   </div>
 
-                  {/* L├│gica de Visualizaci├│n: Editor o Placeholder */}
+                  {/* Lógica de Visualización: Editor o Placeholder */}
                   {!newItem.enunciado || newItem.enunciado === '<p><br></p>' ? (
                     /* PLACEHOLDER PUNTEADO (Como la imagen) */
                     <div className="border-2 border-dashed border-gray-200 rounded-lg h-32 flex flex-col items-center justify-center text-center bg-gray-50/50">
@@ -1424,7 +1424,7 @@ const Recursos = () => {
                         No hay elementos en enunciado de la pregunta
                       </p>
                       <p className="text-xs text-gray-400">
-                        Usa los botones de arriba para a├▒adir texto o im├ígenes.
+                        Usa los botones de arriba para añadir texto o imágenes.
                       </p>
                     </div>
                   ) : (
@@ -1438,13 +1438,13 @@ const Recursos = () => {
                         }
                         modules={modules}
                         className="bg-white"
-                        placeholder="Escribe el enunciado aqu├¡..."
+                        placeholder="Escribe el enunciado aquí..."
                       />
                     </div>
                   )}
                 </div>
 
-                {/* 5. SECCI├ôN ALTERNATIVAS (Dise├▒o Id├®ntico a la imagen) */}
+                {/* 5. SECCIÓN ALTERNATIVAS (Diseño Idéntico a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm space-y-6">
                   <h3 className="text-gray-700 font-medium text-sm">
                     Alternativas
@@ -1452,7 +1452,7 @@ const Recursos = () => {
 
                   <div className="space-y-6">
                     {alternatives.map((alt, index) => (
-                      /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha/Abajo en m├│vil) */
+                      /* CONTENEDOR FLEX: Editor (Expandido) + Botones (Derecha/Abajo en móvil) */
                       <div
                         key={alt.id}
                         className="flex flex-col md:flex-row gap-4 md:items-center"
@@ -1477,9 +1477,9 @@ const Recursos = () => {
                           />
                         </div>
 
-                        {/* DERECHA: BOTONES DE ACCI├ôN (Centrados verticalmente en desktop, fila en m├│vil) */}
+                        {/* DERECHA: BOTONES DE ACCIÓN (Centrados verticalmente en desktop, fila en móvil) */}
                         <div className="flex items-center gap-3 shrink-0 justify-end md:justify-start">
-                          {/* Bot├│n MARCAR (Estilo P├¡ldora Gris/Verde) */}
+                          {/* Botón MARCAR (Estilo Píldora Gris/Verde) */}
                           <button
                             type="button"
                             onClick={() => {
@@ -1499,12 +1499,12 @@ const Recursos = () => {
                             {alt.esCorrecta ? 'Correcta' : 'Marcar'}
                           </button>
 
-                          {/* Bot├│n ELIMINAR (Icono Rojo) */}
+                          {/* Botón ELIMINAR (Icono Rojo) */}
                           <button
                             type="button"
                             onClick={() => {
                               if (alternatives.length <= 2) {
-                                alert('M├¡nimo 2 alternativas requeridas.');
+                                alert('Mínimo 2 alternativas requeridas.');
                                 return;
                               }
                               setAlternatives(
@@ -1521,7 +1521,7 @@ const Recursos = () => {
                     ))}
                   </div>
 
-                  {/* Bot├│n para a├▒adir m├ís alternativas (Opcional, estilo link simple) */}
+                  {/* Botón para añadir más alternativas (Opcional, estilo link simple) */}
                   <button
                     onClick={() =>
                       setAlternatives([
@@ -1535,14 +1535,14 @@ const Recursos = () => {
                     }
                     className="text-[#4790FD] text-sm font-medium hover:underline flex items-center gap-1 mt-2"
                   >
-                    <PlusIcon className="w-4 h-4" /> A├▒adir otra alternativa
+                    <PlusIcon className="w-4 h-4" /> Añadir otra alternativa
                   </button>
                 </div>
 
                 {/* JUSTIFICATION SECTION */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
                   <h3 className="text-gray-700 font-medium text-sm mb-4">
-                    Justificaci├│n de la respuesta
+                    Justificación de la respuesta
                   </h3>
 
                   {/* Controls */}
@@ -1552,14 +1552,14 @@ const Recursos = () => {
                       onClick={addJustificationText}
                       className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
                     >
-                      <MenuAlt2Icon className="w-4 h-4" /> A├▒adir Texto
+                      <MenuAlt2Icon className="w-4 h-4" /> Añadir Texto
                     </button>
                     <button
                       type="button"
                       onClick={() => justificationFileInputRef.current?.click()}
                       className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
                     >
-                      <PhotographIcon className="w-4 h-4" /> A├▒adir Imagen
+                      <PhotographIcon className="w-4 h-4" /> Añadir Imagen
                     </button>
                     <input
                       type="file"
@@ -1574,9 +1574,9 @@ const Recursos = () => {
                   <div className="space-y-4 border border-dashed border-gray-300 rounded-lg p-4 min-h-[100px] flex flex-col justify-center">
                     {justificationBlocks.length === 0 && (
                       <div className="text-center text-gray-400 text-sm py-4">
-                        No hay elementos en justificaci├│n de la respuesta
+                        No hay elementos en justificación de la respuesta
                         <br />
-                        Usa los botones de arriba para a├▒adir texto o im├ígenes.
+                        Usa los botones de arriba para añadir texto o imágenes.
                       </div>
                     )}
 
@@ -1599,7 +1599,7 @@ const Recursos = () => {
                               onChange={(val) =>
                                 updateJustificationBlock(block.id, val)
                               }
-                              placeholder="Escribe la justificaci├│n..."
+                              placeholder="Escribe la justificación..."
                               borderColor="border-gray-300"
                             />
                           </div>
@@ -1607,7 +1607,7 @@ const Recursos = () => {
                           <div className="border rounded-lg p-4 bg-gray-50 flex justify-center items-center">
                             <img
                               src={block.content}
-                              alt="Justificaci├│n"
+                              alt="Justificación"
                               className="max-h-64 rounded shadow-sm"
                             />
                           </div>
@@ -1626,7 +1626,7 @@ const Recursos = () => {
                     Guardar Pregunta
                   </button>
                   <button className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors">
-                    Guardar y A├▒adir otra
+                    Guardar y Añadir otra
                   </button>
                 </div>
               </>
@@ -1639,7 +1639,7 @@ const Recursos = () => {
   // --- RENDER LIST VIEW ---
   return (
     <AdminLayout>
-      {/* SECCI├ôN 1: HEADER (Only show if NOT showing results) */}
+      {/* SECCIÓN 1: HEADER (Only show if NOT showing results) */}
       {!showResults && (
         <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm mb-4">
           <h1 className="text-xl font-bold text-white text-center">
@@ -1649,14 +1649,14 @@ const Recursos = () => {
       )}
 
       <div className="space-y-6">
-        {/* SECCI├ôN 2: FILTROS (Show only if !showResults) */}
+        {/* SECCIÓN 2: FILTROS (Show only if !showResults) */}
         {!showResults && (
         <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
           <div className="flex flex-col gap-4 mb-6">
             {/* 1. Tipo Examen */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                Tipo Ex├ímen <span className="text-red-500">*</span>
+                Tipo Exámen <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -1670,7 +1670,7 @@ const Recursos = () => {
                   setSelectedYear('');
                 }}
               >
-                <option value="">Seleccionar Tipo Ex├ímen</option>
+                <option value="">Seleccionar Tipo Exámen</option>
                 {groupedData.map((t: any) => (
                   <option key={t.tipoExamenId} value={t.tipoExamenId}>
                     {t.tipoExamenNombre}
@@ -1679,10 +1679,10 @@ const Recursos = () => {
               </select>
             </div>
 
-            {/* 2. Secci├│n Fuente */}
+            {/* 2. Sección Fuente */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                Secci├│n Fuente <span className="text-red-500">*</span>
+                Sección Fuente <span className="text-red-500">*</span>
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1698,7 +1698,7 @@ const Recursos = () => {
               >
                 <option value="">
                   {selectedTipo
-                    ? 'Selecciona una secci├│n'
+                    ? 'Selecciona una sección'
                     : 'Primero selecciona el tipo de examen'}
                 </option>
                 {availableFuentes.map((f: any) => (
@@ -1712,7 +1712,7 @@ const Recursos = () => {
             {/* 3. Modalidad */}
             <div>
               <label className="block text-sm font-semibold text-primary mb-2">
-                {isDirectivo ? 'Secci├│n Directiva' : 'Modalidad'}
+                {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
               </label>
               <select
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
@@ -1788,18 +1788,18 @@ const Recursos = () => {
               </div>
             )}
 
-            {/* 6. A├▒o */}
+            {/* 6. Año */}
             {selectedModalidad && (
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  A├▒o
+                  Año
                 </label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
-                  <option value="">Seleccionar A├▒o</option>
+                  <option value="">Seleccionar Año</option>
                   {availableYears.map((y: { year: string }) => (
                     <option key={y.year} value={y.year}>
                       {y.year}
@@ -1815,7 +1815,7 @@ const Recursos = () => {
              <div className="flex items-end gap-2 mt-4">
                  <input 
                      type="text"
-                     placeholder="Nuevo a├▒o (ej: 2025)"
+                     placeholder="Nuevo año (ej: 2025)"
                      className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                      value={newYearInput}
                      onChange={(e) => setNewYearInput(e.target.value)}
@@ -1824,7 +1824,7 @@ const Recursos = () => {
                      onClick={handleAddYear}
                      className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
                  >
-                     Agregar A├▒o
+                     Agregar Año
                  </button>
                  <button
                      onClick={handleDeleteYear}
@@ -1846,7 +1846,7 @@ const Recursos = () => {
               className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
-              A├▒adir preguntas
+              Añadir preguntas
             </button>
 
             <button
@@ -1854,7 +1854,7 @@ const Recursos = () => {
               className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
             >
               <SparklesIcon className="w-4 h-4 mr-2" />
-              A├▒adir preguntas con IA
+              Añadir preguntas con IA
             </button>
 
             <button
@@ -1874,7 +1874,13 @@ const Recursos = () => {
 
               <button
                 disabled={!selectedTipo || itemsLoading}
-                onClick={() => setShowResults(true)}
+                onClick={() => {
+                  if (filteredItems.length === 0) {
+                    alert("No se encontraron preguntas para esta categoría.");
+                  } else {
+                    setShowResults(true);
+                  }
+                }}
                 className="bg-white text-primary border border-primary px-4 py-2 rounded-lg flex items-center hover:bg-blue-50 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {itemsLoading ? (
@@ -1882,7 +1888,7 @@ const Recursos = () => {
                 ) : (
                   <EyeIcon className="w-4 h-4 mr-2" />
                 )}
-                Visualizar Preguntas
+                Visualizar preguntas
               </button>
 
               {isDirectivo && (
@@ -1892,16 +1898,16 @@ const Recursos = () => {
                     className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
                   >
                     <MenuAlt2Icon className="w-4 h-4 mr-2" />
-                    Gesti├│n de Secciones
+                    Gestión de Secciones
                   </a>
                   <button
                     className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
                     onClick={() =>
-                      alert('M├│dulo de gesti├│n de ex├ímenes en desarrollo')
+                      alert('Módulo de gestión de exámenes en desarrollo')
                     }
                   >
                     <DocumentTextIcon className="w-4 h-4 mr-2" />
-                    Gesti├│n de Ex├ímenes
+                    Gestión de Exámenes
                   </button>
                 </>
               )}
@@ -1911,7 +1917,7 @@ const Recursos = () => {
           </div>
         )}
 
-        {/* SECCI├ôN 3: INSTRUCCIONES (Show only if !showResults) */}
+        {/* SECCIÓN 3: INSTRUCCIONES (Show only if !showResults) */}
         {!showResults && (
           <div className="bg-white rounded-lg shadow-sm border border-primary p-6 relative">
             <h3 className="text-primary font-bold text-lg mb-4">
@@ -1923,13 +1929,13 @@ const Recursos = () => {
                 (Ascenso, Nombramiento o Directivos)
               </li>
               <li>
-                <strong>Paso 2:</strong> Selecciona la secci├│n fuente
-                correspondiente (se filtra autom├íticamente seg├║n el tipo de
+                <strong>Paso 2:</strong> Selecciona la sección fuente
+                correspondiente (se filtra automáticamente según el tipo de
                 examen)
               </li>
               <li>
                 <strong>Paso 3:</strong> Los campos adicionales solo aparecen si
-                seleccionas una secci├│n fuente que contenga &quot;MINEDU&quot;
+                seleccionas una sección fuente que contenga &quot;MINEDU&quot;
                 en su nombre
               </li>
               <li>
@@ -1939,10 +1945,10 @@ const Recursos = () => {
                     Gestiona secciones: puedes crear nuevas secciones o editar
                     existentes
                   </li>
-                  <li>Selecciona la secci├│n espec├¡fica</li>
-                  <li>Selecciona el examen de esa secci├│n</li>
+                  <li>Selecciona la sección específica</li>
+                  <li>Selecciona el examen de esa sección</li>
                   <li>
-                    Gestiona ex├ímenes: puedes crear nuevos ex├ímenes o editar
+                    Gestiona exámenes: puedes crear nuevos exámenes o editar
                     existentes
                   </li>
                 </ul>
@@ -1953,7 +1959,7 @@ const Recursos = () => {
                   <li>Selecciona la modalidad educativa correspondiente</li>
                   <li>Para EBR, debes seleccionar el nivel correspondiente</li>
                   <li>Solo en Secundaria de EBR puedes elegir especialidad</li>
-                  <li>Selecciona el a├▒o correspondiente</li>
+                  <li>Selecciona el año correspondiente</li>
                 </ul>
               </li>
               <li className="text-gray-500 italic mt-2 list-none">
@@ -1963,7 +1969,7 @@ const Recursos = () => {
           </div>
         )}
 
-        {/* SECCI├ôN 4: LISTADO DE PREGUNTAS (CARD VIEW) - Show only if showResults */}
+        {/* SECCIÓN 4: LISTADO DE PREGUNTAS (CARD VIEW) - Show only if showResults */}
         {showResults && (
           <div>
             {/* RESULT HEADER & CRITERIA */}
@@ -1977,7 +1983,7 @@ const Recursos = () => {
             <div className="bg-white border border-gray-200 p-4 rounded-b-lg mb-6 shadow-sm">
                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                      <div className="flex flex-wrap gap-2 items-center">
-                         <span className="font-bold text-gray-700 mr-2">Criterios de selecci├│n</span>
+                         <span className="font-bold text-gray-700 mr-2">Criterios de selección</span>
                          <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
                              {filteredItems.length} {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
                          </span>
@@ -2006,17 +2012,17 @@ const Recursos = () => {
                         className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
                      >
                         <PlusIcon className="w-5 h-5" />
-                        A├▒adir preguntas
+                        Añadir preguntas
                      </button>
                  </div>
             </div>
 
             <div className="space-y-6">
-                {currentItems.map((item, index) => {
+                {currentItems.map((item) => {
                      const isParent = item.tipoPreguntaId === 2;
                      const subCount = subCountsMap[item.id] || 0;
                      const isLoadingSubs = loadingSubIds.has(item.id);
-                     const subs = subQuestionsMap[item.id] || [];
+                     const subs = item.subsWithIdx || [];
 
                      return (
                       <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -2024,27 +2030,28 @@ const Recursos = () => {
                         <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
                           
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 text-primary flex items-center justify-center font-bold text-lg shadow-inner">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
                               {item.displayIndex || '-'}
                             </div>
                             
-                            {item.clasificacionNombre && (
-                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                    item.clasificacionNombre === 'CL' ? 'bg-orange-100 text-orange-700' :
-                                    item.clasificacionNombre === 'RL' ? 'bg-purple-100 text-purple-700' :
-                                    item.clasificacionNombre === 'CCP' ? 'bg-green-100 text-green-700' :
-                                    'bg-gray-200 text-gray-700'
-                                }`}>
-                                    {getClasificacionFullName(item.clasificacionNombre)}
-                                </span>
-                            )}
-                            
-                            <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border ${isParent ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-sky-50 border-sky-200 text-sky-700'}`}>
+                            <span className="text-sm font-bold text-gray-900">
                                {isParent ? 'Pregunta Grupal' : 'Pregunta Individual'}
                             </span>
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-2 ml-auto">
+                            {item.clasificacionNombre && (
+                                <span className={`px-2 py-1 text-xs font-bold rounded-md ${
+                                    item.clasificacionNombre === 'CL' ? 'bg-blue-100 text-blue-700' :
+                                    item.clasificacionNombre === 'RL' ? 'bg-purple-100 text-purple-700' :
+                                    item.clasificacionNombre === 'CCP' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-100 text-gray-700'
+                                }`}>
+                                    {item.clasificacionNombre}
+                                </span>
+                            )}
+
+                            <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-primary hover:text-white hover:bg-primary border border-primary bg-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1"
@@ -2063,6 +2070,7 @@ const Recursos = () => {
                             )}
                             Eliminar
                           </button>
+                        </div>
                         </div>
                       </div>
 
@@ -2139,10 +2147,10 @@ const Recursos = () => {
                                     {/* Header mini */}
                                     <div className="flex items-center gap-2 mb-3">
                                       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                        {sub.numero || idx + 1}
+                                        {sub.displayIndex}
                                       </span>
                                       <span className="text-xs font-bold text-gray-500 uppercase">
-                                        Sub-Pregunta {sub.numero || idx + 1}
+                                        Sub-Pregunta {sub.displayIndex}
                                       </span>
 
                                       <div className="ml-auto flex gap-2">
@@ -2192,59 +2200,81 @@ const Recursos = () => {
                                       </div>
                                     )}
 
-                                    {/* Alternativas - mismo grid que individual pero un poco m├ís chico */}
+                                    {/* Alternativas - mismo grid que individual pero un poco más chico */}
                                     <div className="grid grid-cols-1 gap-2 mb-4">
-                                      {['A', 'B', 'C', 'D'].map((opt, i) => {
-                                        const altText =
-                                          opt === 'A'
-                                            ? sub.alternativaA
-                                            : opt === 'B'
-                                            ? sub.alternativaB
-                                            : opt === 'C'
-                                            ? sub.alternativaC
-                                            : sub.alternativaD;
-                                        const respString =
-                                          sub.respuestaCorrecta?.toString();
-                                        const isCorrect =
-                                          sub.respuestaCorrecta === opt ||
-                                          respString === (i + 1).toString();
-
-                                        // Only render if there's alternative text, since new format may omit it
-                                        if (
-                                          !altText &&
-                                          !isCorrect &&
-                                          sub.enunciados
-                                        )
-                                          return null;
-
-                                        return (
-                                          <div
-                                            key={opt}
-                                            className={`p-3 rounded-lg border transition-all ${
-                                              isCorrect
-                                                ? 'bg-green-50 border-green-500 shadow-sm'
-                                                : 'bg-white border-gray-200 hover:border-gray-300'
-                                            }`}
-                                          >
-                                            <div className="flex items-start gap-2">
-                                              <span
-                                                className={`font-bold text-sm ${
-                                                  isCorrect
-                                                    ? 'text-green-700'
-                                                    : 'text-gray-500'
-                                                }`}
-                                              >
-                                                {opt})
-                                              </span>
-                                              <span className="text-sm">
-                                                <HtmlMathRenderer
-                                                  html={altText || ''}
-                                                />
-                                              </span>
+                                      {sub.alternativas && sub.alternativas.length > 0 ? (
+                                        sub.alternativas.map((alt: any) => {
+                                          const respString = sub.respuestaCorrecta?.toString();
+                                          const isCorrect = alt.id.toString() === respString;
+                                          return (
+                                            <div
+                                              key={alt.id}
+                                              className={`p-3 rounded-lg border transition-all ${
+                                                isCorrect
+                                                  ? 'bg-green-50 border-green-500 shadow-sm'
+                                                  : 'bg-white border-gray-200 hover:border-gray-300'
+                                              }`}
+                                            >
+                                              <HtmlMathRenderer
+                                                html={alt.contenido || ''}
+                                                className={`text-sm ${isCorrect ? 'text-green-800 font-medium' : 'text-gray-800'}`}
+                                              />
                                             </div>
-                                          </div>
-                                        );
-                                      })}
+                                          );
+                                        })
+                                      ) : (
+                                        ['A', 'B', 'C', 'D'].map((opt, i) => {
+                                          const altText =
+                                            opt === 'A'
+                                              ? sub.alternativaA
+                                              : opt === 'B'
+                                              ? sub.alternativaB
+                                              : opt === 'C'
+                                              ? sub.alternativaC
+                                              : sub.alternativaD;
+                                          const respString =
+                                            sub.respuestaCorrecta?.toString();
+                                          const isCorrect =
+                                            sub.respuestaCorrecta === opt ||
+                                            respString === (i + 1).toString();
+
+                                          // Only render if there's alternative text, since new format may omit it
+                                          if (
+                                            !altText &&
+                                            !isCorrect &&
+                                            sub.enunciados
+                                          )
+                                            return null;
+
+                                          return (
+                                            <div
+                                              key={opt}
+                                              className={`p-3 rounded-lg border transition-all ${
+                                                isCorrect
+                                                  ? 'bg-green-50 border-green-500 shadow-sm'
+                                                  : 'bg-white border-gray-200 hover:border-gray-300'
+                                              }`}
+                                            >
+                                              <div className="flex items-start gap-2">
+                                                <span
+                                                  className={`font-bold text-sm ${
+                                                    isCorrect
+                                                      ? 'text-green-700'
+                                                      : 'text-gray-500'
+                                                  }`}
+                                                >
+                                                  {opt})
+                                                </span>
+                                                <span className="text-sm">
+                                                  <HtmlMathRenderer
+                                                    html={altText || ''}
+                                                  />
+                                                </span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })
+                                      )}
                                     </div>
 
                                     {/* Sustento */}
@@ -2273,51 +2303,72 @@ const Recursos = () => {
                         {!isParent && (
                           <div>
                             <div className="grid grid-cols-1 gap-3 mb-4">
-                              {['A', 'B', 'C', 'D'].map((opt, i) => {
-                                const altText =
-                                  opt === 'A'
-                                    ? item.alternativaA
-                                    : opt === 'B'
-                                    ? item.alternativaB
-                                    : opt === 'C'
-                                    ? item.alternativaC
-                                    : item.alternativaD;
-                                const respString = item.respuesta?.toString();
-                                const isCorrect =
-                                  item.respuesta === opt ||
-                                  respString === (i + 1).toString();
-
-                                // Skip empty alternatives to prevent rendering empty boxes if API didn't provide them
-                                if (!altText && !isCorrect && item.enunciados)
-                                  return null;
-
-                                return (
-                                  <div
-                                    key={opt}
-                                    className={`p-4 rounded-lg border transition-all ${
-                                      isCorrect
-                                        ? 'bg-green-50 border-green-500 shadow-sm'
-                                        : 'bg-white border-gray-200 hover:border-gray-300'
-                                    }`}
-                                  >
-                                    <div className="flex items-start gap-3">
-                                      <span
-                                        className={`font-bold ${
-                                          isCorrect
-                                            ? 'text-green-700'
-                                            : 'text-gray-500'
-                                        }`}
-                                      >
-                                        {opt})
-                                      </span>
+                              {item.alternativas && item.alternativas.length > 0 ? (
+                                item.alternativas.map((alt: any) => {
+                                  const isCorrect = alt.id.toString() === item.respuesta?.toString();
+                                  return (
+                                    <div
+                                      key={alt.id}
+                                      className={`p-4 rounded-lg border transition-all ${
+                                        isCorrect
+                                          ? 'bg-green-50 border-green-500 shadow-sm'
+                                          : 'bg-white border-gray-200 hover:border-gray-300'
+                                      }`}
+                                    >
                                       <HtmlMathRenderer
-                                        html={altText || ''}
-                                        className="text-gray-800"
+                                        html={alt.contenido || ''}
+                                        className={`text-sm ${isCorrect ? 'text-green-800 font-medium' : 'text-gray-800'}`}
                                       />
                                     </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })
+                              ) : (
+                                ['A', 'B', 'C', 'D'].map((opt, i) => {
+                                  const altText =
+                                    opt === 'A'
+                                      ? item.alternativaA
+                                      : opt === 'B'
+                                      ? item.alternativaB
+                                      : opt === 'C'
+                                      ? item.alternativaC
+                                      : item.alternativaD;
+                                  const respString = item.respuesta?.toString();
+                                  const isCorrect =
+                                    item.respuesta === opt ||
+                                    respString === (i + 1).toString();
+
+                                  // Skip empty alternatives to prevent rendering empty boxes if API didn't provide them
+                                  if (!altText && !isCorrect && item.enunciados)
+                                    return null;
+
+                                  return (
+                                    <div
+                                      key={opt}
+                                      className={`p-4 rounded-lg border transition-all ${
+                                        isCorrect
+                                          ? 'bg-green-50 border-green-500 shadow-sm'
+                                          : 'bg-white border-gray-200 hover:border-gray-300'
+                                      }`}
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        <span
+                                          className={`font-bold ${
+                                            isCorrect
+                                              ? 'text-green-700'
+                                              : 'text-gray-500'
+                                          }`}
+                                        >
+                                          {opt})
+                                        </span>
+                                        <HtmlMathRenderer
+                                          html={altText || ''}
+                                          className="text-gray-800"
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
                             </div>
 
                             <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
@@ -2358,7 +2409,7 @@ const Recursos = () => {
             <textarea
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
               rows={4}
-              placeholder="Ej: Historia del Per├║ - Guerra con Chile, o Principios de la educaci├│n inclusiva..."
+              placeholder="Ej: Historia del Perú - Guerra con Chile, o Principios de la educación inclusiva..."
               value={aiTopic}
               onChange={(e) => setAiTopic(e.target.value)}
             />

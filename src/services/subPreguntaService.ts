@@ -21,6 +21,7 @@ export interface CreateSubPreguntaDTO {
 export interface SubPreguntaResponse extends CreateSubPreguntaDTO {
   // El backend puede retornar campos adicionales
   enunciados?: EnunciadoItem[];
+  alternativas?: any[];
 }
 
 const API_URL = `${API_BASE_URL}/SubPreguntas`;

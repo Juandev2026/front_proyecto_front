@@ -32,16 +32,6 @@ const Menu = () => {
                       <MenuIcon className="h-9 w-9" aria-hidden="true" />
                     </Popover.Button>
                   </div>
-                  <Link href="/">
-                    <a>
-                      <span className="sr-only">{companyName}</span>
-                      <img
-                        alt="logo"
-                        className="h-16 sm:h-20 w-auto"
-                        src="/assets/images/logo_principal1.png"
-                      />
-                    </a>
-                  </Link>
                 </div>
 
                 {/* Mobile: Login / Register on Right (Only if NOT authenticated) */}
@@ -69,7 +59,7 @@ const Menu = () => {
                 </div>
               </div>
               <Link href="/">
-                <a className="hidden md:block">
+                <a className="block">
                   <span className="sr-only">{companyName}</span>
                   <img
                     alt="logo"
@@ -107,16 +97,6 @@ const Menu = () => {
                       ? '👉 Acceder al Aula Virtual'
                       : '👉 Practica con simulacros y preguntas tipo examen MINEDU'}
                   </div>
-                </div>
-              </div>
-
-              {/* AVEND PLANIFICA */}
-              <div className="relative group">
-                <div className="bg-purple-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-purple-700 transition-all hover:scale-105 cursor-default whitespace-nowrap">
-                  AVEND PLANIFICA
-                </div>
-                <div className="bg-[#002B6B] text-white px-2 py-1.5 rounded text-[9px] font-bold shadow-sm whitespace-nowrap">
-                  AVEND IUS
                 </div>
               </div>
 
