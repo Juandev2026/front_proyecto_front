@@ -464,9 +464,35 @@ const BancoPreguntasPage = () => {
         </div>
 
         <div className="space-y-4">
-          {/* Tipo de Examen is hidden as Nombramiento is the default */}
+          {/* 1. Tipo de Examen */}
+          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+              <FilterIcon className="h-5 w-5" />
+              <span>Tipo de Examen habilitado</span>
+            </div>
+            <select
+              value={selectedTipoExamenId}
+              onChange={(e) => {
+                setSelectedTipoExamenId(e.target.value);
+                setSelectedModalidadId('');
+                setSelectedNivelId('');
+                setSelectedEspecialidadId('');
+                setSelectedYear('');
+                setTiposPregunta({});
+              }}
+              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              disabled={isLoading}
+            >
+              <option value="">Selecciona Tipo de Examen</option>
+              {tiposExamenData.map((t) => (
+                <option key={t.id} value={String(t.id)}>
+                  {t.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all">
+          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <AcademicCapIcon className="h-5 w-5" />
               <span>Modalidad habilitada</span>

@@ -35,17 +35,15 @@ export interface PreguntaExamen {
 
 export interface RespuestaUsuario {
   preguntaId: number;
-  numeroSubPregunta?: number; // Nuevo campo para sub-preguntas
-  alternativaMarcada: string | null; // "A", "B", "C", "D" o null si se omitió
-}
-
-export interface ExamenSolucion {
-  examenId: number;
-  respuestas: RespuestaUsuario[];
+  subPreguntaNumero?: number | null; // Cambiado para coincidir con la documentación
+  alternativaMarcada: string | null; // "A", "B", "C", "D" o "" si se omitió
 }
 
 export interface SolucionExamenRequest {
-  examenes: ExamenSolucion[];
+  examenId: number;
+  userId: number;
+  year: number;
+  respuestas: RespuestaUsuario[];
 }
 
 export interface ExamenResultado {
