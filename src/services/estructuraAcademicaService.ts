@@ -183,7 +183,7 @@ export const estructuraAcademicaService = {
       const idxById = alts.findIndex((a) => String(a.id) === String(ans));
       if (idxById !== -1) return String.fromCharCode(65 + idxById);
       const numAns = Number(ans);
-      if (!isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
+      if (!Number.isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
         return String.fromCharCode(65 + numAns);
       }
       return sAns;
@@ -196,12 +196,22 @@ export const estructuraAcademicaService = {
         examenId: q.examenId,
         year: q.year,
         enunciado: unescapeHTML(
-          (q.enunciados || []).map((e: any) => e.contenido).join('<br/>') || q.enunciado || ''
+          (q.enunciados || []).map((e: any) => e.contenido).join('<br/>') ||
+            q.enunciado ||
+            ''
         ),
-        alternativaA: cleanAlternative(q.alternativas?.[0]?.contenido || q.alternativaA || ''),
-        alternativaB: cleanAlternative(q.alternativas?.[1]?.contenido || q.alternativaB || ''),
-        alternativaC: cleanAlternative(q.alternativas?.[2]?.contenido || q.alternativaC || ''),
-        alternativaD: cleanAlternative(q.alternativas?.[3]?.contenido || q.alternativaD || ''),
+        alternativaA: cleanAlternative(
+          q.alternativas?.[0]?.contenido || q.alternativaA || ''
+        ),
+        alternativaB: cleanAlternative(
+          q.alternativas?.[1]?.contenido || q.alternativaB || ''
+        ),
+        alternativaC: cleanAlternative(
+          q.alternativas?.[2]?.contenido || q.alternativaC || ''
+        ),
+        alternativaD: cleanAlternative(
+          q.alternativas?.[3]?.contenido || q.alternativaD || ''
+        ),
         imagen: q.imagen || '',
         puntos: q.puntos || 0,
         tiempoPregunta: q.tiempoPregunta || 0,
@@ -212,16 +222,29 @@ export const estructuraAcademicaService = {
         subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
           numero: sub.numero,
           enunciado: unescapeHTML(
-            (sub.enunciados || []).map((e: any) => e.contenido).join('<br/>') || sub.enunciado || ''
+            (sub.enunciados || []).map((e: any) => e.contenido).join('<br/>') ||
+              sub.enunciado ||
+              ''
           ),
-          alternativaA: cleanAlternative(sub.alternativas?.[0]?.contenido || sub.alternativaA || ''),
-          alternativaB: cleanAlternative(sub.alternativas?.[1]?.contenido || sub.alternativaB || ''),
-          alternativaC: cleanAlternative(sub.alternativas?.[2]?.contenido || sub.alternativaC || ''),
-          alternativaD: cleanAlternative(sub.alternativas?.[3]?.contenido || sub.alternativaD || ''),
+          alternativaA: cleanAlternative(
+            sub.alternativas?.[0]?.contenido || sub.alternativaA || ''
+          ),
+          alternativaB: cleanAlternative(
+            sub.alternativas?.[1]?.contenido || sub.alternativaB || ''
+          ),
+          alternativaC: cleanAlternative(
+            sub.alternativas?.[2]?.contenido || sub.alternativaC || ''
+          ),
+          alternativaD: cleanAlternative(
+            sub.alternativas?.[3]?.contenido || sub.alternativaD || ''
+          ),
           imagen: sub.imagen || '',
           puntos: sub.puntos || 0,
           tiempoPregunta: sub.tiempoPregunta || 0,
-          respuesta: getLetter(sub.respuestaCorrecta || sub.respuesta, sub.alternativas || []),
+          respuesta: getLetter(
+            sub.respuestaCorrecta || sub.respuesta,
+            sub.alternativas || []
+          ),
         })),
       };
     });
@@ -266,6 +289,43 @@ export const estructuraAcademicaService = {
       return estructuraAcademicaService.mapPreguntas(rawData);
     } catch (error) {
       console.error('Error in getPreguntasByFilter:', error);
+      return [];
+    }
+  },
+
+  // --- NUEVA FUNCIÓN PARA MULTI-AÑO ---
+  getPreguntasByFilterMultiYear: async (payload: {
+    tipoExamenId: number;
+    fuenteId: number;
+    modalidadId: number;
+    nivelId: number;
+    especialidadId: number;
+    yearFilters: {
+      year: string;
+      clasificacionIds: number[];
+    }[];
+  }): Promise<PreguntaExamen[]> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/Preguntas/examen-filter-multi-year`,
+        {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al obtener preguntas filtradas (multi-year)');
+      }
+
+      const rawData = await response.json();
+      return estructuraAcademicaService.mapPreguntas(rawData);
+    } catch (error) {
+      console.error('Error in getPreguntasByFilterMultiYear:', error);
       return [];
     }
   },

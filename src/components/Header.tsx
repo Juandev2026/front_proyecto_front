@@ -19,8 +19,8 @@ const Menu = () => {
       <Popover className="bg-white/90 backdrop-filter backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300 border-b border-gray-100">
         <div className="relative px-4 sm:px-6 lg:px-8">
           {/* Top Row: Logo, Product Buttons, Auth */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-50">
-            <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0">
+          <div className="flex md:grid md:grid-cols-3 items-center justify-between py-2 border-b border-gray-50">
+            <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0 justify-self-start">
               <div className="flex items-center justify-between w-full md:w-auto">
                 {/* Mobile: Hamburger + Logo on Left */}
                 <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ const Menu = () => {
             </div>
 
             {/* Center Column: Mobile Buttons / Desktop Buttons + Nav */}
-            <div className="flex-grow flex flex-col items-center justify-center gap-2">
+            <div className="flex-grow flex flex-col items-center justify-center gap-2 justify-self-center">
               {/* Mobile: Product Buttons (ONLY MOBILE) */}
               <div className="flex md:hidden items-center justify-center gap-2 px-1">
                 <Link
@@ -101,7 +101,7 @@ const Menu = () => {
               </div>
 
               {/* Desktop Row 1: Product Buttons */}
-              <div className="hidden md:flex items-center justify-center gap-2 lg:gap-4">
+              <div className="hidden md:flex items-center justify-center gap-4 lg:gap-8">
                 {/* AVEND ESCALA */}
                 <div className="relative group">
                   <Link
@@ -158,7 +158,7 @@ const Menu = () => {
             </div>
 
             {/* Desktop Right: Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4 justify-self-end">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   {!loading &&
@@ -205,7 +205,7 @@ const Menu = () => {
 
           {/* Bottom Row: Navigation Links */}
           <nav
-            className="hidden md:flex items-center justify-center py-2 space-x-8 border-t border-gray-50"
+            className="hidden md:flex items-center justify-center py-2 space-x-8"
             aria-label="Global"
           >
             {navigation.map((item: any) => {
