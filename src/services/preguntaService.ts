@@ -24,6 +24,7 @@ export interface Pregunta {
   year?: string;
   enunciados?: EnunciadoItem[];
   subPreguntas?: any[];
+  alternativas?: any[];
 }
 
 export interface ExamenFilterRequest {

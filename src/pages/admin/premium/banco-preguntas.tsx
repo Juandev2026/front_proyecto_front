@@ -1599,7 +1599,13 @@ const Recursos = () => {
 
             <button
                disabled={!selectedTipo || itemsLoading} 
-               onClick={() => setShowResults(true)}
+                onClick={() => {
+                  if (items.length === 0) {
+                    alert('No se encontraron preguntas con los filtros seleccionados.');
+                  } else {
+                    setShowResults(true);
+                  }
+                }}
                className="bg-white text-primary border border-primary px-4 py-2 rounded-lg flex items-center hover:bg-blue-50 transition-colors text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
                {itemsLoading ? (
@@ -1880,25 +1886,36 @@ const Recursos = () => {
                                     </div>
                                   )}
 
-                                  {/* Alternativas - mismo grid que individual pero un poco más chico */}
-                                  <div className="grid grid-cols-1 gap-2 mb-4">
-                                    {['A', 'B', 'C', 'D'].map((opt, i) => {
-                                      const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
-                                      const respString = sub.respuestaCorrecta?.toString();
-                                      const isCorrect = sub.respuestaCorrecta === opt || respString === (i + 1).toString();
-                                      
-                                      // Only render if there's alternative text, since new format may omit it
-                                      if (!altText && !isCorrect && sub.enunciados) return null;
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    {(sub.alternativas && sub.alternativas.length > 0) ? (
+                                        sub.alternativas.map((alt: any) => {
+                                            const isCorrect = String(alt.id) === String(sub.respuestaCorrecta);
+                                            return (
+                                                <div key={alt.id} className={`p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                                    <div className="text-sm">
+                                                        <HtmlMathRenderer html={alt.contenido || ''} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        ['A', 'B', 'C', 'D'].map((opt, i) => {
+                                            const altText = opt === 'A' ? sub.alternativaA : opt === 'B' ? sub.alternativaB : opt === 'C' ? sub.alternativaC : sub.alternativaD;
+                                            const respString = sub.respuestaCorrecta?.toString();
+                                            const isCorrect = sub.respuestaCorrecta === opt || respString === (i + 1).toString();
+                                            
+                                            if (!altText && !isCorrect) return null;
 
-                                      return (
-                                        <div key={opt} className={`p-3 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                          <div className="flex items-start gap-2">
-                                            <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
-                                            <span className="text-sm"><HtmlMathRenderer html={altText || ''} /></span>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
+                                            return (
+                                                <div key={opt} className={`p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={`font-bold text-sm ${isCorrect ? 'text-green-700' : 'text-gray-600'}`}>{opt})</span>
+                                                        <div className="text-sm"><HtmlMathRenderer html={altText || ''} /></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                   </div>
 
                                   {/* Sustento */}
@@ -1918,24 +1935,34 @@ const Recursos = () => {
                     {/* --- CASO 2: PREGUNTA INDIVIDUAL --- */}
                     {!isParent && (
                         <div>
-                             <div className="grid grid-cols-1 gap-3 mb-4">
-                                {['A', 'B', 'C', 'D'].map((opt, i) => {
-                                    const altText = opt === 'A' ? item.alternativaA : opt === 'B' ? item.alternativaB : opt === 'C' ? item.alternativaC : item.alternativaD;
-                                    const respString = item.respuesta?.toString();
-                                    const isCorrect = item.respuesta === opt || respString === (i + 1).toString();
-                                    
-                                    // Skip empty alternatives to prevent rendering empty boxes if API didn't provide them
-                                    if (!altText && !isCorrect && item.enunciados) return null;
-
-                                    return (
-                                        <div key={opt} className={`p-4 rounded-lg border transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                                            <div className="flex items-start gap-3">
-                                                <span className={`font-bold ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>{opt})</span>
-                                                <HtmlMathRenderer html={altText || ''} className="text-gray-800" />
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                {item.alternativas && item.alternativas.length > 0 ? (
+                                    item.alternativas.map((alt: any) => {
+                                        const isCorrect = String(alt.id) === String(item.respuesta);
+                                        return (
+                                            <div key={alt.id} className={`p-5 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                                <HtmlMathRenderer html={alt.contenido || ''} />
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                ) : (
+                                    ['A', 'B', 'C', 'D'].map((opt, i) => {
+                                        const altText = opt === 'A' ? item.alternativaA : opt === 'B' ? item.alternativaB : opt === 'C' ? item.alternativaC : item.alternativaD;
+                                        const respString = item.respuesta?.toString();
+                                        const isCorrect = item.respuesta === opt || respString === (i + 1).toString();
+                                        
+                                        if (!altText && !isCorrect) return null;
+
+                                        return (
+                                            <div key={opt} className={`p-5 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                                <div className="flex flex-col gap-2">
+                                                    <span className={`font-bold text-lg ${isCorrect ? 'text-green-700' : 'text-gray-600'}`}>{opt})</span>
+                                                    <HtmlMathRenderer html={altText || ''} className="text-gray-800" />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
 
                             <div className="text-sm text-gray-500 mt-4 border-t pt-4 border-gray-100">
