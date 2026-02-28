@@ -349,40 +349,52 @@ const SimulacroExamenAscensoPage = () => {
           }
         });
 
-        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas)
+        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas CONTANDO subpreguntas)
         const activeGroupKeys = Object.keys(groups).filter(
           (k) => (groups[k] || []).length > 0
         );
         const totalTarget = 60;
 
-        if (activeGroupKeys.length > 0 && filteredBySelection.length > totalTarget) {
+        // Función para contar preguntas reales (incluyendo subpreguntas)
+        const getWeight = (q: any) => (q.subPreguntas && q.subPreguntas.length > 0 ? q.subPreguntas.length : 1);
+
+        const currentEffectiveCount = (list: any[]) => list.reduce((acc, q) => acc + getWeight(q), 0);
+
+        if (activeGroupKeys.length > 0 && currentEffectiveCount(filteredBySelection) > totalTarget) {
           const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
           let finalSelection: any[] = [];
+          let totalAccumulated = 0;
 
-          // Primera pasada: tomar el mínimo entre la base y lo disponible
+          const leftovers: any[] = [];
+
+          // Primera pasada: repartir equitativamente
           for (const key of activeGroupKeys) {
-            const group = groups[key];
-            if (!group) continue;
-            const shuffled = [...group].sort(() => 0.5 - Math.random());
-            const take = Math.min(shuffled.length, baseLimitPerGroup);
-            finalSelection = [...finalSelection, ...shuffled.slice(0, take)];
-            // Guardar lo que sobra para una segunda pasada si no llegamos a 60
-            if (groups[key]) groups[key] = shuffled.slice(take);
+            const group = [...(groups[key] || [])].sort(() => 0.5 - Math.random());
+            let groupAccumulated = 0;
+            
+            for (const q of group) {
+              const weight = getWeight(q);
+              if (groupAccumulated + weight <= baseLimitPerGroup) {
+                finalSelection.push(q);
+                groupAccumulated += weight;
+                totalAccumulated += weight;
+              } else {
+                leftovers.push(q);
+              }
+            }
           }
 
-          // Segunda pasada: si faltan para llegar a 60, rellenar de los que sobran aleatoriamente
-          if (finalSelection.length < totalTarget) {
-            let leftovers: any[] = [];
-            for (const key of activeGroupKeys) {
-               const g = groups[key];
-               if (g) leftovers = [...leftovers, ...g];
+          // Segunda pasada: rellenar lo que falta hasta llegar a 60
+          if (totalAccumulated < totalTarget) {
+            leftovers.sort(() => 0.5 - Math.random());
+            for (const q of leftovers) {
+              const weight = getWeight(q);
+              if (totalAccumulated + weight <= totalTarget) {
+                finalSelection.push(q);
+                totalAccumulated += weight;
+              }
+              if (totalAccumulated >= totalTarget) break;
             }
-            leftovers = leftovers.sort(() => 0.5 - Math.random());
-            const stillNeeded = totalTarget - finalSelection.length;
-            finalSelection = [
-              ...finalSelection,
-              ...leftovers.slice(0, stillNeeded),
-            ];
           }
           questions = finalSelection;
         } else {

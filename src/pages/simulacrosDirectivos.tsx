@@ -313,7 +313,7 @@ const SimulacrosDirectivosPage = () => {
         tipoExamenId: sampleExam.tipoExamenId,
         fuenteId: sampleExam.fuenteId || 0,
         modalidadId: sampleExam.modalidadId,
-        nivelId: sampleExam.nivelId || (nivelesData.length === 1 ? nivelesData[0].id : 0),
+        nivelId: sampleExam.nivelId || (nivelesData.length === 1 ? (nivelesData[0]?.id || 0) : 0),
         especialidadId: sampleExam.especialidadId || 0,
         yearFilters,
       };
@@ -322,7 +322,8 @@ const SimulacrosDirectivosPage = () => {
         await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
 
       if (questions.length > 0) {
-        questions = questions.filter((q) => {
+        // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
+        const filteredBySelection = questions.filter((q) => {
           const qYear = String(q.year || q.anio || '0');
           const filterForThisYear = yearFilters.find((f) => f.year === qYear);
           if (!filterForThisYear) return false;
@@ -331,6 +332,75 @@ const SimulacrosDirectivosPage = () => {
             filterForThisYear.clasificacionIds.includes(q.clasificacionId)
           );
         });
+
+        // 2. Agrupar por (año, clasificacionId)
+        const groups: Record<string, any[]> = {};
+        yearFilters.forEach((f) => {
+          f.clasificacionIds.forEach((cid) => {
+            const key = `${f.year}-${cid}`;
+            groups[key] = [];
+          });
+        });
+
+        filteredBySelection.forEach((q) => {
+          const key = `${String(q.year || q.anio || '0')}-${q.clasificacionId}`;
+          if (groups[key]) {
+            groups[key].push(q);
+          }
+        });
+
+        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas CONTANDO subpreguntas)
+        const activeGroupKeys = Object.keys(groups).filter(
+          (k) => (groups[k] || []).length > 0
+        );
+        const totalTarget = 60;
+
+        // Función para contar preguntas reales (incluyendo subpreguntas)
+        const getWeight = (q: any) => (q.subPreguntas && q.subPreguntas.length > 0 ? q.subPreguntas.length : 1);
+
+        const currentEffectiveCount = (list: any[]) => list.reduce((acc, q) => acc + getWeight(q), 0);
+
+        if (activeGroupKeys.length > 0 && currentEffectiveCount(filteredBySelection) > totalTarget) {
+          const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
+          let finalSelection: any[] = [];
+          let totalAccumulated = 0;
+
+          const leftovers: any[] = [];
+
+          // Primera pasada: repartir equitativamente
+          for (const key of activeGroupKeys) {
+            const group = [...(groups[key] || [])].sort(() => 0.5 - Math.random());
+            let groupAccumulated = 0;
+            
+            for (const q of group) {
+              const weight = getWeight(q);
+              if (groupAccumulated + weight <= baseLimitPerGroup) {
+                finalSelection.push(q);
+                groupAccumulated += weight;
+                totalAccumulated += weight;
+              } else {
+                leftovers.push(q);
+              }
+            }
+          }
+
+          // Segunda pasada: rellenar lo que falta hasta llegar a 60
+          if (totalAccumulated < totalTarget) {
+            leftovers.sort(() => 0.5 - Math.random());
+            for (const q of leftovers) {
+              const weight = getWeight(q);
+              if (totalAccumulated + weight <= totalTarget) {
+                finalSelection.push(q);
+                totalAccumulated += weight;
+              }
+              if (totalAccumulated >= totalTarget) break;
+            }
+          }
+          questions = finalSelection;
+        } else {
+          // Si hay menos de 60, solo las barajamos
+          questions = filteredBySelection.sort(() => 0.5 - Math.random());
+        }
       }
 
       const metadata = {
@@ -429,7 +499,7 @@ const SimulacrosDirectivosPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {nivelesData.length > 0 && !(nivelesData.length === 1 && nivelesData[0].nombre === 'NINGUNO') && (
+              {nivelesData.length > 0 && !(nivelesData.length === 1 && nivelesData[0]?.nombre === 'NINGUNO') && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-[#4790FD] font-bold">
                     <FilterIcon className="h-4 w-4" />
@@ -542,7 +612,7 @@ const SimulacrosDirectivosPage = () => {
                <AcademicCapIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
                <div className="space-y-1">
                  <p className="text-xs font-bold text-yellow-800">Resumen de contenido</p>
-                 <p className="text-[10px] text-yellow-700/80">Total de preguntas: <span className="font-bold">{totalQuestions}</span>.</p>
+                 <p className="text-[10px] text-yellow-700/80">Total seleccionado: <span className="font-bold">{totalQuestions}</span> preguntas reales.</p>
                </div>
             </div>
           </div>
@@ -572,7 +642,12 @@ const SimulacrosDirectivosPage = () => {
           </div>
 
           <div className="bg-green-100/50 border border-green-200 rounded-lg p-5">
-            <p className="text-xl font-bold text-green-700">Total preguntas en simulacro: <span className="text-2xl font-black">{totalQuestions}</span></p>
+            <p className="text-xl font-bold text-green-700">Total para el simulacro: <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span> preguntas</p>
+            {totalQuestions > 60 && (
+              <p className="text-xs text-green-600 font-medium mt-1 italic">
+                * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+              </p>
+            )}
           </div>
         </div>
 
