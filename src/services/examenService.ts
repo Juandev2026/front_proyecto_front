@@ -53,7 +53,7 @@ export interface SimplifiedHierarchy {
 export const examenService = {
   getGrouped: async (): Promise<ExamenGrouped[]> => {
     try {
-      const response = await fetch(`${API_URL}/grouped-simple`, {
+      const response = await fetch(`${API_URL}/grouped`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
@@ -207,19 +207,55 @@ export const examenService = {
     }
   },
 
-  removeYear: async (examenId: number, year: string): Promise<void> => {
+  removeYear: async (payload: {
+    tipoExamenId: number;
+    fuenteId: number;
+    modalidadId: number;
+    nivelId: number | null;
+    especialidadId: number | null;
+    year: number | string;
+  }): Promise<void> => {
     try {
-      const response = await fetch(
-        `${API_URL}/remove-year?examenId=${examenId}&year=${year}`,
-        {
-          method: 'DELETE',
-          headers: getAuthHeaders(),
-        }
-      );
+      const response = await fetch(`${API_URL}/remove-year`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Sending DELETE to /api/Examenes/remove-year with payload:', JSON.stringify(payload, null, 2));
+
       if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`Error al eliminar año: ${err}`);
+        let err = '';
+        try {
+          err = await response.text();
+        } catch (e) {
+          err = 'No response body';
+        }
+        
+        if (response.status === 404) {
+          throw new Error('La ruta /api/Examenes/remove-year no fue encontrada (404). Verifica que el endpoint acepte DELETE con JSON body.');
+        }
+        
+        throw new Error(`Error al eliminar año (${response.status}): ${err}`);
       }
+    } catch (error) {
+      console.error('removeYear API Error:', error);
+      throw error;
+    }
+  },
+
+  getPropios: async (): Promise<any[]> => {
+    try {
+      const response = await fetch(`${API_URL}/propios`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener exámenes propios');
+      }
+      return await response.json();
     } catch (error) {
       throw error;
     }

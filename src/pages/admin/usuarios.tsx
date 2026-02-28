@@ -660,7 +660,7 @@ const UsersPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value })
                     }
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
@@ -671,8 +671,8 @@ const UsersPage = () => {
                 {/* === SECCIÓN 1: INFORMACIÓN PERSONAL === */}
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-4">
-                    <UserIcon className="w-5 h-5 text-[#002B6B]" />
-                    <h4 className="font-bold text-[#002B6B]">
+                    <UserIcon className="w-5 h-5 text-[#4a90f9]" />
+                    <h4 className="font-bold text-[#4a90f9]">
                       Información personal
                     </h4>
                   </div>
@@ -692,7 +692,7 @@ const UsersPage = () => {
                           nombreCompleto: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       required
                     />
                   </div>
@@ -709,7 +709,7 @@ const UsersPage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         required
                       />
                     </div>
@@ -724,7 +724,7 @@ const UsersPage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, celular: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
                   </div>
@@ -746,7 +746,7 @@ const UsersPage = () => {
                               password: e.target.value,
                             })
                           }
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] pr-10"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
                           required
                         />
                         <button
@@ -773,7 +773,7 @@ const UsersPage = () => {
                           regionId: Number(e.target.value),
                         })
                       }
-                      className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                      className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] bg-white"
                     >
                       <option value={0} disabled hidden>
                         Seleccionar región
@@ -800,7 +800,7 @@ const UsersPage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, ie: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
                   )}
@@ -822,7 +822,7 @@ const UsersPage = () => {
                           })
                         }
                         rows={3}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] resize-none"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] resize-none"
                       />
                     </div>
                   )}
@@ -834,8 +834,8 @@ const UsersPage = () => {
                   formData.role === 'Client') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <AcademicCapIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">
+                      <AcademicCapIcon className="w-5 h-5 text-[#4a90f9]" />
+                      <h4 className="font-bold text-[#4a90f9]">
                         Información Académica
                       </h4>
                     </div>
@@ -855,7 +855,7 @@ const UsersPage = () => {
                             especialidadId: 0,
                           })
                         }
-                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] bg-white"
                       >
                         <option value={0}>Seleccionar Modalidad</option>
                         {modalidades.map((m) => (
@@ -881,7 +881,7 @@ const UsersPage = () => {
                               especialidadId: 0,
                             })
                           }
-                          className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                          className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] bg-white"
                           disabled={!formData.modalidadId}
                         >
                           <option value={0}>Seleccionar Nivel</option>
@@ -909,7 +909,7 @@ const UsersPage = () => {
                                 especialidadId: Number(e.target.value),
                               })
                             }
-                            className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] bg-white"
+                            className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] bg-white"
                             disabled={!formData.nivelId}
                           >
                             <option value={0}>Seleccionar especialidad</option>
@@ -999,7 +999,7 @@ const UsersPage = () => {
                     {userExamenes.length > 0 && (
                       <div className="mt-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#4a90f9] flex items-center gap-2">
                             Accesos configurados ({userExamenes.length})
                           </span>
                           <button
@@ -1071,8 +1071,8 @@ const UsersPage = () => {
                 {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <CreditCardIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">
+                      <CreditCardIcon className="w-5 h-5 text-[#4a90f9]" />
+                      <h4 className="font-bold text-[#4a90f9]">
                         Información de Pago
                       </h4>
                     </div>
@@ -1088,7 +1088,7 @@ const UsersPage = () => {
                             [e.target.name || 'planId']: Number(e.target.value),
                           } as any)
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       >
                         <option value={0}>Seleccionar Plan</option>
                         {plans.map((p) => (
@@ -1112,7 +1112,7 @@ const UsersPage = () => {
                               fechaInicio: e.target.value,
                             } as any)
                           }
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         />
                       </div>
                       <div>
@@ -1128,7 +1128,7 @@ const UsersPage = () => {
                               fechaFin: e.target.value,
                             } as any)
                           }
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         />
                       </div>
                     </div>
@@ -1139,8 +1139,8 @@ const UsersPage = () => {
                 {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <LockClosedIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">
+                      <LockClosedIcon className="w-5 h-5 text-[#4a90f9]" />
+                      <h4 className="font-bold text-[#4a90f9]">
                         Tipo de Acceso*
                       </h4>
                     </div>
@@ -1187,8 +1187,8 @@ const UsersPage = () => {
                 {(formData.role === 'Premium' || formData.role === 'Admin') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <CalendarIcon className="w-5 h-5 text-[#002B6B]" />
-                      <h4 className="font-bold text-[#002B6B]">
+                      <CalendarIcon className="w-5 h-5 text-[#4a90f9]" />
+                      <h4 className="font-bold text-[#4a90f9]">
                         Fecha de expiración
                       </h4>
                     </div>
@@ -1212,7 +1212,7 @@ const UsersPage = () => {
                                 ? handleExpirationPresetChange(key as any)
                                 : setExpirationMode('custom')
                             }
-                            className="w-4 h-4 accent-[#002B6B]"
+                            className="w-4 h-4 accent-[#4a90f9]"
                           />
                           <span className="text-sm text-gray-800">{label}</span>
                         </label>
@@ -1230,7 +1230,7 @@ const UsersPage = () => {
                             ),
                           })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     )}
                   </div>
@@ -1239,7 +1239,7 @@ const UsersPage = () => {
                 {/* Botón Guardar */}
                 <button
                   type="submit"
-                  className="w-full bg-[#002B6B] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
+                  className="w-full bg-[#4a90f9] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
                 >
                   {editingUser ? 'Actualizar usuario' : 'Guardar usuario'}
                 </button>

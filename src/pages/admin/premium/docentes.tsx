@@ -445,7 +445,7 @@ const AdminPremiumDocentes = () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Reporte Docentes');
 
-      const headerColor = 'FF002B6B'; // Dark Blue from reference
+      const headerColor = 'FF4a90f9'; // Dark Blue from reference
       const rowActiveColor = 'FFC6EFCE';
       const rowInactiveColor = 'FFFFC7CE';
 
@@ -891,7 +891,7 @@ const AdminPremiumDocentes = () => {
                                 {/* Modal Header */}
                                 <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                                   <div>
-                                    <h4 className="text-lg font-bold text-[#002B6B]">
+                                    <h4 className="text-lg font-bold text-[#4a90f9]">
                                       Accesos del Docente
                                     </h4>
                                     <p className="text-xs text-gray-500 font-medium mt-0.5">
@@ -967,7 +967,7 @@ const AdminPremiumDocentes = () => {
                                   </span>
                                   <button
                                     onClick={() => setOpenPopoverId(null)}
-                                    className="px-6 py-2 bg-[#002B6B] text-white text-xs font-bold rounded-xl hover:bg-blue-900 transition-colors shadow-lg shadow-blue-900/10"
+                                    className="px-6 py-2 bg-[#4a90f9] text-white text-xs font-bold rounded-xl hover:bg-blue-900 transition-colors shadow-lg shadow-blue-900/10"
                                   >
                                     Cerrar
                                   </button>
@@ -1129,7 +1129,7 @@ const AdminPremiumDocentes = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value })
                     }
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
@@ -1141,7 +1141,7 @@ const AdminPremiumDocentes = () => {
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <svg
-                      className="w-5 h-5 text-[#002B6B]"
+                      className="w-5 h-5 text-[#4a90f9]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -1151,7 +1151,7 @@ const AdminPremiumDocentes = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <h4 className="font-bold text-[#002B6B]">
+                    <h4 className="font-bold text-[#4a90f9]">
                       Información personal
                     </h4>
                   </div>
@@ -1171,7 +1171,7 @@ const AdminPremiumDocentes = () => {
                           nombreCompleto: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       required
                     />
                   </div>
@@ -1189,7 +1189,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         required
                       />
                     </div>
@@ -1204,7 +1204,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, celular: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
                   </div>
@@ -1222,7 +1222,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, password: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] pr-10"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
                         required={!editingUser}
                       />
                       <button
@@ -1282,7 +1282,7 @@ const AdminPremiumDocentes = () => {
                             regionId: Number(e.target.value),
                           })
                         }
-                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                        className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] appearance-none bg-white"
                       >
                         <option value={0} disabled hidden>
                           Seleccionar región
@@ -1313,7 +1313,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, ie: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
                   )}
@@ -1335,7 +1335,7 @@ const AdminPremiumDocentes = () => {
                           })
                         }
                         rows={3}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] resize-none"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] resize-none"
                       />
                     </div>
                   )}
@@ -1348,7 +1348,7 @@ const AdminPremiumDocentes = () => {
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <svg
-                        className="w-5 h-5 text-[#002B6B]"
+                        className="w-5 h-5 text-[#4a90f9]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1366,7 +1366,7 @@ const AdminPremiumDocentes = () => {
                           d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
                         />
                       </svg>
-                      <h4 className="font-bold text-[#002B6B]">
+                      <h4 className="font-bold text-[#4a90f9]">
                         Información Académica
                       </h4>
                     </div>
@@ -1387,7 +1387,7 @@ const AdminPremiumDocentes = () => {
                               especialidadId: 0,
                             })
                           }
-                          className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                          className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] appearance-none bg-white"
                         >
                           <option value={0} disabled hidden>
                             Seleccionar modalidad
@@ -1420,7 +1420,7 @@ const AdminPremiumDocentes = () => {
                                 especialidadId: 0,
                               })
                             }
-                            className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                            className="w-full border border-gray-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] appearance-none bg-white"
                           >
                             <option value={0} disabled hidden>
                               Seleccionar nivel
@@ -1454,7 +1454,7 @@ const AdminPremiumDocentes = () => {
                                   especialidadId: Number(e.target.value),
                                 })
                               }
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B] appearance-none bg-white"
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] appearance-none bg-white"
                             >
                               <option value={0} disabled hidden>
                                 Seleccionar especialidad
@@ -1518,7 +1518,7 @@ const AdminPremiumDocentes = () => {
                     {userExamenes.length > 0 && (
                       <div className="mt-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-bold text-[#002B6B] flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#4a90f9] flex items-center gap-2">
                             <svg
                               className="w-4 h-4"
                               fill="currentColor"
@@ -1606,7 +1606,7 @@ const AdminPremiumDocentes = () => {
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <svg
-                        className="w-5 h-5 text-[#002B6B]"
+                        className="w-5 h-5 text-[#4a90f9]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1618,7 +1618,7 @@ const AdminPremiumDocentes = () => {
                           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                         />
                       </svg>
-                      <h4 className="font-bold text-[#002B6B]">
+                      <h4 className="font-bold text-[#4a90f9]">
                         Tipo de Acceso*
                       </h4>
                     </div>
@@ -1669,7 +1669,7 @@ const AdminPremiumDocentes = () => {
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <svg
-                        className="w-5 h-5 text-[#002B6B]"
+                        className="w-5 h-5 text-[#4a90f9]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1681,7 +1681,7 @@ const AdminPremiumDocentes = () => {
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <h4 className="font-bold text-[#002B6B]">
+                      <h4 className="font-bold text-[#4a90f9]">
                         Fecha de expiración
                       </h4>
                     </div>
@@ -1725,7 +1725,7 @@ const AdminPremiumDocentes = () => {
                             ),
                           })
                         }
-                        className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#002B6B]"
+                        className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     )}
                   </div>
@@ -1734,7 +1734,7 @@ const AdminPremiumDocentes = () => {
                 {/* === GUARDAR === */}
                 <button
                   type="submit"
-                  className="w-full bg-[#002B6B] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
+                  className="w-full bg-[#4a90f9] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"
                 >
                   {editingUser ? 'Actualizar docente' : 'Guardar docente'}
                 </button>
@@ -1781,7 +1781,7 @@ const AdminPremiumDocentes = () => {
                   <div className="bg-gray-100 p-2 rounded-lg">
                     <UserIcon className="w-5 h-5 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-[#002B6B] text-lg">
+                  <h4 className="font-bold text-[#4a90f9] text-lg">
                     Información personal
                   </h4>
                   {(() => {
@@ -1802,7 +1802,7 @@ const AdminPremiumDocentes = () => {
 
                 <div className="grid grid-cols-2 gap-y-6">
                   <div className="text-center border-r border-gray-100">
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Nombre
                     </p>
                     <p className="text-gray-700 font-medium">
@@ -1810,7 +1810,7 @@ const AdminPremiumDocentes = () => {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Correo:
                     </p>
                     <p className="text-gray-700 font-medium break-all">
@@ -1818,7 +1818,7 @@ const AdminPremiumDocentes = () => {
                     </p>
                   </div>
                   <div className="col-span-2 text-center mt-2">
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Teléfono:
                     </p>
                     <p className="text-gray-700 font-medium text-lg tracking-wider">
@@ -1829,7 +1829,7 @@ const AdminPremiumDocentes = () => {
 
                 <div className="mt-8 flex justify-center gap-12 text-center">
                   <div>
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Region
                     </p>
                     <p className="text-gray-800 font-bold uppercase">
@@ -1837,7 +1837,7 @@ const AdminPremiumDocentes = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Institución:
                     </p>
                     <p className="text-gray-800 font-bold">
@@ -1847,7 +1847,7 @@ const AdminPremiumDocentes = () => {
                 </div>
 
                 <div className="mt-8">
-                  <p className="text-[#002B6B] font-bold text-sm mb-2">
+                  <p className="text-[#4a90f9] font-bold text-sm mb-2">
                     Observaciones:
                   </p>
                   <div className="bg-gray-50 p-3 rounded-lg text-center text-gray-500 italic text-sm">
@@ -1862,14 +1862,14 @@ const AdminPremiumDocentes = () => {
                   <div className="bg-gray-100 p-2 rounded-lg">
                     <AcademicCapIcon className="w-5 h-5 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-[#002B6B] text-lg">
+                  <h4 className="font-bold text-[#4a90f9] text-lg">
                     Información académica
                   </h4>
                 </div>
 
                 <div className="flex justify-between px-8 text-center">
                   <div>
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Modalidad
                     </p>
                     <p className="text-blue-600 font-bold">
@@ -1883,7 +1883,7 @@ const AdminPremiumDocentes = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[#002B6B] font-bold text-sm mb-1">
+                    <p className="text-[#4a90f9] font-bold text-sm mb-1">
                       Nivel
                     </p>
                     <p className="text-blue-600 font-bold">
@@ -1904,7 +1904,7 @@ const AdminPremiumDocentes = () => {
                   <div className="bg-gray-100 p-2 rounded-lg">
                     <LockClosedIcon className="w-5 h-5 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-[#002B6B] text-lg">
+                  <h4 className="font-bold text-[#4a90f9] text-lg">
                     Subscripciones
                   </h4>
                 </div>
@@ -1973,12 +1973,12 @@ const AdminPremiumDocentes = () => {
                   <div className="bg-gray-100 p-2 rounded-lg">
                     <CalendarIcon className="w-5 h-5 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-[#002B6B] text-lg">
+                  <h4 className="font-bold text-[#4a90f9] text-lg">
                     Fechas importantes
                   </h4>
                 </div>
 
-                <p className="text-[#002B6B] font-bold text-sm mb-1">
+                <p className="text-[#4a90f9] font-bold text-sm mb-1">
                   Fecha de creación:
                 </p>
                 <p className="text-gray-700 font-medium text-lg">

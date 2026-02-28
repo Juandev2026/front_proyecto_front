@@ -1083,7 +1083,7 @@ const Recursos = () => {
                                                                       '_blank'
                                                                     )
                                                                   }
-                                                                  className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                                  className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
                                                                 >
                                                                   <DownloadIcon className="w-3.5 h-3.5 mr-1.5" />{' '}
                                                                   Bajar
@@ -1229,7 +1229,7 @@ const Recursos = () => {
               </button>
               <button
                 onClick={handleSaveIntro}
-                className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-800 transition-colors"
+                className="bg-blue-900 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Actualizar Contenido
               </button>
@@ -1266,7 +1266,7 @@ const Recursos = () => {
             <div className="p-6 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Nombre de la sección *
                 </label>
                 <input
@@ -1282,7 +1282,7 @@ const Recursos = () => {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Descripción (opcional)
                 </label>
                 <textarea
@@ -1303,13 +1303,13 @@ const Recursos = () => {
             <div className="p-6 pt-0 flex gap-4">
               <button
                 onClick={() => setIsAddSectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreateSection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
               >
                 Crear Sección
               </button>
@@ -1430,7 +1430,7 @@ const Recursos = () => {
               </button>
               <button
                 onClick={handleCreateResource}
-                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
               >
                 Guardar Recurso
               </button>
@@ -1461,7 +1461,7 @@ const Recursos = () => {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Nombre de la Subsección *
                 </label>
                 <input
@@ -1479,7 +1479,7 @@ const Recursos = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Descripción (Opcional)
                 </label>
                 <textarea
@@ -1498,13 +1498,13 @@ const Recursos = () => {
             <div className="p-6 pt-0 flex gap-4">
               <button
                 onClick={() => setIsAddSubsectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreateSubsection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
               >
                 Crear
               </button>
@@ -1531,7 +1531,7 @@ const Recursos = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Nombre de la sección *
                 </label>
                 <input
@@ -1548,7 +1548,7 @@ const Recursos = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Descripción (opcional)
                 </label>
                 <textarea
@@ -1567,13 +1567,13 @@ const Recursos = () => {
             <div className="p-6 pt-0 flex gap-4">
               <button
                 onClick={() => setIsEditSectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleUpdateSection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
               >
                 Actualizar
               </button>
@@ -1600,7 +1600,7 @@ const Recursos = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Nombre de la Subsección *
                 </label>
                 <input
@@ -1617,7 +1617,7 @@ const Recursos = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Descripción (Opcional)
                 </label>
                 <textarea
@@ -1636,13 +1636,13 @@ const Recursos = () => {
             <div className="p-6 pt-0 flex gap-4">
               <button
                 onClick={() => setIsEditSubsectionModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleUpdateSubsection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
               >
                 Actualizar
               </button>
@@ -1676,7 +1676,7 @@ const Recursos = () => {
             <div className="p-6 space-y-4">
               {/* Nombre Archivo */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Nombre del archivo *
                 </label>
                 <input
@@ -1695,7 +1695,7 @@ const Recursos = () => {
 
               {/* PDF Upload */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Documento PDF *
                 </label>
                 <div className="flex gap-2">
@@ -1710,7 +1710,7 @@ const Recursos = () => {
                         : editingResource.pdf
                     }
                   />
-                  <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
+                  <label className="cursor-pointer bg-[#4a90f9] hover:bg-blue-600 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
                     <input
                       type="file"
@@ -1724,7 +1724,7 @@ const Recursos = () => {
 
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-2 text-left">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-2 text-left">
                   Imagen de portada (Opcional)
                 </label>
                 <div className="flex gap-2">
@@ -1739,7 +1739,7 @@ const Recursos = () => {
                         : editingResource.imagen || ''
                     }
                   />
-                  <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
+                  <label className="cursor-pointer bg-[#4a90f9] hover:bg-blue-600 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
                     <input
                       type="file"
@@ -1768,14 +1768,14 @@ const Recursos = () => {
             <div className="p-6 pt-0 flex gap-4">
               <button
                 onClick={() => setIsEditResourceModalOpen(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-gray-50 transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-gray-50 transition-colors font-medium text-sm"
                 disabled={uploading}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleUpdateResource}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm flex justify-center items-center"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm flex justify-center items-center"
                 disabled={uploading}
               >
                 {uploading ? (

@@ -22,6 +22,7 @@ import {
   tipoAccesoService,
   TipoAcceso,
 } from '../../../services/tipoAccesoService';
+import { examenService } from '../../../services/examenService';
 
 // Interfaz para definir la estructura de datos
 interface Seccion {
@@ -38,6 +39,7 @@ interface Seccion {
   modalidadId?: number;
   nivelId?: number;
   especialidadId?: number;
+  id_examen?: number;
 }
 
 // Add this helper function before the component
@@ -90,21 +92,28 @@ const AdminPremiumSecciones = () => {
   const fetchSections = async () => {
     setIsLoading(true);
     try {
-      const data = await fuenteService.getAll();
+      const data = await examenService.getPropios();
       const transformed: Seccion[] = data.map((s) => ({
-        ...s,
+        id: s.fuenteId || s.id, // Usamos fuenteId para CRUD; fallback a s.id si no existe
+        id_examen: s.id, // Guardamos el ID de examen por si se necesita
+        nombre: s.fuenteNombre || 'Sin nombre',
+        descripcion: '',
+        tipoExamenId: s.tipoExamenId,
         tipoExamenNombre: s.tipoExamenNombre || 'General',
-        cantidadCategorias: s.cantidadCategorias || s.categorias?.length || 0,
-        categorias: (s.categorias || []).map((c) => ({
-          ...c,
-          descripcion: `Mod: ${c.modalidadId}${
-            c.nivelId ? `, Niv: ${c.nivelId}` : ''
-          }${c.especialidadId ? `, Esp: ${c.especialidadId}` : ''}`,
+        esVisible: s.visible,
+        categorias: (s.examenesPropios || []).map((c: any) => ({
+          modalidadId: c.modalidadId,
+          nivelId: c.nivelId,
+          especialidadId: c.especialidadId,
+          descripcion: `${c.modalidadNombre || 'Mod: ' + c.modalidadId}${
+            c.nivelNombre ? `, ${c.nivelNombre}` : ''
+          }${c.especialidadNombre ? `, ${c.especialidadNombre}` : ''}`,
         })),
+        cantidadCategorias: s.examenesPropios?.length || 0,
       }));
       setSecciones(transformed);
     } catch (error) {
-      console.error('Error loading sections:', error);
+      console.error('Error loading sections (propias):', error);
     } finally {
       setIsLoading(false);
     }
@@ -377,7 +386,7 @@ const AdminPremiumSecciones = () => {
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#002B6B]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4a90f9]"></div>
         </div>
       </AdminLayout>
     );
@@ -386,7 +395,7 @@ const AdminPremiumSecciones = () => {
   return (
     <AdminLayout>
       {/* --- HEADER --- */}
-      <div className="bg-[#002B6B] text-white p-4 rounded-t-lg mb-6 flex flex-col justify-center items-center shadow-lg">
+      <div className="bg-[#4a90f9] text-white p-4 rounded-t-lg mb-6 flex flex-col justify-center items-center shadow-lg">
         <h1 className="text-xl font-bold">Administrar Secciones</h1>
         <p className="text-sm opacity-90">Exámenes Propios ED</p>
       </div>
@@ -425,7 +434,7 @@ const AdminPremiumSecciones = () => {
           {/* Add Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-[#002B6B] hover:bg-blue-800 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center shadow-md transition-colors whitespace-nowrap"
+            className="bg-[#4a90f9] hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center shadow-md transition-colors whitespace-nowrap"
           >
             <PlusIcon className="w-4 h-4 mr-2" />
             Agregar sección
@@ -629,7 +638,7 @@ const AdminPremiumSecciones = () => {
             <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
               {/* Name */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Nombre *
                 </label>
                 <input
@@ -645,7 +654,7 @@ const AdminPremiumSecciones = () => {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Descripción *
                 </label>
                 <textarea
@@ -663,7 +672,7 @@ const AdminPremiumSecciones = () => {
 
               {/* Tipo de Examen */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Tipo de Examen *
                 </label>
                 <select
@@ -721,7 +730,7 @@ const AdminPremiumSecciones = () => {
 
               {/* Categorías Section */}
               <div className="pt-2 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-[#002B6B] mb-3">
+                <h3 className="text-sm font-bold text-[#4a90f9] mb-3">
                   Categorías *
                 </h3>
 
@@ -867,13 +876,13 @@ const AdminPremiumSecciones = () => {
             <div className="p-6 pt-4 flex gap-4 bg-gray-50 border-t border-gray-100">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#002B6B] hover:bg-white transition-colors font-medium text-sm"
+                className="flex-1 py-2 border border-blue-400 rounded-lg text-[#4a90f9] hover:bg-white transition-colors font-medium text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreateSection}
-                className="flex-1 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
+                className="flex-1 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-900 transition-colors font-medium text-sm"
               >
                 Crear Sección
               </button>
@@ -900,7 +909,7 @@ const AdminPremiumSecciones = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Nombre *
                 </label>
                 <input
@@ -917,7 +926,7 @@ const AdminPremiumSecciones = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Descripción *
                 </label>
                 <textarea
@@ -934,7 +943,7 @@ const AdminPremiumSecciones = () => {
 
               {/* Tipo de Examen */}
               <div>
-                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Tipo de Examen *
                 </label>
                 <select
@@ -958,7 +967,7 @@ const AdminPremiumSecciones = () => {
 
               {/* Categorías Section */}
               <div className="pt-2 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-[#002B6B] mb-3">
+                <h3 className="text-sm font-bold text-[#4a90f9] mb-3">
                   Categorías *
                 </h3>
 
@@ -1117,7 +1126,7 @@ const AdminPremiumSecciones = () => {
               </button>
               <button
                 onClick={handleUpdateSection}
-                className="px-4 py-2 bg-[#002B6B] text-white rounded-lg hover:bg-blue-900 font-medium text-sm"
+                className="px-4 py-2 bg-[#4a90f9] text-white rounded-lg hover:bg-blue-900 font-medium text-sm"
               >
                 Actualizar
               </button>

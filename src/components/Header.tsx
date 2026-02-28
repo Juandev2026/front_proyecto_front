@@ -39,7 +39,7 @@ const Menu = () => {
                   {!isAuthenticated && (
                     <>
                       <Link href="/login">
-                        <a className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
+                        <a className="text-white bg-[#4a90f9] hover:bg-[#4a90f9]/80 px-3 py-1.5 rounded-md text-sm font-bold shadow-sm transition-colors whitespace-nowrap">
                           Login
                         </a>
                       </Link>
@@ -84,7 +84,7 @@ const Menu = () => {
                       : '/planes?showVideo=true'
                   }
                 >
-                  <a className="bg-blue-600 text-white px-2 py-1.5 rounded text-[9px] font-bold shadow-sm whitespace-nowrap">
+                  <a className="bg-[#4a90f9] text-white px-2 py-1.5 rounded text-[9px] font-bold shadow-sm whitespace-nowrap">
                     AVEND ESCALA
                   </a>
                 </Link>
@@ -114,7 +114,7 @@ const Menu = () => {
                         : '/planes?showVideo=true'
                     }
                   >
-                    <a className="bg-blue-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all hover:scale-105 whitespace-nowrap">
+                    <a className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#4a90f9]/80 transition-all hover:scale-105 whitespace-nowrap">
                       AVEND ESCALA
                     </a>
                   </Link>
@@ -144,7 +144,7 @@ const Menu = () => {
 
                 {/* AVEND IUS */}
                 <div className="relative group">
-                  <div className="bg-[#002B6B] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#001D4A] transition-all hover:scale-105 cursor-default whitespace-nowrap">
+                  <div className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#4a90f9]/80 transition-all hover:scale-105 cursor-default whitespace-nowrap">
                     AVEND IUS
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -366,7 +366,7 @@ const Menu = () => {
                       user?.role?.toUpperCase() === 'ADMIN' ||
                       user?.role?.toUpperCase() === 'SUBADMIN') && (
                       <Link href="/bancoPreguntas">
-                        <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-blue-700 rounded-full transition-colors shadow-md">
+                        <a className="block w-full px-5 py-3 text-center font-bold text-white bg-primary hover:bg-[#4a90f9]/80 rounded-full transition-colors shadow-md">
                           Aula Virtual
                         </a>
                       </Link>

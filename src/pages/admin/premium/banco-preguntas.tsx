@@ -41,6 +41,7 @@ import { uploadService } from '../../../services/uploadService';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
 
+
 // Dynamic import for ReactQuill
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -146,8 +147,9 @@ const Recursos = () => {
       });
     }
 
-    // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado (ADMIN_CATALOG)
-    if (userRole === 'Admin') return ADMIN_CATALOG;
+    // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado por la API (rawGroupedData)
+    // Usamos ADMIN_CATALOG solo como fallback inicial si la API aún no responde
+    if (userRole === 'Admin') return rawGroupedData.length > 0 ? rawGroupedData : ADMIN_CATALOG;
 
     // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
     return combined
@@ -207,11 +209,13 @@ const Recursos = () => {
       }));
   }, [rawGroupedData, loginExamenes, userRole]);
 
+
   const [allExams, setAllExams] = useState<Examen[]>([]);
   const [tipoPreguntas, setTipoPreguntas] = useState<TipoPregunta[]>([]);
   const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [itemsLoading, setItemsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -301,6 +305,51 @@ const Recursos = () => {
         enunciadoImageInputRef.current.value = '';
     }
   };
+
+  const selectedModalidadNombre = useMemo(() => {
+    if (!selectedModalidad) return '';
+    for (const tipo of groupedData) {
+      for (const fuente of tipo.fuentes) {
+        const mod = fuente.modalidades.find(
+          (m) => m.modalidadId === Number(selectedModalidad)
+        );
+        if (mod) return mod.modalidadNombre;
+      }
+    }
+    return '';
+  }, [groupedData, selectedModalidad]);
+
+  const selectedNivelNombre = useMemo(() => {
+    if (!selectedNivel) return '';
+    for (const tipo of groupedData) {
+      for (const fuente of tipo.fuentes) {
+        for (const mod of fuente.modalidades) {
+          const niv = mod.niveles.find(
+            (n) => n.nivelId === Number(selectedNivel)
+          );
+          if (niv) return niv.nivelNombre;
+        }
+      }
+    }
+    return '';
+  }, [groupedData, selectedNivel]);
+
+  const selectedEspecialidadNombre = useMemo(() => {
+    if (!selectedEspecialidad) return '';
+    for (const tipo of groupedData) {
+      for (const fuente of tipo.fuentes) {
+        for (const mod of fuente.modalidades) {
+          for (const niv of mod.niveles) {
+            const esp = niv.especialidades.find(
+              (e) => e.especialidadId === Number(selectedEspecialidad)
+            );
+            if (esp) return esp.especialidadNombre;
+          }
+        }
+      }
+    }
+    return '';
+  }, [groupedData, selectedEspecialidad]);
 
   const addJustificationText = () => {
     setJustificationBlocks([
@@ -496,9 +545,9 @@ const Recursos = () => {
   const availableYears = useMemo(() => {
     if (!selectedTipo || !selectedFuente) return [];
 
-    // Prioridad 1: Si es Admin, usamos la jerarquía de ADMIN_CATALOG
+    // Prioridad 1: Si es Admin, usamos la jerarquía de groupedData (que ya viene de API o fallback)
     if (userRole === 'Admin') {
-      const tipo = ADMIN_CATALOG.find(
+      const tipo = groupedData.find(
         (t) => t.tipoExamenId === Number(selectedTipo)
       );
       const fuente = tipo?.fuentes.find(
@@ -510,21 +559,28 @@ const Recursos = () => {
       const nivel = modalidad?.niveles.find(
         (n) => n.nivelId === Number(selectedNivel)
       );
-      const especialidad = nivel?.especialidades.find((e) =>
-        selectedEspecialidad === ''
-          ? e.especialidadId === null || e.especialidadId === 0
-          : e.especialidadId === Number(selectedEspecialidad)
-      );
+      const especialidad = nivel?.especialidades.find((e) => {
+        const effSel = selectedEspecialidad === '' ? 0 : Number(selectedEspecialidad);
+        const effId = e.especialidadId === null ? 0 : Number(e.especialidadId);
+        return effSel === effId;
+      });
 
       if (especialidad?.years) {
-        return especialidad.years.map((y) => ({ year: y.year }));
+        return especialidad.years.map((y: any) => ({ 
+          year: y.year, 
+          count: y.count,
+          examenId: y.examenId || y.id // Some APIs use id, others examenId in years array
+        }));
       }
 
       // Fallback for NINGUNO level if no specialty selected
       if (!especialidad && nivel && !selectedEspecialidad) {
         const defaultEsp = nivel.especialidades[0];
         if (defaultEsp?.years)
-          return defaultEsp.years.map((y) => ({ year: y.year }));
+          return defaultEsp.years.map((y: any) => ({ 
+            year: y.year,
+            examenId: y.examenId || y.id
+          }));
       }
     }
 
@@ -551,7 +607,9 @@ const Recursos = () => {
             : e.especialidadId === effEspecialidadId)
       )
       .flatMap((e) =>
-        (e as any).years ? (e as any).years.map((y: any) => y.year) : [e.year]
+        (e as any).years 
+          ? (e as any).years.map((y: any) => ({ year: y.year, examenId: e.id })) 
+          : [{ year: e.year, examenId: e.id }]
       );
 
     const userExamsList = Array.isArray(loginExamenes)
@@ -571,19 +629,22 @@ const Recursos = () => {
       )
       .flatMap(
         (le: any) =>
-          le.years?.map((y: any) => y.year) ||
-          (le.year !== undefined ? [le.year] : [])
+          le.years?.map((y: any) => ({ year: y.year, examenId: le.id })) ||
+          (le.year !== undefined ? [{ year: le.year, examenId: le.id }] : [])
       );
 
-    const allYears = Array.from(
-      new Set([...filteredFromCatalog, ...filteredFromUser])
-    ).filter(
-      (y) => y !== null && y !== undefined && y !== '' && y !== 0 && y !== '0'
-    );
+    const merged = [...filteredFromCatalog, ...filteredFromUser];
+    const uniqueYearsMap = new Map<string, number>();
+    
+    merged.forEach(item => {
+      if (item.year && !uniqueYearsMap.has(String(item.year))) {
+        uniqueYearsMap.set(String(item.year), item.examenId);
+      }
+    });
 
-    return allYears
-      .sort((a, b) => Number(b) - Number(a))
-      .map((y) => ({ year: y.toString() }));
+    return Array.from(uniqueYearsMap.entries())
+      .map(([year, examenId]) => ({ year, examenId }))
+      .sort((a, b) => Number(b.year) - Number(a.year));
   }, [
     selectedTipo,
     selectedFuente,
@@ -593,6 +654,7 @@ const Recursos = () => {
     allExams,
     loginExamenes,
     userRole,
+    groupedData
   ]);
 
   // --- CONTINUOUS INDEXING LOGIC ---
@@ -820,11 +882,11 @@ const Recursos = () => {
           children.forEach((c: any) => {
             const type = c.getAttribute('data-block-type');
             if (type === 'image') {
-              const img = c.querySelector('img');
+              const imgTag = c.querySelector('img');
               blocks.push({
                 id: Math.random().toString(),
                 type: 'image',
-                content: img?.src || '',
+                content: imgTag?.src || '',
               });
             } else {
               blocks.push({
@@ -1028,10 +1090,10 @@ const Recursos = () => {
       });
       alert('Año añadido con éxito.');
       setNewYearInput('');
-      await fetchData();
+      await fetchData(true);
       setSelectedYear(year);
     } catch (e: any) {
-      alert(`Error creando el año/examen: ${e.message}`);
+      alert('Error creando el año/examen: ' + e.message);
     } finally {
       setLoading(false);
     }
@@ -1049,62 +1111,29 @@ const Recursos = () => {
 
     try {
       setLoading(true);
-      // Determine effective IDs (same logic as resolveCurrentExamenId)
-      const effModalidadId = selectedModalidad ? Number(selectedModalidad) : 0;
-      const effNivelId = selectedNivel ? Number(selectedNivel) : 0;
-      let effEspecialidadId = 0;
-      if (selectedEspecialidad) {
-        effEspecialidadId = Number(selectedEspecialidad);
-      } else if (
-        availableEspecialidades.length === 1 &&
-        (!availableEspecialidades[0]?.especialidadId ||
-          availableEspecialidades[0].especialidadId === 0)
-      ) {
-        effEspecialidadId = 0;
-      }
+      
+      const payload = {
+        tipoExamenId: Number(selectedTipo),
+        fuenteId: Number(selectedFuente),
+        modalidadId: Number(selectedModalidad),
+        nivelId: selectedNivel ? Number(selectedNivel) : null,
+        especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : null,
+        year: isNaN(Number(selectedYear)) ? selectedYear : Number(selectedYear),
+      };
 
-      const allExams = await examenService.getAll();
-      const targetExam = allExams.find(
-        (e: any) =>
-          (String(e.year) === String(selectedYear) ||
-            (e.years &&
-              Array.isArray(e.years) &&
-              e.years.some(
-                (y: any) => String(y.year) === String(selectedYear)
-              ))) &&
-          e.tipoExamenId === Number(selectedTipo) &&
-          e.fuenteId === Number(selectedFuente) &&
-          (effModalidadId === 0
-            ? !e.modalidadId || e.modalidadId === 0
-            : e.modalidadId === effModalidadId) &&
-          (effNivelId === 0
-            ? !e.nivelId || e.nivelId === 0
-            : e.nivelId === effNivelId) &&
-          (effEspecialidadId === 0
-            ? !e.especialidadId || e.especialidadId === 0
-            : e.especialidadId === effEspecialidadId)
-      );
-
-      if (!targetExam) {
-        alert(
-          'No se encontró el examen correspondiente para eliminar. (Asegúrate de que el endpoint getAll esté soportado)'
-        );
-        return;
-      }
-
-      await examenService.removeYear(targetExam.id, String(selectedYear));
+      await examenService.removeYear(payload);
       alert('Año eliminado correctamente.');
       setSelectedYear('');
-      await fetchData();
+      await fetchData(true);
     } catch (e: any) {
-      alert(`Error eliminando: ${e.message}`);
+      alert('Error eliminando: ' + e.message);
     } finally {
       setLoading(false);
     }
   };
 
   // --- DATA FETCHING ---
-  const fetchData = async () => {
+  const fetchData = async (forceRefreshMetadata = false) => {
     try {
       // 1. Load Filters (Examen Grouped & Tipos) - Only if not loaded?
       if (
@@ -1116,7 +1145,7 @@ const Recursos = () => {
       }
       // Actually we need them to populate dropdowns.
       // Maybe we can split this? For now, keep loading controls.
-      if (rawGroupedData.length === 0) {
+      if (forceRefreshMetadata || rawGroupedData.length === 0) {
         try {
           const grouped = await examenService.getGrouped();
           setRawGroupedData(grouped);
@@ -1125,7 +1154,7 @@ const Recursos = () => {
         }
       }
 
-      if (allExams.length === 0) {
+      if (forceRefreshMetadata || allExams.length === 0) {
         try {
           const all = await examenService.getAll();
           setAllExams(all);
@@ -1307,8 +1336,8 @@ const Recursos = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, stayInCreateMode = false) => {
+    if (e) e.preventDefault();
 
     // Validar Tipo de Pregunta
     if (!newItem.tipoPreguntaId) {
@@ -1347,6 +1376,7 @@ const Recursos = () => {
     }
 
     try {
+      setIsSaving(true);
       let finalUrl = newItem.imagen;
       if (imageFile) {
         finalUrl = await uploadService.uploadImage(imageFile);
@@ -1442,13 +1472,33 @@ const Recursos = () => {
         }
       }
 
+      const prevClasificacionId = newItem.clasificacionId;
+      const prevTipoPreguntaId = newItem.tipoPreguntaId;
+
       // DO NOT reset filters, keep context
-      setViewMode('list');
+      if (!stayInCreateMode) {
+        setViewMode('list');
+      }
       resetForm();
+
+      if (stayInCreateMode) {
+        setNumeroPregunta((numPreguntaParsed + 1).toString());
+        setNewItem((prev) => ({
+          ...prev,
+          clasificacionId: prevClasificacionId,
+          tipoPreguntaId: prevTipoPreguntaId,
+          examenId: targetExamenId,
+        }));
+      }
+
+      // Sync the list view with the server to ensure all fields (like respuestaCorrecta) are correctly mapped
+      await fetchData();
     } catch (err) {
       console.error(err);
       // eslint-disable-next-line no-alert
       alert('Error guardando pregunta');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1902,13 +1952,18 @@ const Recursos = () => {
                 {/* 6. FOOTER ACTIONS */}
                 <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex justify-end gap-4 md:px-10">
                   <button
-                    onClick={handleSubmit}
-                    className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors"
+                    onClick={() => handleSubmit(undefined, false)}
+                    disabled={isSaving}
+                    className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50"
                   >
-                    Guardar Pregunta
+                    {isSaving ? 'Guardando...' : 'Guardar Pregunta'}
                   </button>
-                  <button className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors">
-                    Guardar y Añadir otra
+                  <button
+                    onClick={() => handleSubmit(undefined, true)}
+                    disabled={isSaving}
+                    className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? 'Guardando...' : 'Guardar y Añadir otra'}
                   </button>
                 </div>
               </>
@@ -2117,9 +2172,9 @@ const Recursos = () => {
                     onChange={(e) => setSelectedYear(e.target.value)}
                   >
                     <option value="">Seleccionar Año</option>
-                    {availableYears.map((y: { year: string }) => (
+                    {availableYears.map((y: { year: string; count?: number }) => (
                       <option key={y.year} value={y.year}>
-                        {y.year}
+                        {y.year} {y.count !== undefined ? `(${y.count})` : ''}
                       </option>
                     ))}
                   </select>
@@ -2325,9 +2380,19 @@ const Recursos = () => {
                     </span>
                   )}
                   {/* We could map other selected IDs to names here if available in state arrays or lookups */}
-                  {selectedModalidad && (
+                  {selectedModalidadNombre && (
                     <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">
-                      Modalidad ID: {selectedModalidad}
+                      {selectedModalidadNombre}
+                    </span>
+                  )}
+                  {selectedNivelNombre && (
+                    <span className="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">
+                      {selectedNivelNombre}
+                    </span>
+                  )}
+                  {selectedEspecialidadNombre && (
+                    <span className="bg-pink-100 text-pink-800 text-xs px-3 py-1 rounded-full font-medium">
+                      {selectedEspecialidadNombre}
                     </span>
                   )}
                   {selectedYear && (
@@ -2544,7 +2609,7 @@ const Recursos = () => {
                                     sub.alternativas.length > 0
                                       ? sub.alternativas.map((alt: any) => {
                                           const respString =
-                                            sub.respuestaCorrecta?.toString();
+                                            (sub.respuestaCorrecta ?? sub.respuesta)?.toString();
                                           const isCorrect =
                                             alt.id.toString() === respString;
                                           return (
@@ -2649,7 +2714,7 @@ const Recursos = () => {
                                   // Use the raw ID for comparison, same as sub-questions
                                   const isCorrect =
                                     alt.id.toString() ===
-                                    item.respuestaCorrecta?.toString();
+                                    (item.respuestaCorrecta ?? item.respuesta)?.toString();
                                   return (
                                     <div
                                       key={alt.id}
