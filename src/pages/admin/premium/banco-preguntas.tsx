@@ -275,6 +275,29 @@ const Recursos = () => {
     JustificationBlock[]
   >([]);
   const justificationFileInputRef = React.useRef<HTMLInputElement>(null);
+  const enunciadoImageInputRef = React.useRef<HTMLInputElement>(null);
+  const [enunciadoImages, setEnunciadoImages] = React.useState<string[]>([]);
+  const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] = React.useState(false);
+
+  const handleEnunciadoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingEnunciadoImage(true);
+    try {
+      const url = await uploadService.uploadImage(file);
+      setEnunciadoImages((prev) => [...prev, url]);
+      // También activar el editor si estaba vacío
+      if (!newItem.enunciado || newItem.enunciado === '<p><br></p>') {
+        setNewItem({ ...newItem, enunciado: '<p> </p>' });
+      }
+    } catch (err) {
+      alert('Error subiendo imagen de enunciado');
+    } finally {
+      setIsUploadingEnunciadoImage(false);
+      if (enunciadoImageInputRef.current) enunciadoImageInputRef.current.value = '';
+    }
+  };
+
 
   const addJustificationText = () => {
     setJustificationBlocks([
@@ -699,10 +722,39 @@ const Recursos = () => {
       }
     }
 
+    const rawEnunciado = item.enunciados
+      ? item.enunciados.map((e: any) => e.contenido).join('')
+      : item.enunciado || '';
+
+    let cleanedEnunciado = rawEnunciado;
+    const extractedImages: string[] = [];
+
+    if (typeof window !== 'undefined') {
+      const div = document.createElement('div');
+      div.innerHTML = rawEnunciado;
+      
+      // Extract all images from enunciado, whether wrapped in data-block-type or not
+      const images = Array.from(div.querySelectorAll('img'));
+      images.forEach((img: any) => {
+        if (img.src) {
+          extractedImages.push(img.src);
+          // If wrapped in our custom block, remove the whole wrapper
+          const parent = img.closest('[data-block-type="image"]');
+          if (parent) {
+            parent.remove();
+          } else {
+            // Otherwise remove just the image
+            img.remove();
+          }
+        }
+      });
+      cleanedEnunciado = div.innerHTML;
+    }
+
+    setEnunciadoImages(extractedImages);
+
     setNewItem({
-      enunciado: item.enunciados
-        ? item.enunciados.map((e: any) => e.contenido).join('')
-        : item.enunciado || '',
+      enunciado: cleanedEnunciado,
       respuesta: item.respuesta?.toString() || '',
       sustento: item.sustento || '',
       examenId: item.examenId,
@@ -807,6 +859,7 @@ const Recursos = () => {
     setJustificationBlocks([]);
     setImageFile(null);
     setNumeroPregunta('');
+    setEnunciadoImages([]);
     setNewItem({
       enunciado: '',
       respuesta: '',
@@ -1362,7 +1415,13 @@ const Recursos = () => {
         enunciados: [
           {
             id: 0, // Server manages sequence
-            contenido: newItem.enunciado,
+            contenido:
+              newItem.enunciado +
+              (enunciadoImages.length > 0
+                ? enunciadoImages
+                    .map((url) => `<div data-block-type="image"><img src="${url}" alt="imagen" /></div>`)
+                    .join('')
+                : ''),
           },
         ],
         alternativas: mappedAlternativas,
@@ -1581,12 +1640,25 @@ const Recursos = () => {
                       >
                         <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
                       </button>
-                      <button className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors">
-                        <span className="font-bold text-lg leading-none">
-                          +
-                        </span>{' '}
-                        Añadir Imagen
+                      <button
+                        onClick={() => enunciadoImageInputRef.current?.click()}
+                        disabled={isUploadingEnunciadoImage}
+                        className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors disabled:opacity-60"
+                      >
+                        {isUploadingEnunciadoImage ? (
+                          <span className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full inline-block" />
+                        ) : (
+                          <span className="font-bold text-lg leading-none">+</span>
+                        )}{' '}
+                        {isUploadingEnunciadoImage ? 'Subiendo...' : 'Añadir Imagen'}
                       </button>
+                      <input
+                        type="file"
+                        ref={enunciadoImageInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleEnunciadoImageUpload}
+                      />
                     </div>
                   </div>
 
@@ -1614,6 +1686,25 @@ const Recursos = () => {
                         className="bg-white"
                         placeholder="Escribe el enunciado aquí..."
                       />
+                    </div>
+                  )}
+
+                  {/* Imágenes cargadas en el enunciado */}
+                  {enunciadoImages.length > 0 && (
+                    <div className="space-y-3 mt-4">
+                      {enunciadoImages.map((url, imgIdx) => (
+                        <div key={imgIdx} className="relative group border border-gray-200 rounded-lg p-3 bg-gray-50 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setEnunciadoImages((prev) => prev.filter((_, i) => i !== imgIdx))}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors z-10"
+                            title="Eliminar imagen"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                          <img src={url} alt={`Imagen ${imgIdx + 1}`} className="max-h-64 rounded shadow-sm" />
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -1760,7 +1851,7 @@ const Recursos = () => {
                         <button
                           type="button"
                           onClick={() => removeJustificationBlock(block.id)}
-                          className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute -right-2 -top-2 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 z-10 transition-colors"
                           title="Eliminar bloque"
                         >
                           <TrashIcon className="w-4 h-4" />

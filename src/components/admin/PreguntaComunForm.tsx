@@ -117,11 +117,6 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               contenido: s.alternativaC,
               esCorrecta: s.respuestaCorrecta === 'C',
             },
-            {
-              id: 'D',
-              contenido: s.alternativaD,
-              esCorrecta: s.respuestaCorrecta === 'D',
-            },
           ],
           sustento: s.sustento || '',
           isExpanded: false,
@@ -132,11 +127,6 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             clasificacionId: defaultClasificacionId || 0,
             specificStatement: [],
             alternatives: [
-              {
-                id: Math.random().toString(36),
-                contenido: '',
-                esCorrecta: false,
-              },
               {
                 id: Math.random().toString(36),
                 contenido: '',
@@ -318,7 +308,6 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           { id: Math.random().toString(36), contenido: '', esCorrecta: false },
           { id: Math.random().toString(36), contenido: '', esCorrecta: false },
           { id: Math.random().toString(36), contenido: '', esCorrecta: false },
-          { id: Math.random().toString(36), contenido: '', esCorrecta: false },
         ],
         sustento: '',
         isExpanded: true,
@@ -446,7 +435,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         subPreguntas: subQuestions.map((q, index) => {
           const correctIndex = q.alternatives.findIndex((a) => a.esCorrecta);
           const respuestaChar =
-            correctIndex !== -1 ? ['A', 'B', 'C', 'D'][correctIndex] || '' : '';
+            correctIndex !== -1 ? ['A', 'B', 'C'][correctIndex] || '' : '';
 
           return {
             id: initialParent ? (q as any).id || 0 : index + 1, // Force 0 if creating
