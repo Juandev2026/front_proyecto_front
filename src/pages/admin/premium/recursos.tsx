@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 import {
   PlusIcon,
@@ -18,7 +19,6 @@ import AdminLayout from '../../../components/AdminLayout';
 import { contenidoIntroductorioService } from '../../../services/contenidoIntroductorioService';
 import { seccionesService } from '../../../services/seccionesService';
 import { seccionRecursosService } from '../../../services/seccionRecursosService';
-import { uploadService } from '../../../services/uploadService';
 
 // --- TYPES ---
 interface Resource {
@@ -98,13 +98,20 @@ const Recursos = () => {
     useState(false);
   const [newSubsection, setNewSubsection] = useState({
     nombre: '',
+    descripcion: '',
     sectionId: 0,
   });
 
   // New Resource Modal State
   const [isAddResourceModalOpen, setIsAddResourceModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [newResource, setNewResource] = useState({
+  const [newResource, setNewResource] = useState<{
+    idSeccion: number;
+    idSubSeccion: number;
+    nombreArchivo: string;
+    pdf: File | string;
+    imagen: File | string;
+  }>({
     idSeccion: 0,
     idSubSeccion: 0,
     nombreArchivo: '',
@@ -114,7 +121,14 @@ const Recursos = () => {
 
   // Edit Resource Modal State
   const [isEditResourceModalOpen, setIsEditResourceModalOpen] = useState(false);
-  const [editingResource, setEditingResource] = useState({
+  const [editingResource, setEditingResource] = useState<{
+    idSeccion: number;
+    idSubSeccion: number;
+    numero: number;
+    nombreArchivo: string;
+    pdf: File | string;
+    imagen: File | string;
+  }>({
     idSeccion: 0,
     idSubSeccion: 0,
     numero: 0,
@@ -152,13 +166,13 @@ const Recursos = () => {
         id: s.id,
         nombre: s.nombre,
         descripcion: s.descripcion || '',
-        subSecciones: s.subSecciones.map((sub: any) => {
-          // The API might return 'recurso' (singular) or 'recursos' (array)
+        subSecciones: (s.subSecciones || []).map((sub: any) => {
+          // The API returns 'recurso' (singular) for the each subsection
           let recursosArray: Resource[] = [];
-          if (Array.isArray(sub.recursos)) {
-            recursosArray = sub.recursos;
-          } else if (Array.isArray(sub.recurso)) {
+          if (Array.isArray(sub.recurso)) {
             recursosArray = sub.recurso;
+          } else if (Array.isArray(sub.recursos)) {
+            recursosArray = sub.recursos;
           } else if (sub.recurso) {
             recursosArray = [sub.recurso];
           }
@@ -234,13 +248,14 @@ const Recursos = () => {
       await seccionesService.create({
         nombre: newSection.nombre,
         descripcion: newSection.descripcion,
+        subSeccionesIds: [] // New API requires subSeccionesIds
       });
       setIsAddSectionModalOpen(false);
       setNewSection({ nombre: '', descripcion: '' });
       await fetchSections();
       alert('Sección creada con éxito');
-    } catch (error) {
-      alert('Error al crear la sección.');
+    } catch (error: any) {
+      alert(`Error al crear la sección: ${error.message}`);
     }
   };
 
@@ -266,48 +281,30 @@ const Recursos = () => {
     setIsAddResourceModalOpen(true);
   };
 
-  const handleFileUpload = async (
+  const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: 'pdf' | 'imagen'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const url = await uploadService.uploadImage(file);
-      setNewResource((prev) => ({
-        ...prev,
-        [type]: url,
-      }));
-    } catch (error) {
-      console.error(error);
-      alert('Error al subir el archivo.');
-    } finally {
-      setUploading(false);
-    }
+    setNewResource((prev) => ({
+      ...prev,
+      [type]: file,
+    }));
   };
 
-  const handleFileUpdate = async (
+  const handleFileUpdate = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: 'pdf' | 'imagen'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const url = await uploadService.uploadImage(file);
-      setEditingResource((prev) => ({
-        ...prev,
-        [type]: url,
-      }));
-    } catch (error) {
-      console.error(error);
-      alert('Error al subir el archivo.');
-    } finally {
-      setUploading(false);
-    }
+    setEditingResource((prev) => ({
+      ...prev,
+      [type]: file,
+    }));
   };
 
   const handleCreateResource = async () => {
@@ -327,23 +324,33 @@ const Recursos = () => {
       const formData = new FormData();
       formData.append('IdSeccion', String(newResource.idSeccion));
       formData.append('IdSubSeccion', String(newResource.idSubSeccion));
-      formData.append('NombreArchivo', newResource.nombreArchivo);
-      // We send the URL strings in the Pdf and Imagen fields as per Swagger "string" type
-      formData.append('Pdf', newResource.pdf);
-      formData.append('Imagen', newResource.imagen || '');
+      formData.append('NombreArchivo', newResource.nombreArchivo || '');
+      
+      // Sending actual files as per latest documentation (PdfFiles array and ImagenFile)
+      if (newResource.pdf instanceof File) {
+        formData.append('PdfFiles', newResource.pdf);
+      } else {
+        formData.append('Pdf', newResource.pdf);
+      }
 
-      await seccionRecursosService.create(formData);
+      if (newResource.imagen instanceof File) {
+        formData.append('ImagenFile', newResource.imagen);
+      } else {
+        formData.append('Imagen', newResource.imagen || '');
+      }
+
+      await seccionRecursosService.create(formData as any);
 
       setIsAddResourceModalOpen(false);
       await fetchSections();
       alert('Recurso registrado con éxito');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert(
-        `Error al registrar el recurso: ${
-          error instanceof Error ? error.message : 'Error desconocido'
-        }`
-      );
+      // Informing about the backend error 500 (record "new" has no field "examen_id")
+      const errorMsg = error.message.includes('examen_id') 
+        ? 'Error de servidor: Hay un problema con un trigger en la base de datos (campo examen_id no encontrado). Por favor, contacte al desarrollador backend.'
+        : error.message;
+      alert(`Error al registrar el recurso: ${errorMsg}`);
     } finally {
       setUploading(false);
     }
@@ -378,22 +385,35 @@ const Recursos = () => {
       formData.append('IdSubSeccion', String(editingResource.idSubSeccion));
       formData.append('Numero', String(editingResource.numero));
       formData.append('NombreArchivo', editingResource.nombreArchivo);
-      formData.append('Pdf', editingResource.pdf);
-      formData.append('Imagen', editingResource.imagen || '');
+      
+      if (editingResource.pdf instanceof File) {
+        formData.append('PdfFiles', editingResource.pdf);
+      } else {
+        formData.append('Pdf', editingResource.pdf);
+      }
+
+      if (editingResource.imagen instanceof File) {
+        formData.append('ImagenFile', editingResource.imagen);
+      } else {
+        formData.append('Imagen', editingResource.imagen || '');
+      }
 
       await seccionRecursosService.update(
         editingResource.idSeccion,
         editingResource.idSubSeccion,
         editingResource.numero,
-        formData
+        formData as any
       );
 
       setIsEditResourceModalOpen(false);
       await fetchSections();
       alert('Recurso actualizado con éxito');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Error al actualizar el recurso.');
+      const errorMsg = error.message.includes('examen_id') 
+        ? 'Error de servidor: Problema en la base de datos (examen_id).'
+        : 'Error al actualizar el recurso.';
+      alert(errorMsg);
     } finally {
       setUploading(false);
     }
@@ -429,6 +449,7 @@ const Recursos = () => {
   const [editingSubsection, setEditingSubsection] = useState({
     id: 0,
     nombre: '',
+    descripcion: '',
     sectionId: 0,
   });
 
@@ -439,14 +460,15 @@ const Recursos = () => {
     }
 
     try {
-      // 1. Create the Subsection entity (now trying to send seccionId in body)
+      // 1. Create the Subsection entity
       await seccionesService.createSubseccion(
         newSubsection.sectionId,
-        newSubsection.nombre
+        newSubsection.nombre,
+        newSubsection.descripcion
       );
 
       setIsAddSubsectionModalOpen(false);
-      setNewSubsection({ nombre: '', sectionId: 0 });
+      setNewSubsection({ nombre: '', descripcion: '', sectionId: 0 });
       await fetchSections();
       alert('Subsección creada con éxito.');
     } catch (error) {
@@ -473,13 +495,14 @@ const Recursos = () => {
       await seccionesService.update(editingSection.id, {
         nombre: editingSection.nombre,
         descripcion: editingSection.descripcion,
+        subSeccionesIds: sections.find(s => s.id === editingSection.id)?.subSecciones.map(sub => sub.id) || []
       });
       setIsEditSectionModalOpen(false);
       await fetchSections();
       alert('Sección actualizada con éxito');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Error al actualizar la sección.');
+      alert(`Error al actualizar la sección: ${error.message}`);
     }
   };
 
@@ -487,6 +510,7 @@ const Recursos = () => {
     setEditingSubsection({
       id: sub.id,
       nombre: sub.nombre,
+      descripcion: sub.descripcion || '',
       sectionId,
     });
     setIsEditSubsectionModalOpen(true);
@@ -500,7 +524,8 @@ const Recursos = () => {
     try {
       await seccionesService.updateSubseccion(
         editingSubsection.id,
-        editingSubsection.nombre
+        editingSubsection.nombre,
+        editingSubsection.descripcion
       );
       setIsEditSubsectionModalOpen(false);
       await fetchSections();
@@ -508,6 +533,129 @@ const Recursos = () => {
     } catch (error) {
       console.error(error);
       alert('Error al actualizar la subsección.');
+    }
+  };
+
+  const handleDeleteSubsection = async (id: number) => {
+    if (!confirm('¿Está seguro de eliminar esta subsección?')) return;
+    try {
+      await seccionesService.deleteSubseccion(id);
+      await fetchSections();
+      alert('Subsección eliminada con éxito');
+    } catch (error) {
+      console.error(error);
+      alert('Error al eliminar la subsección.');
+    }
+  };
+
+  const handleOnDragEnd = async (result: DropResult) => {
+    const { destination, source, type } = result;
+
+    if (!destination) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    if (type === 'SECTION') {
+      const newSections = Array.from(sections);
+      const [reorderedItem] = newSections.splice(source.index, 1);
+      if (!reorderedItem) return;
+      newSections.splice(destination.index, 0, reorderedItem);
+
+      setSections(newSections);
+
+      // Prepare payload for backend
+      const reorderPayload = newSections.map((s, index) => ({
+        id: s.id,
+        orden: index,
+      }));
+
+      try {
+        await seccionesService.reorderSecciones(reorderPayload);
+      } catch (error) {
+        console.error('Error reordering sections:', error);
+        alert('Error al guardar el nuevo orden de secciones.');
+        // Optional: revert state on error
+        fetchSections();
+      }
+    } else if (type === 'SUBSECTION') {
+      const sectionId = parseInt(
+        source.droppableId.replace('subsections-list-', '')
+      );
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+      if (sectionIndex === -1) return;
+
+      const newSections = [...sections];
+      const section = newSections[sectionIndex];
+      if (!section) return;
+
+      const newSubsections = [...section.subSecciones];
+      const [reorderedItem] = newSubsections.splice(source.index, 1);
+      if (!reorderedItem) return;
+
+      newSubsections.splice(destination.index, 0, reorderedItem);
+      section.subSecciones = newSubsections;
+      setSections(newSections);
+
+      const reorderPayload = newSubsections.map((sub, index) => ({
+        id: sub.id,
+        orden: index,
+      }));
+
+      try {
+        await seccionesService.reorderSubsecciones(reorderPayload);
+      } catch (error) {
+        console.error('Error reordering subsecciones:', error);
+        alert('Error al guardar el nuevo orden de subsecciones.');
+        fetchSections();
+      }
+    } else if (type === 'RESOURCE') {
+      const subIdStr = source.droppableId.split('-').pop();
+      if (!subIdStr) return;
+      const subId = parseInt(subIdStr);
+      const section = sections.find((s) =>
+        s.subSecciones.some((sub) => sub.id === subId)
+      );
+
+      if (!section) return;
+      const sectionIndex = sections.findIndex((s) => s.id === section.id);
+      if (sectionIndex === -1) return;
+
+      const newSections = [...sections];
+      const targetSection = newSections[sectionIndex];
+      if (!targetSection) return;
+
+      const subIndex = targetSection.subSecciones.findIndex(
+        (sub) => sub.id === subId
+      );
+      if (subIndex === -1) return;
+
+      const targetSubsection = targetSection.subSecciones[subIndex];
+      if (!targetSubsection) return;
+
+      const newResources = [...targetSubsection.recursos];
+      const [reorderedItem] = newResources.splice(source.index, 1);
+      if (!reorderedItem) return;
+
+      newResources.splice(destination.index, 0, reorderedItem);
+      targetSubsection.recursos = newResources;
+      setSections(newSections);
+
+      const reorderPayload = newResources.map((res, index) => ({
+        id: res.numero,
+        orden: index,
+      }));
+
+      try {
+        await seccionRecursosService.reorder(reorderPayload);
+      } catch (error) {
+        console.error('Error reordering resources:', error);
+        alert('Error al guardar el nuevo orden de recursos.');
+        fetchSections();
+      }
     }
   };
 
@@ -638,236 +786,325 @@ const Recursos = () => {
       </div>
 
       {/* --- SECTIONS LIST --- */}
-      <div className="space-y-4">
-        {sections.map((section) => (
-          <div
-            key={section.id}
-            className="bg-white rounded-lg border border-primary/30 shadow-sm overflow-hidden"
-          >
-            {/* Section Header */}
-            <div className="p-4 flex items-center justify-between bg-white">
-              <div className="flex items-center flex-1">
-                <MenuIcon className="w-5 h-5 text-gray-400 mr-4 cursor-move" />
-                <button
-                  onClick={() => toggleSection(section.id)}
-                  className="mr-3 text-gray-500 hover:text-primary transition-colors focus:outline-none"
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="sections-list" type="SECTION">
+          {(provided) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className="space-y-4"
+            >
+              {sections.map((section, sectionIndex) => (
+                <Draggable
+                  key={`section-${section.id}`}
+                  draggableId={`section-${section.id}`}
+                  index={sectionIndex}
                 >
-                  {expandedSections.includes(section.id) ? (
-                    <ChevronDownIcon className="w-5 h-5" />
-                  ) : (
-                    <ChevronRightIcon className="w-5 h-5" />
-                  )}
-                </button>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800 uppercase">
-                    {section.nombre}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5 text-left">
-                    {section.subSecciones.length} subsecciones •{' '}
-                    {section.subSecciones.reduce(
-                      (a, s) => a + s.recursos.length,
-                      0
-                    )}{' '}
-                    recursos
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setNewSubsection({
-                      ...newSubsection,
-                      sectionId: section.id,
-                    });
-                    setIsAddSubsectionModalOpen(true);
-                  }}
-                  className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white"
-                >
-                  <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
-                </button>
-                <button
-                  onClick={() => handleOpenEditSection(section)}
-                  className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors"
-                >
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteSection(section.id)}
-                  className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Subsections */}
-            {expandedSections.includes(section.id) && (
-              <div className="bg-gray-100/30 p-4 border-t border-gray-100 space-y-4">
-                {section.subSecciones.length === 0 ? (
-                  <div className="text-center py-4 text-gray-400 text-sm italic">
-                    No hay subsecciones todavía. ¡Crea una!
-                  </div>
-                ) : (
-                  section.subSecciones.map((sub) => (
+                  {(provided) => (
                     <div
-                      key={sub.id}
-                      className="border border-gray-200 rounded-lg bg-white ml-0 md:ml-8"
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className="bg-white rounded-lg border border-primary/30 shadow-sm overflow-hidden"
                     >
-                      {/* Subsection Header */}
-                      <div className="p-3 flex items-center justify-between border-b border-gray-100">
-                        <div className="flex items-center">
-                          <MenuIcon className="w-4 h-4 text-gray-300 mr-3 cursor-move" />
+                      {/* Section Header */}
+                      <div className="p-4 flex items-center justify-between bg-white">
+                        <div className="flex items-center flex-1 text-left">
+                          <div {...provided.dragHandleProps}>
+                            <MenuIcon className="w-5 h-5 text-gray-400 mr-4 cursor-move" />
+                          </div>
                           <button
-                            onClick={() => toggleSubsection(sub.id)}
-                            className="mr-2 text-gray-400 hover:text-primary transition-colors focus:outline-none"
+                            onClick={() => toggleSection(section.id)}
+                            className="mr-3 text-gray-500 hover:text-primary transition-colors focus:outline-none"
                           >
-                            {expandedSubsections.includes(sub.id) ? (
-                              <ChevronDownIcon className="w-4 h-4" />
+                            {expandedSections.includes(section.id) ? (
+                              <ChevronDownIcon className="w-5 h-5" />
                             ) : (
-                              <ChevronRightIcon className="w-4 h-4" />
+                              <ChevronRightIcon className="w-5 h-5" />
                             )}
                           </button>
-                          <span className="font-bold text-gray-700">
-                            {sub.nombre}
-                          </span>
-                          <span className="ml-2 text-xs text-gray-400">
-                            {sub.recursos.length} documentos disponibles
-                          </span>
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-800 uppercase">
+                              {section.nombre}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {section.subSecciones.length} subsecciones •{' '}
+                              {section.subSecciones.reduce(
+                                (a, s) => a + s.recursos.length,
+                                0
+                              )}{' '}
+                              recursos
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() =>
-                              handleOpenAddResource(section.id, sub.id)
-                            }
-                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                            onClick={() => {
+                              setNewSubsection({
+                                ...newSubsection,
+                                sectionId: section.id,
+                              });
+                              setIsAddSubsectionModalOpen(true);
+                            }}
+                            className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white"
                           >
-                            <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF
-                            libre
+                            <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
                           </button>
                           <button
-                            onClick={() =>
-                              handleOpenAddResource(section.id, sub.id)
-                            }
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                            onClick={() => handleOpenEditSection(section)}
+                            className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors"
                           >
-                            <UploadIcon className="w-3 h-3 mr-1" /> Subir PDF
-                            premium
+                            <PencilIcon className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() =>
-                              handleOpenEditSubsection(sub, section.id)
-                            }
-                            className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-sm font-medium"
+                            onClick={() => handleDeleteSection(section.id)}
+                            className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors"
                           >
-                            <PencilIcon className="w-4 h-4 mr-1.5" /> Editar
-                          </button>
-                          <button className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors">
-                            <TrashIcon className="w-3.5 h-3.5" />
+                            <TrashIcon className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
 
-                      {/* Resources List */}
-                      {expandedSubsections.includes(sub.id) && (
-                        <div className="p-4 bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {sub.recursos.length === 0 ? (
-                            <div className="col-span-full py-4 text-center text-gray-400 text-sm italic">
-                              No hay recursos en esta subsección
+                      {/* Subsections */}
+                      {expandedSections.includes(section.id) && (
+                        <Droppable
+                          droppableId={`subsections-list-${section.id}`}
+                          type="SUBSECTION"
+                        >
+                          {(provided) => (
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              className="bg-gray-100/30 p-4 border-t border-gray-100 space-y-4"
+                            >
+                              {section.subSecciones.length === 0 ? (
+                                <div className="text-center py-4 text-gray-400 text-sm italic">
+                                  No hay subsecciones todavía. ¡Crea una!
+                                </div>
+                              ) : (
+                                section.subSecciones.map((sub, subIndex) => (
+                                  <Draggable
+                                    key={`subsection-${sub.id}`}
+                                    draggableId={`subsection-${sub.id}`}
+                                    index={subIndex}
+                                  >
+                                    {(provided) => (
+                                      <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        className="border border-gray-200 rounded-lg bg-white ml-0 md:ml-8"
+                                      >
+                                        {/* Subsection Header */}
+                                        <div className="p-3 flex items-center justify-between border-b border-gray-100">
+                                          <div className="flex items-center text-left">
+                                            <div {...provided.dragHandleProps}>
+                                              <MenuIcon className="w-4 h-4 text-gray-300 mr-3 cursor-move" />
+                                            </div>
+                                            <button
+                                              onClick={() =>
+                                                toggleSubsection(sub.id)
+                                              }
+                                              className="mr-2 text-gray-400 hover:text-primary transition-colors focus:outline-none"
+                                            >
+                                              {expandedSubsections.includes(
+                                                sub.id
+                                              ) ? (
+                                                <ChevronDownIcon className="w-4 h-4" />
+                                              ) : (
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                              )}
+                                            </button>
+                                            <span className="font-bold text-gray-700">
+                                              {sub.nombre}
+                                            </span>
+                                            <span className="ml-2 text-xs text-gray-400">
+                                              {sub.recursos.length} documentos
+                                              disponibles
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <button
+                                              onClick={() =>
+                                                handleOpenAddResource(
+                                                  section.id,
+                                                  sub.id
+                                                )
+                                              }
+                                              className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                            >
+                                              <UploadIcon className="w-3 h-3 mr-1" />{' '}
+                                              Subir PDF libre
+                                            </button>
+                                            <button
+                                              onClick={() =>
+                                                handleOpenEditSubsection(
+                                                  sub,
+                                                  section.id
+                                                )
+                                              }
+                                              className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-sm font-medium"
+                                            >
+                                              <PencilIcon className="w-4 h-4 mr-1.5" />{' '}
+                                              Editar
+                                            </button>
+                                            <button
+                                              onClick={() =>
+                                                handleDeleteSubsection(sub.id)
+                                              }
+                                              className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors"
+                                            >
+                                              <TrashIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                          </div>
+                                        </div>
+
+                                        {/* Resources List */}
+                                        {expandedSubsections.includes(sub.id) && (
+                                          <Droppable
+                                            droppableId={`resources-list-${sub.id}`}
+                                            type="RESOURCE"
+                                            direction="horizontal"
+                                          >
+                                            {(provided) => (
+                                              <div
+                                                {...provided.droppableProps}
+                                                ref={provided.innerRef}
+                                                className="p-4 bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                                              >
+                                                {sub.recursos.length === 0 ? (
+                                                  <div className="col-span-full py-4 text-center text-gray-400 text-sm italic">
+                                                    No hay recursos en esta
+                                                    subsección
+                                                  </div>
+                                                ) : (
+                                                  sub.recursos.map(
+                                                    (res, resIndex) => (
+                                                      <Draggable
+                                                        key={`resource-${section.id}-${sub.id}-${res.numero}`}
+                                                        draggableId={`resource-${section.id}-${sub.id}-${res.numero}`}
+                                                        index={resIndex}
+                                                      >
+                                                        {(provided) => (
+                                                          <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                            className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 relative group"
+                                                          >
+                                                            <div className="absolute top-2 right-2 flex gap-1 bg-white p-1 rounded-md shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                              <button
+                                                                onClick={() =>
+                                                                  handleOpenEditResource(
+                                                                    res,
+                                                                    section.id,
+                                                                    sub.id
+                                                                  )
+                                                                }
+                                                                className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-blue-500"
+                                                              >
+                                                                <PencilIcon className="w-3.5 h-3.5" />
+                                                              </button>
+                                                              <button
+                                                                onClick={() =>
+                                                                  handleDeleteResource(
+                                                                    section.id,
+                                                                    sub.id,
+                                                                    res.numero
+                                                                  )
+                                                                }
+                                                                className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-red-500"
+                                                              >
+                                                                <TrashIcon className="w-3.5 h-3.5" />
+                                                              </button>
+                                                            </div>
+                                                            <div className="flex flex-col h-full text-left">
+                                                              <div className="mb-3 flex justify-between items-start">
+                                                                <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                                                                  PDF
+                                                                </span>
+                                                              </div>
+
+                                                              {res.imagen ? (
+                                                                <div className="mb-4 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 h-32 flex items-center justify-center">
+                                                                  <img
+                                                                    src={res.imagen}
+                                                                    alt={
+                                                                      res.nombreArchivo
+                                                                    }
+                                                                    className="max-h-full object-contain"
+                                                                  />
+                                                                </div>
+                                                              ) : (
+                                                                <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 border-dashed bg-gray-50 h-32 flex items-center justify-center">
+                                                                  <DocumentTextIcon className="w-10 h-10 text-gray-300" />
+                                                                </div>
+                                                              )}
+
+                                                              <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2">
+                                                                {
+                                                                  res.nombreArchivo
+                                                                }
+                                                              </h4>
+                                                              <p className="text-gray-400 text-[11px] mb-4 truncate">
+                                                                {res.pdf}
+                                                              </p>
+
+                                                              <div className="mt-auto flex gap-2">
+                                                                <button
+                                                                  onClick={() =>
+                                                                    window.open(
+                                                                      res.pdf,
+                                                                      '_blank'
+                                                                    )
+                                                                  }
+                                                                  className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                                >
+                                                                  <EyeIcon className="w-3.5 h-3.5 mr-1.5" />{' '}
+                                                                  Ver
+                                                                </button>
+                                                                <button
+                                                                  onClick={() =>
+                                                                    window.open(
+                                                                      res.pdf,
+                                                                      '_blank'
+                                                                    )
+                                                                  }
+                                                                  className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                                >
+                                                                  <DownloadIcon className="w-3.5 h-3.5 mr-1.5" />{' '}
+                                                                  Bajar
+                                                                </button>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                      </Draggable>
+                                                    )
+                                                  )
+                                                )}
+                                                {provided.placeholder}
+                                              </div>
+                                            )}
+                                          </Droppable>
+                                        )}
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                ))
+                              )}
+                              {provided.placeholder}
                             </div>
-                          ) : (
-                            sub.recursos.map((res) => (
-                              <div
-                                key={res.numero}
-                                className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 relative group"
-                              >
-                                <div className="absolute top-2 right-2 flex gap-1 bg-white p-1 rounded-md shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={() =>
-                                      handleOpenEditResource(
-                                        res,
-                                        section.id,
-                                        sub.id
-                                      )
-                                    }
-                                    className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-blue-500"
-                                  >
-                                    <PencilIcon className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleDeleteResource(
-                                        section.id,
-                                        sub.id,
-                                        res.numero
-                                      )
-                                    }
-                                    className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-red-500"
-                                  >
-                                    <TrashIcon className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                                <div className="flex flex-col h-full">
-                                  <div className="mb-3">
-                                    <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                      PDF
-                                    </span>
-                                  </div>
-
-                                  {res.imagen ? (
-                                    <div className="mb-4 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 h-32 flex items-center justify-center">
-                                      <img
-                                        src={res.imagen}
-                                        alt={res.nombreArchivo}
-                                        className="max-h-full object-contain"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 border-dashed bg-gray-50 h-32 flex items-center justify-center">
-                                      <DocumentTextIcon className="w-10 h-10 text-gray-300" />
-                                    </div>
-                                  )}
-
-                                  <h4 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2 text-left">
-                                    {res.nombreArchivo}
-                                  </h4>
-                                  <p className="text-gray-400 text-[11px] mb-4 truncate text-left">
-                                    {res.pdf}
-                                  </p>
-
-                                  <div className="mt-auto flex gap-2">
-                                    <button
-                                      onClick={() =>
-                                        window.open(res.pdf, '_blank')
-                                      }
-                                      className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
-                                    >
-                                      <EyeIcon className="w-3.5 h-3.5 mr-1.5" />{' '}
-                                      Ver
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        window.open(res.pdf, '_blank')
-                                      }
-                                      className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-800 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
-                                    >
-                                      <DownloadIcon className="w-3.5 h-3.5 mr-1.5" />{' '}
-                                      Descargar
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))
                           )}
-                        </div>
+                        </Droppable>
                       )}
                     </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       {/* Intro Modal */}
       {isIntroModalOpen && (
@@ -1109,7 +1346,7 @@ const Recursos = () => {
                     readOnly
                     className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
                     placeholder="URL del archivo subido"
-                    value={newResource.pdf}
+                    value={newResource.pdf instanceof File ? newResource.pdf.name : newResource.pdf}
                   />
                   <label
                     className={`bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${
@@ -1142,7 +1379,7 @@ const Recursos = () => {
                     readOnly
                     className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
                     placeholder="URL de la imagen subida"
-                    value={newResource.imagen}
+                    value={newResource.imagen instanceof File ? newResource.imagen.name : (newResource.imagen || '')}
                   />
                   <label
                     className={`bg-gray-600 hover:bg-gray-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${
@@ -1213,6 +1450,23 @@ const Recursos = () => {
                     setNewSubsection({
                       ...newSubsection,
                       nombre: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                  Descripción (Opcional)
+                </label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 h-20 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                  placeholder="Ej: Material de estudio para el examen 2024"
+                  value={newSubsection.descripcion}
+                  onChange={(e) =>
+                    setNewSubsection({
+                      ...newSubsection,
+                      descripcion: e.target.value,
                     })
                   }
                 />
@@ -1338,6 +1592,22 @@ const Recursos = () => {
                   }
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-bold text-[#002B6B] mb-1">
+                  Descripción (Opcional)
+                </label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 h-20 focus:ring-1 focus:ring-blue-500 outline-none resize-none text-sm"
+                  value={editingSubsection.descripcion}
+                  onChange={(e) =>
+                    setEditingSubsection({
+                      ...editingSubsection,
+                      descripcion: e.target.value,
+                    })
+                  }
+                />
+              </div>
             </div>
 
             <div className="p-6 pt-0 flex gap-4">
@@ -1411,7 +1681,7 @@ const Recursos = () => {
                     readOnly
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
                     placeholder="URL del PDF"
-                    value={editingResource.pdf}
+                    value={editingResource.pdf instanceof File ? editingResource.pdf.name : editingResource.pdf}
                   />
                   <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
@@ -1436,7 +1706,7 @@ const Recursos = () => {
                     readOnly
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
                     placeholder="URL de la imagen"
-                    value={editingResource.imagen}
+                    value={editingResource.imagen instanceof File ? editingResource.imagen.name : (editingResource.imagen || '')}
                   />
                   <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
@@ -1451,7 +1721,7 @@ const Recursos = () => {
                 {editingResource.imagen && (
                   <div className="mt-2 h-20 w-full bg-gray-50 rounded border border-gray-200 flex items-center justify-center overflow-hidden">
                     <img
-                      src={editingResource.imagen}
+                      src={editingResource.imagen instanceof File ? URL.createObjectURL(editingResource.imagen) : editingResource.imagen}
                       alt="Preview"
                       className="h-full object-contain"
                     />

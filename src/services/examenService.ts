@@ -180,4 +180,48 @@ export const examenService = {
       throw error;
     }
   },
+
+  addYear: async (data: {
+    tipoExamenId: number;
+    fuenteId: number;
+    modalidadId: number;
+    nivelId: number | null;
+    especialidadId: number | null;
+    year: string;
+  }): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/add-year`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Error al añadir año: ${err}`);
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  removeYear: async (examenId: number, year: string): Promise<void> => {
+    try {
+      const response = await fetch(
+        `${API_URL}/remove-year?examenId=${examenId}&year=${year}`,
+        {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        }
+      );
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Error al eliminar año: ${err}`);
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
 };

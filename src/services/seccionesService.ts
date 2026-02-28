@@ -29,12 +29,13 @@ export interface CreateSeccionRequest {
   esVisible?: boolean;
   esDefault?: boolean;
   categoriasIds?: number[];
+  subSeccionesIds?: number[];
 }
 
 export const seccionesService = {
   getAll: async (): Promise<Seccion[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones`, {
+      const response = await fetch(`${API_BASE_URL}/Secciones`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener secciones');
@@ -47,7 +48,6 @@ export const seccionesService = {
 
   create: async (data: CreateSeccionRequest): Promise<Seccion> => {
     try {
-      // Use the simple endpoint for creation as identified
       const response = await fetch(`${API_BASE_URL}/Secciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -66,7 +66,7 @@ export const seccionesService = {
 
   getById: async (id: number): Promise<Seccion> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
         headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error('Error al obtener sección');
@@ -79,7 +79,6 @@ export const seccionesService = {
 
   update: async (id: number, data: CreateSeccionRequest): Promise<void> => {
     try {
-      // using simple endpoint
       const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -97,7 +96,7 @@ export const seccionesService = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/GestionSecciones/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/Secciones/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
@@ -110,12 +109,9 @@ export const seccionesService = {
 
   getSubsecciones: async (seccionId: number): Promise<any[]> => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/GestionSecciones/${seccionId}/subsecciones`,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/Secciones/${seccionId}/subsecciones`, {
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) throw new Error('Error al obtener subsecciones');
       return await response.json();
     } catch (error) {
@@ -124,15 +120,14 @@ export const seccionesService = {
     }
   },
 
-  createSubseccion: async (seccionId: number, nombre: string): Promise<any> => {
+  createSubseccion: async (seccionId: number, nombre: string, descripcion: string = 'Descripción por defecto'): Promise<any> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/SubSecciones`, {
+      const response = await fetch(`${API_BASE_URL}/Secciones/${seccionId}/subsecciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           nombre,
-          descripcion: 'Descripción por defecto',
-          seccionId,
+          descripcion,
         }),
       });
       if (!response.ok) {
@@ -146,14 +141,14 @@ export const seccionesService = {
     }
   },
 
-  updateSubseccion: async (id: number, nombre: string): Promise<void> => {
+  updateSubseccion: async (id: number, nombre: string, descripcion: string = 'Descripción por defecto'): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/SubSecciones/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           nombre,
-          descripcion: 'Descripción por defecto',
+          descripcion,
         }),
       });
       if (!response.ok) {
@@ -162,6 +157,47 @@ export const seccionesService = {
       }
     } catch (error) {
       console.error('Error updating subseccion:', error);
+      throw error;
+    }
+  },
+
+  deleteSubseccion: async (id: number): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/SubSecciones/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Error al eliminar subsección');
+    } catch (error) {
+      console.error('Error deleting subseccion:', error);
+      throw error;
+    }
+  },
+
+  reorderSecciones: async (items: { id: number; orden: number }[]): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/Secciones/reorder`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(items),
+      });
+      if (!response.ok) throw new Error('Error al reordenar secciones');
+    } catch (error) {
+      console.error('Error reordering secciones:', error);
+      throw error;
+    }
+  },
+
+  reorderSubsecciones: async (items: { id: number; orden: number }[]): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/SubSecciones/reorder`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(items),
+      });
+      if (!response.ok) throw new Error('Error al reordenar subsecciones');
+    } catch (error) {
+      console.error('Error reordering subsecciones:', error);
       throw error;
     }
   },

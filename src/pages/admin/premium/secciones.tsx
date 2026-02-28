@@ -14,29 +14,25 @@ import {
   estructuraAcademicaService,
   Modalidad,
 } from '../../../services/estructuraAcademicaService';
-import { seccionesService } from '../../../services/seccionesService';
-import {
-  tipoAccesoService,
-  TipoAcceso,
-} from '../../../services/tipoAccesoService';
+import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
+import { fuenteService, FuenteCategoria } from '../../../services/fuenteService';
+
 
 // Interfaz para definir la estructura de datos
 interface Seccion {
   id: number;
   nombre: string;
-  descripcion: string;
+  descripcion?: string;
   tipoExamenId: number;
-  modalidadId: number;
-  nivelId: number;
-  especialidadId: number;
-  tipoExamenNombre: string;
-  modalidadNombre: string;
-  nivelNombre: string;
-  especialidadNombre: string;
-  esVisible: boolean;
-  esDefault: boolean;
-  categorias: { id: number; descripcion: string }[];
-  cantidadCategorias: number;
+  tipoExamenNombre?: string;
+  esVisible?: boolean;
+  esDefault?: boolean;
+  categorias: (FuenteCategoria & { descripcion?: string })[];
+  cantidadCategorias?: number;
+  // UI selection fields
+  modalidadId?: number;
+  nivelId?: number;
+  especialidadId?: number;
 }
 
 // Add this helper function before the component
@@ -75,8 +71,7 @@ const AdminPremiumSecciones = () => {
     especialidadId: 0,
     esDefault: false,
     esVisible: true,
-    categoriasIds: [] as number[],
-    categoriasList: [] as { id: number; nombre: string }[],
+    categorias: [] as (FuenteCategoria & { nombre: string })[],
   });
 
   // --- EDIT MODAL STATE ---
@@ -90,11 +85,15 @@ const AdminPremiumSecciones = () => {
   const fetchSections = async () => {
     setIsLoading(true);
     try {
-      const data = await seccionesService.getAll();
+      const data = await fuenteService.getAll();
       const transformed: Seccion[] = data.map((s) => ({
         ...s,
         tipoExamenNombre: s.tipoExamenNombre || 'General',
-        cantidadCategorias: s.cantidadCategorias || 0,
+        cantidadCategorias: s.cantidadCategorias || s.categorias?.length || 0,
+        categorias: (s.categorias || []).map(c => ({
+          ...c,
+          descripcion: `Mod: ${c.modalidadId}${c.nivelId ? `, Niv: ${c.nivelId}` : ''}${c.especialidadId ? `, Esp: ${c.especialidadId}` : ''}`
+        }))
       }));
       setSecciones(transformed);
     } catch (error) {
@@ -126,24 +125,26 @@ const AdminPremiumSecciones = () => {
     // Basic validation
     if (
       !newSection.nombre ||
-      !newSection.descripcion ||
       !newSection.tipoExamenId
     ) {
       alert('Por favor complete los campos obligatorios (*).');
       return;
     }
 
+    if (newSection.categorias.length === 0) {
+      alert('Por favor agregue al menos una categoría.');
+      return;
+    }
+
     try {
-      await seccionesService.create({
+      await fuenteService.create({
         nombre: newSection.nombre,
-        descripcion: newSection.descripcion,
         tipoExamenId: newSection.tipoExamenId,
-        modalidadId: newSection.modalidadId,
-        nivelId: newSection.nivelId,
-        especialidadId: newSection.especialidadId,
-        esVisible: newSection.esVisible,
-        esDefault: newSection.esDefault,
-        categoriasIds: newSection.categoriasIds,
+        categorias: newSection.categorias.map(({ modalidadId, nivelId, especialidadId }) => ({
+          modalidadId: modalidadId || 0,
+          nivelId: nivelId || 0,
+          especialidadId: especialidadId || 0
+        })),
       });
 
       await fetchSections();
@@ -157,12 +158,11 @@ const AdminPremiumSecciones = () => {
         especialidadId: 0,
         esDefault: false,
         esVisible: true,
-        categoriasIds: [],
-        categoriasList: [],
+        categorias: [],
       });
       alert('Sección creada con éxito.');
-    } catch (error) {
-      alert('Error al crear la sección.');
+    } catch (error: any) {
+      alert(`Error al crear la sección: ${error.message}`);
     }
   };
 
@@ -173,33 +173,25 @@ const AdminPremiumSecciones = () => {
     }
 
     try {
-      await seccionesService.update(editingSection.id, {
+      await fuenteService.update(editingSection.id, {
         nombre: editingSection.nombre,
-        descripcion: editingSection.descripcion,
-        tipoExamenId: Number(editingSection.tipoExamenId), // Ensure number type
-        modalidadId: Number(editingSection.modalidadId), // Ensure number type
-        nivelId: Number(editingSection.nivelId), // Ensure number type
-        especialidadId: Number(editingSection.especialidadId), // Ensure number type
-        esVisible: editingSection.esVisible,
-        esDefault: editingSection.esDefault,
-        categoriasIds: editingSection.categorias.map((c) => c.id),
       });
       await fetchSections();
       setShowEditModal(false);
       setEditingSection(null);
       alert('Sección actualizada con éxito.');
-    } catch (error) {
-      alert('Error al actualizar la sección.');
+    } catch (error: any) {
+      alert(`Error al actualizar la sección: ${error.message}`);
     }
   };
 
   const confirmDelete = async () => {
     if (seccionToDelete !== null) {
       try {
-        await seccionesService.delete(seccionToDelete);
+        await fuenteService.delete(seccionToDelete);
         setSecciones((prev) => prev.filter((s) => s.id !== seccionToDelete));
-      } catch (error) {
-        alert('Error al eliminar la sección.');
+      } catch (error: any) {
+        alert(`Error al eliminar la sección: ${error.message}`);
       }
     }
     setShowDeleteConfirm(false);
@@ -256,26 +248,26 @@ const AdminPremiumSecciones = () => {
         return;
       }
 
-      let categoryId = 0;
       let name = '';
 
       if (editingSection.especialidadId) {
-        categoryId = editingSection.especialidadId;
         const niv = mod.niveles.find((n) => n.id === editingSection.nivelId);
         const esp = niv?.especialidades.find(
           (e) => e.id === editingSection.especialidadId
         );
         name = `${mod.nombre} - ${niv?.nombre} - ${esp?.nombre}`;
       } else if (editingSection.nivelId) {
-        categoryId = editingSection.nivelId;
         const niv = mod.niveles.find((n) => n.id === editingSection.nivelId);
         name = `${mod.nombre} - ${niv?.nombre}`;
       } else {
-        categoryId = editingSection.modalidadId;
         name = mod.nombre;
       }
 
-      if (editingSection.categorias.some((c) => c.id === categoryId)) {
+      if (editingSection.categorias.some((c) => 
+        c.modalidadId === editingSection.modalidadId && 
+        c.nivelId === editingSection.nivelId && 
+        c.especialidadId === editingSection.especialidadId
+      )) {
         alert('Esta categoría ya ha sido agregada.');
         return;
       }
@@ -286,7 +278,12 @@ const AdminPremiumSecciones = () => {
           ...prev,
           categorias: [
             ...prev.categorias,
-            { id: categoryId, descripcion: name },
+            { 
+              modalidadId: editingSection.modalidadId || 0,
+              nivelId: editingSection.nivelId || 0,
+              especialidadId: editingSection.especialidadId || 0,
+              descripcion: name 
+            },
           ],
         };
       });
@@ -302,56 +299,65 @@ const AdminPremiumSecciones = () => {
         return;
       }
 
-      let categoryId = 0;
       let name = '';
 
       if (newSection.especialidadId) {
-        categoryId = newSection.especialidadId;
         const niv = mod.niveles.find((n) => n.id === newSection.nivelId);
         const esp = niv?.especialidades.find(
           (e) => e.id === newSection.especialidadId
         );
         name = `${mod.nombre} - ${niv?.nombre} - ${esp?.nombre}`;
       } else if (newSection.nivelId) {
-        categoryId = newSection.nivelId;
         const niv = mod.niveles.find((n) => n.id === newSection.nivelId);
         name = `${mod.nombre} - ${niv?.nombre}`;
       } else {
-        categoryId = newSection.modalidadId;
         name = mod.nombre;
       }
 
-      if (newSection.categoriasIds.includes(categoryId)) {
+      if (newSection.categorias.some((c) => 
+        c.modalidadId === newSection.modalidadId && 
+        c.nivelId === newSection.nivelId && 
+        c.especialidadId === newSection.especialidadId
+      )) {
         alert('Esta categoría ya ha sido agregada.');
         return;
       }
 
       setNewSection((prev) => ({
         ...prev,
-        categoriasIds: [...prev.categoriasIds, categoryId],
-        categoriasList: [
-          ...prev.categoriasList,
-          { id: categoryId, nombre: name },
+        categorias: [
+          ...prev.categorias,
+          { 
+            modalidadId: newSection.modalidadId,
+            nivelId: newSection.nivelId || 0,
+            especialidadId: newSection.especialidadId || 0,
+            nombre: name 
+          },
         ],
       }));
     }
   };
 
-  const handleRemoveCategory = (id: number, isEdit: boolean) => {
+  const handleRemoveCategory = (index: number, isEdit: boolean) => {
     if (isEdit) {
       setEditingSection((prev) => {
         if (!prev) return prev;
+        const newCats = [...prev.categorias];
+        newCats.splice(index, 1);
         return {
           ...prev,
-          categorias: prev.categorias.filter((c) => c.id !== id),
+          categorias: newCats,
         };
       });
     } else {
-      setNewSection((prev) => ({
-        ...prev,
-        categoriasIds: prev.categoriasIds.filter((cid) => cid !== id),
-        categoriasList: prev.categoriasList.filter((c) => c.id !== id),
-      }));
+      setNewSection((prev) => {
+        const newCats = [...prev.categorias];
+        newCats.splice(index, 1);
+        return {
+          ...prev,
+          categorias: newCats,
+        };
+      });
     }
   };
 
@@ -480,8 +486,8 @@ const AdminPremiumSecciones = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {(seccion.descripcion || '').length > 30
-                        ? `${seccion.descripcion.substring(0, 30)}...`
-                        : seccion.descripcion}
+                        ? `${(seccion.descripcion || '').substring(0, 30)}...`
+                        : (seccion.descripcion || '')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span
@@ -709,16 +715,16 @@ const AdminPremiumSecciones = () => {
 
                 <div className="space-y-4">
                   {/* Categorías agregadas List (MOVED TO TOP) */}
-                  {newSection.categoriasList.length > 0 && (
+                  {newSection.categorias.length > 0 && (
                     <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
                       <h4 className="text-xs font-bold text-blue-700 uppercase mb-2">
                         Categorías configuradas (
-                        {newSection.categoriasList.length})
+                        {newSection.categorias.length})
                       </h4>
                       <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
-                        {newSection.categoriasList.map((cat) => (
+                        {newSection.categorias.map((cat, index) => (
                           <div
-                            key={cat.id}
+                            key={index}
                             className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 shadow-sm transition-all hover:border-blue-300 group"
                           >
                             <span className="text-[11px] text-gray-700 font-medium truncate">
@@ -726,7 +732,7 @@ const AdminPremiumSecciones = () => {
                             </span>
                             <button
                               onClick={() =>
-                                handleRemoveCategory(cat.id, false)
+                                handleRemoveCategory(index, false)
                               }
                               className="text-gray-300 hover:text-red-500 transition-colors p-1"
                               title="Eliminar categoría"
@@ -955,16 +961,16 @@ const AdminPremiumSecciones = () => {
                       {editingSection.categorias.length})
                     </h4>
                     <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
-                      {editingSection.categorias.map((cat) => (
+                      {editingSection.categorias.map((cat, index) => (
                         <div
-                          key={cat.id}
+                          key={index}
                           className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 shadow-sm transition-all hover:border-blue-300 group"
                         >
                           <span className="text-[11px] text-gray-700 font-medium truncate">
                             {cat.descripcion}
                           </span>
                           <button
-                            onClick={() => handleRemoveCategory(cat.id, true)}
+                            onClick={() => handleRemoveCategory(index, true)}
                             className="text-gray-300 hover:text-red-500 transition-colors p-1"
                             title="Eliminar categoría"
                           >

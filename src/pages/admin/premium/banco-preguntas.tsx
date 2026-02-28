@@ -334,16 +334,6 @@ const Recursos = () => {
       justificationFileInputRef.current.value = '';
   };
 
-  // Helper to serialize blocks to HTML
-  const serializeJustification = () => {
-    return justificationBlocks
-      .map((b) => {
-        if (b.type === 'image')
-          return `<div data-block-type="image"><img src="${b.content}" /></div>`;
-        return `<div data-block-type="text">${b.content}</div>`;
-      })
-      .join('');
-  };
 
   // --- UTILS ---
   const selectedTipoNombre = useMemo(() => {
@@ -1009,15 +999,9 @@ const Recursos = () => {
   };
 
   const handleAddYear = async () => {
-    if (
-      !selectedTipo ||
-      !selectedFuente ||
-      !selectedModalidad ||
-      !selectedNivel ||
-      !selectedEspecialidad
-    ) {
+    if (!selectedTipo || !selectedFuente || !selectedModalidad) {
       alert(
-        'Por favor selecciona todos los filtros (Tipo, Fuente, Modalidad, Nivel, Especialidad) antes de añadir un año.'
+        'Por favor selecciona los filtros base (Tipo, Fuente, Modalidad) antes de añadir un año.'
       );
       return;
     }
@@ -1030,19 +1014,19 @@ const Recursos = () => {
 
     try {
       setLoading(true);
-      // We need to construct the exam object.
-      await examenService.create({
+      await examenService.addYear({
         year,
         tipoExamenId: Number(selectedTipo),
         fuenteId: Number(selectedFuente),
         modalidadId: Number(selectedModalidad),
-        nivelId: Number(selectedNivel),
-        especialidadId: Number(selectedEspecialidad),
-        nombre: `${year} - ${selectedEspecialidad}`, // Optional name
+        nivelId: selectedNivel ? Number(selectedNivel) : null,
+        especialidadId: selectedEspecialidad
+          ? Number(selectedEspecialidad)
+          : null,
       });
       alert('Año añadido con éxito.');
-      setNewYearInput(''); // Clear input
-      await fetchData(); // Reload filters
+      setNewYearInput('');
+      await fetchData();
       setSelectedYear(year);
     } catch (e: any) {
       alert(`Error creando el año/examen: ${e.message}`);
@@ -1106,7 +1090,7 @@ const Recursos = () => {
         return;
       }
 
-      await examenService.delete(targetExam.id);
+      await examenService.removeYear(targetExam.id, String(selectedYear));
       alert('Año eliminado correctamente.');
       setSelectedYear('');
       await fetchData();
@@ -2460,7 +2444,7 @@ const Recursos = () => {
                                 No se encontraron sub-preguntas.
                               </div>
                             ) : (
-                              subs.map((sub, idx) => (
+                              subs.map((sub) => (
                                 <div
                                   key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`}
                                   className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
