@@ -1,4 +1,5 @@
 import FormData from 'form-data';
+
 import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders, getAuthHeadersFormData } from '../utils/apiUtils';
 
@@ -34,7 +35,6 @@ export interface CreateSeccionRecursoRequest {
 }
 
 export const seccionRecursosService = {
-
   create: async (formData: FormData): Promise<any> => {
     try {
       const response = await fetch(`${API_BASE_URL}/SeccionRecursos`, {

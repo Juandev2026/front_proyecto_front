@@ -14,9 +14,14 @@ import {
   estructuraAcademicaService,
   Modalidad,
 } from '../../../services/estructuraAcademicaService';
-import { tipoAccesoService, TipoAcceso } from '../../../services/tipoAccesoService';
-import { fuenteService, FuenteCategoria } from '../../../services/fuenteService';
-
+import {
+  fuenteService,
+  FuenteCategoria,
+} from '../../../services/fuenteService';
+import {
+  tipoAccesoService,
+  TipoAcceso,
+} from '../../../services/tipoAccesoService';
 
 // Interfaz para definir la estructura de datos
 interface Seccion {
@@ -90,10 +95,12 @@ const AdminPremiumSecciones = () => {
         ...s,
         tipoExamenNombre: s.tipoExamenNombre || 'General',
         cantidadCategorias: s.cantidadCategorias || s.categorias?.length || 0,
-        categorias: (s.categorias || []).map(c => ({
+        categorias: (s.categorias || []).map((c) => ({
           ...c,
-          descripcion: `Mod: ${c.modalidadId}${c.nivelId ? `, Niv: ${c.nivelId}` : ''}${c.especialidadId ? `, Esp: ${c.especialidadId}` : ''}`
-        }))
+          descripcion: `Mod: ${c.modalidadId}${
+            c.nivelId ? `, Niv: ${c.nivelId}` : ''
+          }${c.especialidadId ? `, Esp: ${c.especialidadId}` : ''}`,
+        })),
       }));
       setSecciones(transformed);
     } catch (error) {
@@ -123,10 +130,7 @@ const AdminPremiumSecciones = () => {
 
   const handleCreateSection = async () => {
     // Basic validation
-    if (
-      !newSection.nombre ||
-      !newSection.tipoExamenId
-    ) {
+    if (!newSection.nombre || !newSection.tipoExamenId) {
       alert('Por favor complete los campos obligatorios (*).');
       return;
     }
@@ -140,11 +144,13 @@ const AdminPremiumSecciones = () => {
       await fuenteService.create({
         nombre: newSection.nombre,
         tipoExamenId: newSection.tipoExamenId,
-        categorias: newSection.categorias.map(({ modalidadId, nivelId, especialidadId }) => ({
-          modalidadId: modalidadId || 0,
-          nivelId: nivelId || 0,
-          especialidadId: especialidadId || 0
-        })),
+        categorias: newSection.categorias.map(
+          ({ modalidadId, nivelId, especialidadId }) => ({
+            modalidadId: modalidadId || 0,
+            nivelId: nivelId || 0,
+            especialidadId: especialidadId || 0,
+          })
+        ),
       });
 
       await fetchSections();
@@ -263,11 +269,14 @@ const AdminPremiumSecciones = () => {
         name = mod.nombre;
       }
 
-      if (editingSection.categorias.some((c) => 
-        c.modalidadId === editingSection.modalidadId && 
-        c.nivelId === editingSection.nivelId && 
-        c.especialidadId === editingSection.especialidadId
-      )) {
+      if (
+        editingSection.categorias.some(
+          (c) =>
+            c.modalidadId === editingSection.modalidadId &&
+            c.nivelId === editingSection.nivelId &&
+            c.especialidadId === editingSection.especialidadId
+        )
+      ) {
         alert('Esta categoría ya ha sido agregada.');
         return;
       }
@@ -278,11 +287,11 @@ const AdminPremiumSecciones = () => {
           ...prev,
           categorias: [
             ...prev.categorias,
-            { 
+            {
               modalidadId: editingSection.modalidadId || 0,
               nivelId: editingSection.nivelId || 0,
               especialidadId: editingSection.especialidadId || 0,
-              descripcion: name 
+              descripcion: name,
             },
           ],
         };
@@ -314,11 +323,14 @@ const AdminPremiumSecciones = () => {
         name = mod.nombre;
       }
 
-      if (newSection.categorias.some((c) => 
-        c.modalidadId === newSection.modalidadId && 
-        c.nivelId === newSection.nivelId && 
-        c.especialidadId === newSection.especialidadId
-      )) {
+      if (
+        newSection.categorias.some(
+          (c) =>
+            c.modalidadId === newSection.modalidadId &&
+            c.nivelId === newSection.nivelId &&
+            c.especialidadId === newSection.especialidadId
+        )
+      ) {
         alert('Esta categoría ya ha sido agregada.');
         return;
       }
@@ -327,11 +339,11 @@ const AdminPremiumSecciones = () => {
         ...prev,
         categorias: [
           ...prev.categorias,
-          { 
+          {
             modalidadId: newSection.modalidadId,
             nivelId: newSection.nivelId || 0,
             especialidadId: newSection.especialidadId || 0,
-            nombre: name 
+            nombre: name,
           },
         ],
       }));
@@ -487,7 +499,7 @@ const AdminPremiumSecciones = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {(seccion.descripcion || '').length > 30
                         ? `${(seccion.descripcion || '').substring(0, 30)}...`
-                        : (seccion.descripcion || '')}
+                        : seccion.descripcion || ''}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span
@@ -718,8 +730,7 @@ const AdminPremiumSecciones = () => {
                   {newSection.categorias.length > 0 && (
                     <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
                       <h4 className="text-xs font-bold text-blue-700 uppercase mb-2">
-                        Categorías configuradas (
-                        {newSection.categorias.length})
+                        Categorías configuradas ({newSection.categorias.length})
                       </h4>
                       <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto pr-2">
                         {newSection.categorias.map((cat, index) => (
@@ -731,9 +742,7 @@ const AdminPremiumSecciones = () => {
                               {cat.nombre}
                             </span>
                             <button
-                              onClick={() =>
-                                handleRemoveCategory(index, false)
-                              }
+                              onClick={() => handleRemoveCategory(index, false)}
                               className="text-gray-300 hover:text-red-500 transition-colors p-1"
                               title="Eliminar categoría"
                             >

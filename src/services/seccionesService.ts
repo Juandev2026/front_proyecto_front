@@ -109,9 +109,12 @@ export const seccionesService = {
 
   getSubsecciones: async (seccionId: number): Promise<any[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones/${seccionId}/subsecciones`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/Secciones/${seccionId}/subsecciones`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Error al obtener subsecciones');
       return await response.json();
     } catch (error) {
@@ -120,16 +123,23 @@ export const seccionesService = {
     }
   },
 
-  createSubseccion: async (seccionId: number, nombre: string, descripcion: string = 'Descripción por defecto'): Promise<any> => {
+  createSubseccion: async (
+    seccionId: number,
+    nombre: string,
+    descripcion: string = 'Descripción por defecto'
+  ): Promise<any> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Secciones/${seccionId}/subsecciones`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          nombre,
-          descripcion,
-        }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/Secciones/${seccionId}/subsecciones`,
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            nombre,
+            descripcion,
+          }),
+        }
+      );
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Error al crear subsección: ${errText}`);
@@ -141,7 +151,11 @@ export const seccionesService = {
     }
   },
 
-  updateSubseccion: async (id: number, nombre: string, descripcion: string = 'Descripción por defecto'): Promise<void> => {
+  updateSubseccion: async (
+    id: number,
+    nombre: string,
+    descripcion: string = 'Descripción por defecto'
+  ): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/SubSecciones/${id}`, {
         method: 'PUT',
@@ -174,7 +188,9 @@ export const seccionesService = {
     }
   },
 
-  reorderSecciones: async (items: { id: number; orden: number }[]): Promise<void> => {
+  reorderSecciones: async (
+    items: { id: number; orden: number }[]
+  ): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/Secciones/reorder`, {
         method: 'POST',
@@ -188,7 +204,9 @@ export const seccionesService = {
     }
   },
 
-  reorderSubsecciones: async (items: { id: number; orden: number }[]): Promise<void> => {
+  reorderSubsecciones: async (
+    items: { id: number; orden: number }[]
+  ): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/SubSecciones/reorder`, {
         method: 'POST',

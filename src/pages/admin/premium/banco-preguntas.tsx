@@ -277,9 +277,12 @@ const Recursos = () => {
   const justificationFileInputRef = React.useRef<HTMLInputElement>(null);
   const enunciadoImageInputRef = React.useRef<HTMLInputElement>(null);
   const [enunciadoImages, setEnunciadoImages] = React.useState<string[]>([]);
-  const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] = React.useState(false);
+  const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] =
+    React.useState(false);
 
-  const handleEnunciadoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEnunciadoImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploadingEnunciadoImage(true);
@@ -294,10 +297,10 @@ const Recursos = () => {
       alert('Error subiendo imagen de enunciado');
     } finally {
       setIsUploadingEnunciadoImage(false);
-      if (enunciadoImageInputRef.current) enunciadoImageInputRef.current.value = '';
+      if (enunciadoImageInputRef.current)
+        enunciadoImageInputRef.current.value = '';
     }
   };
-
 
   const addJustificationText = () => {
     setJustificationBlocks([
@@ -333,7 +336,6 @@ const Recursos = () => {
     if (justificationFileInputRef.current)
       justificationFileInputRef.current.value = '';
   };
-
 
   // --- UTILS ---
   const selectedTipoNombre = useMemo(() => {
@@ -722,7 +724,7 @@ const Recursos = () => {
     if (typeof window !== 'undefined') {
       const div = document.createElement('div');
       div.innerHTML = rawEnunciado;
-      
+
       // Extract all images from enunciado, whether wrapped in data-block-type or not
       const images = Array.from(div.querySelectorAll('img'));
       images.forEach((img: any) => {
@@ -1403,7 +1405,10 @@ const Recursos = () => {
               newItem.enunciado +
               (enunciadoImages.length > 0
                 ? enunciadoImages
-                    .map((url) => `<div data-block-type="image"><img src="${url}" alt="imagen" /></div>`)
+                    .map(
+                      (url) =>
+                        `<div data-block-type="image"><img src="${url}" alt="imagen" /></div>`
+                    )
                     .join('')
                 : ''),
           },
@@ -1632,9 +1637,13 @@ const Recursos = () => {
                         {isUploadingEnunciadoImage ? (
                           <span className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full inline-block" />
                         ) : (
-                          <span className="font-bold text-lg leading-none">+</span>
+                          <span className="font-bold text-lg leading-none">
+                            +
+                          </span>
                         )}{' '}
-                        {isUploadingEnunciadoImage ? 'Subiendo...' : 'Añadir Imagen'}
+                        {isUploadingEnunciadoImage
+                          ? 'Subiendo...'
+                          : 'Añadir Imagen'}
                       </button>
                       <input
                         type="file"
@@ -1677,16 +1686,40 @@ const Recursos = () => {
                   {enunciadoImages.length > 0 && (
                     <div className="space-y-3 mt-4">
                       {enunciadoImages.map((url, imgIdx) => (
-                        <div key={imgIdx} className="relative group border border-gray-200 rounded-lg p-3 bg-gray-50 flex justify-center">
+                        <div
+                          key={imgIdx}
+                          className="relative group border border-gray-200 rounded-lg p-3 bg-gray-50 flex justify-center"
+                        >
                           <button
                             type="button"
-                            onClick={() => setEnunciadoImages((prev) => prev.filter((_, i) => i !== imgIdx))}
+                            onClick={() =>
+                              setEnunciadoImages((prev) =>
+                                prev.filter((_, i) => i !== imgIdx)
+                              )
+                            }
                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors z-10"
                             title="Eliminar imagen"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
                           </button>
-                          <img src={url} alt={`Imagen ${imgIdx + 1}`} className="max-h-64 rounded shadow-sm" />
+                          <img
+                            src={url}
+                            alt={`Imagen ${imgIdx + 1}`}
+                            className="max-h-64 rounded shadow-sm"
+                          />
                         </div>
                       ))}
                     </div>

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from '@hello-pangea/dnd';
 import {
   PlusIcon,
   DocumentTextIcon,
@@ -248,7 +253,7 @@ const Recursos = () => {
       await seccionesService.create({
         nombre: newSection.nombre,
         descripcion: newSection.descripcion,
-        subSeccionesIds: [] // New API requires subSeccionesIds
+        subSeccionesIds: [], // New API requires subSeccionesIds
       });
       setIsAddSectionModalOpen(false);
       setNewSection({ nombre: '', descripcion: '' });
@@ -325,7 +330,7 @@ const Recursos = () => {
       formData.append('IdSeccion', String(newResource.idSeccion));
       formData.append('IdSubSeccion', String(newResource.idSubSeccion));
       formData.append('NombreArchivo', newResource.nombreArchivo || '');
-      
+
       // Sending actual files as per latest documentation (PdfFiles array and ImagenFile)
       if (newResource.pdf instanceof File) {
         formData.append('PdfFiles', newResource.pdf);
@@ -347,7 +352,7 @@ const Recursos = () => {
     } catch (error: any) {
       console.error(error);
       // Informing about the backend error 500 (record "new" has no field "examen_id")
-      const errorMsg = error.message.includes('examen_id') 
+      const errorMsg = error.message.includes('examen_id')
         ? 'Error de servidor: Hay un problema con un trigger en la base de datos (campo examen_id no encontrado). Por favor, contacte al desarrollador backend.'
         : error.message;
       alert(`Error al registrar el recurso: ${errorMsg}`);
@@ -385,7 +390,7 @@ const Recursos = () => {
       formData.append('IdSubSeccion', String(editingResource.idSubSeccion));
       formData.append('Numero', String(editingResource.numero));
       formData.append('NombreArchivo', editingResource.nombreArchivo);
-      
+
       if (editingResource.pdf instanceof File) {
         formData.append('PdfFiles', editingResource.pdf);
       } else {
@@ -410,7 +415,7 @@ const Recursos = () => {
       alert('Recurso actualizado con éxito');
     } catch (error: any) {
       console.error(error);
-      const errorMsg = error.message.includes('examen_id') 
+      const errorMsg = error.message.includes('examen_id')
         ? 'Error de servidor: Problema en la base de datos (examen_id).'
         : 'Error al actualizar el recurso.';
       alert(errorMsg);
@@ -495,7 +500,10 @@ const Recursos = () => {
       await seccionesService.update(editingSection.id, {
         nombre: editingSection.nombre,
         descripcion: editingSection.descripcion,
-        subSeccionesIds: sections.find(s => s.id === editingSection.id)?.subSecciones.map(sub => sub.id) || []
+        subSeccionesIds:
+          sections
+            .find((s) => s.id === editingSection.id)
+            ?.subSecciones.map((sub) => sub.id) || [],
       });
       setIsEditSectionModalOpen(false);
       await fetchSections();
@@ -847,7 +855,8 @@ const Recursos = () => {
                             }}
                             className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white"
                           >
-                            <PlusIcon className="w-4 h-4 mr-1" /> Añadir Subsección
+                            <PlusIcon className="w-4 h-4 mr-1" /> Añadir
+                            Subsección
                           </button>
                           <button
                             onClick={() => handleOpenEditSection(section)}
@@ -958,7 +967,9 @@ const Recursos = () => {
                                         </div>
 
                                         {/* Resources List */}
-                                        {expandedSubsections.includes(sub.id) && (
+                                        {expandedSubsections.includes(
+                                          sub.id
+                                        ) && (
                                           <Droppable
                                             droppableId={`resources-list-${sub.id}`}
                                             type="RESOURCE"
@@ -985,7 +996,9 @@ const Recursos = () => {
                                                       >
                                                         {(provided) => (
                                                           <div
-                                                            ref={provided.innerRef}
+                                                            ref={
+                                                              provided.innerRef
+                                                            }
                                                             {...provided.draggableProps}
                                                             {...provided.dragHandleProps}
                                                             className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 relative group"
@@ -1026,7 +1039,9 @@ const Recursos = () => {
                                                               {res.imagen ? (
                                                                 <div className="mb-4 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 h-32 flex items-center justify-center">
                                                                   <img
-                                                                    src={res.imagen}
+                                                                    src={
+                                                                      res.imagen
+                                                                    }
                                                                     alt={
                                                                       res.nombreArchivo
                                                                     }
@@ -1346,7 +1361,11 @@ const Recursos = () => {
                     readOnly
                     className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
                     placeholder="URL del archivo subido"
-                    value={newResource.pdf instanceof File ? newResource.pdf.name : newResource.pdf}
+                    value={
+                      newResource.pdf instanceof File
+                        ? newResource.pdf.name
+                        : newResource.pdf
+                    }
                   />
                   <label
                     className={`bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${
@@ -1379,7 +1398,11 @@ const Recursos = () => {
                     readOnly
                     className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 text-sm outline-none"
                     placeholder="URL de la imagen subida"
-                    value={newResource.imagen instanceof File ? newResource.imagen.name : (newResource.imagen || '')}
+                    value={
+                      newResource.imagen instanceof File
+                        ? newResource.imagen.name
+                        : newResource.imagen || ''
+                    }
                   />
                   <label
                     className={`bg-gray-600 hover:bg-gray-700 text-white rounded-md px-4 py-2 cursor-pointer flex items-center justify-center transition-colors ${
@@ -1681,7 +1704,11 @@ const Recursos = () => {
                     readOnly
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
                     placeholder="URL del PDF"
-                    value={editingResource.pdf instanceof File ? editingResource.pdf.name : editingResource.pdf}
+                    value={
+                      editingResource.pdf instanceof File
+                        ? editingResource.pdf.name
+                        : editingResource.pdf
+                    }
                   />
                   <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
@@ -1706,7 +1733,11 @@ const Recursos = () => {
                     readOnly
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm text-gray-500 outline-none"
                     placeholder="URL de la imagen"
-                    value={editingResource.imagen instanceof File ? editingResource.imagen.name : (editingResource.imagen || '')}
+                    value={
+                      editingResource.imagen instanceof File
+                        ? editingResource.imagen.name
+                        : editingResource.imagen || ''
+                    }
                   />
                   <label className="cursor-pointer bg-[#002B6B] hover:bg-blue-900 text-white rounded-md px-3 py-2 flex items-center justify-center transition-colors">
                     <UploadIcon className="w-5 h-5" />
@@ -1721,7 +1752,11 @@ const Recursos = () => {
                 {editingResource.imagen && (
                   <div className="mt-2 h-20 w-full bg-gray-50 rounded border border-gray-200 flex items-center justify-center overflow-hidden">
                     <img
-                      src={editingResource.imagen instanceof File ? URL.createObjectURL(editingResource.imagen) : editingResource.imagen}
+                      src={
+                        editingResource.imagen instanceof File
+                          ? URL.createObjectURL(editingResource.imagen)
+                          : editingResource.imagen
+                      }
                       alt="Preview"
                       className="h-full object-contain"
                     />
