@@ -2,26 +2,26 @@ import { API_BASE_URL } from '../config/api';
 import { getAuthHeaders } from '../utils/apiUtils';
 
 export interface FuenteCategoria {
-  modalidadId: number;
-  nivelId: number;
-  especialidadId: number;
+  modalidadId: number | null;
+  nivelId: number | null;
+  especialidadId: number | null;
 }
 
 export interface Fuente {
   id: number;
   nombre: string;
+  descripcion: string;
   tipoExamenId: number;
   categorias: FuenteCategoria[];
-  // Campos adicionales que podrían venir del backend aunque no estén en el Swagger minimalista
-  descripcion?: string;
+  visible: boolean;
+  esDefault: boolean;
   tipoExamenNombre?: string;
-  esVisible?: boolean;
-  esDefault?: boolean ;
   cantidadCategorias?: number;
 }
 
 export interface CreateFuenteRequest {
   nombre: string;
+  descripcion: string;
   tipoExamenId: number;
   categorias: FuenteCategoria[];
 }
@@ -42,6 +42,7 @@ export const fuenteService = {
 
   create: async (data: CreateFuenteRequest): Promise<Fuente> => {
     try {
+      console.log('PAYLOAD ENVIADO A /api/Fuentes:', JSON.stringify(data, null, 2));
       const response = await fetch(`${API_BASE_URL}/Fuentes`, {
         method: 'POST',
         headers: {
@@ -74,7 +75,10 @@ export const fuenteService = {
     }
   },
 
-  update: async (id: number, data: { nombre: string }): Promise<void> => {
+  update: async (
+    id: number,
+    data: { nombre: string; visible: boolean; esDefault: boolean }
+  ): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/Fuentes/${id}`, {
         method: 'PUT',
@@ -90,6 +94,36 @@ export const fuenteService = {
       }
     } catch (error) {
       console.error('Error updating fuente:', error);
+      throw error;
+    }
+  },
+
+  updatePropio: async (
+    id: number,
+    data: {
+      id: number;
+      nombre: string;
+      descripcion: string;
+      tipoExamenId: number;
+      visible: boolean;
+      categorias: FuenteCategoria[];
+    }
+  ): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/Fuentes/propios/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Error al actualizar fuente propia: ${errText}`);
+      }
+    } catch (error) {
+      console.error('Error updating fuente propia:', error);
       throw error;
     }
   },

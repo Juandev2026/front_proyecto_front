@@ -679,6 +679,27 @@ const Recursos = () => {
     );
   };
 
+  const downloadFile = async (url: string, fileName: string) => {
+    try {
+      if (!url) return;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName || 'archivo.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      // Fallback: abrir en pestaña nueva si falla el fetch (ej. CORS)
+      window.open(url, '_blank');
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -787,7 +808,10 @@ const Recursos = () => {
           >
             <EyeIcon className="w-4 h-4 mr-2" /> Ver
           </button>
-          <button className="max-w-xs bg-primary text-white border border-primary hover:bg-blue-700 font-medium py-2 px-8 rounded-lg flex items-center justify-center transition-colors shadow-sm">
+          <button 
+            onClick={() => downloadFile(introContent.videoUrl, 'introduccion.mp4')}
+            className="max-w-xs bg-primary text-white border border-primary hover:bg-blue-700 font-medium py-2 px-8 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+          >
             <DownloadIcon className="w-4 h-4 mr-2" /> Descargar
           </button>
         </div>
@@ -1078,9 +1102,9 @@ const Recursos = () => {
                                                                 </button>
                                                                 <button
                                                                   onClick={() =>
-                                                                    window.open(
+                                                                    downloadFile(
                                                                       res.pdf,
-                                                                      '_blank'
+                                                                      `${res.nombreArchivo}.pdf`
                                                                     )
                                                                   }
                                                                   className="flex-1 bg-blue-900 border border-blue-900 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"

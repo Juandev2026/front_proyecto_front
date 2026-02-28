@@ -100,6 +100,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
+          name: 'Banco de Preguntas ED',
+          href: '/bancoPreguntasEd?context=nombramiento',
+          icon: CollectionIcon,
+        },
+        {
           name: 'Simulacro de Examen',
           href: '/simulacroExamen',
           icon: ClipboardListIcon,
@@ -120,6 +125,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         {
           name: 'Banco de Preguntas',
           href: '/bancoPreguntasAscenso',
+          icon: CollectionIcon,
+        },
+        {
+          name: 'Banco de Preguntas ED',
+          href: '/bancoPreguntasEd?context=ascenso',
           icon: CollectionIcon,
         },
         {

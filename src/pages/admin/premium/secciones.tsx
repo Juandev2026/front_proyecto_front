@@ -97,10 +97,11 @@ const AdminPremiumSecciones = () => {
         id: s.fuenteId || s.id, // Usamos fuenteId para CRUD; fallback a s.id si no existe
         id_examen: s.id, // Guardamos el ID de examen por si se necesita
         nombre: s.fuenteNombre || 'Sin nombre',
-        descripcion: '',
+        descripcion: s.fuenteDescripcion || '',
         tipoExamenId: s.tipoExamenId,
         tipoExamenNombre: s.tipoExamenNombre || 'General',
         esVisible: s.visible,
+        esDefault: s.esDefault || false,
         categorias: (s.examenesPropios || []).map((c: any) => ({
           modalidadId: c.modalidadId,
           nivelId: c.nivelId,
@@ -152,12 +153,13 @@ const AdminPremiumSecciones = () => {
     try {
       await fuenteService.create({
         nombre: newSection.nombre,
+        descripcion: newSection.descripcion,
         tipoExamenId: newSection.tipoExamenId,
         categorias: newSection.categorias.map(
           ({ modalidadId, nivelId, especialidadId }) => ({
-            modalidadId: modalidadId || 0,
-            nivelId: nivelId || 0,
-            especialidadId: especialidadId || 0,
+            modalidadId: modalidadId || null,
+            nivelId: nivelId || null,
+            especialidadId: especialidadId || null,
           })
         ),
       });
@@ -188,8 +190,17 @@ const AdminPremiumSecciones = () => {
     }
 
     try {
-      await fuenteService.update(editingSection.id, {
+      await fuenteService.updatePropio(editingSection.id, {
+        id: editingSection.id,
         nombre: editingSection.nombre,
+        descripcion: editingSection.descripcion || '',
+        tipoExamenId: editingSection.tipoExamenId,
+        visible: editingSection.esVisible || false,
+        categorias: editingSection.categorias.map((c) => ({
+          modalidadId: c.modalidadId || null,
+          nivelId: c.nivelId || null,
+          especialidadId: c.especialidadId || null,
+        })),
       });
       await fetchSections();
       setShowEditModal(false);
@@ -590,27 +601,31 @@ const AdminPremiumSecciones = () => {
 
       {/* --- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN --- */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm mx-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              Confirmar eliminación
+        <div className="fixed inset-0 bg-[#0b1426]/60 flex items-center justify-center z-[100] backdrop-blur-sm p-4 animate-spawn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-red-50">
+             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrashIcon className="w-8 h-8 text-red-500" />
+             </div>
+             
+            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
+              ¿Eliminar sección?
             </h3>
-            <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que deseas eliminar esta sección? Esta acción no
-              se puede deshacer.
+            <p className="text-gray-500 mb-8 text-center text-sm">
+              Estás a punto de eliminar la sección <span className="font-bold text-gray-800">"{secciones.find(s => s.id === seccionToDelete)?.nombre}"</span>. Esta acción borrará todos sus datos y no se podrá revertir.
             </p>
-            <div className="flex justify-end gap-3">
+            
+            <div className="flex gap-3">
               <button
                 onClick={cancelDelete}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-all font-bold text-sm"
               >
-                Cancelar
+                No, cancelar
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition-all font-bold text-sm"
               >
-                Eliminar
+                Sí, eliminar
               </button>
             </div>
           </div>
@@ -963,6 +978,40 @@ const AdminPremiumSecciones = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Checkboxes for Edit */}
+              <div className="flex items-center gap-6 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    checked={editingSection.esDefault}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        esDefault: e.target.checked,
+                      })
+                    }
+                  />
+                  <span className="text-xs text-gray-700">
+                    Marcar como sección por defecto
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    checked={editingSection.esVisible}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        esVisible: e.target.checked,
+                      })
+                    }
+                  />
+                  <span className="text-xs text-gray-700">Sección visible</span>
+                </label>
               </div>
 
               {/* Categorías Section */}
