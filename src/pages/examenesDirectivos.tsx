@@ -52,7 +52,7 @@ const ExamenesDirectivosPage = () => {
       if (!groups[e.modalidadId]) {
         groups[e.modalidadId] = { nombre: e.modalidadNombre, exams: [] };
       }
-      groups[e.modalidadId].exams.push(e);
+      groups[e.modalidadId]!.exams.push(e);
     });
     return groups;
   }, [directivosExams]);

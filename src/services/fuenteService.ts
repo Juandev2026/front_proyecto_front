@@ -16,7 +16,7 @@ export interface Fuente {
   descripcion?: string;
   tipoExamenNombre?: string;
   esVisible?: boolean;
-  esDefault?: boolean;
+  esDefault?: boolean ;
   cantidadCategorias?: number;
 }
 
