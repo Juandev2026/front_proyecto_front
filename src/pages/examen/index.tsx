@@ -88,19 +88,19 @@ const ExamenPage = () => {
           q.subPreguntas.forEach((sub: any) => {
             flattened.push({
               ...q,
-              enunciado: sub.enunciado,
-              parentEnunciado: q.enunciado,
-              alternativaA: sub.alternativaA,
-              alternativaB: sub.alternativaB,
-              alternativaC: sub.alternativaC,
-              alternativaD: sub.alternativaD,
+              ...sub, // sub properties will override q properties
+              enunciado: sub.enunciado || q.enunciado || '',
+              parentEnunciado: (sub.enunciado && q.enunciado) ? q.enunciado : '',
+              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || q.alternativaA || '',
+              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || q.alternativaB || '',
+              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || q.alternativaC || '',
+              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || q.alternativaD || '',
               puntos: sub.puntos || q.puntos,
               tiempoPregunta: sub.tiempoPregunta || q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
-              respuesta: sub.respuesta, // CRITICAL: Map sub-question answer
+              respuesta: sub.respuestaCorrecta || sub.respuesta || q.respuesta, 
               isSubPregunta: true,
-              subPreguntasOriginal: q.subPreguntas, // Keep a ref if needed
-              subPreguntas: [], // Clear this to avoid duplicate rendering logic
+              subPreguntas: [], // Clear this to avoid recursive rendering issues
             });
           });
         } else {

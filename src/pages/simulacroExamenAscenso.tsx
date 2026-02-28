@@ -322,7 +322,8 @@ const SimulacroExamenAscensoPage = () => {
         await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
 
       if (questions.length > 0) {
-        questions = questions.filter((q) => {
+        // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
+        const filteredBySelection = questions.filter((q) => {
           const qYear = String(q.year || q.anio || '0');
           const filterForThisYear = yearFilters.find((f) => f.year === qYear);
           if (!filterForThisYear) return false;
@@ -331,6 +332,63 @@ const SimulacroExamenAscensoPage = () => {
             filterForThisYear.clasificacionIds.includes(q.clasificacionId)
           );
         });
+
+        // 2. Agrupar por (año, clasificacionId)
+        const groups: Record<string, any[]> = {};
+        yearFilters.forEach((f) => {
+          f.clasificacionIds.forEach((cid) => {
+            const key = `${f.year}-${cid}`;
+            groups[key] = [];
+          });
+        });
+
+        filteredBySelection.forEach((q) => {
+          const key = `${String(q.year || q.anio || '0')}-${q.clasificacionId}`;
+          if (groups[key]) {
+            groups[key].push(q);
+          }
+        });
+
+        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas)
+        const activeGroupKeys = Object.keys(groups).filter(
+          (k) => (groups[k] || []).length > 0
+        );
+        const totalTarget = 60;
+
+        if (activeGroupKeys.length > 0 && filteredBySelection.length > totalTarget) {
+          const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
+          let finalSelection: any[] = [];
+
+          // Primera pasada: tomar el mínimo entre la base y lo disponible
+          for (const key of activeGroupKeys) {
+            const group = groups[key];
+            if (!group) continue;
+            const shuffled = [...group].sort(() => 0.5 - Math.random());
+            const take = Math.min(shuffled.length, baseLimitPerGroup);
+            finalSelection = [...finalSelection, ...shuffled.slice(0, take)];
+            // Guardar lo que sobra para una segunda pasada si no llegamos a 60
+            if (groups[key]) groups[key] = shuffled.slice(take);
+          }
+
+          // Segunda pasada: si faltan para llegar a 60, rellenar de los que sobran aleatoriamente
+          if (finalSelection.length < totalTarget) {
+            let leftovers: any[] = [];
+            for (const key of activeGroupKeys) {
+               const g = groups[key];
+               if (g) leftovers = [...leftovers, ...g];
+            }
+            leftovers = leftovers.sort(() => 0.5 - Math.random());
+            const stillNeeded = totalTarget - finalSelection.length;
+            finalSelection = [
+              ...finalSelection,
+              ...leftovers.slice(0, stillNeeded),
+            ];
+          }
+          questions = finalSelection;
+        } else {
+          // Si hay menos de 60, solo las barajamos
+          questions = filteredBySelection.sort(() => 0.5 - Math.random());
+        }
       }
 
       const metadata = {
@@ -572,7 +630,12 @@ const SimulacroExamenAscensoPage = () => {
           </div>
 
           <div className="bg-green-100/50 border border-green-200 rounded-lg p-5">
-            <p className="text-xl font-bold text-green-700">Total: <span className="text-2xl font-black">{totalQuestions}</span> preguntas</p>
+            <p className="text-xl font-bold text-green-700">Total para el simulacro: <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span> preguntas</p>
+            {totalQuestions > 60 && (
+              <p className="text-xs text-green-600 font-medium mt-1 italic">
+                * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+              </p>
+            )}
           </div>
         </div>
 

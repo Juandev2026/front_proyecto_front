@@ -347,18 +347,73 @@ const SimulacroExamenPage = () => {
 
       // --- PARCHE DE FRONTEND: Filtrar localmente por si la API devuelve más de lo pedido ---
       if (questions.length > 0) {
-        questions = questions.filter((q) => {
+        // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
+        const filteredBySelection = questions.filter((q) => {
           const qYear = String(q.year || q.anio || '0');
-          // Buscamos si el año de la pregunta está en nuestros filtros
           const filterForThisYear = yearFilters.find((f) => f.year === qYear);
           if (!filterForThisYear) return false;
-
-          // Si el año coincide, verificamos que la clasificación también esté permitida para ese año
           return (
             q.clasificacionId !== undefined &&
             filterForThisYear.clasificacionIds.includes(q.clasificacionId)
           );
         });
+
+        // 2. Agrupar por (año, clasificacionId)
+        const groups: Record<string, any[]> = {};
+        yearFilters.forEach((f) => {
+          f.clasificacionIds.forEach((cid) => {
+            const key = `${f.year}-${cid}`;
+            groups[key] = [];
+          });
+        });
+
+        filteredBySelection.forEach((q) => {
+          const key = `${String(q.year || q.anio || '0')}-${q.clasificacionId}`;
+          if (groups[key]) {
+            groups[key].push(q);
+          }
+        });
+
+        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas)
+        const activeGroupKeys = Object.keys(groups).filter(
+          (k) => (groups[k] || []).length > 0
+        );
+        const totalTarget = 60;
+
+        if (activeGroupKeys.length > 0 && filteredBySelection.length > totalTarget) {
+          const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
+          let finalSelection: any[] = [];
+
+          // Primera pasada: tomar el mínimo entre la base y lo disponible
+          for (const key of activeGroupKeys) {
+            const group = groups[key];
+            if (!group) continue;
+            const shuffled = [...group].sort(() => 0.5 - Math.random());
+            const take = Math.min(shuffled.length, baseLimitPerGroup);
+            finalSelection = [...finalSelection, ...shuffled.slice(0, take)];
+            // Guardar lo que sobra para una segunda pasada si no llegamos a 60
+            if (groups[key]) groups[key] = shuffled.slice(take);
+          }
+
+          // Segunda pasada: si faltan para llegar a 60, rellenar de los que sobran aleatoriamente
+          if (finalSelection.length < totalTarget) {
+            let leftovers: any[] = [];
+            for (const key of activeGroupKeys) {
+               const g = groups[key];
+               if (g) leftovers = [...leftovers, ...g];
+            }
+            leftovers = leftovers.sort(() => 0.5 - Math.random());
+            const stillNeeded = totalTarget - finalSelection.length;
+            finalSelection = [
+              ...finalSelection,
+              ...leftovers.slice(0, stillNeeded),
+            ];
+          }
+          questions = finalSelection;
+        } else {
+          // Si hay menos de 60, solo las barajamos
+          questions = filteredBySelection.sort(() => 0.5 - Math.random());
+        }
       }
 
       console.log(`Preguntas obtenidas tras filtro local: ${questions.length}`);
@@ -714,10 +769,15 @@ const SimulacroExamenPage = () => {
             <div className="bg-green-100/50 border border-green-200 rounded-lg p-5 flex items-center gap-3">
               <div className="flex-1">
                 <p className="text-xl font-bold text-green-700">
-                  Total de preguntas seleccionadas:{' '}
-                  <span className="text-2xl font-black">{totalQuestions}</span>{' '}
+                  Total para el simulacro:{' '}
+                  <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span>{' '}
                   preguntas
                 </p>
+                {totalQuestions > 60 && (
+                  <p className="text-xs font-semibold text-green-600 mt-1 italic leading-relaxed">
+                     * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+                  </p>
+                )}
                 <p className="text-xs font-semibold text-green-600 mt-0.5">
                   Incluye preguntas de Bloque I Exámenes MINEDU
                 </p>

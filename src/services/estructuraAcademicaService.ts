@@ -216,11 +216,14 @@ export const estructuraAcademicaService = {
         puntos: q.puntos || 0,
         tiempoPregunta: q.tiempoPregunta || 0,
         clasificacionId: q.clasificacionId,
-        clasificacionNombre: q.clasificacionNombre,
+        clasificacionNombre: q.clasificacionNombre || q.clasificacion || '',
         tipoPreguntaId: q.tipoPreguntaId,
-        respuesta: getLetter(q.respuesta, q.alternativas || []),
+        respuesta: getLetter(q.respuestaCorrecta || q.respuesta, q.alternativas || []),
         subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
           numero: sub.numero,
+          id: sub.id,
+          preguntaId: sub.id,
+          examenId: sub.examenId || q.examenId,
           enunciado: unescapeHTML(
             (sub.enunciados || []).map((e: any) => e.contenido).join('<br/>') ||
               sub.enunciado ||
@@ -241,6 +244,8 @@ export const estructuraAcademicaService = {
           imagen: sub.imagen || '',
           puntos: sub.puntos || 0,
           tiempoPregunta: sub.tiempoPregunta || 0,
+          clasificacionId: sub.clasificacionId || q.clasificacionId,
+          clasificacionNombre: sub.clasificacionNombre || sub.clasificacion || q.clasificacionNombre || q.clasificacion || '',
           respuesta: getLetter(
             sub.respuestaCorrecta || sub.respuesta,
             sub.alternativas || []
