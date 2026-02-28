@@ -53,19 +53,20 @@ const ResultadoPage = () => {
           q.subPreguntas.forEach((sub: any) => {
             flattened.push({
               ...q,
-              enunciado: sub.enunciado,
-              parentEnunciado: q.enunciado,
-              alternativaA: sub.alternativaA,
-              alternativaB: sub.alternativaB,
-              alternativaC: sub.alternativaC,
-              alternativaD: sub.alternativaD,
-              puntos: sub.puntos || q.puntos,
-              tiempoPregunta: sub.tiempoPregunta || q.tiempoPregunta,
+              enunciado: sub.enunciado || '',
+              parentEnunciado: q.enunciado || '',
+              imagen: sub.imagen || q.imagen || '',
+              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
+              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
+              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
+              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              puntos: sub.puntos ?? q.puntos,
+              tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
-              respuesta: sub.respuesta,
+              respuesta: sub.respuestaCorrecta || sub.respuesta || '', 
               isSubPregunta: true,
-              subPreguntas: [],
-            } as any);
+              subPreguntas: [], 
+            });
           });
         } else {
           flattened.push({ ...q, isSubPregunta: false });
@@ -93,9 +94,24 @@ const ResultadoPage = () => {
     );
 
     const total = questions.length;
-    const answered = global.correctas + global.incorrectas;
+    
+    // Ensure accurate omitidas if backend returns 0 across the board but we have total count
+    let correctas = global.correctas;
+    let incorrectas = global.incorrectas;
+    let omitidas = global.omitidas;
+    
+    if (correctas === 0 && incorrectas === 0 && omitidas === 0 && total > 0) {
+      omitidas = total;
+    } else if (correctas + incorrectas + omitidas !== total && total > 0) {
+      // If sum doesn't match total, trust correctas/incorrectas and adjust omitidas
+      omitidas = Math.max(0, total - correctas - incorrectas);
+    }
+    
+    const answered = correctas + incorrectas;
+    const maxScore = questions.reduce((acc, q) => acc + (Number(q.puntos) || 0), 0);
 
     // 2. Cálculo por Clasificación (Manual para el desglose)
+    // ... preserved classificationStats logic ...
     const classificationStats: Record<
       string,
       { points: number; correct: number; total: number; earnedPoints: number }
@@ -105,13 +121,14 @@ const ResultadoPage = () => {
       const className = q.clasificacionNombre || 'Otros';
       if (!classificationStats[className]) {
         classificationStats[className] = {
-          points: q.puntos || 0,
+          points: 0,
           earnedPoints: 0,
           correct: 0,
           total: 0,
         };
       }
       classificationStats[className].total += 1;
+      classificationStats[className].points += Number(q.puntos) || 0;
 
       const subNum = (q as any).numeroSubPregunta;
       const backendKey = subNum ? `${q.id}-${subNum}` : String(q.id);
@@ -122,15 +139,18 @@ const ResultadoPage = () => {
 
       if (isCorrect) {
         classificationStats[className].correct += 1;
-        classificationStats[className].earnedPoints += q.puntos || 0;
+        classificationStats[className].earnedPoints += Number(q.puntos) || 0;
       }
     });
 
     return {
-      ...global,
+      correctas,
+      incorrectas,
+      omitidas,
       total,
       answered,
       score: examResult.puntajeGlobal,
+      maxScore: maxScore || 200,
       classStats: Object.entries(classificationStats).map(([name, data]) => ({
         name,
         ...data,
@@ -220,7 +240,7 @@ const ResultadoPage = () => {
                 <p className="text-4xl font-black text-gray-800">
                   {stats?.score}{' '}
                   <span className="text-lg text-gray-400 font-medium">
-                    / 200 pts
+                    / {stats?.maxScore} pts
                   </span>
                 </p>
                 <p className="text-sm text-gray-500 font-medium mt-1">

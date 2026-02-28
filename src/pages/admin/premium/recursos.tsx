@@ -142,6 +142,17 @@ const Recursos = () => {
     imagen: '',
   });
 
+  // Delete Confirmation Modal State
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfig, setDeleteConfig] = useState<{
+    type: 'SECTION' | 'SUBSECTION' | 'RESOURCE';
+    id?: number;
+    idSeccion?: number;
+    idSubSeccion?: number;
+    numero?: number;
+    title: string;
+  } | null>(null);
+
   const fetchIntroContent = async () => {
     try {
       const data = await contenidoIntroductorioService.getAll();
@@ -264,14 +275,25 @@ const Recursos = () => {
     }
   };
 
-  const handleDeleteSection = async (id: number) => {
-    if (!confirm('¿Está seguro de eliminar esta sección?')) return;
+  const handleDeleteSection = (id: number) => {
+    const section = sections.find(s => s.id === id);
+    setDeleteConfig({
+      type: 'SECTION',
+      id,
+      title: section?.nombre || 'esta sección'
+    });
+    setShowDeleteConfirm(true);
+  };
+
+  const performDeleteSection = async (id: number) => {
     try {
       await seccionesService.delete(id);
       await fetchSections();
       alert('Sección eliminada con éxito');
     } catch (error) {
       alert('Error al eliminar la sección.');
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -424,12 +446,33 @@ const Recursos = () => {
     }
   };
 
-  const handleDeleteResource = async (
+  const handleDeleteResource = (
     idSeccion: number,
     idSubSeccion: number,
     numero: number
   ) => {
-    if (!confirm('¿Está seguro de eliminar este recurso?')) return;
+    // Find resource title if possible
+    let resTitle = 'este recurso';
+    const section = sections.find(s => s.id === idSeccion);
+    const sub = section?.subSecciones.find(sb => sb.id === idSubSeccion);
+    const res = sub?.recursos.find(r => r.numero === numero);
+    if (res) resTitle = res.nombreArchivo;
+
+    setDeleteConfig({
+      type: 'RESOURCE',
+      idSeccion,
+      idSubSeccion,
+      numero,
+      title: resTitle
+    });
+    setShowDeleteConfirm(true);
+  };
+
+  const performDeleteResource = async (
+    idSeccion: number,
+    idSubSeccion: number,
+    numero: number
+  ) => {
     try {
       await seccionRecursosService.delete(idSeccion, idSubSeccion, numero);
       await fetchSections();
@@ -437,6 +480,8 @@ const Recursos = () => {
     } catch (error) {
       console.error(error);
       alert('Error al eliminar el recurso.');
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -544,8 +589,25 @@ const Recursos = () => {
     }
   };
 
-  const handleDeleteSubsection = async (id: number) => {
-    if (!confirm('¿Está seguro de eliminar esta subsección?')) return;
+  const handleDeleteSubsection = (id: number) => {
+    let subTitle = 'esta subsección';
+    for (const s of sections) {
+      const sub = s.subSecciones.find(sb => sb.id === id);
+      if (sub) {
+        subTitle = sub.nombre;
+        break;
+      }
+    }
+
+    setDeleteConfig({
+      type: 'SUBSECTION',
+      id,
+      title: subTitle
+    });
+    setShowDeleteConfirm(true);
+  };
+
+  const performDeleteSubsection = async (id: number) => {
     try {
       await seccionesService.deleteSubseccion(id);
       await fetchSections();
@@ -553,6 +615,8 @@ const Recursos = () => {
     } catch (error) {
       console.error(error);
       alert('Error al eliminar la subsección.');
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -769,24 +833,24 @@ const Recursos = () => {
       </div>
 
       {/* --- STATS CARDS --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold text-gray-800 mb-1">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8">
+        <div className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center text-center">
+          <span className="text-2xl md:text-4xl font-bold text-gray-800 mb-1">
             {stats.secciones}
           </span>
-          <span className="text-gray-500 font-medium">Secciones</span>
+          <span className="text-xs md:text-gray-500 font-bold uppercase tracking-wider">Secciones</span>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold text-gray-800 mb-1">
+        <div className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center text-center">
+          <span className="text-2xl md:text-4xl font-bold text-gray-800 mb-1">
             {stats.subsecciones}
           </span>
-          <span className="text-gray-500 font-medium">Subsecciones</span>
+          <span className="text-xs md:text-gray-500 font-bold uppercase tracking-wider">Subsecciones</span>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold text-gray-800 mb-1">
+        <div className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center text-center col-span-2 md:col-span-1">
+          <span className="text-2xl md:text-4xl font-bold text-gray-800 mb-1">
             {stats.archivosPdf}
           </span>
-          <span className="text-gray-500 font-medium">Archivos PDF</span>
+          <span className="text-xs md:text-gray-500 font-bold uppercase tracking-wider">Archivos PDF</span>
         </div>
       </div>
 
@@ -801,18 +865,18 @@ const Recursos = () => {
         <p className="text-gray-600 text-sm mb-6 max-w-2xl text-left">
           {introContent.description}
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => window.open(introContent.videoUrl, '_blank')}
-            className="max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-8 rounded-lg flex items-center justify-center transition-colors"
+            className="w-full sm:max-w-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-2.5 px-8 rounded-lg flex items-center justify-center transition-colors"
           >
-            <EyeIcon className="w-4 h-4 mr-2" /> Ver
+            <EyeIcon className="w-4 h-4 mr-2" /> Ver Vídeo
           </button>
           <button 
             onClick={() => downloadFile(introContent.videoUrl, 'introduccion.mp4')}
-            className="max-w-xs bg-primary text-white border border-primary hover:bg-blue-700 font-medium py-2 px-8 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+            className="w-full sm:max-w-xs bg-primary text-white border border-primary hover:bg-blue-700 font-medium py-2.5 px-8 rounded-lg flex items-center justify-center transition-colors shadow-sm"
           >
-            <DownloadIcon className="w-4 h-4 mr-2" /> Descargar
+            <DownloadIcon className="w-4 h-4 mr-2" /> Descargar Vídeo
           </button>
         </div>
       </div>
@@ -839,14 +903,14 @@ const Recursos = () => {
                       className="bg-white rounded-lg border border-primary/30 shadow-sm overflow-hidden"
                     >
                       {/* Section Header */}
-                      <div className="p-4 flex items-center justify-between bg-white">
-                        <div className="flex items-center flex-1 text-left">
-                          <div {...provided.dragHandleProps}>
+                      <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between bg-white gap-4">
+                        <div className="flex items-start sm:items-center flex-1 text-left">
+                          <div {...provided.dragHandleProps} className="mt-1 sm:mt-0">
                             <MenuIcon className="w-5 h-5 text-gray-400 mr-4 cursor-move" />
                           </div>
                           <button
                             onClick={() => toggleSection(section.id)}
-                            className="mr-3 text-gray-500 hover:text-primary transition-colors focus:outline-none"
+                            className="mr-3 mt-1 sm:mt-0 text-gray-500 hover:text-primary transition-colors focus:outline-none"
                           >
                             {expandedSections.includes(section.id) ? (
                               <ChevronDownIcon className="w-5 h-5" />
@@ -854,8 +918,8 @@ const Recursos = () => {
                               <ChevronRightIcon className="w-5 h-5" />
                             )}
                           </button>
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-800 uppercase">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-md sm:text-lg font-bold text-gray-800 uppercase break-words pr-2">
                               {section.nombre}
                             </h3>
                             <p className="text-xs text-gray-500 mt-0.5">
@@ -868,7 +932,7 @@ const Recursos = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 sm:self-center self-end">
                           <button
                             onClick={() => {
                               setNewSubsection({
@@ -877,20 +941,21 @@ const Recursos = () => {
                               });
                               setIsAddSubsectionModalOpen(true);
                             }}
-                            className="bg-primary hover:bg-blue-600 text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white"
+                            className="bg-primary hover:bg-blue-600 text-[11px] sm:text-sm font-medium py-1.5 px-3 rounded flex items-center transition-colors text-white whitespace-nowrap"
                           >
-                            <PlusIcon className="w-4 h-4 mr-1" /> Añadir
-                            Subsección
+                            <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> Subsección
                           </button>
                           <button
                             onClick={() => handleOpenEditSection(section)}
                             className="text-gray-500 hover:text-blue-600 p-2 border border-gray-200 rounded bg-white transition-colors"
+                            title="Editar Sección"
                           >
                             <PencilIcon className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteSection(section.id)}
                             className="text-gray-500 hover:text-red-500 p-2 border border-gray-200 rounded bg-white transition-colors"
+                            title="Eliminar Sección"
                           >
                             <TrashIcon className="w-4 h-4" />
                           </button>
@@ -927,16 +992,16 @@ const Recursos = () => {
                                         className="border border-gray-200 rounded-lg bg-white ml-0 md:ml-8"
                                       >
                                         {/* Subsection Header */}
-                                        <div className="p-3 flex items-center justify-between border-b border-gray-100">
-                                          <div className="flex items-center text-left">
-                                            <div {...provided.dragHandleProps}>
+                                        <div className="p-3 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 gap-3">
+                                          <div className="flex items-start sm:items-center text-left">
+                                            <div {...provided.dragHandleProps} className="mt-0.5 sm:mt-0">
                                               <MenuIcon className="w-4 h-4 text-gray-300 mr-3 cursor-move" />
                                             </div>
                                             <button
                                               onClick={() =>
                                                 toggleSubsection(sub.id)
                                               }
-                                              className="mr-2 text-gray-400 hover:text-primary transition-colors focus:outline-none"
+                                              className="mr-2 mt-0.5 sm:mt-0 text-gray-400 hover:text-primary transition-colors focus:outline-none"
                                             >
                                               {expandedSubsections.includes(
                                                 sub.id
@@ -946,15 +1011,16 @@ const Recursos = () => {
                                                 <ChevronRightIcon className="w-4 h-4" />
                                               )}
                                             </button>
-                                            <span className="font-bold text-gray-700">
-                                              {sub.nombre}
-                                            </span>
-                                            <span className="ml-2 text-xs text-gray-400">
-                                              {sub.recursos.length} documentos
-                                              disponibles
-                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                              <span className="font-bold text-gray-700 text-sm sm:text-base break-words">
+                                                {sub.nombre}
+                                              </span>
+                                              <span className="block sm:inline sm:ml-2 text-[10px] sm:text-xs text-gray-400">
+                                                {sub.recursos.length} documentos
+                                              </span>
+                                            </div>
                                           </div>
-                                          <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-2 sm:self-center self-end">
                                             <button
                                               onClick={() =>
                                                 handleOpenAddResource(
@@ -962,10 +1028,10 @@ const Recursos = () => {
                                                   sub.id
                                                 )
                                               }
-                                              className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors"
+                                              className="bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs font-medium py-1.5 px-3 rounded flex items-center transition-colors whitespace-nowrap"
                                             >
                                               <UploadIcon className="w-3 h-3 mr-1" />{' '}
-                                              Subir PDF libre
+                                              Subir PDF
                                             </button>
                                             <button
                                               onClick={() =>
@@ -974,9 +1040,9 @@ const Recursos = () => {
                                                   section.id
                                                 )
                                               }
-                                              className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-sm font-medium"
+                                              className="text-gray-500 hover:text-blue-600 py-1.5 px-3 border border-gray-200 rounded bg-white transition-colors flex items-center text-[10px] sm:text-sm font-medium"
                                             >
-                                              <PencilIcon className="w-4 h-4 mr-1.5" />{' '}
+                                              <PencilIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />{' '}
                                               Editar
                                             </button>
                                             <button
@@ -984,6 +1050,7 @@ const Recursos = () => {
                                                 handleDeleteSubsection(sub.id)
                                               }
                                               className="text-gray-500 hover:text-red-500 p-1.5 border border-gray-200 rounded bg-white transition-colors"
+                                              title="Eliminar Subsección"
                                             >
                                               <TrashIcon className="w-3.5 h-3.5" />
                                             </button>
@@ -1144,6 +1211,44 @@ const Recursos = () => {
           )}
         </Droppable>
       </DragDropContext>
+      
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-[#0b1426]/60 flex items-center justify-center z-[110] backdrop-blur-sm p-4 animate-spawn">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-full border border-red-50">
+             <div className="w-14 h-14 md:w-16 md:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrashIcon className="w-7 h-7 md:w-8 md:h-8 text-red-500" />
+             </div>
+             
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 text-center">
+              ¿Eliminar {deleteConfig?.type === 'SECTION' ? 'sección' : deleteConfig?.type === 'SUBSECTION' ? 'subsección' : 'recurso'}?
+            </h3>
+            <p className="text-gray-500 mb-8 text-center text-xs md:text-sm">
+              Estás a punto de eliminar <span className="font-bold text-gray-800">"{deleteConfig?.title}"</span>. Esta acción no se podrá deshacer.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-all font-bold text-xs md:text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (!deleteConfig) return;
+                  if (deleteConfig.type === 'SECTION') performDeleteSection(deleteConfig.id!);
+                  if (deleteConfig.type === 'SUBSECTION') performDeleteSubsection(deleteConfig.id!);
+                  if (deleteConfig.type === 'RESOURCE') performDeleteResource(deleteConfig.idSeccion!, deleteConfig.idSubSeccion!, deleteConfig.numero!);
+                }}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition-all font-bold text-xs md:text-sm"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Intro Modal */}
       {isIntroModalOpen && (

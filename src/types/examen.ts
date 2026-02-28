@@ -9,6 +9,10 @@ export interface SubPreguntaExamen {
   puntos: number;
   tiempoPregunta: number;
   respuesta?: string;
+  idAlternativaA?: number;
+  idAlternativaB?: number;
+  idAlternativaC?: number;
+  idAlternativaD?: number;
 }
 
 export interface PreguntaExamen {
@@ -31,6 +35,10 @@ export interface PreguntaExamen {
   year?: number | string;
   anio?: number | string;
   subPreguntas?: SubPreguntaExamen[]; // Nueva propiedad para sub-preguntas
+  idAlternativaA?: number;
+  idAlternativaB?: number;
+  idAlternativaC?: number;
+  idAlternativaD?: number;
 }
 
 export interface RespuestaUsuario {

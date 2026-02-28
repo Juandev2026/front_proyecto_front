@@ -212,6 +212,10 @@ export const estructuraAcademicaService = {
         alternativaD: cleanAlternative(
           q.alternativas?.[3]?.contenido || q.alternativaD || ''
         ),
+        idAlternativaA: q.alternativas?.[0]?.id,
+        idAlternativaB: q.alternativas?.[1]?.id,
+        idAlternativaC: q.alternativas?.[2]?.id,
+        idAlternativaD: q.alternativas?.[3]?.id,
         imagen: q.imagen || '',
         puntos: q.puntos || 0,
         tiempoPregunta: q.tiempoPregunta || 0,
@@ -241,6 +245,10 @@ export const estructuraAcademicaService = {
           alternativaD: cleanAlternative(
             sub.alternativas?.[3]?.contenido || sub.alternativaD || ''
           ),
+          idAlternativaA: sub.alternativas?.[0]?.id,
+          idAlternativaB: sub.alternativas?.[1]?.id,
+          idAlternativaC: sub.alternativas?.[2]?.id,
+          idAlternativaD: sub.alternativas?.[3]?.id,
           imagen: sub.imagen || '',
           puntos: sub.puntos || 0,
           tiempoPregunta: sub.tiempoPregunta || 0,

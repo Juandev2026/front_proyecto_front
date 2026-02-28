@@ -37,7 +37,7 @@ const ExamenPage = () => {
   const [respuestas, setRespuestas] = useState<
     Record<
       string,
-      { examenId: number; alternativa: string; isCorrect?: boolean }
+      { examenId: number; alternativa: string; alternativaId?: number; isCorrect?: boolean }
     >
   >({}); // Results State
   const [examResult, setExamResult] = useState<ResultadoExamenResponse | null>(
@@ -88,19 +88,23 @@ const ExamenPage = () => {
           q.subPreguntas.forEach((sub: any) => {
             flattened.push({
               ...q,
-              ...sub, // sub properties will override q properties
-              enunciado: sub.enunciado || q.enunciado || '',
-              parentEnunciado: (sub.enunciado && q.enunciado) ? q.enunciado : '',
-              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || q.alternativaA || '',
-              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || q.alternativaB || '',
-              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || q.alternativaC || '',
-              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || q.alternativaD || '',
-              puntos: sub.puntos || q.puntos,
-              tiempoPregunta: sub.tiempoPregunta || q.tiempoPregunta,
+              enunciado: sub.enunciado || '',
+              parentEnunciado: q.enunciado || '',
+              imagen: sub.imagen || q.imagen || '',
+              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
+              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
+              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
+              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              idAlternativaA: sub.idAlternativaA || sub.alternativas?.[0]?.id,
+              idAlternativaB: sub.idAlternativaB || sub.alternativas?.[1]?.id,
+              idAlternativaC: sub.idAlternativaC || sub.alternativas?.[2]?.id,
+              idAlternativaD: sub.idAlternativaD || sub.alternativas?.[3]?.id,
+              puntos: sub.puntos ?? q.puntos,
+              tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
-              respuesta: sub.respuestaCorrecta || sub.respuesta || q.respuesta, 
+              respuesta: sub.respuestaCorrecta || sub.respuesta || '', 
               isSubPregunta: true,
-              subPreguntas: [], // Clear this to avoid recursive rendering issues
+              subPreguntas: [], 
             });
           });
         } else {
@@ -223,11 +227,15 @@ const ExamenPage = () => {
       `Selecting answer for Index ${currentIndex} (ID: ${currentQuestion.id}): ${option}`
     );
 
+    const idKey = `idAlternativa${option}` as keyof PreguntaExamen;
+    const alternativaId = currentQuestion[idKey];
+
     setRespuestas((prev) => ({
       ...prev,
       [key]: {
         examenId: currentQuestion.examenId,
         alternativa: option,
+        alternativaId: Number(alternativaId) || 0,
       },
     }));
   };
@@ -299,11 +307,13 @@ const ExamenPage = () => {
     reviewCurrentQuestion();
 
     try {
+      if (questions.length === 0) return;
       console.log('Setting isSubmitting to true...');
       setIsSubmitting(true);
       window.speechSynthesis.cancel();
 
       const firstQuestion = questions[0];
+      if (!firstQuestion) return;
       const examYearRaw = String(metadata?.year || firstQuestion?.year || '0')
         .split(',')[0]
         .trim();
@@ -313,17 +323,8 @@ const ExamenPage = () => {
         const key = String(index);
         const data = respuestas[key];
 
-        // El backend espera números (1, 2, 3) para preguntas regulares, pero letras (A, B) para sub-preguntas.
-        let finalAnswer = data?.alternativa || '';
-        if (finalAnswer && !(q as any).isSubPregunta) {
-          const charMap: Record<string, string> = {
-            A: '1',
-            B: '2',
-            C: '3',
-            D: '4',
-          };
-          finalAnswer = charMap[finalAnswer] || finalAnswer;
-        }
+        // El backend espera el ID de la alternativa marcada como string
+        let finalAnswer = data?.alternativaId ? String(data.alternativaId) : "";
 
         return {
           preguntaId: q.preguntaId || q.id,
