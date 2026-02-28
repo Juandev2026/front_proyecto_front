@@ -114,7 +114,7 @@ const Menu = () => {
                         : '/planes?showVideo=true'
                     }
                   >
-                    <a className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#4a90f9]/80 transition-all hover:scale-105 whitespace-nowrap">
+                    <a className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl hover:shadow-blue-500/30 active:scale-105 whitespace-nowrap">
                       AVEND ESCALA
                     </a>
                   </Link>
@@ -132,7 +132,7 @@ const Menu = () => {
 
                 {/* AVEND PLANIFICA */}
                 <div className="relative group">
-                  <div className="bg-purple-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-purple-700 transition-all hover:scale-105 cursor-default whitespace-nowrap">
+                  <div className="bg-purple-600 text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl hover:shadow-purple-500/30 active:scale-105 cursor-default whitespace-nowrap">
                     AVEND PLANIFICA
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -144,7 +144,7 @@ const Menu = () => {
 
                 {/* AVEND IUS */}
                 <div className="relative group">
-                  <div className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-[#4a90f9]/80 transition-all hover:scale-105 cursor-default whitespace-nowrap">
+                  <div className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-[10px] lg:text-sm font-bold shadow-md hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl hover:shadow-blue-500/30 active:scale-105 cursor-default whitespace-nowrap">
                     AVEND IUS
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">

@@ -150,7 +150,7 @@ const ExamenesDirectivosPage = () => {
         <title>Directivos - AVENDOCENTE</title>
       </Head>
 
-      <div className="w-full space-y-6 px-4 md:px-6">
+      <div className="w-full px-4 md:px-8 space-y-6 pb-20">
         {/* Banner Header */}
         <div className="bg-[#4790FD] rounded-lg p-6 text-center shadow-lg border border-blue-200">
           <h2 className="text-white text-2xl md:text-3xl font-bold tracking-tight">
@@ -236,11 +236,11 @@ const ExamenesDirectivosPage = () => {
                                 handleToggleClass(exam.id, c.clasificacionId)
                               }
                               className={`
-                                flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200
+                                flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-lg
                                 ${
                                   isSelected
                                     ? 'border-[#4790FD] bg-[#EEF5FF] shadow-md ring-1 ring-[#4790FD]'
-                                    : 'border-white bg-white hover:border-blue-100 shadow-sm'
+                                    : 'border-white bg-white hover:border-blue-200 shadow-sm'
                                 }
                               `}
                             >
@@ -345,7 +345,7 @@ const ExamenesDirectivosPage = () => {
               ${
                 totalSelectedCategories === 0 || isLoading
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#4790FD] text-white hover:bg-blue-600 hover:scale-[1.02] active:scale-95 shadow-blue-200'
+                  : 'bg-[#4790FD] text-white hover:bg-blue-600 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125 shadow-blue-200 transition-all duration-300'
               }
             `}
           >

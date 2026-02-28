@@ -449,6 +449,8 @@ const ExamenPage = () => {
         <title>Examen - Avendocente</title>
       </Head>
 
+      <div className="w-full px-4 md:px-8 space-y-6 pb-20">
+
       {/* Top Bar Controls */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 relative z-20">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -1014,6 +1016,7 @@ const ExamenPage = () => {
           font-family: 'Caveat', cursive;
         }
       `}</style>
+      </div>
     </PremiumLayout>
   );
 };

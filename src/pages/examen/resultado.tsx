@@ -218,7 +218,7 @@ const ResultadoPage = () => {
         <title>Resultados del Examen - Avendocente</title>
       </Head>
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-20">
+      <div className="w-full px-4 md:px-8 space-y-8 pb-20">
         {/* Header Title */}
         <div className="bg-[#002B6B] text-white p-4 rounded-xl shadow-lg border-b-4 border-blue-900 flex justify-center items-center">
           <h1 className="text-xl font-black uppercase tracking-widest">

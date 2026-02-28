@@ -471,7 +471,7 @@ const BancoPreguntasPage = () => {
         <title>Banco de Preguntas - AVENDOCENTE</title>
       </Head>
 
-      <div className="w-full space-y-6">
+      <div className="w-full px-4 md:px-8 space-y-6 pb-20">
         <div className="text-center py-4">
           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
             Selecciona tus preferencias
@@ -894,7 +894,7 @@ const BancoPreguntasPage = () => {
                   0
                 ) === 0
               }
-              className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125"
             >
               Confirmar selección
             </button>

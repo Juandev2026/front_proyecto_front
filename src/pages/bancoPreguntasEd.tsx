@@ -2,8 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import {
   AcademicCapIcon,
   XIcon,
-  ChevronDownIcon,
-  FolderOpenIcon,
+  QuestionMarkCircleIcon,
   ClipboardListIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
@@ -24,6 +23,13 @@ interface SeccionPropia {
   categorias: any[];
 }
 
+const TIPO_FULL_NAMES: Record<string, string> = {
+  'CCP': 'Conocimientos Curriculares y Pedagógicos',
+  'CL': 'Comprensión Lectora',
+  'RL': 'Razonamiento Lógico',
+  'CG': 'Conocimientos Generales',
+};
+
 const BancoPreguntasEdPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -31,6 +37,8 @@ const BancoPreguntasEdPage = () => {
   const [secciones, setSecciones] = useState<SeccionPropia[]>([]);
   const [selectedSeccionId, setSelectedSeccionId] = useState<number | ''>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conteoPreguntas, setConteoPreguntas] = useState<Record<string, any>>({});
+  const [tiposPregunta, setTiposPregunta] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -80,14 +88,64 @@ const BancoPreguntasEdPage = () => {
     return secciones.find((s) => s.id === selectedSeccionId);
   }, [secciones, selectedSeccionId]);
 
+  useEffect(() => {
+    if (selectedSeccion && selectedSeccion.categorias) {
+      const countMap: any = {};
+      
+      selectedSeccion.categorias.forEach((exam: any) => {
+        if (exam.clasificaciones) {
+          exam.clasificaciones.forEach((item: any) => {
+            const name = item.clasificacionNombre;
+            if (name) {
+              const cantidad = item.cantidadPreguntas || 0;
+              if (cantidad > 0) {
+                if (!countMap[name]) {
+                  countMap[name] = {
+                    id: item.clasificacionId,
+                    cantidad: 0,
+                    puntos: item.puntos || 0,
+                    tiempoPregunta: item.tiempoPregunta || 0,
+                    minimo: item.minimo || 0,
+                  };
+                }
+                countMap[name].cantidad += cantidad;
+              }
+            }
+          });
+        }
+      });
+      
+      setConteoPreguntas(countMap);
+      
+      // Auto-check categories that have questions
+      const initialTipos: Record<string, boolean> = {};
+      Object.keys(countMap).forEach(name => {
+        initialTipos[name] = true;
+      });
+      setTiposPregunta(initialTipos);
+    } else {
+      setConteoPreguntas({});
+      setTiposPregunta({});
+    }
+  }, [selectedSeccion]);
+
   const handleConfirm = async () => {
     if (!selectedSeccion) return;
+
+    // Get selected classification IDs
+    const selectedClasificacionIds = Object.entries(conteoPreguntas)
+      .filter(([name]) => tiposPregunta[name])
+      .map(([_, data]) => data.id);
+
+    if (selectedClasificacionIds.length === 0) {
+      alert('Por favor, selecciona al menos un tipo de pregunta.');
+      return;
+    }
 
     setIsLoading(true);
     try {
       let allQuestions: any[] = [];
       
-      // Para secciones propias, solemos buscar preguntas que coincidan con CUALQUIERA de sus categorías configuradas
       for (const cat of selectedSeccion.categorias) {
         const payload = {
           tipoExamenId: selectedSeccion.tipoExamenId,
@@ -95,12 +153,18 @@ const BancoPreguntasEdPage = () => {
           modalidadId: cat.modalidadId,
           nivelId: cat.nivelId,
           especialidadId: cat.especialidadId || 0,
-          year: '0', // Por ahora asumimos '0' para ED
-          clasificaciones: [], // Traer todas las clasificaciones habilitadas
+          year: '0',
+          clasificaciones: selectedClasificacionIds,
         };
 
         const questions = await estructuraAcademicaService.getPreguntasByFilter(payload);
-        allQuestions = [...allQuestions, ...questions];
+        
+        // Local Filter Patch just in case
+        const filteredQuestions = questions.filter(q => 
+          q.clasificacionId !== undefined && selectedClasificacionIds.includes(q.clasificacionId)
+        );
+
+        allQuestions = [...allQuestions, ...filteredQuestions];
       }
 
       // Eliminar duplicados si los hay (por id de pregunta)
@@ -127,7 +191,7 @@ const BancoPreguntasEdPage = () => {
   if (loading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
       </div>
     );
   }
@@ -141,41 +205,30 @@ const BancoPreguntasEdPage = () => {
         <title>Banco de Preguntas ED - AVENDOCENTE</title>
       </Head>
 
-      <div className="w-full space-y-6 max-w-5xl mx-auto">
-        {/* Banner Header */}
-        <div className="bg-[#002855] rounded-lg p-8 text-center shadow-lg border border-blue-900 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 opacity-10 rounded-full -translate-x-16 -translate-y-16"></div>
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-blue-300 opacity-5 rounded-full translate-x-24 translate-y-24"></div>
-          
-          <h2 className="text-white text-3xl md:text-4xl font-bold tracking-tight mb-2">
+      <div className="w-full space-y-6">
+        <div className="text-center py-4">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
             Banco de Preguntas ED
-          </h2>
-          <h3 className="text-blue-200 text-xl font-medium">
-            {router.query.context === 'nombramiento' ? 'Nombramiento Docente' : 'Ascenso Docente'}
           </h3>
-        </div>
-
-        <div className="text-center py-2">
-          <h4 className="text-2xl font-bold text-[#2B3674]">
-            Selecciona tu sección de estudio
-          </h4>
-          <p className="text-[#A3AED0] text-sm font-medium">
-            Estas son las secciones específicas disponibles para tu tipo de examen
+          <p className="text-[#A3AED0] text-base mt-1 font-medium">
+            Selecciona tu sección de estudio para practicar hoy
           </p>
         </div>
 
-        {/* Sección Selector */}
-        <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-3 text-[#2B3674] font-bold text-lg border-b border-gray-50 pb-4">
-            <FolderOpenIcon className="h-6 w-6 text-primary" />
-            <span>Examenes Propios ED ({secciones.length})</span>
-          </div>
-
-          <div className="relative group">
+        <div className="space-y-4">
+          {/* Sección / Fuente Selector */}
+          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+              <ClipboardListIcon className="h-5 w-5" />
+              <span>Exámenes Propios ED</span>
+              <span className="ml-auto bg-blue-50 text-blue-600 px-3 py-0.5 rounded-full text-xs font-bold ring-1 ring-blue-100">
+                {secciones.length} Disponibles
+              </span>
+            </div>
             <select
               value={selectedSeccionId}
               onChange={(e) => setSelectedSeccionId(Number(e.target.value))}
-              className="w-full h-14 pl-5 pr-12 rounded-xl border-2 border-gray-100 bg-[#F4F7FE] text-[#2B3674] font-bold text-lg appearance-none focus:outline-none focus:border-primary transition-all cursor-pointer group-hover:bg-[#E9EDF7]"
+              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading || secciones.length === 0}
             >
               {secciones.length === 0 ? (
@@ -188,28 +241,21 @@ const BancoPreguntasEdPage = () => {
                 ))
               )}
             </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none">
-              <ChevronDownIcon className="h-6 w-6 text-gray-400 group-hover:text-primary transition-colors" />
-            </div>
-          </div>
-
-          {selectedSeccion && (
-            <div className="mt-8 animate-fadeIn">
-              <div className="bg-[#F8FAFF] rounded-2xl p-6 border border-blue-50 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-yellow-400 rounded-lg flex items-center justify-center text-white">
-                         <ClipboardListIcon className="h-4 w-4" />
-                      </div>
-                      <h5 className="text-xl font-bold text-[#2B3674]">{selectedSeccion.nombre}</h5>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <span className="px-3 py-1 bg-blue-100 text-[#4790FD] text-xs font-bold rounded-full border border-blue-200 uppercase">
+            
+            {selectedSeccion && (
+              <div className="mt-4 p-5 bg-[#F0F7FF] rounded-2xl border border-blue-100 shadow-sm animate-fadeIn">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                    <ClipboardListIcon className="h-5 w-5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[#2B3674] font-black">{selectedSeccion.nombre}</span>
+                    <div className="flex gap-2 mt-1">
+                      <span className="px-3 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-wider">
                         Tipo: {selectedSeccion.tipoExamenNombre}
                       </span>
                       {selectedSeccion.descripcion && (
-                        <span className="px-3 py-1 bg-green-100 text-[#05CD99] text-xs font-bold rounded-full border border-green-200">
+                        <span className="px-3 py-0.5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full uppercase tracking-wider">
                           {selectedSeccion.descripcion}
                         </span>
                       )}
@@ -217,81 +263,228 @@ const BancoPreguntasEdPage = () => {
                   </div>
                 </div>
 
-                {/* Question Type Breakdown */}
-                <div className="bg-white rounded-xl border border-gray-100 p-6">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Preguntas disponibles por tipo:</p>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                            { label: 'CCP', count: 3, color: 'bg-green-50 text-[#05CD99] border-green-100' },
-                            { label: 'CL', count: 0, color: 'bg-gray-50 text-gray-400 border-gray-100' },
-                            { label: 'RL', count: 0, color: 'bg-gray-50 text-gray-400 border-gray-100' },
-                            { label: 'CG', count: 0, color: 'bg-gray-50 text-gray-400 border-gray-100' },
-                        ].map((item, idx) => (
-                            <div key={idx} className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all hover:scale-[1.02] ${item.color}`}>
-                                <span className="text-sm font-bold opacity-80">{item.label}</span>
-                                <span className="text-2xl font-black mt-1">{item.count}</span>
-                            </div>
-                        ))}
-                    </div>
-                    {/* Footnote matching screenshot */}
-                    <div className="mt-4">
-                         <p className="text-xs text-[#4790FD] italic font-medium">{selectedSeccion.descripcion}</p>
-                    </div>
+                <div className="bg-white rounded-xl border border-blue-50 p-4 shadow-sm">
+                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 text-center">
+                     PREGUNTAS DISPONIBLES POR TIPO:
+                   </p>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {['CCP', 'CL', 'RL', 'CG'].map((label) => {
+                        const data = conteoPreguntas[label];
+                        const count = data ? data.cantidad : 0;
+                        return (
+                          <div key={label} className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${count > 0 ? 'bg-[#F0FFF4]/30 border-green-100 text-[#05CD99]' : 'bg-gray-50/50 border-gray-100 text-gray-300'}`}>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+                            <span className="text-xl font-black">{count}</span>
+                          </div>
+                        );
+                      })}
+                   </div>
                 </div>
+                
+                {selectedSeccion.descripcion && (
+                  <p className="text-xs text-blue-500 font-bold mt-3 ml-1 underline cursor-default">
+                    {selectedSeccion.descripcion}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 2. Tipos de Pregunta Checkboxes */}
+          <div className="border border-primary rounded-lg p-5 bg-white shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-primary font-bold">
+              <QuestionMarkCircleIcon className="h-5 w-5" />
+              <span>Tipos de Pregunta*</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {['CL', 'RL', 'CCP'].map((shortName) => {
+                const fullName = TIPO_FULL_NAMES[shortName] || shortName;
+                const data = conteoPreguntas[shortName];
+                const available = (data?.cantidad || 0) > 0;
+                const isSelected = tiposPregunta[shortName];
+
+                return (
+                  <label
+                    key={shortName}
+                    className={`relative border-2 rounded-xl p-5 flex items-center gap-4 transition-all ${
+                      !available 
+                        ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed' 
+                        : isSelected
+                          ? 'border-blue-600 bg-blue-50 shadow-md ring-1 ring-blue-600'
+                          : 'border-gray-200 bg-white hover:border-blue-200 cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex-shrink-0">
+                      <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
+                        isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                      }`}>
+                        {isSelected && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>}
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          disabled={!available}
+                          checked={isSelected || false}
+                          onChange={(e) =>
+                            setTiposPregunta({
+                              ...tiposPregunta,
+                              [shortName]: e.target.checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col flex-1">
+                      <span className={`font-black text-sm leading-tight ${available ? 'text-[#2B3674]' : 'text-gray-400'}`}>
+                        {fullName}
+                      </span>
+                      <span className={`text-[11px] font-bold mt-1 ${available ? 'text-[#05CD99]' : 'text-gray-400'}`}>
+                        {data?.cantidad || 0} preguntas {available ? '' : '(no disponible)'} <span className="text-[10px] text-gray-400 uppercase ml-1">{shortName}</span>
+                      </span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+            
+            <p className="text-[11px] text-[#A3AED0] mt-4 font-medium italic">
+              * Selecciona al menos un tipo de pregunta. Los tipos en gris no tienen preguntas disponibles en esta sección.
+            </p>
+          </div>
+
+          {/* 3. Selección Detallada Blocks - Refined Badges */}
+          {Object.entries(tiposPregunta).some(([_, checked]) => checked) && (
+            <div className="mt-8 space-y-6 bg-white border border-gray-100 rounded-3xl p-6 shadow-xl shadow-gray-100/50">
+               <h3 className="font-extrabold text-[#2B3674] text-xl mb-2 ml-2">
+                 Tipos de Pregunta Seleccionados
+               </h3>
+
+               <div className="space-y-4">
+                 {Object.entries(conteoPreguntas).map(([shortName, data]) => {
+                   if (!tiposPregunta[shortName]) return null;
+                   const fullName = TIPO_FULL_NAMES[shortName] || shortName;
+                   const maxPts = data.cantidad * (data.puntos || 0);
+                   const totalTime = data.cantidad * (data.tiempoPregunta || 0);
+
+                   return (
+                     <div key={shortName} className="bg-[#F8FBFF] border border-blue-100 rounded-[2rem] p-6 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/30 rounded-full translate-x-16 -translate-y-16 blur-xl group-hover:scale-110 transition-transform"></div>
+                       
+                       <div className="flex justify-between items-start mb-5 relative z-10">
+                          <div>
+                            <h4 className="text-[#344079] font-black text-lg mb-1">{fullName}</h4>
+                          </div>
+                          <div className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg shadow-indigo-200">
+                            {shortName}
+                          </div>
+                       </div>
+
+                       <div className="flex flex-wrap gap-3 relative z-10">
+                          {/* 1. Cantidad Badge */}
+                          <div className="flex items-center gap-2 bg-[#E1F1FF] text-[#0075FF] px-4 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">📝</div>
+                             <span className="text-xs font-black uppercase tracking-tight">{data.cantidad} preguntas disponibles</span>
+                          </div>
+
+                          {/* 2. Puntos/c Badge */}
+                          <div className="flex items-center gap-2 bg-[#E6FFF1] text-[#05CD99] px-4 py-1.5 rounded-full border border-green-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs text-yellow-500">⭐</div>
+                             <span className="text-xs font-black uppercase tracking-tight">{data.puntos || 0} pts/correcta</span>
+                          </div>
+
+                          {/* 3. Máx Posible Badge */}
+                          <div className="flex items-center gap-2 bg-[#FEECEC] text-[#FF5B5B] px-4 py-1.5 rounded-full border border-red-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">🎯</div>
+                             <span className="text-xs font-black uppercase tracking-tight">Máx posible: {maxPts} pts</span>
+                          </div>
+
+                          {/* 4. Mínimo Badge */}
+                          <div className="flex items-center gap-2 bg-[#FFF4E5] text-[#FF9933] px-4 py-1.5 rounded-full border border-orange-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">✅</div>
+                             <span className="text-xs font-black uppercase tracking-tight">Mínimo recomendado: {data.minimo || 90} pts</span>
+                          </div>
+
+                          {/* 5. Min/p Badge */}
+                          <div className="flex items-center gap-2 bg-[#FEFCE8] text-[#A16207] px-4 py-1.5 rounded-full border border-yellow-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">⏱️</div>
+                             <span className="text-xs font-black uppercase tracking-tight">{data.tiempoPregunta || 3} min/pregunta</span>
+                          </div>
+
+                          {/* 6. Tiempo Total Badge */}
+                          <div className="flex items-center gap-2 bg-[#FFF1F2] text-[#E11D48] px-4 py-1.5 rounded-full border border-red-100 shadow-sm">
+                             <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">⌚</div>
+                             <span className="text-xs font-black uppercase tracking-tight">Tiempo total: {totalTime || (data.cantidad * 3)}min</span>
+                          </div>
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+            </div>
+          )}
+
+          {/* 4. Resumen de selección Block Final */}
+          {selectedSeccion && (
+            <div className="border border-[#BEE3F8] rounded-[2.5rem] p-8 md:p-10 bg-white shadow-2xl shadow-blue-900/5 mt-10 animate-fadeIn">
+              <div className="flex items-center gap-3 mb-8 text-[#2B3674] font-black text-2xl">
+                <AcademicCapIcon className="h-8 w-8 text-blue-600" />
+                <span className="tracking-tight">Resumen de selección</span>
+              </div>
+
+              <div className="space-y-8">
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-black text-[#A3AED0] uppercase tracking-[0.2em] ml-1">Sección</span>
+                  <div className="inline-flex px-5 py-3 bg-[#E1F1FF] text-[#0075FF] border border-[#BEE3F8] rounded-2xl text-base font-black w-fit shadow-sm">
+                    {selectedSeccion.nombre}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-black text-[#A3AED0] uppercase tracking-[0.2em] ml-1">Tipos de Pregunta</span>
+                  <div className="flex flex-col gap-3">
+                    {Object.entries(tiposPregunta).map(([shortName, checked]) => {
+                      if (!checked) return null;
+                      const data = conteoPreguntas[shortName];
+                      const fullName = TIPO_FULL_NAMES[shortName] || shortName;
+                      return (
+                        <div key={shortName} className="inline-flex px-5 py-3 bg-[#F4ECFF] text-[#7A00FF] border border-[#E9D8FD] rounded-2xl text-base font-black w-fit shadow-sm">
+                          {fullName} ({shortName}) - {data?.cantidad || 0} preguntas
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-center gap-5 mt-12 pt-8 border-t border-gray-50">
+                <button
+                  onClick={() => {
+                    setSelectedSeccionId('');
+                    setTiposPregunta({});
+                  }}
+                  className="px-10 py-5 border-2 border-[#BEE3F8] rounded-2xl text-[#607D8B] font-black text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                >
+                  <XIcon className="h-6 w-6 group-hover:rotate-90 transition-all" />
+                  Limpiar
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  disabled={isLoading || !selectedSeccionId || !Object.values(tiposPregunta).some(c => c)}
+                  className="px-12 py-5 bg-[#0a192f] text-white rounded-2xl font-black text-lg hover:scale-105 hover:shadow-2xl hover:shadow-blue-900/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-110 shadow-lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-3">
+                      <div className="h-5 w-5 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      <span>Cargando...</span>
+                    </div>
+                  ) : (
+                    'Confirmar selección'
+                  )}
+                </button>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Resumen de selección */}
-        <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 overflow-hidden relative">
-          <div className="flex items-center gap-3 text-[#2B3674] font-bold text-lg mb-6">
-            <AcademicCapIcon className="h-6 w-6 text-primary" />
-            <span>Resumen de selección</span>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sección</span>
-              <div className="inline-flex px-4 py-2 bg-blue-50 text-[#4790FD] border border-blue-100 rounded-xl text-sm font-bold w-fit shadow-sm">
-                {selectedSeccion?.nombre || 'Ninguna seleccionada'}
-              </div>
-            </div>
-          </div>
-          
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#F4F7FE] opacity-40 rounded-full translate-x-12 -translate-y-12"></div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pb-12 pt-4">
-          <button
-            onClick={() => setSelectedSeccionId('')}
-            className="px-8 py-3.5 border border-gray-200 rounded-2xl text-[#A3AED0] font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all text-sm group"
-          >
-            <XIcon className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-            Limpiar
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={isLoading || !selectedSeccionId}
-            className={`
-              px-12 py-3.5 rounded-2xl font-bold shadow-xl transition-all text-sm min-w-[220px]
-              ${
-                !selectedSeccionId || isLoading
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                  : 'bg-primary text-white hover:bg-blue-600 hover:scale-[1.02] active:scale-95 shadow-[#4790FD]/20'
-              }
-            `}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>Cargando...</span>
-              </div>
-            ) : (
-              'Confirmar selección'
-            )}
-          </button>
         </div>
       </div>
 
