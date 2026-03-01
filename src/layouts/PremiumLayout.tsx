@@ -153,7 +153,6 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           href: '/respuestasErroneas',
           icon: ExclamationCircleIcon,
         },
-        { name: 'Recursos', href: '/recursos', icon: ArchiveIcon },
       ],
     },
     {

@@ -69,7 +69,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           icon: null,
         },
         {
-          name: 'Banco de Preguntas',
+          name: 'Banco de Preguntas Admin',
           href: '/admin/premium/banco-preguntas',
           icon: null,
         },

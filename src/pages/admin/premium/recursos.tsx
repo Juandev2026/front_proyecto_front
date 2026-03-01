@@ -779,7 +779,7 @@ const Recursos = () => {
       {/* --- HEADER --- */}
       <div className="bg-primary text-white p-6 rounded-t-lg mb-6 flex justify-center items-center shadow-lg">
         <h1 className="text-2xl font-bold">
-          Repositorio de Contenidos Multimedia
+          Repositorio de Contenidos Multimedia - Admin
         </h1>
       </div>
 

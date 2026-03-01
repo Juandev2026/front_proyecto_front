@@ -407,7 +407,7 @@ const AdminPremiumSecciones = () => {
     <AdminLayout>
       {/* --- HEADER --- */}
       <div className="bg-[#4a90f9] text-white p-4 rounded-t-lg mb-6 flex flex-col justify-center items-center shadow-lg">
-        <h1 className="text-xl font-bold">Administrar Secciones</h1>
+        <h1 className="text-xl font-bold">Administrar Secciones - Sección</h1>
         <p className="text-sm opacity-90">Exámenes Propios ED</p>
       </div>
 

@@ -1980,7 +1980,7 @@ const Recursos = () => {
       {!showResults && (
         <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm mb-4">
           <h1 className="text-xl font-bold text-white text-center">
-            Banco de Preguntas
+            Banco de Preguntas - Admin
           </h1>
         </div>
       )}
