@@ -690,7 +690,7 @@ const AdminPremiumDocentes = () => {
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-base"
                 placeholder="Buscar docente"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -700,7 +700,7 @@ const AdminPremiumDocentes = () => {
             {/* Dropdown Filter */}
             <div className="relative w-full md:w-48">
               <select
-                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white"
+                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-base rounded-md bg-white"
                 value={filterOption}
                 onChange={(e) => setFilterOption(e.target.value)}
               >
@@ -780,43 +780,43 @@ const AdminPremiumDocentes = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-left text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Nombre
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-left text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Contacto
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-left text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Modalidad/Nivel
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-center text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Estado
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-left text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Expiración
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-left text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Tiempo Restante
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs text-gray-900 uppercase tracking-wider font-bold"
+                  className="px-6 py-3 text-center text-sm text-gray-900 uppercase tracking-wider font-bold"
                 >
                   Acciones
                 </th>
@@ -850,7 +850,7 @@ const AdminPremiumDocentes = () => {
                           {docente.nombre.charAt(0)}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-base font-bold text-gray-900">
                             {docente.nombre}
                           </div>
                         </div>
@@ -858,7 +858,7 @@ const AdminPremiumDocentes = () => {
                     </td>
                     {/* ... remaining columns same ... */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-base text-gray-900">
                         {docente.email}
                       </div>
                       <div className="text-sm text-gray-500">
@@ -877,7 +877,7 @@ const AdminPremiumDocentes = () => {
                                 openPopoverId === docente.id ? null : docente.id
                               )
                             }
-                            className="text-blue-600 hover:text-blue-800 underline text-sm font-semibold"
+                            className="text-blue-600 hover:text-blue-800 underline text-base font-bold"
                           >
                             Ver accesos ({docente.userExamenes.length})
                           </button>

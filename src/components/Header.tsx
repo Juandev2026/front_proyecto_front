@@ -208,7 +208,7 @@ const Menu = () => {
 
           {/* Bottom Row: Navigation Links */}
           <nav
-            className="hidden md:flex items-center justify-center py-2 space-x-8"
+            className="hidden md:flex items-center justify-center py-2 space-x-6 lg:space-x-10"
             aria-label="Global"
           >
             {navigation.map((item: any) => {
@@ -218,7 +218,7 @@ const Menu = () => {
                     {({ open }) => (
                       <>
                         <Popover.Button
-                          className={`text-xs lg:text-sm font-medium transition-colors hover:text-primary focus:outline-none flex items-center gap-1 ${
+                          className={`text-base lg:text-xl font-extrabold transition-colors hover:text-primary focus:outline-none flex items-center gap-1 ${
                             router.pathname === item.href ||
                             router.pathname.startsWith(item.href)
                               ? 'text-primary'
@@ -256,7 +256,7 @@ const Menu = () => {
                               <div className="relative bg-white py-1">
                                 {item.dropdown.map((subItem: any) => (
                                   <Link key={subItem.name} href={subItem.href}>
-                                    <a className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
+                                    <a className="block px-4 py-2 text-sm lg:text-base font-bold text-gray-700 hover:bg-gray-100 hover:text-primary transition-colors">
                                       {subItem.name}
                                     </a>
                                   </Link>
@@ -274,7 +274,7 @@ const Menu = () => {
               return (
                 <Link key={item.name} href={item.href}>
                   <a
-                    className={`text-xs lg:text-sm font-medium transition-colors hover:text-primary whitespace-nowrap ${
+                    className={`text-base lg:text-xl font-extrabold transition-colors hover:text-primary whitespace-nowrap ${
                       router.pathname === item.href
                         ? 'text-primary'
                         : 'text-gray-500'

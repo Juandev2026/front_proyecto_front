@@ -136,7 +136,9 @@ const UsersPage = () => {
   const loadUsersOnly = async () => {
     try {
       setLoading(true);
+      console.log('Loading users...');
       const data = await userService.getAll();
+      console.log('Users loaded:', data.length);
       setUsers(data);
     } catch (e) {
       console.error('Error loading users:', e);
@@ -148,29 +150,42 @@ const UsersPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [
-        usersData,
-        regionsData,
-        tiposAccesoData,
-        hierarchyData,
-        plansData,
-      ] = await Promise.all([
-        userService.getAll(),
-        regionService.getAll(),
-        tipoAccesoService.getAll(),
-        examenService.getSimplifiedHierarchy(),
-        premiumService.getAll(),
-      ]);
+      
+      // Load users first and independently to ensure they show up even if catalogs fail
+      try {
+        const usersData = await userService.getAll();
+        setUsers(usersData);
+      } catch (e) {
+        console.error('Error loading users:', e);
+      }
 
-      setUsers(usersData);
-      setRegions(regionsData);
-      setModalidades(hierarchyData.modalidades.reverse() as any);
-      setNiveles(hierarchyData.niveles as any);
-      setEspecialidades(hierarchyData.especialidades as any);
-      setTiposAcceso(tiposAccesoData);
-      setPlans(plansData);
+      // Load other catalogs
+      try {
+        const [
+          regionsData,
+          tiposAccesoData,
+          hierarchyData,
+          plansData,
+        ] = await Promise.all([
+          regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
+          tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
+          examenService.getSimplifiedHierarchy().catch(err => { console.error('Error loading hierarchy:', err); return { modalidades: [], niveles: [], especialidades: [] }; }),
+          premiumService.getAll().catch(err => { console.error('Error loading plans:', err); return []; }),
+        ]);
+
+        setRegions(regionsData);
+        if (hierarchyData.modalidades && hierarchyData.modalidades.length > 0) {
+          setModalidades([...hierarchyData.modalidades].reverse() as any);
+        }
+        setNiveles(hierarchyData.niveles || []);
+        setEspecialidades(hierarchyData.especialidades || []);
+        setTiposAcceso(tiposAccesoData);
+        setPlans(plansData);
+      } catch (error) {
+        console.error('Error loading catalog data:', error);
+      }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('General error in loadData:', error);
     } finally {
       setLoading(false);
     }
@@ -326,20 +341,27 @@ const UsersPage = () => {
   const filteredUsers = users.filter((user) => {
     const effectiveRole = getEffectiveRole(user);
 
-    // REGLA: En esta página NO se muestran los Docentes/Premium.
-    const isPremium =
-      user.role?.toUpperCase() === 'PREMIUM' ||
-      user.role?.toUpperCase() === 'DOCENTE' ||
-      (user.fechaExpiracion && user.fechaExpiracion !== '-');
-    if (isPremium) return false;
+    // REGLA: Los Administradores SIEMPRE se muestran.
+    if (user.role?.toUpperCase() === 'ADMIN' || effectiveRole?.toUpperCase() === 'ADMIN') {
+      // Continuar con filtros de búsqueda
+    } else {
+      // REGLA: En esta página NO se muestran los Docentes/Premium (van a la página de Docentes).
+      const isDocente =
+        user.role?.toUpperCase() === 'PREMIUM' ||
+        user.role?.toUpperCase() === 'DOCENTE' ||
+        (user.fechaExpiracion && user.fechaExpiracion !== '-');
+      
+      if (isDocente) return false;
+    }
 
     // Filtro por Rol (Dropdown opcional para Admin/Client)
     if (selectedRole && effectiveRole !== selectedRole) return false;
 
+    const term = searchTerm.toLowerCase();
     const matchesSearch =
-      user.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (effectiveRole || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (user.nombreCompleto || '').toLowerCase().includes(term) ||
+      (user.email || '').toLowerCase().includes(term) ||
+      (effectiveRole || '').toLowerCase().includes(term);
 
     return matchesSearch;
   });
@@ -447,13 +469,13 @@ const UsersPage = () => {
             <input
               type="text"
               placeholder="Buscar usuarios..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary block w-full sm:text-sm"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary block w-full text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <select
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary text-sm bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary text-base bg-white"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
           >
@@ -464,7 +486,7 @@ const UsersPage = () => {
           </select>
           <button
             onClick={handleExportExcel}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-2"
           >
             <svg
               className="-ml-1 mr-2 h-5 w-5 text-gray-400"
@@ -483,7 +505,7 @@ const UsersPage = () => {
           </button>
           <button
             onClick={handleCreateUser}
-            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors whitespace-nowrap"
+            className="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary-dark transition-colors whitespace-nowrap text-base font-bold shadow-md"
           >
             Crear Usuario
           </button>
@@ -495,22 +517,22 @@ const UsersPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Nombre Completo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Rol
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Región
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
@@ -534,16 +556,16 @@ const UsersPage = () => {
                     user.region?.nombre || user.regionId?.toString() || '-';
                   return (
                     <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {user.id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium">
                         {user.nombreCompleto}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {user.role}
                         {getEffectiveRole(user) === 'Client' &&
                           user.role?.toUpperCase() === 'PREMIUM' && (
@@ -552,7 +574,7 @@ const UsersPage = () => {
                             </span>
                           )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {regionName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
