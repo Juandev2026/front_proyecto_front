@@ -357,8 +357,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <img
                   src="/assets/images/logo_principal1.png"
                   alt="Avendo"
-                  className="h-28 w-auto object-contain"
+                  className="h-28 w-auto object-contain hidden md:block"
                 />
+                <span className="text-2xl font-bold text-primary uppercase md:hidden">Avendo</span>
               </a>
             </Link>
           )}
@@ -585,6 +586,15 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 onClick={() => {
                   localStorage.removeItem('token');
                   localStorage.removeItem('fullName');
+                  localStorage.removeItem('userId');
+                  localStorage.removeItem('nivelId');
+                  localStorage.removeItem('role');
+                  localStorage.removeItem('accesoNombres');
+                  localStorage.removeItem('accesoIds');
+                  localStorage.removeItem('loginExamenes');
+                  localStorage.removeItem('especialidad');
+                  localStorage.removeItem('especialidadId');
+                  localStorage.removeItem('fechaExpiracion');
                   router.push('/login');
                 }}
                 type="button"

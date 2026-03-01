@@ -98,6 +98,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
     localStorage.removeItem('nivelId');
     localStorage.removeItem('role');
     localStorage.removeItem('accesoNombres');
+    localStorage.removeItem('accesoIds');
+    localStorage.removeItem('loginExamenes');
+    localStorage.removeItem('especialidad');
+    localStorage.removeItem('especialidadId');
+    localStorage.removeItem('fechaExpiracion');
     window.location.href = '/login';
   };
 
@@ -304,8 +309,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                 <img
                   src="/assets/images/logo_principal1.png"
                   alt="Avendo"
-                  className="h-32 w-auto object-contain"
+                  className="h-32 w-auto object-contain hidden md:block"
                 />
+                <span className="text-2xl font-bold text-[#4790FD] uppercase md:hidden">Avendo</span>
               </a>
             </Link>
           )}

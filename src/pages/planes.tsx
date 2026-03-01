@@ -342,7 +342,7 @@ const Planes = () => {
           {planes.map((plan: Plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
+              className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col ${
                 plan.highlighted ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
               }`}
             >
@@ -358,35 +358,38 @@ const Planes = () => {
                 </div>
               )}
 
-              <div className={`p-8 ${plan.highlighted ? 'pt-14' : ''}`}>
-                {/* Plan Name */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                  {plan.name}
-                </h3>
-                {plan.subtitle && (
-                  <p className="text-sm font-bold text-blue-600 mb-2 uppercase tracking-wide">
-                    {plan.subtitle}
-                  </p>
-                )}
+              <div className={`p-8 flex-grow flex flex-col ${plan.highlighted ? 'pt-11' : ''}`}>
+                {/* Header content container to align buttons */}
+                <div className="min-h-[190px] sm:min-h-[210px] flex flex-col">
+                  {/* Plan Name */}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                    {plan.name}
+                  </h3>
+                  {plan.subtitle && (
+                    <p className="text-sm font-bold text-blue-600 mb-2 uppercase tracking-wide">
+                      {plan.subtitle}
+                    </p>
+                  )}
 
-                {/* Description */}
-                <p className="text-gray-600 mb-6 text-sm">{plan.description}</p>
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 text-sm flex-grow">{plan.description}</p>
 
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-extrabold text-gray-900">
-                      S/ {plan.price}
-                    </span>
-                    {plan.originalPrice && (
-                      <span className="text-2xl text-gray-400 line-through">
-                        S/ {plan.originalPrice}
+                  {/* Price */}
+                  <div className="mb-6 h-16 flex flex-col justify-end">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-extrabold text-gray-900">
+                        S/ {plan.price}
                       </span>
-                    )}
+                      {plan.originalPrice && (
+                        <span className="text-2xl text-gray-400 line-through">
+                          S/ {plan.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-500 mt-1 font-medium">
+                      {plan.duration}
+                    </p>
                   </div>
-                  <p className="text-gray-500 mt-1 font-medium">
-                    {plan.duration}
-                  </p>
                 </div>
 
                 {/* CTA Button */}

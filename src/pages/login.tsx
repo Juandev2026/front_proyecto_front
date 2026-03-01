@@ -151,8 +151,8 @@ const Login = () => {
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                 Bienvenido de nuevo
               </h1>
-              <p className="text-base sm:text-lg text-gray-600">
-                ¿Aún no tienes una cuenta?{' '}
+              <div className="text-base sm:text-lg text-gray-600 flex flex-col items-center gap-1">
+                <span>¿Aún no tienes una cuenta?</span>
                 <Link
                   href={`/register${
                     planName
@@ -166,11 +166,11 @@ const Login = () => {
                       : ''
                   }`}
                 >
-                  <a className="font-bold text-primary hover:text-secondary transition-colors duration-200 underline decoration-2 underline-offset-4">
+                  <a className="font-bold text-primary hover:text-secondary transition-colors duration-200 underline decoration-2 underline-offset-4 text-lg sm:text-xl">
                     Regístrate gratis aquí
                   </a>
                 </Link>
-              </p>
+              </div>
             </div>
 
             {isRedirectingToWsp && (
