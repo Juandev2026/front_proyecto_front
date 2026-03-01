@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   BookOpenIcon,
@@ -12,9 +12,10 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
+import { erroneasService, RespuestaErronea } from '../services/erroneasService';
 
 const RespuestasErroneasAscensoPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // State
@@ -22,20 +23,81 @@ const RespuestasErroneasAscensoPage = () => {
     'Educación Básica Alternativa - Inicial - Intermedio'
   );
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
+  const [erroneas, setErroneas] = useState<RespuestaErronea[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (loading || !isAuthenticated) {
+  useEffect(() => {
+    const fetchErroneas = async () => {
+      if (user?.id) {
+        try {
+          setLoading(true);
+          const data = await erroneasService.getByUser(user.id);
+          setErroneas(data);
+        } catch (error) {
+          console.error('Error fetching erroneas:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (isAuthenticated && user?.id) {
+      fetchErroneas();
+    }
+  }, [isAuthenticated, user?.id]);
+
+  // Calculations
+  const stats = useMemo(() => {
+    const totalErrors = erroneas.length;
+    const uniqueQuestions = new Set(erroneas.map((e) => e.preguntaId)).size;
+    // Assuming 1.5 points per error as seen in the mockup, or we can adjust if there's a real field
+    const pointsLost = (totalErrors * 1.5).toFixed(1);
+
+    return { totalErrors, uniqueQuestions, pointsLost };
+  }, [erroneas]);
+
+  const groupedByDate = useMemo(() => {
+    const groups: { [key: string]: RespuestaErronea[] } = {};
+
+    erroneas.forEach((item) => {
+      const date = new Date(item.fechaCreacion);
+      const options: any = { day: 'numeric', month: 'long', year: 'numeric' };
+      const dateString = date.toLocaleDateString('es-ES', options);
+
+      if (!groups[dateString]) {
+        groups[dateString] = [];
+      }
+      groups[dateString].push(item);
+    });
+
+    return Object.entries(groups)
+      .map(([date, items]) => ({
+        date,
+        errors: items.length,
+        points: items.length * 1.5,
+        rawDate: items[0]?.fechaCreacion || '',
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
+      );
+  }, [erroneas]);
+
+  if (authLoading || (isAuthenticated && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
       </div>
     );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <PremiumLayout
@@ -149,19 +211,25 @@ const RespuestasErroneasAscensoPage = () => {
 
             <div className="flex justify-between text-center mb-8 px-4">
               <div>
-                <p className="text-3xl font-bold text-red-500">153</p>
+                <p className="text-3xl font-bold text-red-500">
+                  {stats.totalErrors}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Errores Totales
                 </p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-red-500">123</p>
+                <p className="text-3xl font-bold text-red-500">
+                  {stats.uniqueQuestions}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Preguntas Equivocadas
                 </p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-purple-500">4.8</p>
+                <p className="text-3xl font-bold text-purple-500">
+                  {stats.pointsLost}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Puntos Perdidos
                 </p>
@@ -177,7 +245,7 @@ const RespuestasErroneasAscensoPage = () => {
                   </span>
                 </div>
                 <span className="text-sm font-bold text-red-500">
-                  Educación Básica Regular - Inicial
+                  {user?.especialidad || 'No especificada'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -185,7 +253,9 @@ const RespuestasErroneasAscensoPage = () => {
                   <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                   <span className="text-sm font-medium text-gray-600">Año</span>
                 </div>
-                <span className="text-sm font-bold text-orange-500">2024</span>
+                <span className="text-sm font-bold text-orange-500">
+                  {new Date().getFullYear()}
+                </span>
               </div>
             </div>
           </div>
@@ -201,8 +271,8 @@ const RespuestasErroneasAscensoPage = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Revisa las 26 fechas y las preguntas que has respondido
-            incorrectamente. Las más recientes aparecen primero.
+            Revisa las {groupedByDate.length} fechas y las preguntas que has
+            respondido incorrectamente. Las más recientes aparecen primero.
           </p>
 
           {/* Filters */}
@@ -227,33 +297,32 @@ const RespuestasErroneasAscensoPage = () => {
 
           {/* History List */}
           <div className="space-y-3">
-            {[
-              { date: '14 de enero de 2026', errors: 1, points: 1.5 },
-              { date: '20 de noviembre de 2025', errors: 2, points: 3 },
-              { date: '18 de noviembre de 2025', errors: 6, points: 9 },
-              { date: '11 de noviembre de 2025', errors: 15, points: 22.5 },
-              { date: '4 de noviembre de 2025', errors: 1, points: 1.5 },
-              { date: '4 de octubre de 2025', errors: 4, points: 6 },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group"
-              >
-                <span className="font-bold text-gray-700 text-sm">
-                  Errores - {item.date}
-                </span>
-
-                <div className="flex items-center gap-4">
-                  <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
-                    {item.errors} {item.errors === 1 ? 'error' : 'errores'}
-                  </span>
-                  <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold">
-                    {item.points} pts
-                  </span>
-                  <ChevronDownIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
-                </div>
+            {groupedByDate.length === 0 ? (
+              <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg">
+                No tienes preguntas erróneas registradas.
               </div>
-            ))}
+            ) : (
+              groupedByDate.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group"
+                >
+                  <span className="font-bold text-gray-700 text-sm">
+                    Errores - {item.date}
+                  </span>
+
+                  <div className="flex items-center gap-4">
+                    <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                      {item.errors} {item.errors === 1 ? 'error' : 'errores'}
+                    </span>
+                    <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold">
+                      {item.points.toFixed(1)} pts
+                    </span>
+                    <ChevronDownIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   BookOpenIcon,
@@ -12,9 +12,10 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
+import { erroneasService, RespuestaErronea } from '../services/erroneasService';
 
 const RespuestasErroneasPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // State
@@ -23,51 +24,81 @@ const RespuestasErroneasPage = () => {
   );
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  // Mock Question Data
-  const MOCK_QUESTIONS = [
-    {
-      id: 90,
-      type: 'Pregunta Común',
-      text: 'Un estudiante realiza el siguiente comentario:',
-      comment:
-        '"Yo creo que, si hay espacio libre en el envase, este no se va a hundir, sin importar lo que coloquemos dentro".',
-      subText:
-        '¿Cuál de las siguientes acciones es pertinente que realice el docente para retroalimentar al estudiante respecto del error en su comentario?',
-      options: [
-        {
-          id: 'A',
-          text: 'Proponerle que repita la experiencia colocando una esfera pequeña de acero en el interior del envase.',
-          status: 'correct',
-        },
-        {
-          id: 'B',
-          text: 'Proponerle que vuelva a realizar la experiencia utilizando envases del mismo material, pero de mayor volumen.',
-          status: 'neutral',
-        },
-        {
-          id: 'C',
-          text: 'Preguntarle cómo puede relacionar su comentario con el hecho de que hay barcos muy grandes que pueden flotar en el agua.',
-          status: 'wrong',
-        },
-      ],
-      sustento: 'Sin justificación disponible',
-    },
-  ];
+  const [erroneas, setErroneas] = useState<RespuestaErronea[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (loading || !isAuthenticated) {
+  useEffect(() => {
+    const fetchErroneas = async () => {
+      if (user?.id) {
+        try {
+          setLoading(true);
+          const data = await erroneasService.getByUser(user.id);
+          setErroneas(data);
+        } catch (error) {
+          console.error('Error fetching erroneas:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (isAuthenticated && user?.id) {
+      fetchErroneas();
+    }
+  }, [isAuthenticated, user?.id]);
+
+  // Calculations
+  const stats = useMemo(() => {
+    const totalErrors = erroneas.length;
+    const uniqueQuestions = new Set(erroneas.map((e) => e.preguntaId)).size;
+    const pointsLost = (totalErrors * 1.5).toFixed(1);
+
+    return { totalErrors, uniqueQuestions, pointsLost };
+  }, [erroneas]);
+
+  const groupedByDate = useMemo(() => {
+    const groups: { [key: string]: RespuestaErronea[] } = {};
+
+    erroneas.forEach((item) => {
+      const date = new Date(item.fechaCreacion);
+      const options: any = { day: 'numeric', month: 'long', year: 'numeric' };
+      const dateString = date.toLocaleDateString('es-ES', options);
+
+      if (!groups[dateString]) {
+        groups[dateString] = [];
+      }
+      groups[dateString].push(item);
+    });
+
+    return Object.entries(groups)
+      .map(([date, items]) => ({
+        date,
+        errors: items.length,
+        points: items.length * 1.5,
+        items,
+        rawDate: items[0]?.fechaCreacion || '',
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
+      );
+  }, [erroneas]);
+
+  if (authLoading || (isAuthenticated && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <PremiumLayout
@@ -145,45 +176,6 @@ const RespuestasErroneasPage = () => {
                 </div>
               </div>
 
-              {/* Tipos de Pregunta */}
-              <div>
-                <label className="text-xs font-semibold text-gray-600 ml-1">
-                  Tipos de Pregunta
-                </label>
-                <div className="flex gap-2 mt-1">
-                  <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm flex-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="text-red-500 focus:ring-red-500 rounded"
-                    />
-                    <span className="text-sm font-semibold text-gray-700">
-                      CL
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm flex-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="text-red-500 focus:ring-red-500 rounded"
-                    />
-                    <span className="text-sm font-semibold text-gray-700">
-                      RL
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm flex-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="text-red-500 focus:ring-red-500 rounded"
-                    />
-                    <span className="text-sm font-semibold text-gray-700">
-                      CCP
-                    </span>
-                  </label>
-                </div>
-              </div>
-
               {/* Numero de Preguntas */}
               <div>
                 <label className="text-xs font-semibold text-gray-600 ml-1">
@@ -220,19 +212,25 @@ const RespuestasErroneasPage = () => {
 
             <div className="flex justify-between text-center mb-8 px-4">
               <div>
-                <p className="text-3xl font-bold text-red-500">8</p>
+                <p className="text-3xl font-bold text-red-500">
+                  {stats.totalErrors}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Errores Totales
                 </p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-red-500">8</p>
+                <p className="text-3xl font-bold text-red-500">
+                  {stats.uniqueQuestions}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Preguntas Equivocadas
                 </p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-purple-500">0.8</p>
+                <p className="text-3xl font-bold text-purple-500">
+                  {stats.pointsLost}
+                </p>
                 <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
                   Puntos Perdidos
                 </p>
@@ -248,7 +246,7 @@ const RespuestasErroneasPage = () => {
                   </span>
                 </div>
                 <span className="text-sm font-bold text-red-500">
-                  Educación Básica Regular - Inicial
+                  {user?.especialidad || 'No especificada'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -256,7 +254,9 @@ const RespuestasErroneasPage = () => {
                   <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                   <span className="text-sm font-medium text-gray-600">Año</span>
                 </div>
-                <span className="text-sm font-bold text-orange-500">2019</span>
+                <span className="text-sm font-bold text-orange-500">
+                  {new Date().getFullYear()}
+                </span>
               </div>
             </div>
           </div>
@@ -272,8 +272,8 @@ const RespuestasErroneasPage = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Revisa las 4 fechas y las preguntas que has respondido
-            incorrectamente. Las más recientes aparecen primero.
+            Revisa las {groupedByDate.length} fechas y las preguntas que has
+            respondido incorrectamente. Las más recientes aparecen primero.
           </p>
 
           {/* Filters */}
@@ -306,122 +306,115 @@ const RespuestasErroneasPage = () => {
 
           {/* History List */}
           <div className="space-y-4">
-            {[
-              { date: '29 de enero de 2026', errors: 1, points: 1.5 },
-              { date: '14 de enero de 2026', errors: 4, points: 6 },
-              { date: '2 de enero de 2026', errors: 1, points: 1.5 },
-              { date: '1 de diciembre de 2025', errors: 1, points: 1.5 },
-            ].map((item, index) => (
-              <div key={index} className="space-y-3">
-                {/* Header Row */}
-                <div
-                  onClick={() =>
-                    setExpandedIndex(expandedIndex === index ? null : index)
-                  }
-                  className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${
-                    expandedIndex === index
-                      ? 'border-cyan-400 bg-gray-50 shadow-sm'
-                      : 'border-gray-100 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="font-bold text-[#4790FD] text-sm md:text-base">
-                    Errores - {item.date}
-                  </span>
-
-                  <div className="flex items-center gap-4">
-                    <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
-                      <span className="text-base leading-none font-bold">
-                        !
-                      </span>{' '}
-                      {item.errors} {item.errors === 1 ? 'error' : 'errores'}
-                    </span>
-                    <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
-                      {item.points} pts
-                    </span>
-                    <ChevronDownIcon
-                      className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
-                        expandedIndex === index
-                          ? 'rotate-180 text-[#4790FD]'
-                          : 'group-hover:text-gray-600'
-                      }`}
-                    />
-                  </div>
-                </div>
-
-                {/* Expanded Content */}
-                {expandedIndex === index && (
-                  <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {MOCK_QUESTIONS.map((q) => (
-                      <div
-                        key={q.id}
-                        className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
-                      >
-                        {/* Question Header */}
-                        <div className="flex items-center gap-3">
-                          <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
-                            {q.id}
-                          </div>
-                          <span className="font-bold text-[#4790FD] text-lg">
-                            {q.type}
-                          </span>
-                        </div>
-
-                        {/* Question Body */}
-                        <div className="space-y-4 text-[#4790FD] font-medium">
-                          <p>{q.text}</p>
-
-                          {/* Comment Box */}
-                          <div className="bg-gray-100 rounded-lg p-6 my-4 italic text-center text-gray-700 font-normal">
-                            {q.comment}
-                          </div>
-
-                          <p>{q.subText}</p>
-                        </div>
-
-                        {/* Options Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-                          {q.options.map((opt) => {
-                            const getStatusStyles = (status: string) => {
-                              if (status === 'correct')
-                                return 'border-green-400 bg-green-50 shadow-sm';
-                              if (status === 'wrong')
-                                return 'border-red-400 bg-red-50 shadow-sm';
-                              return 'border-gray-200 bg-white opacity-80';
-                            };
-
-                            return (
-                              <div
-                                key={opt.id}
-                                className={`flex flex-col gap-2 p-5 rounded-xl border-2 transition-all ${getStatusStyles(
-                                  opt.status
-                                )}`}
-                              >
-                                <div className="flex gap-3">
-                                  <span className="font-bold text-lg">
-                                    {opt.id})
-                                  </span>
-                                  <span className="text-sm md:text-base leading-relaxed">
-                                    {opt.text}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Sustento */}
-                        <div className="pt-4 border-t border-gray-100 mt-6">
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-                            Sustento :
-                          </p>
-                          <p className="text-gray-500 text-sm">{q.sustento}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {groupedByDate.length === 0 ? (
+              <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg">
+                No tienes preguntas erróneas registradas.
               </div>
-            ))}
+            ) : (
+              groupedByDate.map((item, index) => (
+                <div key={index} className="space-y-3">
+                  {/* Header Row */}
+                  <div
+                    onClick={() =>
+                      setExpandedIndex(expandedIndex === index ? null : index)
+                    }
+                    className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${
+                      expandedIndex === index
+                        ? 'border-cyan-400 bg-gray-50 shadow-sm'
+                        : 'border-gray-100 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="font-bold text-[#4790FD] text-sm md:text-base">
+                      Errores - {item.date}
+                    </span>
+
+                    <div className="flex items-center gap-4">
+                      <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
+                        <span className="text-base leading-none font-bold">
+                          !
+                        </span>{' '}
+                        {item.errors} {item.errors === 1 ? 'error' : 'errores'}
+                      </span>
+                      <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
+                        {item.points.toFixed(1)} pts
+                      </span>
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                          expandedIndex === index
+                            ? 'rotate-180 text-[#4790FD]'
+                            : 'group-hover:text-gray-600'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Expanded Content */}
+                  {expandedIndex === index && (
+                    <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {item.items.map((q) => (
+                        <div
+                          key={q.id}
+                          className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
+                        >
+                          {/* Question Header */}
+                          <div className="flex items-center gap-3">
+                            <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
+                              {q.preguntaId}
+                            </div>
+                            <span className="font-bold text-[#4790FD] text-lg">
+                              Pregunta de Examen ({q.year})
+                            </span>
+                          </div>
+
+                          {/* Question Body */}
+                          <div className="space-y-4 text-[#4790FD] font-medium">
+                            <div
+                              className="prose prose-blue max-w-none"
+                              dangerouslySetInnerHTML={{ __html: q.enunciado }}
+                            />
+                          </div>
+
+                          {/* Options Section */}
+                          <div className="mt-6">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                              Tu Respuesta (Errónea):
+                            </h4>
+                            <div className="flex flex-col gap-2 p-5 rounded-xl border-2 border-red-400 bg-red-50 shadow-sm">
+                              <div
+                                className="text-sm md:text-base leading-relaxed"
+                                dangerouslySetInnerHTML={{
+                                  __html: q.alternativaText || 'Sin texto',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Info Footer */}
+                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-between items-center">
+                            <div>
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                Examen ID :
+                              </p>
+                              <p className="text-gray-500 text-sm">
+                                {q.examenId}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                Fecha :
+                              </p>
+                              <p className="text-gray-500 text-sm">
+                                {new Date(q.fechaCreacion).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

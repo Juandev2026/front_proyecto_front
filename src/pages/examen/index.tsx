@@ -314,7 +314,7 @@ const ExamenPage = () => {
 
       const firstQuestion = questions[0];
       if (!firstQuestion) return;
-      const examYearRaw = String(metadata?.year || firstQuestion?.year || '0')
+      const examYearRaw = String((metadata && metadata.year) || (firstQuestion && firstQuestion.year) || '0')
         .split(',')[0]
         .trim();
       const examYear = parseInt(examYearRaw, 10) || 0;
@@ -323,12 +323,12 @@ const ExamenPage = () => {
         const key = String(index);
         const data = respuestas[key];
 
-        // El backend espera el ID de la alternativa marcada como string
-        let finalAnswer = data?.alternativaId ? String(data.alternativaId) : "";
+        // El backend espera el ID de la alternativa marcada como número
+        let finalAnswer = data?.alternativaId ? Number(data.alternativaId) : 0;
 
         return {
           preguntaId: q.preguntaId || q.id,
-          subPreguntaNumero: (q as any).numeroSubPregunta || null,
+          subPreguntaNumero: (q as any).numeroSubPregunta || 0,
           alternativaMarcada: finalAnswer,
         };
       });
@@ -337,7 +337,7 @@ const ExamenPage = () => {
         examenId: firstQuestion?.examenId || 0,
         userId: user?.id || 0,
         year: examYear,
-        respuestas: respuestasPayload as any[], // Safe cast as we've matched documentation
+        respuestas: respuestasPayload,
       };
 
       console.log(
@@ -408,24 +408,13 @@ const ExamenPage = () => {
     const result = examResult.resultados.find((r) => r.examenId === q.examenId);
     if (!result) return null;
 
-    const subNum = (q as any).numeroSubPregunta;
-    // Backend returns IDs like "100" or "100-1"
-    const backendKey = subNum !== undefined ? `${q.id}-${subNum}` : `${q.id}`;
+    const questionId = Number(q.id);
 
-    if (
-      result.idsCorrectas.includes(backendKey) ||
-      result.idsCorrectas.includes(String(q.id))
-    )
+    if (result.idsCorrectas.includes(questionId))
       return 'correct';
-    if (
-      result.idsIncorrectas.includes(backendKey) ||
-      result.idsIncorrectas.includes(String(q.id))
-    )
+    if (result.idsIncorrectas.includes(questionId))
       return 'incorrect';
-    if (
-      result.idsOmitidas.includes(backendKey) ||
-      result.idsOmitidas.includes(String(q.id))
-    )
+    if (result.idsOmitidas.includes(questionId))
       return 'omitted';
     return null;
   };

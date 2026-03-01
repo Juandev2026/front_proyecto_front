@@ -43,8 +43,8 @@ export interface PreguntaExamen {
 
 export interface RespuestaUsuario {
   preguntaId: number;
-  subPreguntaNumero?: number | null; // Cambiado para coincidir con la documentación
-  alternativaMarcada: string | null; // "A", "B", "C", "D" o "" si se omitió
+  subPreguntaNumero?: number | null; 
+  alternativaMarcada: number | null; 
 }
 
 export interface SolucionExamenRequest {
@@ -60,9 +60,9 @@ export interface ExamenResultado {
   cantidadCorrectas: number;
   cantidadIncorrectas: number;
   cantidadOmitidas: number;
-  idsCorrectas: string[]; // Cambiado a string[] para soportar "105-1"
-  idsIncorrectas: string[]; // Cambiado a string[]
-  idsOmitidas: string[]; // Cambiado a string[]
+  idsCorrectas: number[]; 
+  idsIncorrectas: number[]; 
+  idsOmitidas: number[]; 
 }
 
 export interface ResultadoExamenResponse {

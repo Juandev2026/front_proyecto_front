@@ -339,12 +339,6 @@ const ResultadoPage = () => {
             {/* Banco de Errores Card */}
             <div className="bg-white rounded-2xl shadow-xl border border-blue-50 p-10 flex flex-col md:flex-row items-center gap-8 justify-between">
               <div className="flex-1 text-center md:text-left space-y-4">
-                <p className="text-gray-500 font-medium text-center md:text-left">
-                  Actualmente realizaste un total de{' '}
-                  <span className="text-green-500 font-black">
-                    361 examenes
-                  </span>
-                </p>
                 <div className="flex flex-col items-center md:items-start gap-2">
                   <div className="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mb-2">
                     <span className="text-yellow-500 font-black">!</span>

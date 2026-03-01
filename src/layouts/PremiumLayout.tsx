@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
+import { examenService } from '../services/examenService';
 
 interface PremiumLayoutProps {
   children: React.ReactNode;
@@ -43,6 +44,15 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // State for ED availability
+  const [availableEdContexts, setAvailableEdContexts] = useState<{
+    nombramiento: boolean;
+    ascenso: boolean;
+  }>({
+    nombramiento: false,
+    ascenso: false,
+  });
+
   // Redirection logic for non-premium users
   useEffect(() => {
     if (!loading) {
@@ -56,6 +66,30 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       }
     }
   }, [loading, isAuthenticated, user, router]);
+
+  // Check ED availability
+  useEffect(() => {
+    const fetchEdAvailability = async () => {
+      if (isAuthenticated) {
+        try {
+          const data = await examenService.getPropios();
+          const hasNombramiento = data.some(
+            (s) => String(s.tipoExamenId) === '2' && s.visible
+          );
+          const hasAscenso = data.some(
+            (s) => String(s.tipoExamenId) === '1' && s.visible
+          );
+          setAvailableEdContexts({
+            nombramiento: hasNombramiento,
+            ascenso: hasAscenso,
+          });
+        } catch (error) {
+          console.error('Error checking ED availability', error);
+        }
+      }
+    };
+    fetchEdAvailability();
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -178,27 +212,58 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   ];
 
   const menuItems = React.useMemo(() => {
-    if (!user?.accesoNombres || user.accesoNombres.length === 0)
-      return allMenuItems;
+    // Check official exams availability from localStorage
+    const loginExamenesRaw = typeof window !== 'undefined' ? localStorage.getItem('loginExamenes') : null;
+    let loginExamenes: any[] = [];
+    try {
+      loginExamenes = loginExamenesRaw ? JSON.parse(loginExamenesRaw) : [];
+    } catch (e) {
+      console.error('Error parsing loginExamenes', e);
+    }
 
-    return allMenuItems.filter((item) => {
-      // "Próximamente" is always visible
-      if (item.name === 'Próximamente') return true;
+    const hasOfficialNombramiento = loginExamenes.some((e: any) => String(e.tipoExamenId) === '2');
+    const hasOfficialAscenso = loginExamenes.some((e: any) => String(e.tipoExamenId) === '1');
 
-      // Check if item name (e.g. "Nombramiento") is in user.accesoNombres
-      // We use case-insensitive matching and handle "Directivo" vs "Directivos"
-      return user.accesoNombres!.some((access) => {
-        const normalizedAccess = access.toLowerCase().trim();
-        const normalizedItemName = item.name.toLowerCase().trim();
+    // Helper to filter children based on availability
+    const filterChildren = (items: any[], context: 'nombramiento' | 'ascenso') => {
+      const hasOfficial = context === 'nombramiento' ? hasOfficialNombramiento : hasOfficialAscenso;
 
-        // Match exact or contains (for cases like "Directivo" matching "Directivos")
-        return (
-          normalizedItemName.includes(normalizedAccess) ||
-          normalizedAccess.includes(normalizedItemName)
-        );
+      return items.filter(child => {
+        if (child.name === 'Banco de Preguntas ED') {
+          return availableEdContexts[context];
+        }
+        if (child.name === 'Banco de Preguntas') {
+          return hasOfficial;
+        }
+        return true;
       });
+    };
+
+    const baseFiltered = !user?.accesoNombres || user.accesoNombres.length === 0
+      ? allMenuItems
+      : allMenuItems.filter((item) => {
+          if (item.name === 'Próximamente') return true;
+          return user.accesoNombres!.some((access) => {
+            const normalizedAccess = access.toLowerCase().trim();
+            const normalizedItemName = item.name.toLowerCase().trim();
+            return (
+              normalizedItemName.includes(normalizedAccess) ||
+              normalizedAccess.includes(normalizedItemName)
+            );
+          });
+        });
+
+    // Second pass: filter child items specifically for ED and official exams
+    return baseFiltered.map(item => {
+      if (item.name === 'Nombramiento' && item.children) {
+        return { ...item, children: filterChildren(item.children, 'nombramiento') };
+      }
+      if (item.name === 'Ascenso' && item.children) {
+        return { ...item, children: filterChildren(item.children, 'ascenso') };
+      }
+      return item;
     });
-  }, [user?.accesoNombres]);
+  }, [user?.accesoNombres, availableEdContexts]);
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">

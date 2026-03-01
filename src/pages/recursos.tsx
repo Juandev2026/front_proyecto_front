@@ -70,7 +70,7 @@ const Materials = () => {
     fetchData();
   }, []);
 
-  const getCategoryName = (id: number) => {
+  const getCategoryName = (id: number | null) => {
     const category = categories.find((c) => c.id === id);
     return category ? category.nombre : 'General';
   };
