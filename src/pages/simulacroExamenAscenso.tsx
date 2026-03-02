@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 
-import { AcademicCapIcon, FilterIcon } from '@heroicons/react/outline';
+import {
+  AcademicCapIcon,
+  FilterIcon,
+  ClipboardListIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -9,7 +14,6 @@ import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin, authService } from '../services/authService';
 import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
 import { examenService } from '../services/examenService';
-import { ClipboardListIcon, CheckCircleIcon } from '@heroicons/react/outline';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -77,7 +81,9 @@ const SimulacroExamenAscensoPage = () => {
         try {
           const data = await examenService.getPropios();
           // Filter by context (Ascenso = 1)
-          const filtered = data.filter((s: any) => String(s.tipoExamenId) === '1' && s.visible);
+          const filtered = data.filter(
+            (s: any) => String(s.tipoExamenId) === '1' && s.visible
+          );
           setSeccionesPropias(filtered);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
@@ -90,7 +96,9 @@ const SimulacroExamenAscensoPage = () => {
   // ---------- Memoized Derived Options ----------
 
   const filteredExams = useMemo(() => {
-    return loginExamenes.filter((e) => String(e.tipoExamenId) === selectedTipoExamenId);
+    return loginExamenes.filter(
+      (e) => String(e.tipoExamenId) === selectedTipoExamenId
+    );
   }, [loginExamenes, selectedTipoExamenId]);
 
   const modalidadesData = useMemo(() => {
@@ -108,7 +116,11 @@ const SimulacroExamenAscensoPage = () => {
 
   // Auto-select modality
   useEffect(() => {
-    if (modalidadesData.length === 1 && !selectedModalidadId && modalidadesData[0]) {
+    if (
+      modalidadesData.length === 1 &&
+      !selectedModalidadId &&
+      modalidadesData[0]
+    ) {
       setSelectedModalidadId(String(modalidadesData[0].id));
     }
   }, [modalidadesData, selectedModalidadId]);
@@ -116,7 +128,10 @@ const SimulacroExamenAscensoPage = () => {
   const nivelesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
     filteredExams
-      .filter((e) => !selectedModalidadId || String(e.modalidadId) === selectedModalidadId)
+      .filter(
+        (e) =>
+          !selectedModalidadId || String(e.modalidadId) === selectedModalidadId
+      )
       .forEach((e) => {
         if (!map.has(e.nivelId)) {
           map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
@@ -127,7 +142,12 @@ const SimulacroExamenAscensoPage = () => {
 
   // Auto-select level
   useEffect(() => {
-    if (nivelesData.length === 1 && !selectedNivelId && selectedModalidadId && nivelesData[0]) {
+    if (
+      nivelesData.length === 1 &&
+      !selectedNivelId &&
+      selectedModalidadId &&
+      nivelesData[0]
+    ) {
       setSelectedNivelId(String(nivelesData[0].id));
     }
   }, [nivelesData, selectedNivelId, selectedModalidadId]);
@@ -137,7 +157,8 @@ const SimulacroExamenAscensoPage = () => {
     filteredExams
       .filter(
         (e) =>
-          (!selectedModalidadId || String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId)
       )
       .filter((e) => e.especialidadId !== null && e.especialidadNombre !== null)
@@ -154,7 +175,12 @@ const SimulacroExamenAscensoPage = () => {
 
   // Auto-select specialty
   useEffect(() => {
-    if (especialidadesData.length === 1 && !selectedEspecialidadId && selectedNivelId && especialidadesData[0]) {
+    if (
+      especialidadesData.length === 1 &&
+      !selectedEspecialidadId &&
+      selectedNivelId &&
+      especialidadesData[0]
+    ) {
       setSelectedEspecialidadId(String(especialidadesData[0].id));
     }
   }, [especialidadesData, selectedEspecialidadId, selectedNivelId]);
@@ -164,9 +190,11 @@ const SimulacroExamenAscensoPage = () => {
     filteredExams
       .filter(
         (e) =>
-          (!selectedModalidadId || String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
       )
       .forEach((e) => {
         if (e.years && e.years.length > 0) {
@@ -183,7 +211,12 @@ const SimulacroExamenAscensoPage = () => {
         if (b === 'Único') return -1;
         return Number(b) - Number(a);
       });
-  }, [filteredExams, selectedModalidadId, selectedNivelId, selectedEspecialidadId]);
+  }, [
+    filteredExams,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Metadata helper per Year ----------
 
@@ -336,39 +369,47 @@ const SimulacroExamenAscensoPage = () => {
         tipoExamenId: sampleExam.tipoExamenId,
         fuenteId: sampleExam.fuenteId || 0,
         modalidadId: sampleExam.modalidadId,
-        nivelId: sampleExam.nivelId || (nivelesData.length === 1 ? (nivelesData[0]?.id ?? 0) : 0),
+        nivelId:
+          sampleExam.nivelId ||
+          (nivelesData.length === 1 ? nivelesData[0]?.id ?? 0 : 0),
         especialidadId: sampleExam.especialidadId || 0,
         yearFilters,
       };
 
       // 4. LLAMADA AL SERVICIO BLOQUE I
-      let bloque1Questions =
+      const bloque1Questions =
         await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
 
       // --- 5. LLAMADA PARA BLOQUE II (PROPIOS) ---
       let bloque2Questions: any[] = [];
-      const selectedPropios = seccionesPropias.filter(s => selectedPropiosIds.includes(s.fuenteId || s.id));
-      
+      const selectedPropios = seccionesPropias.filter((s) =>
+        selectedPropiosIds.includes(s.fuenteId || s.id)
+      );
+
       for (const sect of selectedPropios) {
         if (sect.examenesPropios) {
           for (const examData of sect.examenesPropios) {
-             const p = {
-                tipoExamenId: sect.tipoExamenId,
-                fuenteId: sect.fuenteId || sect.id,
-                modalidadId: examData.modalidadId,
-                nivelId: examData.nivelId,
-                especialidadId: examData.especialidadId || 0,
-                year: '0',
-                clasificaciones: [],
-             };
-             const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
-             bloque2Questions = [...bloque2Questions, ...qs];
+            const p = {
+              tipoExamenId: sect.tipoExamenId,
+              fuenteId: sect.fuenteId || sect.id,
+              modalidadId: examData.modalidadId,
+              nivelId: examData.nivelId,
+              especialidadId: examData.especialidadId || 0,
+              year: '0',
+              clasificaciones: [],
+            };
+            const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+            bloque2Questions = [...bloque2Questions, ...qs];
           }
         }
       }
 
       // Merge and remove duplicates
-      let questions = Array.from(new Map([...bloque1Questions, ...bloque2Questions].map(q => [q.id, q])).values());
+      let questions = Array.from(
+        new Map(
+          [...bloque1Questions, ...bloque2Questions].map((q) => [q.id, q])
+        ).values()
+      );
 
       if (questions.length > 0) {
         // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
@@ -405,22 +446,33 @@ const SimulacroExamenAscensoPage = () => {
         const totalTarget = 60;
 
         // Función para contar preguntas reales (incluyendo subpreguntas)
-        const getWeight = (q: any) => (q.subPreguntas && q.subPreguntas.length > 0 ? q.subPreguntas.length : 1);
+        const getWeight = (q: any) =>
+          q.subPreguntas && q.subPreguntas.length > 0
+            ? q.subPreguntas.length
+            : 1;
 
-        const currentEffectiveCount = (list: any[]) => list.reduce((acc, q) => acc + getWeight(q), 0);
+        const currentEffectiveCount = (list: any[]) =>
+          list.reduce((acc, q) => acc + getWeight(q), 0);
 
-        if (activeGroupKeys.length > 0 && currentEffectiveCount(filteredBySelection) > totalTarget) {
-          const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
-          let finalSelection: any[] = [];
+        if (
+          activeGroupKeys.length > 0 &&
+          currentEffectiveCount(filteredBySelection) > totalTarget
+        ) {
+          const baseLimitPerGroup = Math.floor(
+            totalTarget / activeGroupKeys.length
+          );
+          const finalSelection: any[] = [];
           let totalAccumulated = 0;
 
           const leftovers: any[] = [];
 
           // Primera pasada: repartir equitativamente
           for (const key of activeGroupKeys) {
-            const group = [...(groups[key] || [])].sort(() => 0.5 - Math.random());
+            const group = [...(groups[key] || [])].sort(
+              () => 0.5 - Math.random()
+            );
             let groupAccumulated = 0;
-            
+
             for (const q of group) {
               const weight = getWeight(q);
               if (groupAccumulated + weight <= baseLimitPerGroup) {
@@ -477,33 +529,33 @@ const SimulacroExamenAscensoPage = () => {
   };
 
   const totalQuestions = useMemo(() => {
-     const b1 = selectedYears.reduce((acc, year) => {
-        const meta = getMetadataForYear(year);
-        return (
-          acc +
-          meta.reduce((accM, m) => {
-            return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
-          }, 0)
-        );
+    const b1 = selectedYears.reduce((acc, year) => {
+      const meta = getMetadataForYear(year);
+      return (
+        acc +
+        meta.reduce((accM, m) => {
+          return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
+        }, 0)
+      );
+    }, 0);
+
+    const b2 = seccionesPropias
+      .filter((s) => selectedPropiosIds.includes(s.fuenteId || s.id))
+      .reduce((acc, s) => {
+        let sectCount = 0;
+        if (s.examenesPropios) {
+          s.examenesPropios.forEach((ex: any) => {
+            if (ex.clasificaciones) {
+              ex.clasificaciones.forEach((c: any) => {
+                sectCount += c.cantidadPreguntas || 0;
+              });
+            }
+          });
+        }
+        return acc + (s.totalPreguntas || sectCount);
       }, 0);
 
-      const b2 = seccionesPropias
-        .filter(s => selectedPropiosIds.includes(s.fuenteId || s.id))
-        .reduce((acc, s) => {
-           let sectCount = 0;
-           if (s.examenesPropios) {
-              s.examenesPropios.forEach((ex: any) => {
-                 if (ex.clasificaciones) {
-                    ex.clasificaciones.forEach((c: any) => {
-                       sectCount += c.cantidadPreguntas || 0;
-                    });
-                 }
-              });
-           }
-           return acc + (s.totalPreguntas || sectCount);
-        }, 0);
-
-      return b1 + b2;
+    return b1 + b2;
   }, [selectedYears, yearSelections, seccionesPropias, selectedPropiosIds]);
 
   if (loading || !isAuthenticated) {
@@ -568,32 +620,36 @@ const SimulacroExamenAscensoPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {nivelesData.length > 0 && !(nivelesData.length === 1 && nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO') && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                    <FilterIcon className="h-4 w-4" />
-                    <span>Nivel</span>
+              {nivelesData.length > 0 &&
+                !(
+                  nivelesData.length === 1 &&
+                  nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+                ) && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                      <FilterIcon className="h-4 w-4" />
+                      <span>Nivel</span>
+                    </div>
+                    <select
+                      value={selectedNivelId}
+                      onChange={(e) => {
+                        setSelectedNivelId(e.target.value);
+                        setSelectedEspecialidadId('');
+                        setSelectedYears([]);
+                        setYearSelections({});
+                      }}
+                      className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                      disabled={!selectedModalidadId}
+                    >
+                      <option value="">Selecciona Nivel</option>
+                      {nivelesData.map((n) => (
+                        <option key={n.id} value={String(n.id)}>
+                          {n.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <select
-                    value={selectedNivelId}
-                    onChange={(e) => {
-                      setSelectedNivelId(e.target.value);
-                      setSelectedEspecialidadId('');
-                      setSelectedYears([]);
-                      setYearSelections({});
-                    }}
-                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-                    disabled={!selectedModalidadId}
-                  >
-                    <option value="">Selecciona Nivel</option>
-                    {nivelesData.map((n) => (
-                      <option key={n.id} value={String(n.id)}>
-                        {n.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                )}
 
               {especialidadesData.length > 0 && (
                 <div className="space-y-3">
@@ -642,32 +698,55 @@ const SimulacroExamenAscensoPage = () => {
                           onChange={() => handleYearToggle(year)}
                           className="h-5 w-5 rounded border-[#4790FD] text-[#4790FD] focus:ring-[#4790FD]/20 transition-all"
                         />
-                        <span className={`text-base font-bold transition-all ${isChecked ? 'text-[#4790FD]' : 'text-blue-900'}`}>
+                        <span
+                          className={`text-base font-bold transition-all ${
+                            isChecked ? 'text-[#4790FD]' : 'text-blue-900'
+                          }`}
+                        >
                           {year}
                         </span>
                       </label>
 
                       {isChecked && yearMeta.length > 0 && (
                         <div className="ml-2 border border-[#4790FD]/20 rounded-xl p-4 bg-blue-50/30 space-y-3">
-                          <p className="text-[10px] font-bold text-[#4790FD] uppercase tracking-tighter">Tipos</p>
+                          <p className="text-[10px] font-bold text-[#4790FD] uppercase tracking-tighter">
+                            Tipos
+                          </p>
                           <div className="space-y-2">
-                             {yearMeta.map((m) => (
-                              <label key={m.name} className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                                m.cantidad > 0 ? `cursor-pointer ${yearSelections[year]?.[m.name] ? 'bg-white border-[#4790FD] shadow-sm' : 'bg-white/50 border-gray-100'}` : 'opacity-40 bg-gray-50'
-                              }`}>
+                            {yearMeta.map((m) => (
+                              <label
+                                key={m.name}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
+                                  m.cantidad > 0
+                                    ? `cursor-pointer ${
+                                        yearSelections[year]?.[m.name]
+                                          ? 'bg-white border-[#4790FD] shadow-sm'
+                                          : 'bg-white/50 border-gray-100'
+                                      }`
+                                    : 'opacity-40 bg-gray-50'
+                                }`}
+                              >
                                 <div className="flex items-center gap-2">
-                                  <input 
-                                    type="checkbox" 
-                                    checked={yearSelections[year]?.[m.name] || false}
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      yearSelections[year]?.[m.name] || false
+                                    }
                                     disabled={m.cantidad === 0}
-                                    onChange={() => handleTypeToggle(year, m.name)}
+                                    onChange={() =>
+                                      handleTypeToggle(year, m.name)
+                                    }
                                     className="h-4 w-4 text-[#4790FD] rounded border-gray-300"
                                   />
-                                  <span className="text-xs font-bold text-blue-800">{m.name}</span>
+                                  <span className="text-xs font-bold text-blue-800">
+                                    {m.name}
+                                  </span>
                                 </div>
-                                <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full">{m.cantidad}p</span>
+                                <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full">
+                                  {m.cantidad}p
+                                </span>
                               </label>
-                             ))}
+                            ))}
                           </div>
                         </div>
                       )}
@@ -678,18 +757,24 @@ const SimulacroExamenAscensoPage = () => {
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-               <AcademicCapIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
-               <div className="space-y-1">
-                 <p className="text-xs font-bold text-yellow-800">Preguntas disponibles</p>
-                 <p className="text-[10px] text-yellow-700/80">Total seleccionado: <span className="font-bold">{totalQuestions}</span> preguntas reales.</p>
-               </div>
+              <AcademicCapIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-yellow-800">
+                  Preguntas disponibles
+                </p>
+                <p className="text-[10px] text-yellow-700/80">
+                  Total seleccionado:{' '}
+                  <span className="font-bold">{totalQuestions}</span> preguntas
+                  reales.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bloque II - Exámenes Propios ED */}
         <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-sm">
-           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
+          <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
               Bloque II - Exámenes Propios ED
@@ -697,81 +782,109 @@ const SimulacroExamenAscensoPage = () => {
           </div>
 
           <div className="p-6">
-             <p className="text-xs text-blue-800 font-medium mb-4">
-              Selecciona las secciones ED adicionales que deseas incluir en tu simulacro.
-             </p>
+            <p className="text-xs text-blue-800 font-medium mb-4">
+              Selecciona las secciones ED adicionales que deseas incluir en tu
+              simulacro.
+            </p>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {seccionesPropias.map((s) => {
-                   const isSelected = selectedPropiosIds.includes(s.fuenteId || s.id);
-                   
-                   // Aggregate counts
-                   const counts: Record<string, number> = { CCP: 0, CL: 0, RL: 0, CG: 0 };
-                   if (s.examenesPropios) {
-                      s.examenesPropios.forEach((ex: any) => {
-                         if (ex.clasificaciones) {
-                            ex.clasificaciones.forEach((c: any) => {
-                               const name = c.clasificacionNombre?.toUpperCase();
-                               if (counts.hasOwnProperty(name)) {
-                                  counts[name] += c.cantidadPreguntas || 0;
-                               }
-                            });
-                         }
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {seccionesPropias.map((s) => {
+                const isSelected = selectedPropiosIds.includes(
+                  s.fuenteId || s.id
+                );
+
+                // Aggregate counts
+                const counts: Record<string, number> = {
+                  CCP: 0,
+                  CL: 0,
+                  RL: 0,
+                  CG: 0,
+                };
+                if (s.examenesPropios) {
+                  s.examenesPropios.forEach((ex: any) => {
+                    if (ex.clasificaciones) {
+                      ex.clasificaciones.forEach((c: any) => {
+                        const name = c.clasificacionNombre?.toUpperCase();
+                        if (counts.hasOwnProperty(name)) {
+                          counts[name] += c.cantidadPreguntas || 0;
+                        }
                       });
-                   }
+                    }
+                  });
+                }
 
-                   return (
-                      <label 
-                        key={s.id} 
-                        className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
-                          isSelected ? 'border-[#4790FD] bg-blue-50 ring-2 ring-[#4790FD]' : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
-                        }`}
-                      >
-                         <div className="flex items-start gap-3 relative z-10">
-                            <input 
-                              type="checkbox" 
-                              checked={isSelected}
-                              onChange={() => {
-                                 if (isSelected) {
-                                    setSelectedPropiosIds(prev => prev.filter(id => id !== (s.fuenteId || s.id)));
-                                 } else {
-                                    setSelectedPropiosIds(prev => [...prev, (s.fuenteId || s.id)]);
-                                 }
-                              }}
-                              className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-300 focus:ring-[#4790FD]"
-                            />
-                            <div className="flex flex-col">
-                               <span className="text-blue-900 font-extrabold text-sm">{s.fuenteNombre || s.nombre}</span>
-                            </div>
-                         </div>
+                return (
+                  <label
+                    key={s.id}
+                    className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
+                      isSelected
+                        ? 'border-[#4790FD] bg-blue-50 ring-2 ring-[#4790FD]'
+                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 relative z-10">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {
+                          if (isSelected) {
+                            setSelectedPropiosIds((prev) =>
+                              prev.filter((id) => id !== (s.fuenteId || s.id))
+                            );
+                          } else {
+                            setSelectedPropiosIds((prev) => [
+                              ...prev,
+                              s.fuenteId || s.id,
+                            ]);
+                          }
+                        }}
+                        className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-300 focus:ring-[#4790FD]"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-blue-900 font-extrabold text-sm">
+                          {s.fuenteNombre || s.nombre}
+                        </span>
+                      </div>
+                    </div>
 
-                         <div className="bg-white/80 rounded-xl border border-blue-50 p-3 relative z-10">
-                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 text-center">Preguntas disponibles:</p>
-                            <div className="grid grid-cols-2 gap-2">
-                               {Object.entries(counts).map(([label, count]) => (
-                                  <div key={label} className={`flex items-center justify-between px-2 py-1 rounded border text-[10px] ${count > 0 ? 'bg-green-50 border-green-100 text-green-600' : 'bg-gray-50 border-gray-100 text-gray-300'}`}>
-                                     <span className="font-bold">{label}:</span>
-                                     <span className="font-black">{count}</span>
-                                  </div>
-                               ))}
-                            </div>
-                         </div>
+                    <div className="bg-white/80 rounded-xl border border-blue-50 p-3 relative z-10">
+                      <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 text-center">
+                        Preguntas disponibles:
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(counts).map(([label, count]) => (
+                          <div
+                            key={label}
+                            className={`flex items-center justify-between px-2 py-1 rounded border text-[10px] ${
+                              count > 0
+                                ? 'bg-green-50 border-green-100 text-green-600'
+                                : 'bg-gray-50 border-gray-100 text-gray-300'
+                            }`}
+                          >
+                            <span className="font-bold">{label}:</span>
+                            <span className="font-black">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                         {isSelected && (
-                            <div className="absolute top-0 right-0 p-2">
-                               <CheckCircleIcon className="h-5 w-5 text-[#4790FD]" />
-                            </div>
-                         )}
-                      </label>
-                   );
-                })}
-             </div>
-             
-             {seccionesPropias.length === 0 && !isLoading && (
-                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
-                   <p className="text-gray-400 text-sm italic">No hay secciones propias disponibles para añadir.</p>
-                </div>
-             )}
+                    {isSelected && (
+                      <div className="absolute top-0 right-0 p-2">
+                        <CheckCircleIcon className="h-5 w-5 text-[#4790FD]" />
+                      </div>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+
+            {seccionesPropias.length === 0 && !isLoading && (
+              <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                <p className="text-gray-400 text-sm italic">
+                  No hay secciones propias disponibles para añadir.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -783,66 +896,101 @@ const SimulacroExamenAscensoPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Modalidad</p>
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                Modalidad
+              </p>
               <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-[#4790FD] font-bold text-xs rounded-md shadow-sm">
-                {modalidadesData.find(m => String(m.id) === selectedModalidadId)?.nombre || 'None'}
+                {modalidadesData.find(
+                  (m) => String(m.id) === selectedModalidadId
+                )?.nombre || 'None'}
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Años seleccionados</p>
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                Años seleccionados
+              </p>
               <div className="flex flex-wrap gap-2">
-                {selectedYears.length > 0 ? selectedYears.map(y => (
-                  <span key={y} className="px-3 py-1 bg-blue-50 border border-blue-100 text-[#4790FD] font-bold text-xs rounded-md">{y}</span>
-                )) : <span className="text-xs text-gray-400 italic">Ninguno</span>}
+                {selectedYears.length > 0 ? (
+                  selectedYears.map((y) => (
+                    <span
+                      key={y}
+                      className="px-3 py-1 bg-blue-50 border border-blue-100 text-[#4790FD] font-bold text-xs rounded-md"
+                    >
+                      {y}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-400 italic">Ninguno</span>
+                )}
               </div>
             </div>
 
             <div className="space-y-2">
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
-                  Bloque II - Exámenes Propios
-                </p>
-                <div className="flex flex-wrap gap-2">
-                   {selectedPropiosIds.length > 0 ? (
-                      seccionesPropias.filter(s => selectedPropiosIds.includes(s.fuenteId || s.id)).map(s => (
-                         <span key={s.id} className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm">
-                            {s.fuenteNombre || s.nombre}
-                         </span>
-                      ))
-                   ) : (
-                      <span className="text-xs text-gray-400 italic">Ninguno seleccionado</span>
-                   )}
-                </div>
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                Bloque II - Exámenes Propios
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedPropiosIds.length > 0 ? (
+                  seccionesPropias
+                    .filter((s) =>
+                      selectedPropiosIds.includes(s.fuenteId || s.id)
+                    )
+                    .map((s) => (
+                      <span
+                        key={s.id}
+                        className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm"
+                      >
+                        {s.fuenteNombre || s.nombre}
+                      </span>
+                    ))
+                ) : (
+                  <span className="text-xs text-gray-400 italic">
+                    Ninguno seleccionado
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="bg-green-100/50 border border-green-200 rounded-lg p-5">
-            <p className="text-xl font-bold text-green-700">Total para el simulacro: <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span> preguntas</p>
+            <p className="text-xl font-bold text-green-700">
+              Total para el simulacro:{' '}
+              <span className="text-2xl font-black">
+                {totalQuestions > 60 ? 60 : totalQuestions}
+              </span>{' '}
+              preguntas
+            </p>
             {totalQuestions > 60 && (
               <p className="text-xs text-green-600 font-medium mt-1 italic">
-                * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+                * Se han seleccionado {totalQuestions} preguntas en total, pero
+                el simulacro se limitará a 60 distribuidas proporcionalmente.
               </p>
             )}
             <p className="text-xs font-semibold text-green-600 mt-0.5">
-               Incluye: Bloque I (MINEDU) {selectedPropiosIds.length > 0 && `+ Bloque II (ED)`}
+              Incluye: Bloque I (MINEDU){' '}
+              {selectedPropiosIds.length > 0 && `+ Bloque II (ED)`}
             </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 py-6">
-          <button onClick={handleClear} className="px-10 py-2.5 border border-[#4790FD] rounded-md text-[#4790FD] font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+          <button
+            onClick={handleClear}
+            className="px-10 py-2.5 border border-[#4790FD] rounded-md text-[#4790FD] font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+          >
             ✕ Limpiar
           </button>
-          <button 
-            onClick={handleConfirm} 
+          <button
+            onClick={handleConfirm}
             disabled={
-              isLoading || 
-              (!selectedYears.length && !selectedPropiosIds.length) || 
-              (selectedYears.length > 0 && selectedYears.length < 2) || 
+              isLoading ||
+              (!selectedYears.length && !selectedPropiosIds.length) ||
+              (selectedYears.length > 0 && selectedYears.length < 2) ||
               totalQuestions === 0
             }
             className="px-12 py-2.5 bg-[#4790FD] text-white rounded-md font-bold shadow-lg hover:bg-blue-600 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125 transition-all duration-300 disabled:opacity-50 shadow-blue-200"
           >
-            {isLoading ? "Cargando..." : "Confirmar selección"}
+            {isLoading ? 'Cargando...' : 'Confirmar selección'}
           </button>
         </div>
       </div>

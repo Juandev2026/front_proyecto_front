@@ -24,7 +24,7 @@ const ExamenesDirectivosPage = () => {
   const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>(
     {}
   );
-  
+
   // Secciones seleccionadas: examId -> [clasificacionIds]
   const [selections, setSelections] = useState<Record<number, number[]>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -58,14 +58,14 @@ const ExamenesDirectivosPage = () => {
   }, [directivosExams]);
 
   const handleToggleClass = (examId: number, classId: number) => {
-    setSelections(prev => {
+    setSelections((prev) => {
       const currentClasses = prev[examId] || [];
       const isSelected = currentClasses.includes(classId);
-      
+
       const newClasses = isSelected
-        ? currentClasses.filter(id => id !== classId)
+        ? currentClasses.filter((id) => id !== classId)
         : [...currentClasses, classId];
-      
+
       const newSelections = { ...prev };
       if (newClasses.length > 0) {
         newSelections[examId] = newClasses;
@@ -86,7 +86,7 @@ const ExamenesDirectivosPage = () => {
       const metadataList: any[] = [];
 
       for (const examId of examIds) {
-        const exam = directivosExams.find(e => e.id === examId);
+        const exam = directivosExams.find((e) => e.id === examId);
         if (!exam) continue;
 
         const payload = {
@@ -113,11 +113,14 @@ const ExamenesDirectivosPage = () => {
 
       // Si hay más de un examen, simplificamos el metadata
       const firstMetadata = metadataList[0];
-      const metadata = metadataList.length > 1 ? {
-        modalidad: "Varios Exámenes",
-        nivel: "Múltiple",
-        year: "Varios"
-      } : firstMetadata;
+      const metadata =
+        metadataList.length > 1
+          ? {
+              modalidad: 'Varios Exámenes',
+              nivel: 'Múltiple',
+              year: 'Varios',
+            }
+          : firstMetadata;
 
       localStorage.setItem('currentQuestions', JSON.stringify(allQuestions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
@@ -131,7 +134,10 @@ const ExamenesDirectivosPage = () => {
     }
   };
 
-  const totalSelectedCategories = Object.values(selections).reduce((acc, val) => acc + val.length, 0);
+  const totalSelectedCategories = Object.values(selections).reduce(
+    (acc, val) => acc + val.length,
+    0
+  );
 
   if (loading || !isAuthenticated) {
     return (
@@ -188,9 +194,7 @@ const ExamenesDirectivosPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <FolderIcon className="h-6 w-6 text-[#4790FD]" />
-                  <span className="text-lg">
-                    {group.nombre}
-                  </span>
+                  <span className="text-lg">{group.nombre}</span>
                 </div>
                 {openAccordions[Number(id)] ? (
                   <ChevronUpIcon className="h-5 w-5 text-gray-400" />
@@ -219,7 +223,9 @@ const ExamenesDirectivosPage = () => {
                       {/* Classifications cards */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {exam.clasificaciones?.map((c) => {
-                          const isSelected = selections[exam.id]?.includes(c.clasificacionId);
+                          const isSelected = selections[exam.id]?.includes(
+                            c.clasificacionId
+                          );
 
                           // Logic for classification names
                           let displayName = c.clasificacionNombre;
@@ -288,11 +294,16 @@ const ExamenesDirectivosPage = () => {
           {totalSelectedCategories > 0 ? (
             <div className="space-y-6">
               {Object.entries(selections).map(([examId, classIds]) => {
-                const exam = directivosExams.find(e => e.id === Number(examId));
+                const exam = directivosExams.find(
+                  (e) => e.id === Number(examId)
+                );
                 if (!exam) return null;
-                
+
                 return (
-                  <div key={examId} className="border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                  <div
+                    key={examId}
+                    className="border-b border-gray-50 pb-4 last:border-0 last:pb-0"
+                  >
                     <div className="flex flex-col gap-1.5 mb-2">
                       <span className="text-[11px] font-bold text-gray-400 subtitle uppercase tracking-wider">
                         {exam.modalidadNombre} - {exam.nivelNombre}
@@ -319,7 +330,9 @@ const ExamenesDirectivosPage = () => {
             </div>
           ) : (
             <div className="flex items-center gap-3 py-2 text-gray-400 italic">
-              <span className="text-sm">No has seleccionado ninguna opción aún.</span>
+              <span className="text-sm">
+                No has seleccionado ninguna opción aún.
+              </span>
             </div>
           )}
         </div>
@@ -337,9 +350,7 @@ const ExamenesDirectivosPage = () => {
           </button>
           <button
             onClick={handleConfirm}
-            disabled={
-              isLoading || totalSelectedCategories === 0
-            }
+            disabled={isLoading || totalSelectedCategories === 0}
             className={`
               px-12 py-3 rounded-xl font-bold shadow-lg transition-all text-sm
               ${

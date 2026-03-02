@@ -10,23 +10,12 @@ import { useAuth } from '../hooks/useAuth';
 
 const Menu = () => {
   const router = useRouter();
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading, logout } = useAuth();
   const { navigation, company } = config;
   const { name: companyName } = company;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('fullName');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('nivelId');
-    localStorage.removeItem('role');
-    localStorage.removeItem('accesoNombres');
-    localStorage.removeItem('accesoIds');
-    localStorage.removeItem('loginExamenes');
-    localStorage.removeItem('especialidad');
-    localStorage.removeItem('especialidadId');
-    localStorage.removeItem('fechaExpiracion');
-    window.location.href = '/';
+    logout();
   };
 
   return (
@@ -380,7 +369,7 @@ const Menu = () => {
                 {!isAuthenticated && (
                   <>
                     <div className="py-2">
-                       <div className="border-t-2 border-gray-200 shadow-sm"></div>
+                      <div className="border-t-2 border-gray-200 shadow-sm"></div>
                     </div>
                     <div className="flex flex-col gap-3">
                       <Link href="/login">

@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { useRouter } from 'next/router';
 
 import { authService } from '../services/authService';
 
@@ -15,6 +17,27 @@ export const useAuth = () => {
     especialidadId?: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  const logout = useCallback(() => {
+    const authKeys = [
+      'token',
+      'fullName',
+      'userId',
+      'nivelId',
+      'role',
+      'accesoNombres',
+      'accesoIds',
+      'loginExamenes',
+      'especialidad',
+      'especialidadId',
+      'fechaExpiracion',
+    ];
+    authKeys.forEach((key) => localStorage.removeItem(key));
+    setIsAuthenticated(false);
+    setUser(null);
+    router.push('/login');
+  }, [router]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -29,6 +52,14 @@ export const useAuth = () => {
     const fechaExpiracion = localStorage.getItem('fechaExpiracion');
 
     // Clean up invalid strings
+    if (token === 'undefined' || token === 'null' || token === 'NaN' || !token) {
+      if (token && typeof window !== 'undefined') localStorage.removeItem('token');
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     if (userId === 'undefined' || userId === 'null' || userId === 'NaN')
       userId = null;
     if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN')
@@ -231,12 +262,18 @@ export const useAuth = () => {
               }
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           // If status fails, token might be invalid/expired
           console.error('Session verification failed', error);
-          // Optional: clear session if 401/403
-          // localStorage.clear();
-          // setIsAuthenticated(false);
+
+          // If we get an Unauthorized error, clear session
+          if (
+            error.message?.includes('401') ||
+            error.message?.includes('Unauthorized') ||
+            error.message?.includes('403')
+          ) {
+            logout();
+          }
         } finally {
           setLoading(false);
         }
@@ -248,7 +285,7 @@ export const useAuth = () => {
       setUser(null);
       setLoading(false);
     }
-  }, []);
+  }, [logout]);
 
-  return { isAuthenticated, user, loading };
+  return { isAuthenticated, user, loading, logout };
 };

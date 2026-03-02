@@ -262,7 +262,7 @@ export const authService = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Error al verificar el estado');
+        throw new Error(`Error ${response.status}: ${errorText || 'Error al verificar el estado'}`);
       }
 
       return await response.json();

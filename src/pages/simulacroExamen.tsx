@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 
-import { AcademicCapIcon, FilterIcon } from '@heroicons/react/outline';
+import {
+  AcademicCapIcon,
+  FilterIcon,
+  ClipboardListIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -9,7 +14,6 @@ import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin, authService } from '../services/authService';
 import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
 import { examenService } from '../services/examenService';
-import { ClipboardListIcon, CheckCircleIcon } from '@heroicons/react/outline';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -78,7 +82,9 @@ const SimulacroExamenPage = () => {
         try {
           const data = await examenService.getPropios();
           // Filter by context (Nombramiento = 2)
-          const filtered = data.filter((s: any) => String(s.tipoExamenId) === '2' && s.visible);
+          const filtered = data.filter(
+            (s: any) => String(s.tipoExamenId) === '2' && s.visible
+          );
           setSeccionesPropias(filtered);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
@@ -91,7 +97,9 @@ const SimulacroExamenPage = () => {
   // ---------- Memoized Derived Options ----------
 
   const filteredExams = useMemo(() => {
-    return loginExamenes.filter((e) => String(e.tipoExamenId) === selectedTipoExamenId);
+    return loginExamenes.filter(
+      (e) => String(e.tipoExamenId) === selectedTipoExamenId
+    );
   }, [loginExamenes, selectedTipoExamenId]);
 
   const modalidadesData = useMemo(() => {
@@ -109,7 +117,11 @@ const SimulacroExamenPage = () => {
 
   // Auto-select modality if only one exists
   useEffect(() => {
-    if (modalidadesData.length === 1 && !selectedModalidadId && modalidadesData[0]) {
+    if (
+      modalidadesData.length === 1 &&
+      !selectedModalidadId &&
+      modalidadesData[0]
+    ) {
       setSelectedModalidadId(String(modalidadesData[0].id));
     }
   }, [modalidadesData, selectedModalidadId]);
@@ -117,7 +129,10 @@ const SimulacroExamenPage = () => {
   const nivelesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
     filteredExams
-      .filter((e) => !selectedModalidadId || String(e.modalidadId) === selectedModalidadId)
+      .filter(
+        (e) =>
+          !selectedModalidadId || String(e.modalidadId) === selectedModalidadId
+      )
       .forEach((e) => {
         if (!map.has(e.nivelId)) {
           map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
@@ -138,7 +153,8 @@ const SimulacroExamenPage = () => {
     filteredExams
       .filter(
         (e) =>
-          (!selectedModalidadId || String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId)
       )
       .filter((e) => e.especialidadId !== null && e.especialidadNombre !== null)
@@ -155,7 +171,11 @@ const SimulacroExamenPage = () => {
 
   // Auto-select specialty if only one exists
   useEffect(() => {
-    if (especialidadesData.length === 1 && !selectedEspecialidadId && especialidadesData[0]) {
+    if (
+      especialidadesData.length === 1 &&
+      !selectedEspecialidadId &&
+      especialidadesData[0]
+    ) {
       setSelectedEspecialidadId(String(especialidadesData[0].id));
     }
   }, [especialidadesData, selectedEspecialidadId]);
@@ -165,9 +185,11 @@ const SimulacroExamenPage = () => {
     filteredExams
       .filter(
         (e) =>
-          (!selectedModalidadId || String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
       )
       .forEach((e) => {
         if (e.years && e.years.length > 0) {
@@ -184,7 +206,12 @@ const SimulacroExamenPage = () => {
         if (b === 'Único') return -1;
         return Number(b) - Number(a);
       });
-  }, [filteredExams, selectedModalidadId, selectedNivelId, selectedEspecialidadId]);
+  }, [
+    filteredExams,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Metadata helper per Year ----------
 
@@ -311,8 +338,12 @@ const SimulacroExamenPage = () => {
   const handleConfirm = async () => {
     const minMineduSelected = selectedYears.length >= 2;
     const somethingPropiosSelected = selectedPropiosIds.length > 0;
-    
-    if (!selectedModalidadId || (!minMineduSelected && !somethingPropiosSelected)) return;
+
+    if (
+      !selectedModalidadId ||
+      (!minMineduSelected && !somethingPropiosSelected)
+    )
+      return;
 
     try {
       setIsLoading(true);
@@ -368,33 +399,39 @@ const SimulacroExamenPage = () => {
       console.log('Enviando filtro multi-año a la API:', payload);
 
       // 4. LLAMADA AL SERVICIO BLOQUE I
-      let bloque1Questions =
+      const bloque1Questions =
         await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
 
       // --- 5. LLAMADA PARA BLOQUE II (PROPIOS) ---
       let bloque2Questions: any[] = [];
-      const selectedPropios = seccionesPropias.filter(s => selectedPropiosIds.includes(s.fuenteId || s.id));
-      
+      const selectedPropios = seccionesPropias.filter((s) =>
+        selectedPropiosIds.includes(s.fuenteId || s.id)
+      );
+
       for (const sect of selectedPropios) {
         if (sect.examenesPropios) {
           for (const examData of sect.examenesPropios) {
-             const p = {
-                tipoExamenId: sect.tipoExamenId,
-                fuenteId: sect.fuenteId || sect.id,
-                modalidadId: examData.modalidadId,
-                nivelId: examData.nivelId,
-                especialidadId: examData.especialidadId || 0,
-                year: '0',
-                clasificaciones: [],
-             };
-             const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
-             bloque2Questions = [...bloque2Questions, ...qs];
+            const p = {
+              tipoExamenId: sect.tipoExamenId,
+              fuenteId: sect.fuenteId || sect.id,
+              modalidadId: examData.modalidadId,
+              nivelId: examData.nivelId,
+              especialidadId: examData.especialidadId || 0,
+              year: '0',
+              clasificaciones: [],
+            };
+            const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+            bloque2Questions = [...bloque2Questions, ...qs];
           }
         }
       }
 
       // Merge and remove duplicates
-      let questions = Array.from(new Map([...bloque1Questions, ...bloque2Questions].map(q => [q.id, q])).values());
+      let questions = Array.from(
+        new Map(
+          [...bloque1Questions, ...bloque2Questions].map((q) => [q.id, q])
+        ).values()
+      );
 
       // --- PARCHE DE FRONTEND: Filtrar localmente por si la API devuelve más de lo pedido ---
       if (questions.length > 0) {
@@ -432,22 +469,33 @@ const SimulacroExamenPage = () => {
         const totalTarget = 60;
 
         // Función para contar preguntas reales (incluyendo subpreguntas)
-        const getWeight = (q: any) => (q.subPreguntas && q.subPreguntas.length > 0 ? q.subPreguntas.length : 1);
+        const getWeight = (q: any) =>
+          q.subPreguntas && q.subPreguntas.length > 0
+            ? q.subPreguntas.length
+            : 1;
 
-        const currentEffectiveCount = (list: any[]) => list.reduce((acc, q) => acc + getWeight(q), 0);
+        const currentEffectiveCount = (list: any[]) =>
+          list.reduce((acc, q) => acc + getWeight(q), 0);
 
-        if (activeGroupKeys.length > 0 && currentEffectiveCount(filteredBySelection) > totalTarget) {
-          const baseLimitPerGroup = Math.floor(totalTarget / activeGroupKeys.length);
-          let finalSelection: any[] = [];
+        if (
+          activeGroupKeys.length > 0 &&
+          currentEffectiveCount(filteredBySelection) > totalTarget
+        ) {
+          const baseLimitPerGroup = Math.floor(
+            totalTarget / activeGroupKeys.length
+          );
+          const finalSelection: any[] = [];
           let totalAccumulated = 0;
 
           const leftovers: any[] = [];
 
           // Primera pasada: repartir equitativamente
           for (const key of activeGroupKeys) {
-            const group = [...(groups[key] || [])].sort(() => 0.5 - Math.random());
+            const group = [...(groups[key] || [])].sort(
+              () => 0.5 - Math.random()
+            );
             let groupAccumulated = 0;
-            
+
             for (const q of group) {
               const weight = getWeight(q);
               if (groupAccumulated + weight <= baseLimitPerGroup) {
@@ -508,33 +556,33 @@ const SimulacroExamenPage = () => {
 
   // Grand Total calculation
   const totalQuestions = useMemo(() => {
-     const b1 = selectedYears.reduce((acc, year) => {
-        const meta = getMetadataForYear(year);
-        return (
-          acc +
-          meta.reduce((accM, m) => {
-            return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
-          }, 0)
-        );
+    const b1 = selectedYears.reduce((acc, year) => {
+      const meta = getMetadataForYear(year);
+      return (
+        acc +
+        meta.reduce((accM, m) => {
+          return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
+        }, 0)
+      );
+    }, 0);
+
+    const b2 = seccionesPropias
+      .filter((s) => selectedPropiosIds.includes(s.fuenteId || s.id))
+      .reduce((acc, s) => {
+        let sectCount = 0;
+        if (s.examenesPropios) {
+          s.examenesPropios.forEach((ex: any) => {
+            if (ex.clasificaciones) {
+              ex.clasificaciones.forEach((c: any) => {
+                sectCount += c.cantidadPreguntas || 0;
+              });
+            }
+          });
+        }
+        return acc + (s.totalPreguntas || sectCount);
       }, 0);
 
-      const b2 = seccionesPropias
-        .filter(s => selectedPropiosIds.includes(s.fuenteId || s.id))
-        .reduce((acc, s) => {
-           let sectCount = 0;
-           if (s.examenesPropios) {
-              s.examenesPropios.forEach((ex: any) => {
-                 if (ex.clasificaciones) {
-                    ex.clasificaciones.forEach((c: any) => {
-                       sectCount += c.cantidadPreguntas || 0;
-                    });
-                 }
-              });
-           }
-           return acc + (s.totalPreguntas || sectCount);
-        }, 0);
-
-      return b1 + b2;
+    return b1 + b2;
   }, [selectedYears, yearSelections, seccionesPropias, selectedPropiosIds]);
 
   if (loading || !isAuthenticated) {
@@ -760,7 +808,7 @@ const SimulacroExamenPage = () => {
 
         {/* Bloque II - Exámenes Propios ED */}
         <div className="border border-blue-400 rounded-lg overflow-hidden bg-white shadow-sm">
-           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
+          <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
               Bloque II - Exámenes Propios ED
@@ -768,81 +816,109 @@ const SimulacroExamenPage = () => {
           </div>
 
           <div className="p-6">
-             <p className="text-xs text-blue-800 font-medium mb-4">
-              Selecciona las secciones ED adicionales que deseas incluir en tu simulacro.
-             </p>
+            <p className="text-xs text-blue-800 font-medium mb-4">
+              Selecciona las secciones ED adicionales que deseas incluir en tu
+              simulacro.
+            </p>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {seccionesPropias.map((s) => {
-                   const isSelected = selectedPropiosIds.includes(s.fuenteId || s.id);
-                   
-                   // Aggregate counts
-                   const counts: Record<string, number> = { CCP: 0, CL: 0, RL: 0, CG: 0 };
-                   if (s.examenesPropios) {
-                      s.examenesPropios.forEach((ex: any) => {
-                         if (ex.clasificaciones) {
-                            ex.clasificaciones.forEach((c: any) => {
-                               const name = c.clasificacionNombre?.toUpperCase();
-                               if (counts.hasOwnProperty(name)) {
-                                  counts[name] += c.cantidadPreguntas || 0;
-                               }
-                            });
-                         }
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {seccionesPropias.map((s) => {
+                const isSelected = selectedPropiosIds.includes(
+                  s.fuenteId || s.id
+                );
+
+                // Aggregate counts
+                const counts: Record<string, number> = {
+                  CCP: 0,
+                  CL: 0,
+                  RL: 0,
+                  CG: 0,
+                };
+                if (s.examenesPropios) {
+                  s.examenesPropios.forEach((ex: any) => {
+                    if (ex.clasificaciones) {
+                      ex.clasificaciones.forEach((c: any) => {
+                        const name = c.clasificacionNombre?.toUpperCase();
+                        if (counts.hasOwnProperty(name)) {
+                          counts[name] += c.cantidadPreguntas || 0;
+                        }
                       });
-                   }
+                    }
+                  });
+                }
 
-                   return (
-                      <label 
-                        key={s.id} 
-                        className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
-                          isSelected ? 'border-primary bg-blue-50 ring-2 ring-primary' : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
-                        }`}
-                      >
-                         <div className="flex items-start gap-3 relative z-10">
-                            <input 
-                              type="checkbox" 
-                              checked={isSelected}
-                              onChange={() => {
-                                 if (isSelected) {
-                                    setSelectedPropiosIds(prev => prev.filter(id => id !== (s.fuenteId || s.id)));
-                                 } else {
-                                    setSelectedPropiosIds(prev => [...prev, (s.fuenteId || s.id)]);
-                                 }
-                              }}
-                              className="mt-1 h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary"
-                            />
-                            <div className="flex flex-col">
-                               <span className="text-blue-900 font-extrabold text-sm">{s.fuenteNombre || s.nombre}</span>
-                            </div>
-                         </div>
+                return (
+                  <label
+                    key={s.id}
+                    className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
+                      isSelected
+                        ? 'border-primary bg-blue-50 ring-2 ring-primary'
+                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 relative z-10">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {
+                          if (isSelected) {
+                            setSelectedPropiosIds((prev) =>
+                              prev.filter((id) => id !== (s.fuenteId || s.id))
+                            );
+                          } else {
+                            setSelectedPropiosIds((prev) => [
+                              ...prev,
+                              s.fuenteId || s.id,
+                            ]);
+                          }
+                        }}
+                        className="mt-1 h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-blue-900 font-extrabold text-sm">
+                          {s.fuenteNombre || s.nombre}
+                        </span>
+                      </div>
+                    </div>
 
-                         <div className="bg-white/80 rounded-xl border border-blue-50 p-3 relative z-10">
-                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 text-center">Preguntas disponibles:</p>
-                            <div className="grid grid-cols-2 gap-2">
-                               {Object.entries(counts).map(([label, count]) => (
-                                  <div key={label} className={`flex items-center justify-between px-2 py-1 rounded border text-[10px] ${count > 0 ? 'bg-green-50 border-green-100 text-green-600' : 'bg-gray-50 border-gray-100 text-gray-300'}`}>
-                                     <span className="font-bold">{label}:</span>
-                                     <span className="font-black">{count}</span>
-                                  </div>
-                               ))}
-                            </div>
-                         </div>
+                    <div className="bg-white/80 rounded-xl border border-blue-50 p-3 relative z-10">
+                      <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 text-center">
+                        Preguntas disponibles:
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(counts).map(([label, count]) => (
+                          <div
+                            key={label}
+                            className={`flex items-center justify-between px-2 py-1 rounded border text-[10px] ${
+                              count > 0
+                                ? 'bg-green-50 border-green-100 text-green-600'
+                                : 'bg-gray-50 border-gray-100 text-gray-300'
+                            }`}
+                          >
+                            <span className="font-bold">{label}:</span>
+                            <span className="font-black">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                         {isSelected && (
-                            <div className="absolute top-0 right-0 p-2">
-                               <CheckCircleIcon className="h-5 w-5 text-primary" />
-                            </div>
-                         )}
-                      </label>
-                   );
-                })}
-             </div>
-             
-             {seccionesPropias.length === 0 && !isLoading && (
-                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
-                   <p className="text-gray-400 text-sm italic">No hay secciones propias disponibles para añadir.</p>
-                </div>
-             )}
+                    {isSelected && (
+                      <div className="absolute top-0 right-0 p-2">
+                        <CheckCircleIcon className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+
+            {seccionesPropias.length === 0 && !isLoading && (
+              <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                <p className="text-gray-400 text-sm italic">
+                  No hay secciones propias disponibles para añadir.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -893,15 +969,24 @@ const SimulacroExamenPage = () => {
                   Bloque II - Exámenes Propios
                 </p>
                 <div className="flex flex-wrap gap-2">
-                   {selectedPropiosIds.length > 0 ? (
-                      seccionesPropias.filter(s => selectedPropiosIds.includes(s.fuenteId || s.id)).map(s => (
-                         <span key={s.id} className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm">
-                            {s.fuenteNombre || s.nombre}
-                         </span>
+                  {selectedPropiosIds.length > 0 ? (
+                    seccionesPropias
+                      .filter((s) =>
+                        selectedPropiosIds.includes(s.fuenteId || s.id)
+                      )
+                      .map((s) => (
+                        <span
+                          key={s.id}
+                          className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm"
+                        >
+                          {s.fuenteNombre || s.nombre}
+                        </span>
                       ))
-                   ) : (
-                      <span className="text-xs text-gray-400 italic">Ninguno seleccionado</span>
-                   )}
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">
+                      Ninguno seleccionado
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -958,16 +1043,21 @@ const SimulacroExamenPage = () => {
               <div className="flex-1">
                 <p className="text-xl font-bold text-green-700">
                   Total para el simulacro:{' '}
-                  <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span>{' '}
+                  <span className="text-2xl font-black">
+                    {totalQuestions > 60 ? 60 : totalQuestions}
+                  </span>{' '}
                   preguntas
                 </p>
                 {totalQuestions > 60 && (
                   <p className="text-xs font-semibold text-green-600 mt-1 italic leading-relaxed">
-                     * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+                    * Se han seleccionado {totalQuestions} preguntas en total,
+                    pero el simulacro se limitará a 60 distribuidas
+                    proporcionalmente.
                   </p>
                 )}
                 <p className="text-xs font-semibold text-green-600 mt-0.5">
-                  Incluye preguntas de: Bloque I (MINEDU) {selectedPropiosIds.length > 0 && `+ Bloque II (ED)`}
+                  Incluye preguntas de: Bloque I (MINEDU){' '}
+                  {selectedPropiosIds.length > 0 && `+ Bloque II (ED)`}
                 </p>
               </div>
             </div>
@@ -994,12 +1084,13 @@ const SimulacroExamenPage = () => {
               (!selectedYears.length && !selectedPropiosIds.length) ||
               (selectedYears.length > 0 && selectedYears.length < 2) ||
               totalQuestions === 0 ||
-              (selectedYears.length > 0 && selectedYears.some(
-                (y) =>
-                  !Object.values(yearSelections[y] || {}).some(
-                    (v) => v === true
-                  )
-              ))
+              (selectedYears.length > 0 &&
+                selectedYears.some(
+                  (y) =>
+                    !Object.values(yearSelections[y] || {}).some(
+                      (v) => v === true
+                    )
+                ))
             }
             className="px-12 py-2.5 bg-[#4790FD] text-white rounded-md font-bold shadow-lg hover:bg-blue-600 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm shadow-blue-200"
           >

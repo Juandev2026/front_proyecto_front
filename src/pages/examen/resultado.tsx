@@ -56,16 +56,20 @@ const ResultadoPage = () => {
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
-              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
-              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
-              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
-              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              alternativaA:
+                sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
+              alternativaB:
+                sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
+              alternativaC:
+                sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
+              alternativaD:
+                sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
               puntos: sub.puntos ?? q.puntos,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
-              respuesta: sub.respuestaCorrecta || sub.respuesta || '', 
+              respuesta: sub.respuestaCorrecta || sub.respuesta || '',
               isSubPregunta: true,
-              subPreguntas: [], 
+              subPreguntas: [],
             });
           });
         } else {
@@ -94,21 +98,24 @@ const ResultadoPage = () => {
     );
 
     const total = questions.length;
-    
+
     // Ensure accurate omitidas if backend returns 0 across the board but we have total count
-    let correctas = global.correctas;
-    let incorrectas = global.incorrectas;
-    let omitidas = global.omitidas;
-    
+    const { correctas } = global;
+    const { incorrectas } = global;
+    let { omitidas } = global;
+
     if (correctas === 0 && incorrectas === 0 && omitidas === 0 && total > 0) {
       omitidas = total;
     } else if (correctas + incorrectas + omitidas !== total && total > 0) {
       // If sum doesn't match total, trust correctas/incorrectas and adjust omitidas
       omitidas = Math.max(0, total - correctas - incorrectas);
     }
-    
+
     const answered = correctas + incorrectas;
-    const maxScore = questions.reduce((acc, q) => acc + (Number(q.puntos) || 0), 0);
+    const maxScore = questions.reduce(
+      (acc, q) => acc + (Number(q.puntos) || 0),
+      0
+    );
 
     // 2. Cálculo por Clasificación (Manual para el desglose)
     // ... preserved classificationStats logic ...
