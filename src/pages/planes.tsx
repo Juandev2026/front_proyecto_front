@@ -258,7 +258,7 @@ const faqs = [
           personalizada.
         </p>
         <p>
-          El docente <strong>Juan Avend</strong> te guiará para absolver
+          El docente <strong>de soporte</strong> te guiará para absolver
           cualquier consulta o inconveniente, garantizando que puedas aprovechar
           correctamente todas las herramientas disponibles.
         </p>

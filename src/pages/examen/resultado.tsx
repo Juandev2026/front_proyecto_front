@@ -53,6 +53,8 @@ const ResultadoPage = () => {
           q.subPreguntas.forEach((sub: any) => {
             flattened.push({
               ...q,
+              id: sub.id || q.id,
+              preguntaId: sub.id || q.id,
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
@@ -64,10 +66,16 @@ const ResultadoPage = () => {
                 sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
               alternativaD:
                 sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              idAlternativaA: sub.idAlternativaA || sub.alternativas?.[0]?.id,
+              idAlternativaB: sub.idAlternativaB || sub.alternativas?.[1]?.id,
+              idAlternativaC: sub.idAlternativaC || sub.alternativas?.[2]?.id,
+              idAlternativaD: sub.idAlternativaD || sub.alternativas?.[3]?.id,
               puntos: sub.puntos ?? q.puntos,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
               respuesta: sub.respuestaCorrecta || sub.respuesta || '',
+              clasificacionId: sub.clasificacionId || q.clasificacionId,
+              clasificacionNombre: sub.clasificacionNombre || q.clasificacionNombre,
               isSubPregunta: true,
               subPreguntas: [],
             });

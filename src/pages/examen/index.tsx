@@ -91,8 +91,11 @@ const ExamenPage = () => {
       parsedQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
           q.subPreguntas.forEach((sub: any) => {
+            const compositeId = sub.numero ? `${q.id}-${sub.numero}` : String(sub.id || q.id);
             flattened.push({
               ...q,
+              id: compositeId,
+              preguntaId: q.id, // ID del padre para el backend
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
@@ -112,6 +115,8 @@ const ExamenPage = () => {
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
               respuesta: sub.respuestaCorrecta || sub.respuesta || '',
+              clasificacionId: sub.clasificacionId || q.clasificacionId,
+              clasificacionNombre: sub.clasificacionNombre || q.clasificacionNombre,
               isSubPregunta: true,
               subPreguntas: [],
             });
@@ -332,26 +337,28 @@ const ExamenPage = () => {
         ?.trim() || '0';
       const examYear = parseInt(examYearRaw, 10) || 0;
 
+      const isMultiYear = (metadata && String(metadata.year).includes(',')) || metadata?.isSimulacro;
+
       const respuestasPayload = questions.map((q, index) => {
         const key = String(index);
         const data = respuestas[key];
 
-        // El backend espera el ID de la alternativa marcada como número
+        // El backend espera el ID de la alternativa marcada como número o null si no se marcó
         const finalAnswer = data?.alternativaId
           ? Number(data.alternativaId)
-          : 0;
+          : null;
 
         return {
-          preguntaId: q.preguntaId || q.id,
-          subPreguntaNumero: (q as any).numeroSubPregunta || 0,
+          preguntaId: q.preguntaId || Number(String(q.id).split('-')[0]),
+          subPreguntaNumero: (q as any).isSubPregunta ? (q as any).numeroSubPregunta : null,
           alternativaMarcada: finalAnswer,
         };
       });
 
       const payload: SolucionExamenRequest = {
-        examenId: firstQuestion?.examenId || 0,
+        examenId: isMultiYear ? 0 : (firstQuestion?.examenId || 0),
         userId: user?.id || 0,
-        year: examYear,
+        year: isMultiYear ? 0 : examYear,
         respuestas: respuestasPayload,
       };
 
@@ -667,10 +674,7 @@ const ExamenPage = () => {
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
                 <div className="bg-gray-100/50 p-6 md:p-8 rounded-2xl border border-blue-100 mb-8 text-gray-800 font-serif leading-relaxed shadow-sm force-black-text">
-                  <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <div className="w-4 h-0.5 bg-blue-600"></div>
-                    Texto de Referencia
-                  </div>
+                  
                   <div
                     dangerouslySetInnerHTML={{
                       __html: (currentQuestion as any).parentEnunciado,
