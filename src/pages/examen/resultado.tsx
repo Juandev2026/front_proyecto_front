@@ -707,14 +707,13 @@ const ResultadoPage = () => {
           </div>
         </div>
 
-        {/* Final Branding / Sign */}
-        <div className="flex flex-col items-center opacity-70 pt-12">
-          <span className="font-handwriting text-4xl text-black transform -rotate-1">
-            Juan Avendaño
-          </span>
-          <div className="bg-[#1DA1F2] text-white p-1 rounded-full w-8 h-8 flex items-center justify-center mt-2 shadow-lg">
-            <span className="text-[14px] font-bold">t</span>
-          </div>
+        {/* Final Branding / Logo */}
+        <div className="flex justify-center pt-8 pb-12">
+          <img
+            src="/assets/images/logo_principal1.png"
+            alt="Juan Avendaño"
+            className="h-24 w-auto object-contain opacity-80"
+          />
         </div>
       </div>
 

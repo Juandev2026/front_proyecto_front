@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { PreguntaExamen } from '../types/examen';
-import { getAuthHeaders } from '../utils/apiUtils';
+import { getAuthHeaders, getPublicHeaders } from '../utils/apiUtils';
 
 export interface Especialidad {
   id: number;
@@ -11,7 +11,7 @@ export interface Nivel {
   id: number;
   nombre: string;
   especialidades: Especialidad[];
-  anios: string[];
+  anios?: string[];
 }
 
 export interface Modalidad {
@@ -21,6 +21,20 @@ export interface Modalidad {
 }
 
 export const estructuraAcademicaService = {
+  getEstructuraRegistro: async (): Promise<Modalidad[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/EstructuraAcademica`, {
+        headers: getPublicHeaders(),
+      });
+      if (!response.ok)
+        throw new Error('Error al obtener estructura académica');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching estructura académica registro:', error);
+      throw error;
+    }
+  },
+
   getAll: async (): Promise<Modalidad[]> => {
     try {
       const response = await fetch(`${API_BASE_URL}/Examenes/grouped-simple`, {

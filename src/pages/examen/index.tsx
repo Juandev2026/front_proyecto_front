@@ -329,7 +329,7 @@ const ExamenPage = () => {
           '0'
       )
         .split(',')[0]
-        .trim();
+        ?.trim() || '0';
       const examYear = parseInt(examYearRaw, 10) || 0;
 
       const respuestasPayload = questions.map((q, index) => {
@@ -804,16 +804,13 @@ const ExamenPage = () => {
                   )}
                 </div>
 
-                {/* Brand Signature */}
-                <div className="flex justify-end mt-6">
-                  <div className="flex flex-col items-end opacity-70">
-                    <span className="font-handwriting text-3xl text-black transform -rotate-2">
-                      Juan Avendaño
-                    </span>
-                    <div className="bg-[#1DA1F2] text-white p-1 rounded-full w-6 h-6 flex items-center justify-center mt-1 shadow-sm">
-                      <span className="text-[12px] font-bold">t</span>
-                    </div>
-                  </div>
+                {/* Brand Logo at Bottom */}
+                <div className="flex justify-end mt-8">
+                  <img
+                    src="/assets/images/logo_principal1.png"
+                    alt="Juan Avendaño"
+                    className="h-20 w-auto object-contain opacity-80"
+                  />
                 </div>
               </div>
             </div>

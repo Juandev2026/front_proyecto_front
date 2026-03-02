@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { authService } from '../services/authService';
-import { examenService } from '../services/examenService';
+import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
 import { regionService, Region } from '../services/regionService';
 
 const Register = () => {
@@ -60,14 +60,45 @@ const Register = () => {
       }
 
       try {
-        const hierarchy = await examenService.getSimplifiedHierarchy();
-        // Option to filter base===1 if still needed, but relying on API returned values
-        // If API returns what we need, we show it directly:
-        setModalidades(hierarchy.modalidades.reverse());
-        setNiveles(hierarchy.niveles);
-        setEspecialidades(hierarchy.especialidades);
+        const structure = await estructuraAcademicaService.getEstructuraRegistro();
+        const flatModalidades: any[] = [];
+        const flatNiveles: any[] = [];
+        const flatEspecialidades: any[] = [];
+
+        structure.forEach((mod) => {
+          flatModalidades.push({ id: mod.id, nombre: mod.nombre });
+          mod.niveles.forEach((niv) => {
+            const existingNivel = flatNiveles.find((n) => n.id === niv.id);
+            if (existingNivel) {
+              if (!existingNivel.modalidadIds.includes(mod.id)) {
+                existingNivel.modalidadIds.push(mod.id);
+              }
+            } else {
+              flatNiveles.push({
+                id: niv.id,
+                nombre: niv.nombre,
+                modalidadIds: [mod.id],
+              });
+            }
+
+            niv.especialidades.forEach((esp) => {
+              // Only add if not already added for this level
+              if (!flatEspecialidades.some(e => e.id === esp.id && e.nivelId === niv.id)) {
+                flatEspecialidades.push({
+                  id: esp.id,
+                  nombre: esp.nombre,
+                  nivelId: niv.id,
+                });
+              }
+            });
+          });
+        });
+
+        setModalidades(flatModalidades);
+        setNiveles(flatNiveles);
+        setEspecialidades(flatEspecialidades);
       } catch (err) {
-        console.error('Error loading academic hierarchy:', err);
+        console.error('Error loading academic hierarchy from EstructuraAcademica:', err);
       }
     };
     fetchData();
