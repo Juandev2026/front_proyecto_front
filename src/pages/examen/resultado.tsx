@@ -72,7 +72,7 @@ const ResultadoPage = () => {
             flattened.push({
               ...q,
               id: sub.id || q.id,
-              preguntaId: sub.id || q.id,
+              preguntaId: q.id, // ID del padre
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',

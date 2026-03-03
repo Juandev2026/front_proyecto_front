@@ -121,7 +121,7 @@ const ExamenPage = () => {
             flattened.push({
               ...q,
               id: sub.id || q.id,
-              preguntaId: sub.id || q.id,
+              preguntaId: q.id, // Importante: usar el ID del Padre para el calificador
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
@@ -412,21 +412,23 @@ const ExamenPage = () => {
             : null;
 
         return {
-          preguntaId: Number(q.preguntaId || q.id),
-          subPreguntaNumero: (q as any).isSubPregunta ? (q as any).numeroSubPregunta : null,
+          preguntaId: Number(q.preguntaId), // Usar preguntaId (ID del padre si es sub-pregunta)
+          subPreguntaNumero: (q as any).isSubPregunta ? Number((q as any).numeroSubPregunta) : null,
           alternativaMarcada: finalAnswer,
         };
       });
 
       const payload: SolucionExamenRequest = {
-        examenId: firstQuestion?.examenId || 0,
+        examenId: metadata?.isSimulacro ? 0 : (firstQuestion?.examenId || 0),
         userId: user?.id || 0,
         year: examYear || 0,
         respuestas: respuestasPayload,
       };
 
       console.log(
-        'Payload prepared for grading:',
+        'Payload prepared for grading (Simulacro:',
+        !!metadata?.isSimulacro,
+        '):',
         JSON.stringify(payload, null, 2)
       );
 
