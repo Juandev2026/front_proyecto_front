@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { erroneasService, RespuestaErronea } from '../services/erroneasService';
+import { erroneasService, GrupoErroneas } from '../services/erroneasService';
 
 const RespuestasErroneasAscensoPage = () => {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -23,7 +23,8 @@ const RespuestasErroneasAscensoPage = () => {
     'Educación Básica Alternativa - Inicial - Intermedio'
   );
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
-  const [erroneas, setErroneas] = useState<RespuestaErronea[]>([]);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [erroneas, setErroneas] = useState<GrupoErroneas[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +38,8 @@ const RespuestasErroneasAscensoPage = () => {
       if (user?.id) {
         try {
           setLoading(true);
-          const data = await erroneasService.getByUser(user.id);
+          // Ascenso corresponds to tipoExamenId: 1
+          const data = await erroneasService.getByUser(user.id, 1);
           setErroneas(data);
         } catch (error) {
           console.error('Error fetching erroneas:', error);
@@ -54,45 +56,61 @@ const RespuestasErroneasAscensoPage = () => {
 
   // Calculations
   const stats = useMemo(() => {
-    const totalErrors = erroneas.length;
-    const uniqueQuestions = new Set(erroneas.map((e) => e.preguntaId)).size;
-    // Assuming 1.5 points per error as seen in the mockup, or we can adjust if there's a real field
-    const pointsLost = (totalErrors * 1.5).toFixed(1);
+    let totalErrors = 0;
+    const uniqueQuestions = new Set<number>();
 
-    return { totalErrors, uniqueQuestions, pointsLost };
+    erroneas.forEach((group) => {
+      group.preguntas.forEach((q) => {
+        uniqueQuestions.add(q.preguntaId);
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          totalErrors += q.subPreguntas.length;
+        } else if (q.erroresInmediatos) {
+          totalErrors += q.erroresInmediatos.length;
+        } else {
+          totalErrors += 1;
+        }
+      });
+    });
+
+    const pointsLost = (totalErrors * 1.5).toFixed(1);
+    return { totalErrors, uniqueQuestions: uniqueQuestions.size, pointsLost };
   }, [erroneas]);
 
   const groupedByDate = useMemo(() => {
-    const groups: { [key: string]: RespuestaErronea[] } = {};
-
-    erroneas.forEach((item) => {
-      const date = new Date(item.fechaCreacion);
+    return erroneas.map((group) => {
+      const date = group.fecha ? new Date(group.fecha + 'T12:00:00') : new Date();
       const options: any = { day: 'numeric', month: 'long', year: 'numeric' };
-      const dateString = date.toLocaleDateString('es-ES', options);
+      let dateString = date.toLocaleDateString('es-ES', options);
 
-      if (!groups[dateString]) {
-        groups[dateString] = [];
+      if (dateString === 'Invalid Date' || !group.fecha) {
+        dateString = 'Fecha no disponible';
       }
-      groups[dateString].push(item);
-    });
 
-    return Object.entries(groups)
-      .map(([date, items]) => ({
-        date,
-        errors: items.length,
-        points: items.length * 1.5,
-        rawDate: items[0]?.fechaCreacion || '',
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
-      );
+      let groupErrors = 0;
+      group.preguntas.forEach((q) => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          groupErrors += q.subPreguntas.length;
+        } else if (q.erroresInmediatos) {
+          groupErrors += q.erroresInmediatos.length;
+        } else {
+          groupErrors += 1;
+        }
+      });
+
+      return {
+        date: dateString,
+        errors: groupErrors,
+        points: groupErrors * 1.5,
+        items: group.preguntas,
+        rawDate: group.fecha || '',
+      };
+    });
   }, [erroneas]);
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     );
   }
@@ -204,7 +222,7 @@ const RespuestasErroneasAscensoPage = () => {
 
           {/* Right Panel: Statistics (White) */}
           <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 text-[#002B6B]">
+            <div className="flex items-center gap-2 mb-6 text-gray-900">
               <ChartBarIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
             </div>
@@ -263,7 +281,7 @@ const RespuestasErroneasAscensoPage = () => {
 
         {/* Bottom Section: History */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-2 text-[#002B6B]">
+          <div className="flex items-center gap-2 mb-2 text-gray-900">
             <ClockIcon className="h-5 w-5" />
             <h2 className="font-bold text-lg">
               Historial de Preguntas Erróneas
@@ -296,30 +314,155 @@ const RespuestasErroneasAscensoPage = () => {
           </div>
 
           {/* History List */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {groupedByDate.length === 0 ? (
               <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg">
                 No tienes preguntas erróneas registradas.
               </div>
             ) : (
               groupedByDate.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group"
-                >
-                  <span className="font-bold text-gray-700 text-sm">
-                    Errores - {item.date}
-                  </span>
+                <div key={index} className="space-y-3">
+                  {/* Header Row */}
+                  <div
+                    onClick={() =>
+                      setExpandedIndex(expandedIndex === index ? null : index)
+                    }
+                    className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${
+                      expandedIndex === index
+                        ? 'border-cyan-400 bg-gray-50 shadow-sm'
+                        : 'border-gray-100 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="font-bold text-gray-900 text-sm md:text-base">
+                      Errores - {item.date}
+                    </span>
 
-                  <div className="flex items-center gap-4">
-                    <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
-                      {item.errors} {item.errors === 1 ? 'error' : 'errores'}
-                    </span>
-                    <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-bold">
-                      {item.points.toFixed(1)} pts
-                    </span>
-                    <ChevronDownIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
+                    <div className="flex items-center gap-4">
+                      <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
+                        <span className="text-base leading-none font-bold">
+                          !
+                        </span>{' '}
+                        {item.errors} {item.errors === 1 ? 'error' : 'errores'}
+                      </span>
+                      <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
+                        {item.points.toFixed(1)} pts
+                      </span>
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                          expandedIndex === index
+                            ? 'rotate-180 text-[#4790FD]'
+                            : 'group-hover:text-gray-600'
+                        }`}
+                      />
+                    </div>
                   </div>
+
+                  {/* Expanded Content */}
+                  {expandedIndex === index && (
+                    <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {item.items.map((q) => (
+                        <div
+                          key={q.preguntaId}
+                          className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
+                        >
+                          {/* Question Header */}
+                          <div className="flex items-center gap-3">
+                            <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
+                              {q.numero || q.preguntaId}
+                            </div>
+                            <span className="font-bold text-gray-900 text-lg">
+                              Pregunta de Examen {q.year ? `(${q.year})` : ''}
+                            </span>
+                          </div>
+
+                          {/* Question Body */}
+                          <div className="space-y-4 text-gray-900 font-medium">
+                            <div
+                              className="prose prose-gray max-w-none"
+                              dangerouslySetInnerHTML={{ __html: q.enunciado }}
+                            />
+                          </div>
+
+                          {/* Options Section for simple question */}
+                          {(!q.subPreguntas || q.subPreguntas.length === 0) && (
+                            <div className="mt-6 space-y-3">
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                Alternativas:
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {q.alternativas.map((alt) => {
+                                  const isCorrect = String(alt.id) === String(q.respuestaCorrecta);
+                                  const isMarked = q.erroresInmediatos?.some(
+                                    (err) => String(err.alternativaMarcada) === String(alt.id)
+                                  );
+
+                                  let bgColor = 'bg-gray-50 border-gray-100';
+                                  if (isCorrect) bgColor = 'bg-green-100 border-green-400';
+                                  else if (isMarked) bgColor = 'bg-red-50 border-red-400';
+
+                                  return (
+                                    <div
+                                      key={alt.id}
+                                      className={`p-4 rounded-xl border-2 shadow-sm transition-all ${bgColor}`}
+                                    >
+                                      <div
+                                        className="text-sm leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: alt.contenido }}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Subquestions Section */}
+                          {q.subPreguntas && q.subPreguntas.length > 0 && (
+                            <div className="mt-6 space-y-8">
+                              {q.subPreguntas.map((sub) => (
+                                <div
+                                  key={sub.subPreguntaId}
+                                  className="border-l-4 border-cyan-400 pl-4 py-2 bg-gray-50/10 rounded-r-lg space-y-4"
+                                >
+                                  <div
+                                    className="text-sm md:text-base font-bold text-gray-900"
+                                    dangerouslySetInnerHTML={{ __html: sub.enunciado }}
+                                  />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {sub.alternativas.map((alt) => {
+                                      const isCorrect = String(alt.id) === String(sub.respuestaCorrecta);
+                                      const isMarked = String(sub.alternativaMarcada) === String(alt.id);
+
+                                      let bgColor = 'bg-white border-gray-100';
+                                      if (isCorrect) bgColor = 'bg-green-100 border-green-400';
+                                      else if (isMarked) bgColor = 'bg-red-50 border-red-400';
+
+                                      return (
+                                        <div
+                                          key={alt.id}
+                                          className={`p-4 rounded-xl border-2 shadow-sm transition-all ${bgColor}`}
+                                        >
+                                          <div
+                                            className="text-sm leading-relaxed"
+                                            dangerouslySetInnerHTML={{ __html: alt.contenido }}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Info Footer */}
+                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-end items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                            <div>fecha: {item.date}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -331,3 +474,4 @@ const RespuestasErroneasAscensoPage = () => {
 };
 
 export default RespuestasErroneasAscensoPage;
+

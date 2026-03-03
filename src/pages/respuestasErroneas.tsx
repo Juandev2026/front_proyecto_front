@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { erroneasService, RespuestaErronea } from '../services/erroneasService';
+import { erroneasService, GrupoErroneas } from '../services/erroneasService';
 
 const RespuestasErroneasPage = () => {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -24,7 +24,7 @@ const RespuestasErroneasPage = () => {
   );
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [erroneas, setErroneas] = useState<RespuestaErronea[]>([]);
+  const [erroneas, setErroneas] = useState<GrupoErroneas[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const RespuestasErroneasPage = () => {
       if (user?.id) {
         try {
           setLoading(true);
-          const data = await erroneasService.getByUser(user.id);
+          const data = await erroneasService.getByUser(user.id, 2);
           setErroneas(data);
         } catch (error) {
           console.error('Error fetching erroneas:', error);
@@ -55,45 +55,61 @@ const RespuestasErroneasPage = () => {
 
   // Calculations
   const stats = useMemo(() => {
-    const totalErrors = erroneas.length;
-    const uniqueQuestions = new Set(erroneas.map((e) => e.preguntaId)).size;
-    const pointsLost = (totalErrors * 1.5).toFixed(1);
+    let totalErrors = 0;
+    const uniqueQuestions = new Set<number>();
 
-    return { totalErrors, uniqueQuestions, pointsLost };
+    erroneas.forEach((group) => {
+      group.preguntas.forEach((q) => {
+        uniqueQuestions.add(q.preguntaId);
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          totalErrors += q.subPreguntas.length;
+        } else if (q.erroresInmediatos) {
+          totalErrors += q.erroresInmediatos.length;
+        } else {
+          totalErrors += 1;
+        }
+      });
+    });
+
+    const pointsLost = (totalErrors * 1.5).toFixed(1);
+    return { totalErrors, uniqueQuestions: uniqueQuestions.size, pointsLost };
   }, [erroneas]);
 
   const groupedByDate = useMemo(() => {
-    const groups: { [key: string]: RespuestaErronea[] } = {};
-
-    erroneas.forEach((item) => {
-      const date = new Date(item.fechaCreacion);
+    return erroneas.map((group) => {
+      const date = group.fecha ? new Date(group.fecha + 'T12:00:00') : new Date();
       const options: any = { day: 'numeric', month: 'long', year: 'numeric' };
-      const dateString = date.toLocaleDateString('es-ES', options);
+      let dateString = date.toLocaleDateString('es-ES', options);
 
-      if (!groups[dateString]) {
-        groups[dateString] = [];
+      if (dateString === 'Invalid Date' || !group.fecha) {
+        dateString = 'Fecha no disponible';
       }
-      groups[dateString].push(item);
-    });
 
-    return Object.entries(groups)
-      .map(([date, items]) => ({
-        date,
-        errors: items.length,
-        points: items.length * 1.5,
-        items,
-        rawDate: items[0]?.fechaCreacion || '',
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
-      );
+      let groupErrors = 0;
+      group.preguntas.forEach((q) => {
+        if (q.subPreguntas && q.subPreguntas.length > 0) {
+          groupErrors += q.subPreguntas.length;
+        } else if (q.erroresInmediatos) {
+          groupErrors += q.erroresInmediatos.length;
+        } else {
+          groupErrors += 1;
+        }
+      });
+
+      return {
+        date: dateString,
+        errors: groupErrors,
+        points: groupErrors * 1.5,
+        items: group.preguntas,
+        rawDate: group.fecha || '',
+      };
+    });
   }, [erroneas]);
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     );
   }
@@ -205,7 +221,7 @@ const RespuestasErroneasPage = () => {
 
           {/* Right Panel: Statistics (White) */}
           <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 text-[#4790FD]">
+            <div className="flex items-center gap-2 mb-6 text-gray-900">
               <ChartBarIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
             </div>
@@ -264,7 +280,7 @@ const RespuestasErroneasPage = () => {
 
         {/* Bottom Section: History */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-2 text-[#4790FD]">
+          <div className="flex items-center gap-2 mb-2 text-gray-900">
             <ClockIcon className="h-5 w-5" />
             <h2 className="font-bold text-lg">
               Historial de Preguntas Erróneas
@@ -324,7 +340,7 @@ const RespuestasErroneasPage = () => {
                         : 'border-gray-100 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="font-bold text-[#4790FD] text-sm md:text-base">
+                    <span className="font-bold text-gray-900 text-sm md:text-base">
                       Errores - {item.date}
                     </span>
 
@@ -353,60 +369,102 @@ const RespuestasErroneasPage = () => {
                     <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                       {item.items.map((q) => (
                         <div
-                          key={q.id}
+                          key={q.preguntaId}
                           className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
                         >
                           {/* Question Header */}
                           <div className="flex items-center gap-3">
                             <div className="bg-white border-2 border-gray-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-gray-700 shadow-sm">
-                              {q.preguntaId}
+                              {q.numero || q.preguntaId}
                             </div>
-                            <span className="font-bold text-[#4790FD] text-lg">
-                              Pregunta de Examen ({q.year})
+                            <span className="font-bold text-gray-900 text-lg">
+                              Pregunta de Examen {q.year ? `(${q.year})` : ''}
                             </span>
                           </div>
 
                           {/* Question Body */}
-                          <div className="space-y-4 text-[#4790FD] font-medium">
+                          <div className="space-y-4 text-gray-900 font-medium">
                             <div
-                              className="prose prose-blue max-w-none"
+                              className="prose prose-gray max-w-none"
                               dangerouslySetInnerHTML={{ __html: q.enunciado }}
                             />
                           </div>
 
-                          {/* Options Section */}
-                          <div className="mt-6">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                              Tu Respuesta (Errónea):
-                            </h4>
-                            <div className="flex flex-col gap-2 p-5 rounded-xl border-2 border-red-400 bg-red-50 shadow-sm">
-                              <div
-                                className="text-sm md:text-base leading-relaxed"
-                                dangerouslySetInnerHTML={{
-                                  __html: q.alternativaText || 'Sin texto',
-                                }}
-                              />
+                          {/* Options Section for simple question */}
+                          {(!q.subPreguntas || q.subPreguntas.length === 0) && (
+                            <div className="mt-6 space-y-3">
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                Alternativas:
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {q.alternativas.map((alt) => {
+                                  const isCorrect = String(alt.id) === String(q.respuestaCorrecta);
+                                  const isMarked = q.erroresInmediatos?.some(
+                                    (err) => String(err.alternativaMarcada) === String(alt.id)
+                                  );
+
+                                  let bgColor = 'bg-gray-50 border-gray-100';
+                                  if (isCorrect) bgColor = 'bg-green-100 border-green-400';
+                                  else if (isMarked) bgColor = 'bg-red-50 border-red-400';
+
+                                  return (
+                                    <div
+                                      key={alt.id}
+                                      className={`p-4 rounded-xl border-2 shadow-sm transition-all ${bgColor}`}
+                                    >
+                                      <div
+                                        className="text-sm leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: alt.contenido }}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
+                          )}
+
+                          {/* Subquestions Section */}
+                          {q.subPreguntas && q.subPreguntas.length > 0 && (
+                            <div className="mt-6 space-y-8">
+                              {q.subPreguntas.map((sub) => (
+                                <div
+                                  key={sub.subPreguntaId}
+                                  className="border-l-4 border-cyan-400 pl-4 py-2 bg-gray-50/10 rounded-r-lg space-y-4"
+                                >
+                                  <div
+                                    className="text-sm md:text-base font-bold text-gray-900"
+                                    dangerouslySetInnerHTML={{ __html: sub.enunciado }}
+                                  />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {sub.alternativas.map((alt) => {
+                                      const isCorrect = String(alt.id) === String(sub.respuestaCorrecta);
+                                      const isMarked = String(sub.alternativaMarcada) === String(alt.id);
+
+                                      let bgColor = 'bg-white border-gray-100';
+                                      if (isCorrect) bgColor = 'bg-green-100 border-green-400';
+                                      else if (isMarked) bgColor = 'bg-red-50 border-red-400';
+
+                                      return (
+                                        <div
+                                          key={alt.id}
+                                          className={`p-4 rounded-xl border-2 shadow-sm transition-all ${bgColor}`}
+                                        >
+                                          <div
+                                            className="text-sm leading-relaxed"
+                                            dangerouslySetInnerHTML={{ __html: alt.contenido }}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Info Footer */}
-                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-between items-center">
-                            <div>
-                              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-                                Examen ID :
-                              </p>
-                              <p className="text-gray-500 text-sm">
-                                {q.examenId}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-                                Fecha :
-                              </p>
-                              <p className="text-gray-500 text-sm">
-                                {new Date(q.fechaCreacion).toLocaleDateString()}
-                              </p>
-                            </div>
+                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-end items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                            <div>fecha: {item.date}</div>
                           </div>
                         </div>
                       ))}
@@ -423,3 +481,4 @@ const RespuestasErroneasPage = () => {
 };
 
 export default RespuestasErroneasPage;
+
