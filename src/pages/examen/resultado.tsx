@@ -17,6 +17,15 @@ import { useAuth } from '../../hooks/useAuth';
 import PremiumLayout from '../../layouts/PremiumLayout';
 import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
 
+const normalizeName = (name: string): string => {
+  const n = (name || '').toUpperCase();
+  if (n.includes('COMPRENSIÓN')) return 'CL';
+  if (n.includes('RAZONAMIENTO')) return 'RL';
+  if (n.includes('PEDAG') || n.includes('ESPECIALIDAD') || n.includes('CCP'))
+    return 'CCP';
+  return name || 'Otros';
+};
+
 const ResultadoPage = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -51,6 +60,15 @@ const ResultadoPage = () => {
       rawQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
           q.subPreguntas.forEach((sub: any) => {
+            const normalizedName = normalizeName(
+              sub.clasificacionNombre || q.clasificacionNombre
+            );
+            let pointValue = sub.puntos ?? q.puntos;
+
+            if (normalizedName === 'CL' || normalizedName === 'RL')
+              pointValue = 2;
+            if (normalizedName === 'CCP') pointValue = 3;
+
             flattened.push({
               ...q,
               id: sub.id || q.id,
@@ -70,18 +88,30 @@ const ResultadoPage = () => {
               idAlternativaB: sub.idAlternativaB || sub.alternativas?.[1]?.id,
               idAlternativaC: sub.idAlternativaC || sub.alternativas?.[2]?.id,
               idAlternativaD: sub.idAlternativaD || sub.alternativas?.[3]?.id,
-              puntos: sub.puntos ?? q.puntos,
+              puntos: pointValue,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
               respuesta: sub.respuestaCorrecta || sub.respuesta || '',
               clasificacionId: sub.clasificacionId || q.clasificacionId,
-              clasificacionNombre: sub.clasificacionNombre || q.clasificacionNombre,
+              clasificacionNombre: normalizedName,
               isSubPregunta: true,
               subPreguntas: [],
             });
           });
         } else {
-          flattened.push({ ...q, isSubPregunta: false });
+          const normalizedName = normalizeName(q.clasificacionNombre);
+          let pointValue = q.puntos;
+
+          if (normalizedName === 'CL' || normalizedName === 'RL')
+            pointValue = 2;
+          if (normalizedName === 'CCP') pointValue = 3;
+
+          flattened.push({
+            ...q,
+            clasificacionNombre: normalizedName,
+            puntos: pointValue,
+            isSubPregunta: false,
+          });
         }
       });
       setQuestions(flattened);
@@ -157,18 +187,33 @@ const ResultadoPage = () => {
       }
     });
 
+    const manualScore = Object.values(classificationStats).reduce(
+      (acc, curr) => acc + curr.earnedPoints,
+      0
+    );
+
     return {
       correctas,
       incorrectas,
       omitidas,
       total,
       answered,
-      score: examResult.puntajeGlobal,
+      score: manualScore || examResult.puntajeGlobal,
       maxScore: maxScore || 200,
-      classStats: Object.entries(classificationStats).map(([name, data]) => ({
-        name,
-        ...data,
-      })),
+      classStats: Object.entries(classificationStats)
+        .map(([name, data]) => ({
+          name,
+          ...data,
+        }))
+        .sort((a, b) => {
+          const order = ['CL', 'RL', 'CCP'];
+          const idxA = order.indexOf(a.name);
+          const idxB = order.indexOf(b.name);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return a.name.localeCompare(b.name);
+        }),
     };
   }, [examResult, questions]);
 
@@ -345,8 +390,11 @@ const ResultadoPage = () => {
                     <p className="text-xl font-bold text-[#4790FD]">
                       {c.earnedPoints.toFixed(1)}
                     </p>
-                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                      {c.name} (Pts)
+                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest flex flex-col items-center">
+                      <span>{c.name} (Pts)</span>
+                      <span className="text-[7px] text-blue-300 lowercase font-normal italic">
+                        Valor: {c.name === 'CCP' ? '3.0' : '2.0'}
+                      </span>
                     </p>
                   </div>
                 ))}
