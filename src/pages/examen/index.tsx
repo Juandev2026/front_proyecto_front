@@ -92,6 +92,32 @@ const ExamenPage = () => {
       parsedQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
           q.subPreguntas.forEach((sub: any) => {
+            const normalizedName =
+              (sub.clasificacionNombre || q.clasificacionNombre || '')
+                .toUpperCase()
+                .includes('COMPRENSIÓN') ||
+              (sub.clasificacionNombre || q.clasificacionNombre || '')
+                .toUpperCase()
+                .includes('RAZONAMIENTO')
+                ? (sub.clasificacionNombre || q.clasificacionNombre || '')
+                    .toUpperCase()
+                    .includes('COMPRENSIÓN')
+                  ? 'CL'
+                  : 'RL'
+                : (sub.clasificacionNombre || q.clasificacionNombre || '')
+                    .toUpperCase()
+                    .includes('CCP') ||
+                  (sub.clasificacionNombre || q.clasificacionNombre || '')
+                    .toUpperCase()
+                    .includes('PEDAGÓGICO')
+                ? 'CCP'
+                : sub.clasificacionNombre || q.clasificacionNombre || '';
+
+            let pointValue = sub.puntos ?? q.puntos;
+            if (normalizedName === 'CL' || normalizedName === 'RL')
+              pointValue = 2;
+            if (normalizedName === 'CCP') pointValue = 3;
+
             flattened.push({
               ...q,
               id: sub.id || q.id,
@@ -107,22 +133,47 @@ const ExamenPage = () => {
                 sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
               alternativaD:
                 sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
-              idAlternativaA: sub.idAlternativaA || sub.alternativas?.[0]?.id,
-              idAlternativaB: sub.idAlternativaB || sub.alternativas?.[1]?.id,
-              idAlternativaC: sub.idAlternativaC || sub.alternativas?.[2]?.id,
-              idAlternativaD: sub.idAlternativaD || sub.alternativas?.[3]?.id,
-              puntos: sub.puntos ?? q.puntos,
+              idAlternativaA: sub.idAlternativaA ?? sub.alternativas?.[0]?.id,
+              idAlternativaB: sub.idAlternativaB ?? sub.alternativas?.[1]?.id,
+              idAlternativaC: sub.idAlternativaC ?? sub.alternativas?.[2]?.id,
+              idAlternativaD: sub.idAlternativaD ?? sub.alternativas?.[3]?.id,
+              puntos: pointValue,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
               respuesta: sub.respuestaCorrecta || sub.respuesta || '',
               clasificacionId: sub.clasificacionId || q.clasificacionId,
-              clasificacionNombre: sub.clasificacionNombre || q.clasificacionNombre,
+              clasificacionNombre: normalizedName,
               isSubPregunta: true,
               subPreguntas: [],
             });
           });
         } else {
-          flattened.push({ ...q, isSubPregunta: false });
+          const normalizedName =
+            (q.clasificacionNombre || '').toUpperCase().includes('COMPRENSIÓN') ||
+            (q.clasificacionNombre || '').toUpperCase().includes('RAZONAMIENTO')
+              ? (q.clasificacionNombre || '').toUpperCase().includes('COMPRENSIÓN')
+                ? 'CL'
+                : 'RL'
+              : (q.clasificacionNombre || '').toUpperCase().includes('CCP') ||
+                (q.clasificacionNombre || '').toUpperCase().includes('PEDAGÓGICO')
+              ? 'CCP'
+              : q.clasificacionNombre || '';
+
+          let pointValue = q.puntos;
+          if (normalizedName === 'CL' || normalizedName === 'RL')
+            pointValue = 2;
+          if (normalizedName === 'CCP') pointValue = 3;
+
+          flattened.push({
+            ...q,
+            idAlternativaA: q.idAlternativaA ?? q.alternativas?.[0]?.id,
+            idAlternativaB: q.idAlternativaB ?? q.alternativas?.[1]?.id,
+            idAlternativaC: q.idAlternativaC ?? q.alternativas?.[2]?.id,
+            idAlternativaD: q.idAlternativaD ?? q.alternativas?.[3]?.id,
+            clasificacionNombre: normalizedName,
+            puntos: pointValue,
+            isSubPregunta: false,
+          });
         }
       });
 
@@ -242,14 +293,14 @@ const ExamenPage = () => {
     );
 
     const idKey = `idAlternativa${option}` as keyof PreguntaExamen;
-    const alternativaId = currentQuestion[idKey];
+    const alternativaId = currentQuestion[idKey] as number | undefined;
 
     setRespuestas((prev) => ({
       ...prev,
       [key]: {
         examenId: currentQuestion.examenId,
         alternativa: option,
-        alternativaId: Number(alternativaId) || 0,
+        alternativaId: alternativaId ?? 0,
       },
     }));
   };
@@ -355,13 +406,14 @@ const ExamenPage = () => {
         const data = respuestas[key];
 
         // El backend espera el ID de la alternativa marcada como número o null si no se marcó
-        const finalAnswer = data?.alternativaId
-          ? Number(data.alternativaId)
-          : null;
+        const finalAnswer =
+          data && data.alternativaId !== undefined && data.alternativaId !== null
+            ? Number(data.alternativaId)
+            : null;
 
         return {
-          preguntaId: q.preguntaId || q.id,
-          subPreguntaNumero: null, // Evitamos '0' o indices que confundan el grading
+          preguntaId: Number(q.preguntaId || q.id),
+          subPreguntaNumero: (q as any).isSubPregunta ? (q as any).numeroSubPregunta : null,
           alternativaMarcada: finalAnswer,
         };
       });

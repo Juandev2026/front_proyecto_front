@@ -84,10 +84,10 @@ const ResultadoPage = () => {
                 sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
               alternativaD:
                 sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
-              idAlternativaA: sub.idAlternativaA || sub.alternativas?.[0]?.id,
-              idAlternativaB: sub.idAlternativaB || sub.alternativas?.[1]?.id,
-              idAlternativaC: sub.idAlternativaC || sub.alternativas?.[2]?.id,
-              idAlternativaD: sub.idAlternativaD || sub.alternativas?.[3]?.id,
+              idAlternativaA: sub.idAlternativaA ?? sub.alternativas?.[0]?.id,
+              idAlternativaB: sub.idAlternativaB ?? sub.alternativas?.[1]?.id,
+              idAlternativaC: sub.idAlternativaC ?? sub.alternativas?.[2]?.id,
+              idAlternativaD: sub.idAlternativaD ?? sub.alternativas?.[3]?.id,
               puntos: pointValue,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
               numeroSubPregunta: sub.numero,
@@ -108,6 +108,10 @@ const ResultadoPage = () => {
 
           flattened.push({
             ...q,
+            idAlternativaA: q.idAlternativaA ?? q.alternativas?.[0]?.id,
+            idAlternativaB: q.idAlternativaB ?? q.alternativas?.[1]?.id,
+            idAlternativaC: q.idAlternativaC ?? q.alternativas?.[2]?.id,
+            idAlternativaD: q.idAlternativaD ?? q.alternativas?.[3]?.id,
             clasificacionNombre: normalizedName,
             puntos: pointValue,
             isSubPregunta: false,
@@ -160,7 +164,11 @@ const ResultadoPage = () => {
     const classificationStats: Record<
       string,
       { points: number; correct: number; total: number; earnedPoints: number }
-    > = {};
+    > = {
+      CL: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
+      RL: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
+      CCP: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
+    };
 
     questions.forEach((q) => {
       const className = q.clasificacionNombre || 'Otros';
@@ -388,12 +396,12 @@ const ResultadoPage = () => {
                 {stats?.classStats.map((c) => (
                   <div key={c.name} className="space-y-1">
                     <p className="text-xl font-bold text-[#4790FD]">
-                      {c.earnedPoints.toFixed(1)}
+                      {c.name === 'CCP' ? '3.0' : '2.0'}
                     </p>
                     <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest flex flex-col items-center">
-                      <span>{c.name} (Pts)</span>
+                      <span>{c.name}</span>
                       <span className="text-[7px] text-blue-300 lowercase font-normal italic">
-                        Valor: {c.name === 'CCP' ? '3.0' : '2.0'}
+                        Valor por pregunta
                       </span>
                     </p>
                   </div>
