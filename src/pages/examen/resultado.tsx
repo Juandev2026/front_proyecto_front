@@ -395,14 +395,11 @@ const ResultadoPage = () => {
                 </div>
                 {stats?.classStats.map((c) => (
                   <div key={c.name} className="space-y-1">
-                    <p className="text-xl font-bold text-[#4790FD]">
+                    <p className="text-2xl font-black text-[#4790FD]">
                       {c.name === 'CCP' ? '3.0' : '2.0'}
                     </p>
-                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest flex flex-col items-center">
-                      <span>{c.name}</span>
-                      <span className="text-[7px] text-blue-300 lowercase font-normal italic">
-                        Valor por pregunta
-                      </span>
+                    <p className="text-sm text-gray-500 font-black uppercase tracking-widest">
+                      {c.name}
                     </p>
                   </div>
                 ))}
