@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 import {
   ClockIcon,
@@ -49,6 +49,7 @@ const ExamenPage = () => {
     null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
 
   // Timer State
   const [seconds, setSeconds] = useState(0);
@@ -290,6 +291,18 @@ const ExamenPage = () => {
       setCurrentIndex((prev) => prev + 1);
       window.speechSynthesis.cancel();
       setIsReading(false);
+      // Subir la vista al cambiar de pregunta
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      // Subir la vista al cambiar de pregunta
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -336,7 +349,6 @@ const ExamenPage = () => {
         ?.trim() || '0';
       const examYear = parseInt(examYearRaw, 10) || 0;
 
-      const isMultiYear = (metadata && String(metadata.year).includes(',')) || metadata?.isSimulacro;
 
       const respuestasPayload = questions.map((q, index) => {
         const key = String(index);
@@ -452,6 +464,7 @@ const ExamenPage = () => {
 
   return (
     <PremiumLayout title="Examen" breadcrumb="Pages / Examen">
+      <div ref={topRef} className="h-0 w-0" />
       <Head>
         <title>Examen - Avendocente</title>
       </Head>
@@ -779,9 +792,7 @@ const ExamenPage = () => {
 
                 <div className="mt-8 flex items-center justify-between gap-4">
                   <button
-                    onClick={() =>
-                      setCurrentIndex((prev) => Math.max(0, prev - 1))
-                    }
+                    onClick={handlePrevious}
                     disabled={currentIndex === 0}
                     className="px-6 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
@@ -958,6 +969,8 @@ const ExamenPage = () => {
                           setCurrentIndex(i);
                           window.speechSynthesis.cancel();
                           setIsReading(false);
+                          // Subir la vista al navegar desde el panel
+                          topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }}
                         className={`
                              h-10 w-full rounded-xl flex items-center justify-center text-sm font-black transition-all duration-200 border-2
