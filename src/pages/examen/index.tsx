@@ -91,11 +91,10 @@ const ExamenPage = () => {
       parsedQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
           q.subPreguntas.forEach((sub: any) => {
-            const compositeId = sub.numero ? `${q.id}-${sub.numero}` : String(sub.id || q.id);
             flattened.push({
               ...q,
-              id: compositeId,
-              preguntaId: q.id, // ID del padre para el backend
+              id: sub.id || q.id,
+              preguntaId: sub.id || q.id,
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
@@ -349,16 +348,16 @@ const ExamenPage = () => {
           : null;
 
         return {
-          preguntaId: q.preguntaId || Number(String(q.id).split('-')[0]),
-          subPreguntaNumero: (q as any).isSubPregunta ? (q as any).numeroSubPregunta : null,
+          preguntaId: q.preguntaId || q.id,
+          subPreguntaNumero: null, // Evitamos '0' o indices que confundan el grading
           alternativaMarcada: finalAnswer,
         };
       });
 
       const payload: SolucionExamenRequest = {
-        examenId: isMultiYear ? 0 : (firstQuestion?.examenId || 0),
+        examenId: firstQuestion?.examenId || 0,
         userId: user?.id || 0,
-        year: isMultiYear ? 0 : examYear,
+        year: examYear || 0,
         respuestas: respuestasPayload,
       };
 

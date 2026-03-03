@@ -145,11 +145,10 @@ const ResultadoPage = () => {
       classificationStats[className].total += 1;
       classificationStats[className].points += Number(q.puntos) || 0;
 
-      const subNum = (q as any).numeroSubPregunta;
-      const backendKey = subNum ? `${q.id}-${subNum}` : String(q.id);
+      const backendKey = Number(q.id);
 
       const isCorrect = examResult.resultados.some((r) =>
-        r.idsCorrectas.some((id) => String(id) === backendKey)
+        r.idsCorrectas.some((id) => Number(id) === backendKey)
       );
 
       if (isCorrect) {
@@ -179,28 +178,31 @@ const ResultadoPage = () => {
   ): 'correct' | 'incorrect' | 'omitted' => {
     if (!examResult) return 'omitted';
 
-    const subNum = (q as any).numeroSubPregunta;
-    const backendKey = subNum ? `${q.id}-${subNum}` : String(q.id);
+    const backendKey = Number(q.id);
 
     // Buscamos en todos los bloques de resultados (por clasificación)
     const matchedResult = examResult.resultados.find((r) => {
       return (
-        r.idsCorrectas.some((id) => String(id) === backendKey) ||
-        r.idsIncorrectas.some((id) => String(id) === backendKey) ||
-        r.idsOmitidas.some((id) => String(id) === backendKey)
+        r.idsCorrectas.some((id) => Number(id) === backendKey) ||
+        r.idsIncorrectas.some((id) => Number(id) === backendKey) ||
+        r.idsOmitidas.some((id) => Number(id) === backendKey)
       );
     });
 
     if (matchedResult) {
-      if (matchedResult.idsCorrectas.some((id) => String(id) === backendKey)) {
+      if (
+        matchedResult.idsCorrectas.some((id) => Number(id) === backendKey)
+      ) {
         return 'correct';
       }
       if (
-        matchedResult.idsIncorrectas.some((id) => String(id) === backendKey)
+        matchedResult.idsIncorrectas.some((id) => Number(id) === backendKey)
       ) {
         return 'incorrect';
       }
-      if (matchedResult.idsOmitidas.some((id) => String(id) === backendKey)) {
+      if (
+        matchedResult.idsOmitidas.some((id) => Number(id) === backendKey)
+      ) {
         return 'omitted';
       }
     }
@@ -219,7 +221,7 @@ const ResultadoPage = () => {
   if (!isMounted || loading || !isAuthenticated || !examResult) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#002B6B]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
@@ -235,7 +237,7 @@ const ResultadoPage = () => {
 
       <div className="w-full px-4 md:px-8 space-y-8 pb-20">
         {/* Header Title */}
-        <div className="bg-[#002B6B] text-white p-4 rounded-xl shadow-lg border-b-4 border-blue-900 flex justify-center items-center">
+        <div className="bg-[#4790FD] text-white p-4 rounded-xl shadow-lg border-b-4 border-blue-300 flex justify-center items-center">
           <h1 className="text-xl font-black uppercase tracking-widest">
             Resultados del examen
           </h1>
@@ -314,7 +316,7 @@ const ResultadoPage = () => {
                     Omitidas
                   </span>
                 </div>
-                <div className="flex flex-col items-center text-[#002B6B]">
+                <div className="flex flex-col items-center text-[#4790FD]">
                   <span className="text-2xl font-black">{stats?.total}</span>
                   <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                     Total
@@ -340,7 +342,7 @@ const ResultadoPage = () => {
                 </div>
                 {stats?.classStats.map((c) => (
                   <div key={c.name} className="space-y-1">
-                    <p className="text-xl font-bold text-[#002B6B]">
+                    <p className="text-xl font-bold text-[#4790FD]">
                       {c.earnedPoints.toFixed(1)}
                     </p>
                     <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
@@ -377,7 +379,7 @@ const ResultadoPage = () => {
                   errores es la clave del éxito
                 </div>
               </div>
-              <button className="bg-[#002B6B] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap">
+              <button className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap">
                 Ver Respuestas Erróneas
               </button>
             </div>
@@ -391,15 +393,15 @@ const ResultadoPage = () => {
                 Acciones
               </div>
               <button
-                onClick={() => router.push('/simulacroExamen')}
-                className="w-full py-3 border border-blue-100 rounded-xl text-[#002B6B] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                onClick={() => router.push('/examen')}
+                className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
               >
                 <RefreshIcon className="w-3 h-3" />
                 Dar nuevo examen
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="w-full py-3 border border-blue-100 rounded-xl text-[#002B6B] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
               >
                 <ArrowLeftIcon className="w-3 h-3" />
                 Volver al inicio
@@ -516,8 +518,8 @@ const ResultadoPage = () => {
 
         {/* --- REVIEW SECTION --- */}
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden mt-12">
-          <div className="bg-gradient-to-r from-[#002B6B]/5 to-transparent p-6 border-b border-gray-100 flex flex-col items-center gap-4">
-            <h2 className="text-2xl font-black text-[#002B6B] uppercase tracking-[0.2em]">
+          <div className="bg-gradient-to-r from-[#4790FD]/10 to-transparent p-6 border-b border-gray-100 flex flex-col items-center gap-4">
+            <h2 className="text-2xl font-black text-[#4790FD] uppercase tracking-[0.2em]">
               Revisión de Respuestas
             </h2>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -608,7 +610,7 @@ const ResultadoPage = () => {
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-50 pb-4">
                       <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-full bg-blue-100 text-[#002B6B] flex items-center justify-center font-bold text-sm shadow-inner">
+                        <span className="w-8 h-8 rounded-full bg-blue-50 text-[#4790FD] flex items-center justify-center font-bold text-sm shadow-inner">
                           {idx + 1}
                         </span>
                         <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
