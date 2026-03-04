@@ -24,8 +24,18 @@ interface FilterOption {
   nombre: string;
 }
 
+// Fixed missing type for modal headings
+interface UserExamen {
+  modalidadId: number;
+  modalidadNombre: string;
+  nivelId: number;
+  nivelNombre: string;
+  especialidadId?: number;
+  especialidadNombre?: string;
+}
+
 const BancoPreguntasPage = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, refreshAuth } = useAuth();
   const router = useRouter();
 
   // Fresh examenes fetched directly from API on page load (not from login cache)
@@ -70,46 +80,68 @@ const BancoPreguntasPage = () => {
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
     setIsFetchingExamenes(true);
+    
+    // Also sync the global auth context to ensure user permissions are up to date
+    refreshAuth().catch(() => {});
+
     authService
       .getUserFilters(user.id)
       .then((filters) => {
         const rawExamenes = filters.examenes || [];
+        const apiUser = (filters as any).user || user;
 
         // Build Nombramiento/Ascenso entries from userExamenes if missing
-        const userExamenesList: any[] = (filters.user as any)?.userExamenes || user?.userExamenes || [];
-        const accesoNombres: string[] = user?.accesoNombres || [];
-        const hasNombramiento = rawExamenes.some((e: any) => String(e.tipoExamenId) === '2');
-        const hasAscenso = rawExamenes.some((e: any) => String(e.tipoExamenId) === '1');
+        const userExamenesList: any[] = apiUser?.userExamenes || [];
+        const accesoNombres: string[] = apiUser?.accesoNombres || [];
         const canNombramiento = accesoNombres.some((a) => a.toLowerCase().includes('nombramiento'));
         const canAscenso = accesoNombres.some((a) => a.toLowerCase().includes('ascenso'));
 
-        const extra: any[] = [];
-        if (!hasNombramiento && canNombramiento && userExamenesList.length > 0) {
-          userExamenesList.forEach((ue: any, idx: number) => {
-            extra.push({
-              id: -(idx + 1), tipoExamenId: 2, tipoExamenNombre: 'Nombramiento',
-              fuenteId: 1, fuenteNombre: 'MINEDU Nombramiento',
-              modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
-              nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
-              especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
-              years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
-            });
-          });
-        }
-        if (!hasAscenso && canAscenso && userExamenesList.length > 0) {
-          userExamenesList.forEach((ue: any, idx: number) => {
-            extra.push({
-              id: -(idx + 500), tipoExamenId: 1, tipoExamenNombre: 'Ascenso',
-              fuenteId: 2, fuenteNombre: 'MINEDU Ascenso',
-              modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
-              nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
-              especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
-              years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
-            });
+        // Combinamos lo que viene de la API con lo que el usuario tiene en su perfil (userExamenes)
+        const combined = [...rawExamenes];
+
+        if (userExamenesList.length > 0) {
+          userExamenesList.forEach((ue: UserExamen, idx: number) => {
+            // Si el usuario tiene acceso a Nombramiento, aseguramos que esta modalidad/nivel de su perfil esté presente
+            if (canNombramiento) {
+              const exists = combined.some(e => 
+                String(e.tipoExamenId) === '2' && 
+                Number(e.modalidadId) === Number(ue.modalidadId) && 
+                Number(e.nivelId) === Number(ue.nivelId || 0)
+              );
+              if (!exists && ue.modalidadNombre) {
+                combined.push({
+                  id: -(idx + 1000), tipoExamenId: 2, tipoExamenNombre: 'Nombramiento',
+                  fuenteId: 1, fuenteNombre: 'MINEDU Nombramiento',
+                  modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
+                  nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
+                  especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
+                  years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+                });
+              }
+            }
+            // Lo mismo para Ascenso
+            if (canAscenso) {
+              const exists = combined.some(e => 
+                String(e.tipoExamenId) === '1' && 
+                Number(e.modalidadId) === Number(ue.modalidadId) && 
+                Number(e.nivelId) === Number(ue.nivelId || 0)
+              );
+              if (!exists && ue.modalidadNombre) {
+                combined.push({
+                  id: -(idx + 2000), tipoExamenId: 1, tipoExamenNombre: 'Ascenso',
+                  fuenteId: 2, fuenteNombre: 'MINEDU Ascenso',
+                  modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
+                  nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
+                  especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
+                  years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+                });
+              }
+            }
           });
         }
 
-        setExamenes([...rawExamenes, ...extra]);
+        setExamenes(combined);
+        localStorage.setItem('examenes', JSON.stringify(combined)); // Update cache too
       })
       .catch((err) => {
         console.error('Error fetching fresh examenes:', err);
@@ -234,19 +266,19 @@ const BancoPreguntasPage = () => {
           (!selectedEspecialidadId ||
             String(e.especialidadId) === selectedEspecialidadId)
       )
-      .forEach((e) => {
+      .forEach((e: any) => {
         if (e.years && e.years.length > 0) {
-          e.years.forEach((y) => set.add(String(y.year)));
+          e.years.forEach((y: any) => set.add(String(y.year)));
         } else if (e.year !== undefined && e.year !== null) {
           set.add(String(e.year));
         }
       });
     return Array.from(set)
       .filter((y) => y !== 'null' && y !== 'undefined')
-      .map((y) => (y === '0' ? 'Ãšnico' : y))
+      .map((y) => (y === '0' ? 'Único' : y))
       .sort((a, b) => {
-        if (a === 'Ãšnico') return 1;
-        if (b === 'Ãšnico') return -1;
+        if (a === 'Único') return 1;
+        if (b === 'Único') return -1;
         return Number(b) - Number(a);
       });
   }, [
@@ -308,16 +340,16 @@ const BancoPreguntasPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : !e.especialidadId || e.especialidadId === 0) &&
-          ((selectedYear === 'Ãšnico' &&
+          ((selectedYear === 'Único' &&
             (e.year === '0' || Number(e.year) === 0)) ||
             String(e.year) === selectedYear ||
-            e.years?.some((y) => String(y.year) === selectedYear))
+            e.years?.some((y: any) => String(y.year) === selectedYear))
       );
 
       if (exam && exam.clasificaciones) {
         const countMap: any = {};
 
-        exam.clasificaciones.forEach((item) => {
+        exam.clasificaciones.forEach((item: any) => {
           const name = item.clasificacionNombre;
 
           if (name) {
@@ -333,14 +365,14 @@ const BancoPreguntasPage = () => {
             if (isUnico || !item.years || item.years.length === 0) {
               cantidadExacta = item.cantidadPreguntas;
             } else {
-              // Buscar específicamente el año en el array de la clasificaciÃ³n
+              // Buscar específicamente el año en el array de la clasificación
               const yearData = item.years.find(
                 (y: any) => String(y.year) === selectedYear
               );
               cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
             }
 
-            // Evitar duplicados si la API mandara la misma clasificaciÃ³n dos veces por error
+            // Evitar duplicados si la API mandara la misma clasificación dos veces por error
             if (!countMap[name]) {
               countMap[name] = {
                 cantidad: cantidadExacta,
@@ -356,9 +388,9 @@ const BancoPreguntasPage = () => {
         });
         setConteoPreguntas(countMap);
 
-        setTiposPregunta((prev) => {
+        setTiposPregunta((prev: any) => {
           const nextTipos: Record<string, boolean> = { ...prev };
-          exam.clasificaciones.forEach((item) => {
+          exam.clasificaciones.forEach((item: any) => {
             const name = item.clasificacionNombre;
             if (name && countMap[name]) {
               const cantidadExacta = countMap[name].cantidad;
@@ -423,27 +455,27 @@ const BancoPreguntasPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : true) &&
-          ((selectedYear === 'Ãšnico' &&
+          ((selectedYear === 'Único' &&
             (e.year === '0' || Number(e.year) === 0)) ||
             String(e.year) === selectedYear ||
-            e.years?.some((y) => String(y.year) === selectedYear))
+            e.years?.some((y: any) => String(y.year) === selectedYear))
       );
 
       // Si no encuentra el examen en la memoria, no podemos armar el payload
       if (!exam) {
         alert(
-          'Error de sincronizaciÃ³n: No se encontrÃ³ la metadata del examen.'
+          'Error de sincronización: No se encontró la metadata del examen.'
         );
         setIsLoading(false);
         return;
       }
 
-      const finalYearValue = selectedYear === 'Ãšnico' ? '0' : selectedYear;
+      const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
 
       // 2. Extraemos los ClasificacionIds (Igual que antes)
       const clasificacionIds: number[] = [];
       if (exam.clasificaciones) {
-        exam.clasificaciones.forEach((c) => {
+        exam.clasificaciones.forEach((c: any) => {
           if (tiposPregunta[c.clasificacionNombre]) {
             clasificacionIds.push(c.clasificacionId);
           }
@@ -456,9 +488,9 @@ const BancoPreguntasPage = () => {
         fuenteId: exam.fuenteId || 0, // <-- Aseguramos que vaya
         modalidadId: exam.modalidadId,
         nivelId: exam.nivelId,
-        especialidadId: exam.especialidadId || 0, // Si es null, enviamos 0 segÃºn tu JSON
+        especialidadId: exam.especialidadId || 0, // Si es null, enviamos 0 según tu JSON
         year: finalYearValue,
-        clasificaciones: clasificacionIds, // AsegÃºrate de que tu API reciba este array para filtrar por RL, CL, CCP
+        clasificaciones: clasificacionIds, // Asegúrate de que tu API reciba este array para filtrar por RL, CL, CCP
       };
 
       console.log('Enviando filtro a la API:', payloadFiltro);
@@ -478,7 +510,7 @@ const BancoPreguntasPage = () => {
             String(q.year) === finalYearValue ||
             String(q.anio) === finalYearValue;
 
-          // 2. Filtrar por tipo de pregunta (ComprensiÃ³n, Razonamiento, etc)
+          // 2. Filtrar por tipo de pregunta (Comprensión, Razonamiento, etc)
           const matchClass =
             clasificacionIds.length === 0 ||
             (q.clasificacionId !== undefined &&
@@ -488,7 +520,7 @@ const BancoPreguntasPage = () => {
         });
       }
 
-      console.log(`Preguntas despuÃ©s del filtro local: ${questions.length}`);
+      console.log(`Preguntas después del filtro local: ${questions.length}`);
       // ------------------------------------------------------------------------
 
       // 5. Guardar metadata y redirigir
@@ -768,27 +800,27 @@ const BancoPreguntasPage = () => {
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 <span className="bg-blue-100/50 text-blue-500 border border-blue-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-blue-400">ðŸ“</span>{' '}
+                                  <span className="text-blue-400">📝</span>{' '}
                                   {data.cantidad} preguntas
                                 </span>
                                 <span className="bg-green-100/50 text-green-600 border border-green-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-green-500">â­</span>{' '}
+                                  <span className="text-green-500">⭐</span>{' '}
                                   {data.puntos} pts/correcta
                                 </span>
                                 <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-purple-400">ðŸŽ¯</span>{' '}
+                                  <span className="text-purple-400">🎯</span>{' '}
                                   Máx: {data.cantidad * data.puntos} pts
                                 </span>
                                 <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-orange-400">âœ…</span>{' '}
+                                  <span className="text-orange-400">✅</span>{' '}
                                   Mínimo: {data.minimo} pts
                                 </span>
                                 <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-yellow-500">â±ï¸</span>{' '}
+                                  <span className="text-yellow-500">⏱️</span>{' '}
                                   {data.tiempoPregunta} min/pregunta
                                 </span>
                                 <span className="bg-red-100/50 text-red-500 border border-red-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-red-400">â°</span>{' '}
+                                  <span className="text-red-400">⏰</span>{' '}
                                   Total: {data.cantidad * data.tiempoPregunta}{' '}
                                   min
                                 </span>
@@ -803,14 +835,14 @@ const BancoPreguntasPage = () => {
                     {/* Resumen Total */}
                     <div className="bg-[#FAFBFD] border border-gray-200 rounded-lg p-4 mt-2">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="text-lg">ðŸ“Š</div>
+                        <div className="text-lg">📊</div>
                         <span className="font-bold text-[#2B3674]">
                           Resumen Total
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>ðŸ“</span>{' '}
+                          <span>📝</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name] ? acc + curr.cantidad : acc,
@@ -819,7 +851,7 @@ const BancoPreguntasPage = () => {
                           preguntas totales
                         </span>
                         <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>â±ï¸</span>{' '}
+                          <span>⏱️</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name]
@@ -830,7 +862,7 @@ const BancoPreguntasPage = () => {
                           min totales
                         </span>
                         <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>ðŸŽ¯</span>{' '}
+                          <span>🎯</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name]
@@ -841,7 +873,7 @@ const BancoPreguntasPage = () => {
                           pts máximo
                         </span>
                         <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>âœ…</span>{' '}
+                          <span>✅</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name] ? acc + curr.minimo : acc,
