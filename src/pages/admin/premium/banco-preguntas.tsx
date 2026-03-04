@@ -283,6 +283,7 @@ const Recursos = () => {
   const [enunciadoImages, setEnunciadoImages] = React.useState<string[]>([]);
   const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] =
     React.useState(false);
+  const [enunciadoIsGray, setEnunciadoIsGray] = useState(false);
 
   const handleEnunciadoImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -398,6 +399,8 @@ const Recursos = () => {
     return selectedTipoNombre.toLowerCase().includes('directivo');
   }, [selectedTipoNombre]);
 
+
+
   const stripHtml = (html: string) => {
     if (!html) return '';
     if (typeof window === 'undefined') return html;
@@ -497,9 +500,14 @@ const Recursos = () => {
   // --- CASCADING LOGIC ---
   const availableFuentes = useMemo(() => {
     if (!selectedTipo) return [];
-    return (
+    const fuentes =
       groupedData.find((t) => t.tipoExamenId === Number(selectedTipo))
-        ?.fuentes || []
+        ?.fuentes || [];
+    return fuentes.filter(
+      (f: any) =>
+        f.fuenteNombre &&
+        f.fuenteNombre !== 'string' &&
+        f.fuenteNombre.toLowerCase() !== 'null'
     );
   }, [groupedData, selectedTipo]);
 
@@ -508,23 +516,38 @@ const Recursos = () => {
     const mods =
       availableFuentes.find((f: any) => f.fuenteId === Number(selectedFuente))
         ?.modalidades || [];
-    return [...mods];
+    return mods.filter(
+      (m: any) =>
+        m.modalidadNombre &&
+        m.modalidadNombre !== 'string' &&
+        m.modalidadNombre.toUpperCase() !== 'NINGUNO'
+    );
   }, [availableFuentes, selectedFuente]);
 
   const availableNiveles = useMemo(() => {
     if (!selectedModalidad) return [];
-    return (
+    const nivs =
       availableModalidades.find(
         (m: any) => m.modalidadId === Number(selectedModalidad)
-      )?.niveles || []
+      )?.niveles || [];
+    return nivs.filter(
+      (n: any) =>
+        n.nivelNombre &&
+        n.nivelNombre.toUpperCase() !== 'NINGUNO' &&
+        n.nivelNombre !== 'string'
     );
   }, [availableModalidades, selectedModalidad]);
 
   const availableEspecialidades = useMemo(() => {
     if (!selectedNivel) return [];
-    return (
+    const esps =
       availableNiveles.find((n: any) => n.nivelId === Number(selectedNivel))
-        ?.especialidades || []
+        ?.especialidades || [];
+    return esps.filter(
+      (e: any) =>
+        e.especialidadNombre &&
+        e.especialidadNombre !== 'string' &&
+        e.especialidadNombre.toLowerCase() !== 'null'
     );
   }, [availableNiveles, selectedNivel]);
 
@@ -655,6 +678,30 @@ const Recursos = () => {
     loginExamenes,
     userRole,
     groupedData
+  ]);
+
+  const selectedFuenteNombre = useMemo(() => {
+    if (!selectedFuente) return '';
+    for (const tipo of groupedData) {
+      const f = tipo.fuentes.find(
+        (fu) => fu.fuenteId === Number(selectedFuente)
+      );
+      if (f) return f.fuenteNombre;
+    }
+    return '';
+  }, [groupedData, selectedFuente]);
+
+  const showYearFilter = useMemo(() => {
+    if (!selectedFuente) return false;
+    const isMinedu = selectedFuenteNombre.toUpperCase().includes('MINEDU');
+    const isDirectivoLocal =
+      selectedTipoNombre.toUpperCase().includes('DIRECTIVO');
+    return availableYears.length > 0 || isMinedu || isDirectivoLocal;
+  }, [
+    selectedFuente,
+    selectedFuenteNombre,
+    selectedTipoNombre,
+    availableYears,
   ]);
 
   // --- CONTINUOUS INDEXING LOGIC ---
@@ -802,6 +849,19 @@ const Recursos = () => {
           }
         }
       });
+
+      // Detect "Texto en gris"
+      const grayWrapper = div.querySelector('div.bg-gray-100');
+      if (grayWrapper) {
+        setEnunciadoIsGray(true);
+        // Replace the wrapper with its content to keep the HTML for the editor
+        const content = grayWrapper.innerHTML;
+        grayWrapper.insertAdjacentHTML('beforebegin', content);
+        grayWrapper.remove();
+      } else {
+        setEnunciadoIsGray(false);
+      }
+
       cleanedEnunciado = div.innerHTML;
     }
 
@@ -934,7 +994,7 @@ const Recursos = () => {
     resetForm();
     setNewItem((prev) => ({
       ...prev,
-      examenId: Number(selectedFuente) || 0,
+      examenId: 0,
     }));
     setViewMode('create');
   };
@@ -1083,10 +1143,10 @@ const Recursos = () => {
         tipoExamenId: Number(selectedTipo),
         fuenteId: Number(selectedFuente),
         modalidadId: Number(selectedModalidad),
-        nivelId: selectedNivel ? Number(selectedNivel) : null,
+        nivelId: selectedNivel ? Number(selectedNivel) : 0,
         especialidadId: selectedEspecialidad
           ? Number(selectedEspecialidad)
-          : null,
+          : 0,
       });
       alert('Año añadido con éxito.');
       setNewYearInput('');
@@ -1116,8 +1176,8 @@ const Recursos = () => {
         tipoExamenId: Number(selectedTipo),
         fuenteId: Number(selectedFuente),
         modalidadId: Number(selectedModalidad),
-        nivelId: selectedNivel ? Number(selectedNivel) : null,
-        especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : null,
+        nivelId: selectedNivel ? Number(selectedNivel) : 0,
+        especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : 0,
         year: isNaN(Number(selectedYear)) ? selectedYear : Number(selectedYear),
       };
 
@@ -1241,16 +1301,18 @@ const Recursos = () => {
 
   // --- HELPER TO RESOLVE EXAMEN ID ---
   const resolveCurrentExamenId = async (): Promise<number | null> => {
-    // Minimum required: tipo, fuente, and year
-    if (!selectedTipo || !selectedFuente || !selectedYear) {
+    // Minimum required: tipo and fuente
+    if (!selectedTipo || !selectedFuente) {
       return null;
     }
+
+    const effectiveYear = selectedYear || '0';
 
     // Determine the effective especialidadId:
     // If user explicitly selected one, use it.
     // If there's only one specialty and it has no real ID (null/0), treat as 0.
     // Otherwise (specialties exist but none selected), we can't resolve.
-    let effectiveEspecialidadId: number | null = null;
+    let effectiveEspecialidadId: number = 0;
     if (selectedEspecialidad) {
       effectiveEspecialidadId = Number(selectedEspecialidad);
     } else if (
@@ -1269,18 +1331,15 @@ const Recursos = () => {
     // Determine effective nivelId (0 if none available/needed)
     const effectiveNivelId = selectedNivel
       ? Number(selectedNivel)
-      : availableNiveles.length === 0
-      ? 0
-      : null;
-    if (effectiveNivelId === null) return null; // niveles exist but none chosen
+      : 0;
+    
+    // If levels exist but none chosen (and it's not EBR which usually needs them), this might be tricky.
+    // However, user specifically asked for 0 instead of null.
 
     // Determine effective modalidadId (0 if none available/needed)
     const effectiveModalidadId = selectedModalidad
       ? Number(selectedModalidad)
-      : availableModalidades.length === 0
-      ? 0
-      : null;
-    if (effectiveModalidadId === null) return null;
+      : 0;
 
     try {
       const allExams = await examenService.getAll();
@@ -1297,13 +1356,13 @@ const Recursos = () => {
           (effectiveEspecialidadId === 0
             ? !e.especialidadId || Number(e.especialidadId) === 0
             : Number(e.especialidadId) === effectiveEspecialidadId) &&
-          (String(e.year) === String(selectedYear) ||
+          (String(e.year) === effectiveYear ||
             (e.years &&
               Array.isArray(e.years) &&
               e.years.some(
                 (y: any) =>
-                  String(y) === String(selectedYear) ||
-                  String(y.year) === String(selectedYear)
+                  String(y) === effectiveYear ||
+                  String(y.year) === effectiveYear
               )))
       );
 
@@ -1423,16 +1482,18 @@ const Recursos = () => {
       const payload = {
         id: editingId || 0, // Mandatory 0 for POST
         examenId: targetExamenId,
-        year: selectedYear || '2024',
+        year: selectedYear || '0',
         numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
         respuesta: finalRespuesta,
         enunciados: [
           {
-            id: 0, // Server manages sequence
+            id: editingId ? 1 : 1, // Defaulting to 1 for structure as requested
             contenido:
-              newItem.enunciado +
+              (enunciadoIsGray
+                ? `<div class="bg-gray-100 p-4 rounded-lg my-2">${newItem.enunciado}</div>`
+                : newItem.enunciado) +
               (enunciadoImages.length > 0
                 ? enunciadoImages
                     .map(
@@ -1444,10 +1505,11 @@ const Recursos = () => {
           },
         ],
         alternativas: mappedAlternativas,
-        justificaciones: justificationBlocks.map((b) => ({
-          id: 0, // Server manages sequence
+        justificaciones: justificationBlocks.map((b, idx) => ({
+          id: idx + 1,
           contenido: b.content,
         })),
+        subPreguntas: [],
         imagen: finalUrl || '',
       };
 
@@ -1480,6 +1542,7 @@ const Recursos = () => {
         setViewMode('list');
       }
       resetForm();
+      setEnunciadoIsGray(false);
 
       if (stayInCreateMode) {
         setNumeroPregunta((numPreguntaParsed + 1).toString());
@@ -1661,13 +1724,13 @@ const Recursos = () => {
 
                 {/* 4. SECCIÓN ENUNCIADO (Estilo exacto a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <label className="text-gray-700 font-medium text-sm">
                       Enunciado de la pregunta
                     </label>
 
                     {/* Botones de Acción */}
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                       <button
                         onClick={() =>
                           setNewItem({
@@ -1675,14 +1738,14 @@ const Recursos = () => {
                             enunciado: newItem.enunciado || '<p> </p>',
                           })
                         }
-                        className="flex items-center gap-2 text-[#4790FD] border border-[#4790FD] px-4 py-1.5 rounded hover:bg-blue-50 text-sm font-medium transition-colors"
+                        className="flex items-center gap-2 text-[#4790FD] border border-[#4790FD] px-3 md:px-4 py-1.5 rounded hover:bg-blue-50 text-xs md:text-sm font-medium transition-colors"
                       >
                         <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
                       </button>
                       <button
                         onClick={() => enunciadoImageInputRef.current?.click()}
                         disabled={isUploadingEnunciadoImage}
-                        className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors disabled:opacity-60"
+                        className="flex items-center gap-2 text-gray-600 border border-gray-300 px-3 md:px-4 py-1.5 rounded hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors disabled:opacity-60"
                       >
                         {isUploadingEnunciadoImage ? (
                           <span className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full inline-block" />
@@ -1718,7 +1781,7 @@ const Recursos = () => {
                     </div>
                   ) : (
                     /* EDITOR DE ENUNCIADO */
-                    <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden">
+                    <div className={`quill-editor-container border border-gray-200 rounded-lg overflow-hidden ${enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}`}>
                       <ReactQuill
                         theme="snow"
                         value={newItem.enunciado}
@@ -1726,11 +1789,31 @@ const Recursos = () => {
                           setNewItem({ ...newItem, enunciado: val })
                         }
                         modules={modules}
-                        className="bg-white"
+                        className={enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}
                         placeholder="Escribe el enunciado aquí..."
                       />
                     </div>
                   )}
+
+                  <div className="mt-3">
+                        <label className="flex items-center gap-2 cursor-pointer group w-fit">
+                             <div className="relative flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:bg-primary checked:border-primary transition-all shadow-sm"
+                                    checked={enunciadoIsGray}
+                                    onChange={(e) => setEnunciadoIsGray(e.target.checked)}
+                                />
+                                <svg 
+                                    className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" 
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                                >
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                             </div>
+                             <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Texto en gris</span>
+                        </label>
+                  </div>
 
                   {/* Imágenes cargadas en el enunciado */}
                   {enunciadoImages.length > 0 && (
@@ -1878,18 +1961,18 @@ const Recursos = () => {
                   </h3>
 
                   {/* Controls */}
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     <button
                       type="button"
                       onClick={addJustificationText}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-xs md:text-sm font-medium"
                     >
                       <MenuAlt2Icon className="w-4 h-4" /> Añadir Texto
                     </button>
                     <button
                       type="button"
                       onClick={() => justificationFileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-sm font-medium"
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-sky-200 text-sky-600 rounded-lg hover:bg-sky-50 transition-colors text-xs md:text-sm font-medium"
                     >
                       <PhotographIcon className="w-4 h-4" /> Añadir Imagen
                     </button>
@@ -1950,18 +2033,18 @@ const Recursos = () => {
                 </div>
 
                 {/* 6. FOOTER ACTIONS */}
-                <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex justify-end gap-4 md:px-10">
+                <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex flex-col sm:flex-row justify-end gap-3 md:px-10">
                   <button
                     onClick={() => handleSubmit(undefined, false)}
                     disabled={isSaving}
-                    className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50"
+                    className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                   >
                     {isSaving ? 'Guardando...' : 'Guardar Pregunta'}
                   </button>
                   <button
                     onClick={() => handleSubmit(undefined, true)}
                     disabled={isSaving}
-                    className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50"
+                    className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                   >
                     {isSaving ? 'Guardando...' : 'Guardar y Añadir otra'}
                   </button>
@@ -1991,12 +2074,12 @@ const Recursos = () => {
           <div className="bg-white rounded-lg shadow-sm border border-primary p-6">
             <div className="flex flex-col gap-4 mb-6">
               {/* 1. Tipo Examen */}
-              <div>
-                <label className="block text-sm font-semibold text-primary mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-primary">
                   Tipo Exámen <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   value={selectedTipo}
                   onChange={(e) => {
                     setSelectedTipo(
@@ -2019,12 +2102,12 @@ const Recursos = () => {
               </div>
 
               {/* 2. Sección Fuente */}
-              <div>
-                <label className="block text-sm font-semibold text-primary mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-primary">
                   Sección Fuente <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
                   value={selectedFuente}
                   onChange={(e) => {
                     setSelectedFuente(
@@ -2040,7 +2123,7 @@ const Recursos = () => {
                   <option value="">
                     {selectedTipo
                       ? 'Selecciona una sección'
-                      : 'Primero selecciona el tipo de examen'}
+                      : 'Primero selecciona tipo'}
                   </option>
                   {availableFuentes.map((f: any) => (
                     <option key={f.fuenteId} value={f.fuenteId}>
@@ -2051,35 +2134,37 @@ const Recursos = () => {
               </div>
 
               {/* 3. Modalidad */}
-              <div>
-                <label className="block text-sm font-semibold text-primary mb-2">
-                  {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
-                  value={selectedModalidad}
-                  onChange={(e) => {
-                    setSelectedModalidad(
-                      e.target.value ? Number(e.target.value) : ''
-                    );
-                    setSelectedNivel('');
-                    setSelectedEspecialidad('');
-                    setSelectedYear('');
-                  }}
-                  disabled={
-                    !selectedFuente || availableModalidades.length === 0
-                  }
-                >
-                  <option value="" disabled hidden>
-                    Seleccionar modalidad
-                  </option>
-                  {availableModalidades.map((m: any) => (
-                    <option key={m.modalidadId} value={m.modalidadId}>
-                      {m.modalidadNombre}
+              {availableModalidades.length > 0 && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-primary">
+                    {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+                    value={selectedModalidad}
+                    onChange={(e) => {
+                      setSelectedModalidad(
+                        e.target.value ? Number(e.target.value) : ''
+                      );
+                      setSelectedNivel('');
+                      setSelectedEspecialidad('');
+                      setSelectedYear('');
+                    }}
+                    disabled={
+                      !selectedFuente || availableModalidades.length === 0
+                    }
+                  >
+                    <option value="" disabled hidden>
+                      Seleccionar modalidad
                     </option>
-                  ))}
-                </select>
-              </div>
+                    {availableModalidades.map((m: any) => (
+                      <option key={m.modalidadId} value={m.modalidadId}>
+                        {m.modalidadNombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* 4. Nivel */}
               {availableNiveles.length > 0 &&
@@ -2087,12 +2172,12 @@ const Recursos = () => {
                   availableNiveles.length === 1 &&
                   availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO'
                 ) && (
-                  <div>
-                    <label className="block text-sm font-semibold text-primary mb-2">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-primary">
                       Nivel
                     </label>
                     <select
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                       value={selectedNivel}
                       onChange={(e) => {
                         setSelectedNivel(
@@ -2122,12 +2207,12 @@ const Recursos = () => {
                   availableEspecialidades.length === 1 &&
                   !availableEspecialidades[0]?.especialidadId
                 ) && (
-                  <div>
-                    <label className="block text-sm font-semibold text-primary mb-2">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-primary">
                       Especialidad
                     </label>
                     <select
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                       value={selectedEspecialidad}
                       onChange={(e) => {
                         setSelectedEspecialidad(
@@ -2161,13 +2246,16 @@ const Recursos = () => {
                 )}
 
               {/* 6. Año */}
-              {selectedModalidad && (
-                <div>
-                  <label className="block text-sm font-semibold text-primary mb-2">
+              {(selectedModalidad ||
+                (selectedFuente && availableModalidades.length === 0)) &&
+                showYearFilter &&
+                availableYears.length > 0 && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-primary">
                     Año
                   </label>
                   <select
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-blue-100 disabled:cursor-not-allowed"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
                   >
@@ -2183,32 +2271,41 @@ const Recursos = () => {
             </div>
 
             {/* New Row for Year Management */}
-            {selectedModalidad && (
-              <div className="flex items-end gap-2 mt-4">
-                <input
-                  type="text"
-                  placeholder="Nuevo año (ej: 2025)"
-                  className="w-full border border-primary rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  value={newYearInput}
-                  onChange={(e) => setNewYearInput(e.target.value)}
-                />
-                <button
-                  onClick={handleAddYear}
-                  className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors text-sm font-medium shadow-md whitespace-nowrap"
-                >
-                  Agregar Año
-                </button>
-                <button
-                  onClick={handleDeleteYear}
-                  disabled={!selectedYear}
-                  className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-md whitespace-nowrap ${
-                    !selectedYear
-                      ? 'bg-red-300 text-white cursor-not-allowed'
-                      : 'bg-red-500 text-white hover:bg-red-600'
-                  }`}
-                >
-                  Eliminar
-                </button>
+            {(selectedModalidad ||
+              (selectedFuente && availableModalidades.length === 0)) &&
+              showYearFilter && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 mt-6 border-t border-gray-100 pt-6">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
+                    Gestión de Años
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nuevo año (ej: 2025)"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    value={newYearInput}
+                    onChange={(e) => setNewYearInput(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddYear}
+                    className="flex-1 sm:flex-none bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all text-sm font-bold shadow-md whitespace-nowrap"
+                  >
+                    Agregar
+                  </button>
+                  <button
+                    onClick={handleDeleteYear}
+                    disabled={!selectedYear}
+                    className={`flex-1 sm:flex-none px-6 py-2 rounded-lg transition-all text-sm font-bold shadow-md whitespace-nowrap ${
+                      !selectedYear
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-red-500 text-white hover:bg-red-600'
+                    }`}
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             )}
 

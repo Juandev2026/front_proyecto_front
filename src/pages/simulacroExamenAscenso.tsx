@@ -518,7 +518,7 @@ const SimulacroExamenAscensoPage = () => {
       if (questions.length === 0) {
         alert('No se encontraron preguntas para los filtros seleccionados.');
       } else {
-        router.push('/examen');
+        router.push(`/examen?from=${router.pathname}`);
       }
     } catch (error) {
       console.error('Error confirming selection:', error);

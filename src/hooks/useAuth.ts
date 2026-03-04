@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 
 import { authService } from '../services/authService';
 
+
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{
@@ -73,13 +74,25 @@ export const useAuth = () => {
     if (role === 'undefined' || role === 'null') role = null;
 
     if (token) {
-      // Decode token if ANY info is missing to ensure we have checking
-      if (!fullName || !userId || !role) {
-        try {
-          const parts = token.split('.');
-          if (parts.length === 3 && parts[1]) {
-            const payload = JSON.parse(atob(parts[1]));
+      // Decode token to check for expiration and fill missing info
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3 && parts[1]) {
+          const payload = JSON.parse(atob(parts[1]));
 
+          // Force logout if token is definitely expired
+          if (payload.exp) {
+            const now = Math.floor(Date.now() / 1000);
+            if (payload.exp < now) {
+              console.warn('Token expired based on exp claim');
+              setLoading(false);
+              logout();
+              return;
+            }
+          }
+
+          // Fill missing info if needed
+          if (!fullName || !userId || !role) {
             // Full Name
             if (!fullName) {
               fullName =
@@ -108,7 +121,7 @@ export const useAuth = () => {
               }
             }
 
-            // Role - Enhanced Extraction
+            // Role
             if (!role) {
               role =
                 payload.role ||
@@ -122,9 +135,9 @@ export const useAuth = () => {
               if (role) localStorage.setItem('role', role);
             }
           }
-        } catch (e) {
-          console.error('Error decoding token in useAuth:', e);
         }
+      } catch (e) {
+        console.error('Error decoding token in useAuth:', e);
       }
 
       setIsAuthenticated(true);
@@ -266,11 +279,13 @@ export const useAuth = () => {
           // If status fails, token might be invalid/expired
           console.error('Session verification failed', error);
 
-          // If we get an Unauthorized error, clear session
+          // If we get an Unauthorized error, or any error that suggests the token is bad, clear session
+          const errorMessage = error.message || String(error);
           if (
-            error.message?.includes('401') ||
-            error.message?.includes('Unauthorized') ||
-            error.message?.includes('403')
+            errorMessage.includes('401') ||
+            errorMessage.includes('Unauthorized') ||
+            errorMessage.includes('403') ||
+            errorMessage.includes('Token expired')
           ) {
             logout();
           }

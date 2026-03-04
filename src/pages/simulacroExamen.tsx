@@ -112,7 +112,12 @@ const SimulacroExamenPage = () => {
         });
       }
     });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (m) =>
+        m.nombre &&
+        m.nombre !== 'string' &&
+        m.nombre.toUpperCase() !== 'NINGUNO'
+    );
   }, [filteredExams]);
 
   // Auto-select modality if only one exists
@@ -138,7 +143,9 @@ const SimulacroExamenPage = () => {
           map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO' && n.nombre !== 'string'
+    );
   }, [filteredExams, selectedModalidadId]);
 
   // Auto-select level if only one exists
@@ -166,7 +173,9 @@ const SimulacroExamenPage = () => {
           });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (e) => e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
+    );
   }, [filteredExams, selectedModalidadId, selectedNivelId]);
 
   // Auto-select specialty if only one exists
@@ -544,7 +553,7 @@ const SimulacroExamenPage = () => {
       if (questions.length === 0) {
         alert('No se encontraron preguntas para los filtros seleccionados.');
       } else {
-        router.push('/examen');
+        router.push(`/examen?from=${router.pathname}`);
       }
     } catch (error) {
       console.error('Error confirming selection:', error);
@@ -614,30 +623,32 @@ const SimulacroExamenPage = () => {
 
           <div className="p-6 space-y-8">
             {/* Modalidad Selector */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                <AcademicCapIcon className="h-4 w-4" />
-                <span>Modalidad habilitada</span>
+            {modalidadesData.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                  <AcademicCapIcon className="h-4 w-4" />
+                  <span>Modalidad habilitada</span>
+                </div>
+                <select
+                  value={selectedModalidadId}
+                  onChange={(e) => {
+                    setSelectedModalidadId(e.target.value);
+                    setSelectedNivelId('');
+                    setSelectedEspecialidadId('');
+                    setSelectedYears([]);
+                    setYearSelections({});
+                  }}
+                  className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                >
+                  <option value="">Selecciona Modalidad</option>
+                  {modalidadesData.map((m) => (
+                    <option key={m.id} value={String(m.id)}>
+                      {m.nombre}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={selectedModalidadId}
-                onChange={(e) => {
-                  setSelectedModalidadId(e.target.value);
-                  setSelectedNivelId('');
-                  setSelectedEspecialidadId('');
-                  setSelectedYears([]);
-                  setYearSelections({});
-                }}
-                className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-              >
-                <option value="">Selecciona Modalidad</option>
-                {modalidadesData.map((m) => (
-                  <option key={m.id} value={String(m.id)}>
-                    {m.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+            )}
 
             {/* Hierarchical selectors for Nivel and Especialidad */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

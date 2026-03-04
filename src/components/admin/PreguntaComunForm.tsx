@@ -25,6 +25,7 @@ interface ContentBlock {
   id: string;
   type: 'text' | 'image';
   content: string; // HTML or Image URL
+  isGray?: boolean;
 }
 
 interface SubPregunta {
@@ -72,6 +73,16 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           content: (node as HTMLImageElement).src,
         });
       } else if (
+        node.nodeName === 'DIV' &&
+        (node as HTMLElement).classList.contains('bg-gray-100')
+      ) {
+        blocks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'text',
+          content: (node as HTMLElement).innerHTML,
+          isGray: true,
+        });
+      } else if (
         node.nodeType === Node.TEXT_NODE ||
         node.nodeType === Node.ELEMENT_NODE
       ) {
@@ -82,6 +93,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             id: Math.random().toString(36).substr(2, 9),
             type: 'text',
             content,
+            isGray: false,
           });
         }
       }
@@ -197,6 +209,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       id: Math.random().toString(36).substr(2, 9),
       type,
       content: imageUrl || '',
+      isGray: false,
     };
 
     if (context === 'common') {
@@ -230,6 +243,31 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 ...q,
                 specificStatement: q.specificStatement.map((b) =>
                   b.id === blockId ? { ...b, content: val } : b
+                ),
+              }
+            : q
+        )
+      );
+    }
+  };
+  
+  const toggleBlockGray = (
+    blockId: string,
+    context: 'common' | 'specific',
+    subQId?: string
+  ) => {
+    if (context === 'common') {
+      setCommonStatement((prev) =>
+        prev.map((b) => (b.id === blockId ? { ...b, isGray: !b.isGray } : b))
+      );
+    } else if (subQId) {
+      setSubQuestions((prev) =>
+        prev.map((q) =>
+          q.tempId === subQId
+            ? {
+                ...q,
+                specificStatement: q.specificStatement.map((b) =>
+                  b.id === blockId ? { ...b, isGray: !b.isGray } : b
                 ),
               }
             : q
@@ -376,6 +414,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     return blocks
       .map((b) => {
         if (b.type === 'image') return `<img src="${b.content}" alt="Image" />`;
+        if (b.isGray) {
+            return `<div class="bg-gray-100 p-4 rounded-lg my-2">${b.content}</div>`;
+        }
         return b.content;
       })
       .join('<br/>');
@@ -423,7 +464,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
-        year: initialParent?.year || selectedYear || '2024',
+        year: initialParent?.year || selectedYear || '0',
         tipoPreguntaId: 2,
         numero: 0,
         enunciados: [
@@ -494,19 +535,19 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
     return (
       <div className="border border-primary rounded-lg p-6 bg-white shadow-sm">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
           <label className="text-gray-700 font-medium text-sm">{label}</label>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={() => addBlock('text', context, subQId)}
-              className="flex items-center gap-2 text-primary border border-primary px-4 py-1.5 rounded hover:bg-blue-50 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 text-primary border border-primary px-3 md:px-4 py-1.5 rounded hover:bg-blue-50 text-xs md:text-sm font-medium transition-colors"
             >
               <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
             </button>
             <button
               onClick={() => triggerImageUpload(context, subQId)}
-              className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-1.5 rounded hover:bg-gray-50 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 text-gray-600 border border-gray-300 px-3 md:px-4 py-1.5 rounded hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
             >
               <span className="font-bold text-lg leading-none">+</span> Añadir
               Imagen
@@ -534,17 +575,48 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>
-
                 {block.type === 'text' ? (
-                  <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden">
-                    <TiptapEditor
-                      value={block.content}
-                      onChange={(val) =>
-                        updateBlock(val, block.id, context, subQId)
-                      }
-                      placeholder={`Escribe aquí...`}
-                      borderColor="border-gray-200"
-                    />
+                  <div
+                    className={`p-4 rounded-lg border border-gray-100 shadow-sm ${
+                      block.isGray ? 'bg-gray-100' : 'bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3 text-gray-500">
+                        <span className="cursor-move">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4zM7 9a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4zM7 16a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4zM10 2a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4zM10 9a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4zM10 16a2 2 0 100 4 2 2 0 000-4zm3 0a2 2 0 100 4 2 2 0 000-4z" /></svg>
+                        </span>
+                        <DocumentTextIcon className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Texto</span>
+                    </div>
+                    <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden bg-white">
+                        <TiptapEditor
+                          value={block.content}
+                          onChange={(val) =>
+                            updateBlock(val, block.id, context, subQId)
+                          }
+                          placeholder={`Escribe aquí...`}
+                          borderColor="border-gray-200"
+                        />
+                    </div>
+                    <div className="mt-3 flex items-center">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                             <div className="relative flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:bg-primary checked:border-primary transition-all"
+                                    checked={block.isGray}
+                                    onChange={() => toggleBlockGray(block.id, context, subQId)}
+                                />
+                                <svg 
+                                    className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" 
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                                >
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                             </div>
+                             <span className="text-xs font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Texto en gris</span>
+                        </label>
+                    </div>
                   </div>
                 ) : (
                   <div className="border rounded-lg p-4 bg-gray-50 flex justify-center items-center">
@@ -771,17 +843,17 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       </div>
 
       {/* FOOTER */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex justify-end gap-4 md:px-10">
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex flex-col sm:flex-row justify-end gap-3 md:px-10">
         <button
           onClick={onCancel}
-          className="text-gray-600 hover:text-gray-800 font-medium px-4"
+          className="text-gray-600 hover:text-gray-800 font-medium px-4 text-sm md:text-base py-2 w-full sm:w-auto text-center order-2 sm:order-1"
         >
           Cancelar
         </button>
         <button
           onClick={handleSaveAll}
           disabled={saving}
-          className={`bg-primary text-white px-8 py-2 rounded shadow hover:bg-secondary font-medium transition-colors flex items-center ${
+          className={`bg-primary text-white px-8 py-2 rounded shadow hover:bg-secondary font-medium transition-colors flex items-center justify-center text-sm md:text-base w-full sm:w-auto order-1 sm:order-2 ${
             saving ? 'opacity-70 cursor-wait' : ''
           }`}
         >

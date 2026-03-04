@@ -117,15 +117,20 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   useEffect(() => {
     menuItems.forEach((item) => {
       if (item.children) {
-        const hasActiveChild = item.children.some(
-          (child: any) => child.href === router.pathname
-        );
+        const hasActiveChild = item.children.some((child: any) => {
+          // Normal matching
+          if (child.href === router.pathname || child.href === router.asPath) return true;
+          // Matching during an exam
+          if (router.pathname === '/examen' && router.query.from === child.href) return true;
+          return false;
+        });
+
         if (hasActiveChild) {
           setExpandedMenu(item.name);
         }
       }
     });
-  }, [router.pathname]);
+  }, [router.pathname, router.asPath, router.query.from]);
 
   const allMenuItems = [
     {
@@ -401,7 +406,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                         ${
                           isActive
-                            ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                            ? 'bg-[#4790FD] text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
                             : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'
                         }
                          ${isCollapsed ? 'justify-center' : ''} 
@@ -428,27 +433,31 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                 {hasChildren && isExpanded && !isCollapsed && (
                   <div className="mt-2 space-y-1 pl-4 pr-2">
                     {item.children.map((child: any) => {
-                      const isChildActive = router.pathname === child.href;
-                      return (
-                        <Link key={child.name} href={child.href}>
-                          <a
-                            className={`
-                              flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200
-                              ${
-                                child.locked
-                                  ? 'text-gray-400 cursor-not-allowed opacity-75'
-                                  : isChildActive
-                                  ? 'bg-blue-50 text-[#4790FD] shadow-sm'
-                                  : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'
-                              }
-                           `}
-                          >
+                        const isChildActive =
+                          router.asPath === child.href ||
+                          (router.pathname === '/examen' &&
+                            router.query.from === child.href);
+
+                        return (
+                          <Link key={child.name} href={child.href}>
+                            <a
+                              className={`
+                                flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200
+                                ${
+                                  child.locked
+                                    ? 'text-gray-400 cursor-not-allowed opacity-75'
+                                    : isChildActive
+                                    ? 'bg-[#4790FD] text-white hover:text-white shadow-md'
+                                    : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'
+                                }
+                             `}
+                            >
                             <div className="flex items-center">
                               {child.icon && (
                                 <child.icon
                                   className={`mr-3 h-5 w-5 flex-shrink-0 ${
                                     isChildActive
-                                      ? 'text-[#4790FD]'
+                                      ? 'text-white'
                                       : 'text-[#A3AED0]'
                                   }`}
                                 />

@@ -81,7 +81,12 @@ const SimulacrosDirectivosPage = () => {
         });
       }
     });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (m) =>
+        m.nombre &&
+        m.nombre !== 'string' &&
+        m.nombre.toUpperCase() !== 'NINGUNO'
+    );
   }, [filteredExams]);
 
   // Auto-select modality
@@ -100,7 +105,9 @@ const SimulacrosDirectivosPage = () => {
           map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO' && n.nombre !== 'string'
+    );
   }, [filteredExams, selectedModalidadId]);
 
   // Auto-select level
@@ -127,7 +134,9 @@ const SimulacrosDirectivosPage = () => {
           });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (e) => e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
+    );
   }, [filteredExams, selectedModalidadId, selectedNivelId]);
 
   // Auto-select specialty
@@ -417,7 +426,7 @@ const SimulacrosDirectivosPage = () => {
       if (questions.length === 0) {
         alert('No se encontraron preguntas para los filtros seleccionados.');
       } else {
-        router.push('/examen');
+        router.push(`/examen?from=${router.pathname}`);
       }
     } catch (error) {
       console.error('Error confirming selection:', error);
@@ -473,30 +482,32 @@ const SimulacrosDirectivosPage = () => {
           </div>
 
           <div className="p-6 space-y-8">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                <AcademicCapIcon className="h-4 w-4" />
-                <span>Modalidad habilitada</span>
+            {modalidadesData.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                  <AcademicCapIcon className="h-4 w-4" />
+                  <span>Modalidad habilitada</span>
+                </div>
+                <select
+                  value={selectedModalidadId}
+                  onChange={(e) => {
+                    setSelectedModalidadId(e.target.value);
+                    setSelectedNivelId('');
+                    setSelectedEspecialidadId('');
+                    setSelectedYears([]);
+                    setYearSelections({});
+                  }}
+                  className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                >
+                  <option value="">Selecciona Modalidad</option>
+                  {modalidadesData.map((m) => (
+                    <option key={m.id} value={String(m.id)}>
+                      {m.nombre}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={selectedModalidadId}
-                onChange={(e) => {
-                  setSelectedModalidadId(e.target.value);
-                  setSelectedNivelId('');
-                  setSelectedEspecialidadId('');
-                  setSelectedYears([]);
-                  setYearSelections({});
-                }}
-                className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-              >
-                <option value="">Selecciona Modalidad</option>
-                {modalidadesData.map((m) => (
-                  <option key={m.id} value={String(m.id)}>
-                    {m.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {nivelesData.length > 0 && !(nivelesData.length === 1 && nivelesData[0]?.nombre === 'NINGUNO') && (
@@ -554,10 +565,10 @@ const SimulacrosDirectivosPage = () => {
             </div>
 
             <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                <AcademicCapIcon className="h-4 w-4" />
-                <span>Selecciona mínimo dos años*</span>
-              </div>
+                <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                  <AcademicCapIcon className="h-4 w-4" />
+                  <span>Selecciona mínimo dos años*</span>
+                </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {aniosData.map((year) => {
@@ -614,7 +625,7 @@ const SimulacrosDirectivosPage = () => {
                  <p className="text-xs font-bold text-yellow-800">Resumen de contenido</p>
                  <p className="text-[10px] text-yellow-700/80">Total seleccionado: <span className="font-bold">{totalQuestions}</span> preguntas reales.</p>
                </div>
-            </div>
+              </div>
           </div>
         </div>
 

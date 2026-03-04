@@ -21,7 +21,26 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
     if (!token) {
       router.push('/login');
-    } else if (
+      return;
+    }
+
+    // Check expiration
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]!));
+        if (payload.exp && payload.exp < Date.now() / 1000) {
+          console.warn('Admin token expired');
+          localStorage.removeItem('token');
+          router.push('/login');
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Error verifying admin token:', e);
+    }
+
+    if (
       role?.toUpperCase() === 'ADMIN' ||
       role?.toUpperCase() === 'SUBADMIN'
     ) {
@@ -484,7 +503,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               )}
             </div>
           ))}
-          <div className="pt-4 mt-4 border-t border-gray-200">
+          <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
+            <Link href="/">
+              <a
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-100 transition-colors ${
+                  isCollapsed ? 'justify-center' : ''
+                }`}
+                title={isCollapsed ? 'Volver a Avendocente' : ''}
+              >
+                <span className={`${isCollapsed ? '' : 'mr-3'}`}>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    ></path>
+                  </svg>
+                </span>
+                {!isCollapsed && 'Volver a Avendocente'}
+              </a>
+            </Link>
             <button
               onClick={() => setIsLogoutModalOpen(true)}
               className={`w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none ${

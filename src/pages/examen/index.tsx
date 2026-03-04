@@ -412,14 +412,20 @@ const ExamenPage = () => {
             : null;
 
         return {
-          preguntaId: Number(q.preguntaId), // Usar preguntaId (ID del padre si es sub-pregunta)
+          preguntaId: Number(q.preguntaId || q.id), // Asegurar que use un ID válido
           subPreguntaNumero: (q as any).isSubPregunta ? Number((q as any).numeroSubPregunta) : null,
           alternativaMarcada: finalAnswer,
         };
       });
 
+      // NO enviar 0 como examenId, ya que causa error de clave foránea en el backend.
+      // Si es simulacro, usamos el examenId de la primera pregunta para mantener la integridad.
+      const resolvedExamenId = metadata?.isSimulacro 
+        ? (firstQuestion?.examenId || 0) 
+        : (firstQuestion?.examenId || 0);
+
       const payload: SolucionExamenRequest = {
-        examenId: metadata?.isSimulacro ? 0 : (firstQuestion?.examenId || 0),
+        examenId: resolvedExamenId,
         userId: user?.id || 0,
         year: examYear || 0,
         respuestas: respuestasPayload,

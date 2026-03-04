@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   AcademicCapIcon,
-  QuestionMarkCircleIcon,
   XIcon,
   FilterIcon,
   CalendarIcon,
@@ -14,10 +13,6 @@ import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin } from '../services/authService';
 import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
-import {
-  preguntaService,
-  ClasificacionExamen,
-} from '../services/preguntaService';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -31,10 +26,6 @@ const BancoPreguntasAscensoPage = () => {
 
   // Examenes from login response
   const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
-  const [allClasificaciones, setAllClasificaciones] = useState<
-    ClasificacionExamen[]
-  >([]);
-
   // Current Selection State (Locked to Ascenso - ID: '1')
   const [selectedTipoExamenId] = useState<string>('1');
   const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
@@ -44,19 +35,6 @@ const BancoPreguntasAscensoPage = () => {
   const [selectedYear, setSelectedYear] = useState<string>('');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [conteoPreguntas, setConteoPreguntas] = useState<{
-    [key: string]: {
-      cantidad: number;
-      puntos: number;
-      tiempoPregunta: number;
-      minimo: number;
-    };
-  }>({});
-
-  // Checkbox State (Dynamic based on classifications)
-  const [tiposPregunta, setTiposPregunta] = useState<Record<string, boolean>>(
-    {}
-  );
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -76,12 +54,6 @@ const BancoPreguntasAscensoPage = () => {
           console.error('Error parsing loginExamenes:', e);
         }
       }
-
-      // Fetch dynamic classifications from API
-      preguntaService
-        .getClasificaciones()
-        .then((data) => setAllClasificaciones(data))
-        .catch((err) => console.error('Error fetching classifications:', err));
     }
   }, [isAuthenticated]);
 
@@ -204,108 +176,13 @@ const BancoPreguntasAscensoPage = () => {
     }
   }, [especialidadesData, selectedEspecialidadId]);
 
-  // ---------- Counts & Categories Logic ----------
-
-  useEffect(() => {
-    if (selectedModalidadId && selectedYear) {
-      const firstNivel = nivelesData[0];
-      const resolvedNivelId =
-        selectedNivelId ||
-        (nivelesData.length === 1 &&
-        firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
-          ? String(firstNivel.id)
-          : null);
-
-      if (resolvedNivelId === null) return;
-
-      const exam = loginExamenes.find(
-        (e) =>
-          String(e.tipoExamenId) === selectedTipoExamenId &&
-          String(e.modalidadId) === selectedModalidadId &&
-          String(e.nivelId) === resolvedNivelId &&
-          (selectedEspecialidadId
-            ? String(e.especialidadId) === selectedEspecialidadId
-            : !e.especialidadId || e.especialidadId === 0) &&
-          ((selectedYear === 'Único' &&
-            (e.year === '0' || Number(e.year) === 0)) ||
-            String(e.year) === selectedYear ||
-            e.years?.some((y) => String(y.year) === selectedYear))
-      );
-
-      if (exam && exam.clasificaciones) {
-        const countMap: any = {};
-        exam.clasificaciones.forEach((item) => {
-          const name = item.clasificacionNombre;
-          if (name) {
-            const meta = allClasificaciones.find(
-              (c) => c.clasificacionNombre === name
-            );
-            let cantidadExacta = 0;
-            const isUnico = selectedYear === 'Único';
-            if (isUnico || !item.years || item.years.length === 0) {
-              cantidadExacta = item.cantidadPreguntas;
-            } else {
-              const yearData = item.years.find(
-                (y: any) => String(y.year) === selectedYear
-              );
-              cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
-            }
-
-            if (!countMap[name]) {
-              countMap[name] = {
-                cantidad: cantidadExacta,
-                puntos: meta?.puntos || item.puntos || 0,
-                tiempoPregunta:
-                  meta?.tiempoPregunta || item.tiempoPregunta || 0,
-                minimo: meta?.minimo || item.minimo || 0,
-              };
-            } else {
-              countMap[name].cantidad += cantidadExacta;
-            }
-          }
-        });
-        setConteoPreguntas(countMap);
-
-        setTiposPregunta((prev) => {
-          const nextTipos: Record<string, boolean> = { ...prev };
-          exam.clasificaciones.forEach((item) => {
-            const name = item.clasificacionNombre;
-            if (name && countMap[name]) {
-              const cantidadExacta = countMap[name].cantidad;
-              if (nextTipos[name] === undefined && cantidadExacta > 0) {
-                nextTipos[name] = true;
-              } else if (cantidadExacta === 0) {
-                nextTipos[name] = false;
-              }
-            }
-          });
-          return nextTipos;
-        });
-      } else {
-        setConteoPreguntas({});
-      }
-    } else {
-      setConteoPreguntas({});
-    }
-  }, [
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-    selectedEspecialidadId,
-    selectedYear,
-    loginExamenes,
-    nivelesData,
-    allClasificaciones,
-  ]);
-
-  // --- Handlers ---
+  // ---------- Handlers ----------
 
   const handleClear = () => {
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
     setSelectedYear('');
-    setTiposPregunta({});
   };
 
   const handleConfirm = async () => {
@@ -390,7 +267,7 @@ const BancoPreguntasAscensoPage = () => {
       localStorage.setItem('currentQuestions', JSON.stringify(questions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-      router.push('/examen');
+      router.push(`/examen?from=${router.pathname}`);
     } catch (error) {
       console.error('Error confirming selection:', error);
       alert('Hubo un error al cargar las preguntas.');

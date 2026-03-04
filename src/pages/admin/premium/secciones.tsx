@@ -157,9 +157,9 @@ const AdminPremiumSecciones = () => {
         tipoExamenId: newSection.tipoExamenId,
         categorias: newSection.categorias.map(
           ({ modalidadId, nivelId, especialidadId }) => ({
-            modalidadId: modalidadId || null,
-            nivelId: nivelId || null,
-            especialidadId: especialidadId || null,
+            modalidadId: modalidadId || 0,
+            nivelId: nivelId || 0,
+            especialidadId: especialidadId || 0,
           })
         ),
       });
@@ -197,9 +197,9 @@ const AdminPremiumSecciones = () => {
         tipoExamenId: editingSection.tipoExamenId,
         visible: editingSection.esVisible || false,
         categorias: editingSection.categorias.map((c) => ({
-          modalidadId: c.modalidadId || null,
-          nivelId: c.nivelId || null,
-          especialidadId: c.especialidadId || null,
+          modalidadId: c.modalidadId || 0,
+          nivelId: c.nivelId || 0,
+          especialidadId: c.especialidadId || 0,
         })),
       });
       await fetchSections();

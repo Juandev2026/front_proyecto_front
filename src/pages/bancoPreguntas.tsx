@@ -116,7 +116,12 @@ const BancoPreguntasPage = () => {
           });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (m) =>
+        m.nombre &&
+        m.nombre !== 'string' &&
+        m.nombre.toUpperCase() !== 'NINGUNO'
+    );
   }, [loginExamenes, selectedTipoExamenId]);
 
   const nivelesData = useMemo(() => {
@@ -134,7 +139,9 @@ const BancoPreguntasPage = () => {
           map.set(e.nivelId, { id: e.nivelId, nombre: e.nivelNombre });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO' && n.nombre !== 'string'
+    );
   }, [loginExamenes, selectedTipoExamenId, selectedModalidadId]);
 
   const especialidadesData = useMemo(() => {
@@ -157,7 +164,9 @@ const BancoPreguntasPage = () => {
           });
         }
       });
-    return Array.from(map.values());
+    return Array.from(map.values()).filter(
+      (e) => e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
+    );
   }, [
     loginExamenes,
     selectedTipoExamenId,
@@ -446,7 +455,7 @@ const BancoPreguntasPage = () => {
       localStorage.setItem('currentQuestions', JSON.stringify(questions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-      router.push('/examen');
+      router.push(`/examen?from=${router.pathname}`);
     } catch (error) {
       console.error('Error confirming selection:', error);
       alert('Hubo un error al cargar las preguntas.');
@@ -510,30 +519,32 @@ const BancoPreguntasPage = () => {
             </select>
           </div> */}
 
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <AcademicCapIcon className="h-5 w-5" />
-              <span>Modalidad habilitada</span>
+          {modalidadesData.length > 0 && (
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Modalidad habilitada</span>
+              </div>
+              <select
+                value={selectedModalidadId}
+                onChange={(e) => {
+                  setSelectedModalidadId(e.target.value);
+                  setSelectedNivelId('');
+                  setSelectedEspecialidadId('');
+                  setSelectedYear('');
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                disabled={isLoading || !selectedTipoExamenId}
+              >
+                <option value="">Selecciona Modalidad</option>
+                {modalidadesData.map((m) => (
+                  <option key={m.id} value={String(m.id)}>
+                    {m.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
-            <select
-              value={selectedModalidadId}
-              onChange={(e) => {
-                setSelectedModalidadId(e.target.value);
-                setSelectedNivelId('');
-                setSelectedEspecialidadId('');
-                setSelectedYear('');
-              }}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              disabled={isLoading || !selectedTipoExamenId}
-            >
-              <option value="">Selecciona Modalidad</option>
-              {modalidadesData.map((m) => (
-                <option key={m.id} value={String(m.id)}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+          )}
 
           {nivelesData.length > 0 &&
             !(
@@ -593,30 +604,32 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <CalendarIcon className="h-5 w-5" />
-              <span>Elige un año</span>
+          {aniosData.length > 0 && (
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <CalendarIcon className="h-5 w-5" />
+                <span>Elige un año</span>
+              </div>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                disabled={aniosData.length === 0}
+              >
+                <option value="">Selecciona Año</option>
+                {aniosData.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+              {selectedModalidadId && aniosData.length === 0 && !isLoading && (
+                <p className="text-red-500 text-xs mt-2 font-medium">
+                  No hay exámenes disponibles para esta selección
+                </p>
+              )}
             </div>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              disabled={aniosData.length === 0}
-            >
-              <option value="">Selecciona Año</option>
-              {aniosData.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            {selectedModalidadId && aniosData.length === 0 && !isLoading && (
-              <p className="text-red-500 text-xs mt-2 font-medium">
-                No hay exámenes disponibles para esta selección
-              </p>
-            )}
-          </div>
+          )}
 
           <div className="border border-primary rounded-lg p-4 bg-white">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
