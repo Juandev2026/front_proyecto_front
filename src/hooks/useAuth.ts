@@ -193,57 +193,34 @@ export const useAuth = () => {
       };
 
       setUser(initialUser);
+      // OPTIMIZATION: Set loading to false if we have a token, trust localStorage for initial render
+      if (token) setLoading(false);
 
       // Verify status with backend to check for expiration
       const verifyStatus = async () => {
         try {
           const status = await authService.checkStatus();
 
-          // Full sync from backend status
           if (status) {
             // Update localStorage
             if (status.role) localStorage.setItem('role', status.role);
-            if (status.fullName)
-              localStorage.setItem('fullName', status.fullName);
-            if (status.nivelId)
-              localStorage.setItem('nivelId', String(status.nivelId));
-            if (status.accesoNombres)
-              localStorage.setItem(
-                'accesoNombres',
-                JSON.stringify(status.accesoNombres)
-              );
-            if (status.accesoIds)
-              localStorage.setItem(
-                'accesoIds',
-                JSON.stringify(status.accesoIds)
-              );
-            if (status.especialidad)
-              localStorage.setItem('especialidad', status.especialidad);
-            if (status.especialidadId)
-              localStorage.setItem(
-                'especialidadId',
-                String(status.especialidadId)
-              );
-            if (status.fechaExpiracion)
-              localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
+            if (status.fullName) localStorage.setItem('fullName', status.fullName);
+            if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
+            if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
+            if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
+            if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
+            if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
+            if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
 
-            // Update state metadata
             const syncUser = (status as any).user || status;
-
-            // Role override logic: if expired, force Client in frontend
             let currentRole = syncUser.role || role;
-            if (
-              status.fechaExpiracion &&
-              status.fechaExpiracion !== '-' &&
-              currentRole?.toUpperCase() === 'PREMIUM'
-            ) {
+            if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
               const expDate = new Date(status.fechaExpiracion);
               if (expDate < new Date()) {
                 currentRole = 'Client';
               }
             }
 
-            // Update state
             setUser({
               name: syncUser.fullName || fullName || 'Usuario',
               id: syncUser.id || parsedId,
@@ -255,31 +232,17 @@ export const useAuth = () => {
               especialidadId: syncUser.especialidadId || parsedEspecialidadId,
             });
 
-            // Sincronizar también los exámenes del usuario para Banco de Preguntas
-            const syncUserId = syncUser.id;
-            if (syncUserId) {
-              try {
-                const currentToken = localStorage.getItem('token');
-                const filters = await authService.getUserFilters(
-                  status.id,
-                  currentToken || undefined
-                );
+            // Sync filters in background (non-blocking)
+            if (syncUser.id) {
+              authService.getUserFilters(status.id).then(filters => {
                 if (filters.examenes && filters.examenes.length > 0) {
-                  localStorage.setItem(
-                    'loginExamenes',
-                    JSON.stringify(filters.examenes)
-                  );
+                  localStorage.setItem('loginExamenes', JSON.stringify(filters.examenes));
                 }
-              } catch (e) {
-                console.error('Error syncing user exams in useAuth:', e);
-              }
+              }).catch(e => console.error('Error syncing user exams in background:', e));
             }
           }
         } catch (error: any) {
-          // If status fails, token might be invalid/expired
           console.error('Session verification failed', error);
-
-          // If we get an Unauthorized error, or any error that suggests the token is bad, clear session
           const errorMessage = error.message || String(error);
           if (
             errorMessage.includes('401') ||

@@ -69,6 +69,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 
   // Check ED availability
   useEffect(() => {
+    // Check cache first
+    const cached = localStorage.getItem('edAvailability');
+    if (cached) {
+      try {
+        setAvailableEdContexts(JSON.parse(cached));
+      } catch (e) {}
+    }
+
     const fetchEdAvailability = async () => {
       if (isAuthenticated) {
         try {
@@ -79,10 +87,12 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           const hasAscenso = data.some(
             (s) => String(s.tipoExamenId) === '1' && s.visible
           );
-          setAvailableEdContexts({
+          const newState = {
             nombramiento: hasNombramiento,
             ascenso: hasAscenso,
-          });
+          };
+          setAvailableEdContexts(newState);
+          localStorage.setItem('edAvailability', JSON.stringify(newState));
         } catch (error) {
           console.error('Error checking ED availability', error);
         }
@@ -276,11 +286,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">
-      {loading && (
+      {loading && !user && (
         <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-500 font-medium">Verificando acceso...</p>
+            <div className="w-12 h-12 border-4 border-[#4790FD] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[#707EAE] font-medium">Verificando acceso...</p>
           </div>
         </div>
       )}

@@ -78,21 +78,17 @@ const SimulacroExamenPage = () => {
   // Fetch Examenes Propios
   useEffect(() => {
     const fetchPropios = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && user?.id) {
         try {
-          const data = await examenService.getPropios();
-          // Filter by context (Nombramiento = 2)
-          const filtered = data.filter(
-            (s: any) => String(s.tipoExamenId) === '2' && s.visible
-          );
-          setSeccionesPropias(filtered);
+          const data = await examenService.getPropiosByUser(2, user.id);
+          setSeccionesPropias(data);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
         }
       }
     };
     fetchPropios();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   // ---------- Memoized Derived Options ----------
 
@@ -432,6 +428,19 @@ const SimulacroExamenPage = () => {
             const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
             bloque2Questions = [...bloque2Questions, ...qs];
           }
+        } else {
+          // New structure: Fetch by fuenteId directly
+          const p = {
+            tipoExamenId: sect.tipoExamenId,
+            fuenteId: sect.fuenteId || sect.id,
+            modalidadId: 0, // Not applicable or use a default
+            nivelId: 0,
+            especialidadId: 0,
+            year: '0',
+            clasificaciones: [],
+          };
+          const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+          bloque2Questions = [...bloque2Questions, ...qs];
         }
       }
 
@@ -471,11 +480,11 @@ const SimulacroExamenPage = () => {
           }
         });
 
-        // 3. Calcular cuotas proporcionales (Objetivo: 60 preguntas CONTANDO subpreguntas)
+        // 3. Calcular cuotas proporcionales (Objetivo: 100 preguntas CONTANDO subpreguntas)
         const activeGroupKeys = Object.keys(groups).filter(
           (k) => (groups[k] || []).length > 0
         );
-        const totalTarget = 60;
+        const totalTarget = 100;
 
         // Función para contar preguntas reales (incluyendo subpreguntas)
         const getWeight = (q: any) =>
@@ -588,7 +597,7 @@ const SimulacroExamenPage = () => {
             }
           });
         }
-        return acc + (s.totalPreguntas || sectCount);
+        return acc + (s.cantidadPreguntas || s.totalPreguntas || sectCount);
       }, 0);
 
     return b1 + b2;
@@ -838,23 +847,25 @@ const SimulacroExamenPage = () => {
                   s.fuenteId || s.id
                 );
 
-                // Aggregate counts
+                // Aggregate counts from new API structure
                 const counts: Record<string, number> = {
                   CCP: 0,
                   CL: 0,
-                  RL: 0,
-                  CG: 0,
+                  RLi: 0,
+                  CGi: 0,
                 };
-                if (s.examenesPropios) {
-                  s.examenesPropios.forEach((ex: any) => {
-                    if (ex.clasificaciones) {
-                      ex.clasificaciones.forEach((c: any) => {
-                        const name = c.clasificacionNombre?.toUpperCase();
-                        if (counts.hasOwnProperty(name)) {
-                          counts[name] += c.cantidadPreguntas || 0;
-                        }
-                      });
-                    }
+
+                if (s.clasificaciones) {
+                  s.clasificaciones.forEach((c: any) => {
+                    const name = c.clasificacionNombre?.toUpperCase();
+                    if (name === 'CCP') counts.CCP += c.cantidadPreguntas || 0;
+                    if (name === 'CL') counts.CL += c.cantidadPreguntas || 0;
+                    if (name === 'RLI') counts.RLi += c.cantidadPreguntas || 0;
+                    if (name === 'CGI') counts.CGi += c.cantidadPreguntas || 0;
+                    
+                    // Support for old names if they come through
+                    if (name === 'RL') counts.RLi += c.cantidadPreguntas || 0;
+                    if (name === 'CG') counts.CGi += c.cantidadPreguntas || 0;
                   });
                 }
 
@@ -1055,14 +1066,14 @@ const SimulacroExamenPage = () => {
                 <p className="text-xl font-bold text-green-700">
                   Total para el simulacro:{' '}
                   <span className="text-2xl font-black">
-                    {totalQuestions > 60 ? 60 : totalQuestions}
+                    {totalQuestions > 100 ? 100 : totalQuestions}
                   </span>{' '}
                   preguntas
                 </p>
-                {totalQuestions > 60 && (
+                {totalQuestions > 100 && (
                   <p className="text-xs font-semibold text-green-600 mt-1 italic leading-relaxed">
                     * Se han seleccionado {totalQuestions} preguntas en total,
-                    pero el simulacro se limitará a 60 distribuidas
+                    pero el simulacro se limitará a 100 distribuidas
                     proporcionalmente.
                   </p>
                 )}

@@ -82,45 +82,42 @@ const ExamenesDirectivosPage = () => {
 
     setIsLoading(true);
     try {
-      let allQuestions: any[] = [];
-      const metadataList: any[] = [];
+      const sampleExam = directivosExams.find((e) => selections[e.id]);
+      if (!sampleExam) return;
 
-      for (const examId of examIds) {
+      const yearFilters = examIds.map((examId) => {
         const exam = directivosExams.find((e) => e.id === examId);
-        if (!exam) continue;
-
-        const payload = {
-          tipoExamenId: exam.tipoExamenId,
-          fuenteId: exam.fuenteId || 0,
-          modalidadId: exam.modalidadId,
-          nivelId: exam.nivelId,
-          especialidadId: exam.especialidadId || 0,
-          year: exam.year || '0',
-          clasificaciones: selections[examId],
+        return {
+          year: exam?.year || '0',
+          clasificacionIds: selections[examId] || [],
         };
+      });
 
-        const questions = await estructuraAcademicaService.getPreguntasByFilter(
-          payload
-        );
-        allQuestions = [...allQuestions, ...questions];
+      const payload = {
+        tipoExamenId: sampleExam.tipoExamenId,
+        fuenteId: sampleExam.fuenteId || 0,
+        modalidadId: sampleExam.modalidadId,
+        nivelId: sampleExam.nivelId,
+        especialidadId: sampleExam.especialidadId || 0,
+        yearFilters,
+      };
 
-        metadataList.push({
-          modalidad: exam.modalidadNombre,
-          nivel: exam.nivelNombre || 'DIRECTIVO',
-          year: exam.year === '0' || !exam.year ? 'Único' : String(exam.year),
-        });
-      }
+      const allQuestions = await estructuraAcademicaService.getPreguntasByFilterMultiYear(
+        payload
+      );
 
-      // Si hay más de un examen, simplificamos el metadata
-      const firstMetadata = metadataList[0];
       const metadata =
-        metadataList.length > 1
+        examIds.length > 1
           ? {
               modalidad: 'Varios Exámenes',
               nivel: 'Múltiple',
               year: 'Varios',
             }
-          : firstMetadata;
+          : {
+              modalidad: sampleExam.modalidadNombre,
+              nivel: sampleExam.nivelNombre || 'DIRECTIVO',
+              year: sampleExam.year === '0' || !sampleExam.year ? 'Único' : String(sampleExam.year),
+            };
 
       localStorage.setItem('currentQuestions', JSON.stringify(allQuestions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));

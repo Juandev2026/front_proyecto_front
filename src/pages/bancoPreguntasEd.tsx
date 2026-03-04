@@ -22,6 +22,7 @@ interface SeccionPropia {
   tipoExamenNombre: string;
   visible: boolean;
   categorias: any[];
+  clasificaciones?: any[];
 }
 
 const TIPO_FULL_NAMES: Record<string, string> = {
@@ -32,7 +33,7 @@ const TIPO_FULL_NAMES: Record<string, string> = {
 };
 
 const BancoPreguntasEdPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
 
   const [secciones, setSecciones] = useState<SeccionPropia[]>([]);
@@ -52,29 +53,28 @@ const BancoPreguntasEdPage = () => {
   }, [loading, isAuthenticated, router]);
 
   const fetchSecciones = async () => {
+    if (!user?.id) return;
     setIsLoading(true);
     try {
       const { context } = router.query;
-      const data = await examenService.getPropios();
+      const targetTipoExamenId = context === 'nombramiento' ? 2 : 1;
+      const data = await examenService.getPropiosByUser(
+        targetTipoExamenId,
+        user.id
+      );
 
-      // Mapeo de contexto a ID (1: Ascenso, 2: Nombramiento)
-      const targetTipoExamenId = context === 'nombramiento' ? '2' : '1';
-
-      const filtered = data
-        .filter(
-          (s: any) => String(s.tipoExamenId) === targetTipoExamenId && s.visible
-        )
-        .map((s: any) => ({
-          id: s.fuenteId || s.id,
-          nombre: s.fuenteNombre || 'Sin nombre',
-          descripcion: s.descripcion || '',
-          tipoExamenId: s.tipoExamenId,
-          tipoExamenNombre:
-            s.tipoExamenNombre ||
-            (context === 'nombramiento' ? 'Nombramiento' : 'Ascenso'),
-          visible: s.visible,
-          categorias: s.examenesPropios || [],
-        }));
+      const filtered = data.map((s: any) => ({
+        id: s.fuenteId || s.id,
+        nombre: s.fuenteNombre || 'Sin nombre',
+        descripcion: s.descripcion || '',
+        tipoExamenId: s.tipoExamenId,
+        tipoExamenNombre:
+          s.tipoExamenNombre ||
+          (context === 'nombramiento' ? 'Nombramiento' : 'Ascenso'),
+        visible: true,
+        categorias: s.examenesPropios || [],
+        clasificaciones: s.clasificaciones || [],
+      }));
       setSecciones(filtered);
 
       if (filtered.length > 0 && filtered[0]) {
@@ -88,41 +88,67 @@ const BancoPreguntasEdPage = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.id) {
       fetchSecciones();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   const selectedSeccion = useMemo(() => {
     return secciones.find((s) => s.id === selectedSeccionId);
   }, [secciones, selectedSeccionId]);
 
   useEffect(() => {
-    if (selectedSeccion && selectedSeccion.categorias) {
+    if (selectedSeccion) {
       const countMap: any = {};
 
-      selectedSeccion.categorias.forEach((exam: any) => {
-        if (exam.clasificaciones) {
-          exam.clasificaciones.forEach((item: any) => {
-            const name = item.clasificacionNombre;
-            if (name) {
-              const cantidad = item.cantidadPreguntas || 0;
-              if (cantidad > 0) {
-                if (!countMap[name]) {
-                  countMap[name] = {
-                    id: item.clasificacionId,
-                    cantidad: 0,
-                    puntos: item.puntos || 0,
-                    tiempoPregunta: item.tiempoPregunta || 0,
-                    minimo: item.minimo || 0,
-                  };
-                }
-                countMap[name].cantidad += cantidad;
-              }
+      if (
+        selectedSeccion.clasificaciones &&
+        selectedSeccion.clasificaciones.length > 0
+      ) {
+        selectedSeccion.clasificaciones.forEach((item: any) => {
+          const rawName = item.clasificacionNombre?.toUpperCase();
+          if (rawName) {
+            let name = rawName;
+            // Normalize names for UI mapping
+            if (rawName === 'RLI') name = 'RL';
+            if (rawName === 'CGI') name = 'CG';
+
+            const cantidad = item.cantidadPreguntas || 0;
+            if (cantidad > 0) {
+              countMap[name] = {
+                id: item.clasificacionId,
+                cantidad: cantidad,
+                puntos: item.puntos || 0,
+                tiempoPregunta: item.tiempoPregunta || 0,
+                minimo: item.minimo || 0,
+              };
             }
-          });
-        }
-      });
+          }
+        });
+      } else if (selectedSeccion.categorias) {
+        selectedSeccion.categorias.forEach((exam: any) => {
+          if (exam.clasificaciones) {
+            exam.clasificaciones.forEach((item: any) => {
+              const name = item.clasificacionNombre;
+              if (name) {
+                const cantidad = item.cantidadPreguntas || 0;
+                if (cantidad > 0) {
+                  if (!countMap[name]) {
+                    countMap[name] = {
+                      id: item.clasificacionId,
+                      cantidad: 0,
+                      puntos: item.puntos || 0,
+                      tiempoPregunta: item.tiempoPregunta || 0,
+                      minimo: item.minimo || 0,
+                    };
+                  }
+                  countMap[name].cantidad += cantidad;
+                }
+              }
+            });
+          }
+        });
+      }
 
       setConteoPreguntas(countMap);
 
@@ -155,29 +181,49 @@ const BancoPreguntasEdPage = () => {
     try {
       let allQuestions: any[] = [];
 
-      for (const cat of selectedSeccion.categorias) {
+      if (selectedSeccion.categorias && selectedSeccion.categorias.length > 0) {
+        for (const cat of selectedSeccion.categorias) {
+          const payload = {
+            tipoExamenId: selectedSeccion.tipoExamenId,
+            fuenteId: selectedSeccion.id,
+            modalidadId: cat.modalidadId,
+            nivelId: cat.nivelId,
+            especialidadId: cat.especialidadId || 0,
+            year: '0',
+            clasificaciones: selectedClasificacionIds,
+          };
+
+          const questions =
+            await estructuraAcademicaService.getPreguntasByFilter(payload);
+
+          // Local Filter Patch just in case
+          const filteredQuestions = questions.filter(
+            (q) =>
+              q.clasificacionId !== undefined &&
+              selectedClasificacionIds.includes(q.clasificacionId)
+          );
+
+          allQuestions = [...allQuestions, ...filteredQuestions];
+        }
+      } else {
+        // New structure
         const payload = {
           tipoExamenId: selectedSeccion.tipoExamenId,
           fuenteId: selectedSeccion.id,
-          modalidadId: cat.modalidadId,
-          nivelId: cat.nivelId,
-          especialidadId: cat.especialidadId || 0,
+          modalidadId: 0,
+          nivelId: 0,
+          especialidadId: 0,
           year: '0',
           clasificaciones: selectedClasificacionIds,
         };
-
         const questions = await estructuraAcademicaService.getPreguntasByFilter(
           payload
         );
-
-        // Local Filter Patch just in case
-        const filteredQuestions = questions.filter(
+        allQuestions = questions.filter(
           (q) =>
             q.clasificacionId !== undefined &&
             selectedClasificacionIds.includes(q.clasificacionId)
         );
-
-        allQuestions = [...allQuestions, ...filteredQuestions];
       }
 
       // Eliminar duplicados si los hay (por id de pregunta)

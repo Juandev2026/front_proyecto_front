@@ -77,21 +77,17 @@ const SimulacroExamenAscensoPage = () => {
   // Fetch Examenes Propios (AscensoId: 1)
   useEffect(() => {
     const fetchPropios = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && user?.id) {
         try {
-          const data = await examenService.getPropios();
-          // Filter by context (Ascenso = 1)
-          const filtered = data.filter(
-            (s: any) => String(s.tipoExamenId) === '1' && s.visible
-          );
-          setSeccionesPropias(filtered);
+          const data = await examenService.getPropiosByUser(1, user.id);
+          setSeccionesPropias(data);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
         }
       }
     };
     fetchPropios();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   // ---------- Memoized Derived Options ----------
 
@@ -401,6 +397,19 @@ const SimulacroExamenAscensoPage = () => {
             const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
             bloque2Questions = [...bloque2Questions, ...qs];
           }
+        } else {
+          // New structure: Fetch by fuenteId directly
+          const p = {
+            tipoExamenId: sect.tipoExamenId,
+            fuenteId: sect.fuenteId || sect.id,
+            modalidadId: 0,
+            nivelId: 0,
+            especialidadId: 0,
+            year: '0',
+            clasificaciones: [],
+          };
+          const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+          bloque2Questions = [...bloque2Questions, ...qs];
         }
       }
 
@@ -552,7 +561,7 @@ const SimulacroExamenAscensoPage = () => {
             }
           });
         }
-        return acc + (s.totalPreguntas || sectCount);
+        return acc + (s.cantidadPreguntas || s.totalPreguntas || sectCount);
       }, 0);
 
     return b1 + b2;
@@ -793,23 +802,25 @@ const SimulacroExamenAscensoPage = () => {
                   s.fuenteId || s.id
                 );
 
-                // Aggregate counts
+                // Aggregate counts from new API structure
                 const counts: Record<string, number> = {
                   CCP: 0,
                   CL: 0,
-                  RL: 0,
-                  CG: 0,
+                  RLi: 0,
+                  CGi: 0,
                 };
-                if (s.examenesPropios) {
-                  s.examenesPropios.forEach((ex: any) => {
-                    if (ex.clasificaciones) {
-                      ex.clasificaciones.forEach((c: any) => {
-                        const name = c.clasificacionNombre?.toUpperCase();
-                        if (counts.hasOwnProperty(name)) {
-                          counts[name] += c.cantidadPreguntas || 0;
-                        }
-                      });
-                    }
+
+                if (s.clasificaciones) {
+                  s.clasificaciones.forEach((c: any) => {
+                    const name = c.clasificacionNombre?.toUpperCase();
+                    if (name === 'CCP') counts.CCP += c.cantidadPreguntas || 0;
+                    if (name === 'CL') counts.CL += c.cantidadPreguntas || 0;
+                    if (name === 'RLI') counts.RLi += c.cantidadPreguntas || 0;
+                    if (name === 'CGI') counts.CGi += c.cantidadPreguntas || 0;
+                    
+                    // Support for old names if they come through
+                    if (name === 'RL') counts.RLi += c.cantidadPreguntas || 0;
+                    if (name === 'CG') counts.CGi += c.cantidadPreguntas || 0;
                   });
                 }
 

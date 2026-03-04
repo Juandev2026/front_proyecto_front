@@ -35,23 +35,26 @@ const RespuestasErroneasPage = () => {
 
   useEffect(() => {
     const fetchErroneas = async () => {
+      // Prioritize using user.id from auth context
       if (user?.id) {
         try {
           setLoading(true);
+          // Nombramiento corresponds to tipoExamenId: 2
           const data = await erroneasService.getByUser(user.id, 2);
-          setErroneas(data);
+          setErroneas(data || []);
         } catch (error) {
-          console.error('Error fetching erroneas:', error);
+          console.error('Error fetching Nombramiento erroneas:', error);
+          setErroneas([]);
         } finally {
           setLoading(false);
         }
       }
     };
 
-    if (isAuthenticated && user?.id) {
+    if (isAuthenticated && !authLoading) {
       fetchErroneas();
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, authLoading]);
 
   // Calculations
   const stats = useMemo(() => {
@@ -108,8 +111,8 @@ const RespuestasErroneasPage = () => {
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F7FE]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4790FD]"></div>
       </div>
     );
   }
@@ -293,21 +296,13 @@ const RespuestasErroneasPage = () => {
           </p>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="text-xs font-semibold text-gray-600 ml-1">
                 Filtrar por Categoría
               </label>
               <select className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50">
                 <option>Todas las categorías</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-600 ml-1">
-                Filtrar por Tipo de Pregunta
-              </label>
-              <select className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50">
-                <option>Todos los tipos</option>
               </select>
             </div>
             <div>

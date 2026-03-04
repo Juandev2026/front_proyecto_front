@@ -260,4 +260,18 @@ export const examenService = {
       throw error;
     }
   },
+
+  getPropiosByUser: async (tipoExamenId: number, userId: number): Promise<any[]> => {
+    try {
+      const response = await fetch(`${API_URL}/propios/${tipoExamenId}/${userId}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener exámenes propios por usuario');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
 };

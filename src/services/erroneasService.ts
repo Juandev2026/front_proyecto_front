@@ -43,10 +43,14 @@ export const erroneasService = {
     tipoExamenId?: number
   ): Promise<GrupoErroneas[]> => {
     try {
-      let url = `${API_URL}/user/${userId}`;
+      const queryParams = new URLSearchParams();
       if (tipoExamenId !== undefined) {
-        url += `?tipoExamenId=${tipoExamenId}`;
+        queryParams.append('tipoExamenId', String(tipoExamenId));
       }
+
+      const queryString = queryParams.toString();
+      const url = `${API_URL}/user/${userId}${queryString ? `?${queryString}` : ''}`;
+
       const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
