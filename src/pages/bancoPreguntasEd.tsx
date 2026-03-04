@@ -11,7 +11,9 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import {
+  preguntaService,
+} from '../services/preguntaService';
 import { examenService } from '../services/examenService';
 
 interface SeccionPropia {
@@ -91,7 +93,8 @@ const BancoPreguntasEdPage = () => {
     if (isAuthenticated && user?.id) {
       fetchSecciones();
     }
-  }, [isAuthenticated, user?.id]);
+    // We listen to user object changes to catch permission updates
+  }, [isAuthenticated, user?.id, user?.accesoIds, user?.accesoNombres]);
 
   const selectedSeccion = useMemo(() => {
     return secciones.find((s) => s.id === selectedSeccionId);
@@ -194,11 +197,11 @@ const BancoPreguntasEdPage = () => {
           };
 
           const questions =
-            await estructuraAcademicaService.getPreguntasByFilter(payload);
+            await preguntaService.examenFilter(payload);
 
           // Local Filter Patch just in case
           const filteredQuestions = questions.filter(
-            (q) =>
+            (q: any) =>
               q.clasificacionId !== undefined &&
               selectedClasificacionIds.includes(q.clasificacionId)
           );
@@ -216,11 +219,11 @@ const BancoPreguntasEdPage = () => {
           year: '0',
           clasificaciones: selectedClasificacionIds,
         };
-        const questions = await estructuraAcademicaService.getPreguntasByFilter(
+        const questions = await preguntaService.examenFilter(
           payload
         );
         allQuestions = questions.filter(
-          (q) =>
+          (q: any) =>
             q.clasificacionId !== undefined &&
             selectedClasificacionIds.includes(q.clasificacionId)
         );

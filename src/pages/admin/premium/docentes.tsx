@@ -742,7 +742,7 @@ const AdminPremiumDocentes = () => {
             </div>
 
             {/* Dropdown Filter */}
-            <div className="relative w-full md:w-48">
+            <div className="relative w-full md:w-64">
               <select
                 className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-base rounded-md bg-white"
                 value={filterOption}

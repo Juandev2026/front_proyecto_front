@@ -47,7 +47,6 @@ export const useAuth = () => {
       const status = await authService.checkStatus();
 
       if (status) {
-        // Update localStorage
         if (status.role) localStorage.setItem('role', status.role);
         if (status.fullName) localStorage.setItem('fullName', status.fullName);
         if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
@@ -78,7 +77,6 @@ export const useAuth = () => {
           especialidadId: syncUser.especialidadId || (localStorage.getItem('especialidadId') ? Number(localStorage.getItem('especialidadId')) : undefined),
         });
 
-        // Sync filters in background
         if (syncUser.id) {
           authService.getUserFilters(syncUser.id).then(filters => {
             if (filters.examenes && filters.examenes.length > 0) {
@@ -118,7 +116,6 @@ export const useAuth = () => {
 
     setIsAuthenticated(true);
     
-    // Initial load from storage logic moved to separate helper if needed but here as block
     const role = localStorage.getItem('role');
     const fullName = localStorage.getItem('fullName');
     const userId = localStorage.getItem('userId');

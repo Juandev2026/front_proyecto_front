@@ -5,7 +5,6 @@ import {
   UserIcon,
   AcademicCapIcon,
   LockClosedIcon,
-  CalendarIcon,
 } from '@heroicons/react/solid';
 
 import AdminLayout from '../../components/AdminLayout';
@@ -17,7 +16,6 @@ import {
   TipoAcceso,
 } from '../../services/tipoAccesoService';
 import { userService, User } from '../../services/userService';
-import { formatDateForInput, parseInputDateToISO } from '../../utils/dateUtils';
 import { exportToExcel } from '../../utils/excelUtils';
 
 interface AcademicAccess {
@@ -92,9 +90,14 @@ const UsersPage = () => {
       newDate.setMonth(today.getMonth() + 10);
     }
 
+    const isoDate = newDate.toISOString();
+    const simpleDate = isoDate.split('T')[0]; // YYYY-MM-DD
+
     setFormData((prev) => ({
       ...prev,
-      fechaExpiracion: newDate.toISOString(),
+      fechaExpiracion: isoDate,
+      fechaFin: simpleDate,
+      fechaInicio: new Date().toISOString().split('T')[0],
     }));
   };
 
@@ -244,7 +247,7 @@ const UsersPage = () => {
       if (!payload.estado) payload.estado = 'Activo';
       if (!payload.tiempo) payload.tiempo = 1;
 
-      if (payload.role !== 'Premium' && payload.role !== 'Admin') {
+      if (payload.role !== 'Premium' && payload.role !== 'Admin' && payload.role !== 'Invitado') {
         payload.ie = '';
         payload.observaciones = '';
         payload.accesoIds = [];
@@ -255,7 +258,8 @@ const UsersPage = () => {
       if (
         payload.role === 'Premium' ||
         payload.role === 'Admin' ||
-        payload.role === 'Client'
+        payload.role === 'Client' ||
+        payload.role === 'Invitado'
       ) {
         payload.userExamenes = userExamenes;
       }
@@ -483,6 +487,7 @@ const UsersPage = () => {
             <option value="Admin">Admin</option>
             <option value="Client">Client</option>
             <option value="Premium">Premium</option>
+            <option value="Invitado">Invitado</option>
           </select>
           <button
             onClick={handleExportExcel}
@@ -679,14 +684,28 @@ const UsersPage = () => {
                   </label>
                   <select
                     value={formData.role ?? 'Client'}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const role = e.target.value;
+                      setFormData((prev) => {
+                        const newData = { ...prev, role };
+                        if (role === 'Invitado') {
+                          const date = new Date();
+                          date.setDate(date.getDate() + 45); // 1.5 months trial
+                          const iso = date.toISOString();
+                          newData.fechaExpiracion = iso;
+                          newData.fechaFin = iso.split('T')[0];
+                          newData.fechaInicio = new Date().toISOString().split('T')[0];
+                          setExpirationMode('custom');
+                        }
+                        return newData;
+                      });
+                    }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                   >
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
                     <option value="Premium">Premium</option>
+                    <option value="Invitado">Invitado</option>
                   </select>
                 </div>
 
@@ -853,6 +872,7 @@ const UsersPage = () => {
                 {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Premium, Admin o Client) === */}
                 {(formData.role === 'Premium' ||
                   formData.role === 'Admin' ||
+                  formData.role === 'Invitado' ||
                   formData.role === 'Client') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
@@ -1089,15 +1109,44 @@ const UsersPage = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 3: INFORMACIÓN DE PAGO (Premium o Admin) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                {/* === SECCIÓN 3: INFORMACIÓN DE SUSCRIPCIÓN (Premium, Admin o Invitado) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCardIcon className="w-5 h-5 text-[#4a90f9]" />
                       <h4 className="font-bold text-[#4a90f9]">
-                        Información de Pago
+                        Información de Suscripción
                       </h4>
                     </div>
+
+                    {/* Selector de Presets */}
+                    <div className="space-y-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      {[
+                        { key: '1year', label: '1 año desde hoy' },
+                        { key: '5months', label: '5 meses desde hoy' },
+                        { key: '10months', label: '10 meses desde hoy' },
+                        { key: 'custom', label: 'Elegir fecha específica' },
+                      ].map(({ key, label }) => (
+                        <label
+                          key={key}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="expiration-preset"
+                            checked={expirationMode === key}
+                            onChange={() =>
+                              key !== 'custom'
+                                ? handleExpirationPresetChange(key as any)
+                                : setExpirationMode('custom')
+                            }
+                            className="w-4 h-4 accent-[#4a90f9]"
+                          />
+                          <span className="text-sm text-gray-800">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">
                         Plan
@@ -1107,7 +1156,7 @@ const UsersPage = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            [e.target.name || 'planId']: Number(e.target.value),
+                            planId: Number(e.target.value),
                           } as any)
                         }
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
@@ -1120,6 +1169,7 @@ const UsersPage = () => {
                         ))}
                       </select>
                     </div>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm text-gray-700 mb-1">
@@ -1139,17 +1189,23 @@ const UsersPage = () => {
                       </div>
                       <div>
                         <label className="block text-sm text-gray-700 mb-1">
-                          F. Fin
+                          F. Fin / Expiración
                         </label>
                         <input
                           type="date"
-                          value={(formData as any).fechaFin ?? ''}
-                          onChange={(e) =>
+                          value={
+                            (formData as any).fechaFin || 
+                            (formData.fechaExpiracion ? formData.fechaExpiracion.split('T')[0] : '')
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
                             setFormData({
                               ...formData,
-                              fechaFin: e.target.value,
-                            } as any)
-                          }
+                              fechaFin: val,
+                              fechaExpiracion: val ? new Date(val).toISOString() : undefined,
+                            } as any);
+                            setExpirationMode('custom');
+                          }}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         />
                       </div>
@@ -1157,8 +1213,8 @@ const UsersPage = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 5: TIPO DE ACCESO (Solo Premium o Admin) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                {/* === SECCIÓN 4: TIPO DE ACCESO (Premium, Admin o Invitado) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <LockClosedIcon className="w-5 h-5 text-[#4a90f9]" />
@@ -1204,61 +1260,6 @@ const UsersPage = () => {
                     </div>
                   </div>
                 )}
-
-                {/* === SECCIÓN 6: FECHA EXPIRACIÓN (Solo Premium o Admin) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin') && (
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CalendarIcon className="w-5 h-5 text-[#4a90f9]" />
-                      <h4 className="font-bold text-[#4a90f9]">
-                        Fecha de expiración
-                      </h4>
-                    </div>
-                    <div className="space-y-2 mb-3">
-                      {[
-                        { key: '1year', label: '1 año desde hoy' },
-                        { key: '5months', label: '5 meses desde hoy' },
-                        { key: '10months', label: '10 meses desde hoy' },
-                        { key: 'custom', label: 'Elegir fecha específica' },
-                      ].map(({ key, label }) => (
-                        <label
-                          key={key}
-                          className="flex items-center gap-3 cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name="expiration-preset"
-                            checked={expirationMode === key}
-                            onChange={() =>
-                              key !== 'custom'
-                                ? handleExpirationPresetChange(key as any)
-                                : setExpirationMode('custom')
-                            }
-                            className="w-4 h-4 accent-[#4a90f9]"
-                          />
-                          <span className="text-sm text-gray-800">{label}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {expirationMode === 'custom' && (
-                      <input
-                        type="datetime-local"
-                        value={formatDateForInput(formData.fechaExpiracion)}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            fechaExpiracion: parseInputDateToISO(
-                              e.target.value
-                            ),
-                          })
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Botón Guardar */}
                 <button
                   type="submit"
                   className="w-full bg-[#4a90f9] hover:bg-[#001d4a] text-white font-bold rounded-xl py-3 text-sm transition-colors shadow-lg"

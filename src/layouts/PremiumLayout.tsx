@@ -39,7 +39,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { user, isAuthenticated, loading, loginExamenes } = useAuth();
+  const { user, isAuthenticated, loading, loginExamenes, logout } = useAuth();
 
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -102,18 +102,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   }, [isAuthenticated]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('fullName');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('nivelId');
-    localStorage.removeItem('role');
-    localStorage.removeItem('accesoNombres');
-    localStorage.removeItem('accesoIds');
-    localStorage.removeItem('loginExamenes');
-    localStorage.removeItem('especialidad');
-    localStorage.removeItem('especialidadId');
-    localStorage.removeItem('fechaExpiracion');
-    window.location.href = '/login';
+    logout();
   };
 
   // State for expanded menu items

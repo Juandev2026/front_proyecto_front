@@ -11,8 +11,9 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { ExamenLogin } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import {
+  preguntaService,
+} from '../services/preguntaService';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -21,11 +22,10 @@ interface FilterOption {
 }
 
 const BancoPreguntasAscensoPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, loginExamenes } = useAuth();
   const router = useRouter();
 
-  // Examenes from login response
-  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
+  // Examenes from login response (Now coming from useAuth)
   // Current Selection State (Locked to Ascenso - ID: '1')
   const [selectedTipoExamenId] = useState<string>('1');
   const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
@@ -42,20 +42,6 @@ const BancoPreguntasAscensoPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Load examenes from localStorage
-  useEffect(() => {
-    if (isAuthenticated) {
-      const stored = localStorage.getItem('loginExamenes');
-      if (stored) {
-        try {
-          const parsed: ExamenLogin[] = JSON.parse(stored);
-          setLoginExamenes(parsed);
-        } catch (e) {
-          console.error('Error parsing loginExamenes:', e);
-        }
-      }
-    }
-  }, [isAuthenticated]);
 
   // ---------- Memoized Derived Options ----------
 
@@ -238,13 +224,14 @@ const BancoPreguntasAscensoPage = () => {
         clasificaciones: clasificacionIds,
       };
 
-      let questions = await estructuraAcademicaService.getPreguntasByFilter(
+      // 4. LLAMADA AL SERVICIO
+      let questions = await preguntaService.examenFilter(
         payloadFiltro
       );
 
       // Local Filter Patch
       if (questions.length > 0) {
-        questions = questions.filter((q) => {
+        questions = questions.filter((q: any) => {
           const matchYear =
             finalYearValue === '0' ||
             String(q.year) === finalYearValue ||

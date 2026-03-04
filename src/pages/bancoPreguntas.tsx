@@ -12,8 +12,6 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { ExamenLogin } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
 import {
   preguntaService,
   ClasificacionExamen,
@@ -26,11 +24,10 @@ interface FilterOption {
 }
 
 const BancoPreguntasPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, loginExamenes } = useAuth();
   const router = useRouter();
 
-  // Examenes from login response
-  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
+  // Examenes from login response (Now coming from useAuth)
   const [allClasificaciones, setAllClasificaciones] = useState<
     ClasificacionExamen[]
   >([]);
@@ -64,19 +61,9 @@ const BancoPreguntasPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Load examenes from localStorage
+  // Fetch classifications
   useEffect(() => {
     if (isAuthenticated) {
-      const stored = localStorage.getItem('loginExamenes');
-      if (stored) {
-        try {
-          const parsed: ExamenLogin[] = JSON.parse(stored);
-          setLoginExamenes(parsed);
-        } catch (e) {
-          console.error('Error parsing loginExamenes:', e);
-        }
-      }
-
       // Fetch dynamic classifications from API
       preguntaService
         .getClasificaciones()
@@ -417,14 +404,14 @@ const BancoPreguntasPage = () => {
       console.log('Enviando filtro a la API:', payloadFiltro);
 
       // 4. LLAMADA AL SERVICIO
-      console.log('Calling evaluacionService.calificar...');
-      let questions = await estructuraAcademicaService.getPreguntasByFilter(
+      console.log('Calling preguntaService.examenFilter...');
+      let questions = await preguntaService.examenFilter(
         payloadFiltro
       );
 
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
       if (questions.length > 0) {
-        questions = questions.filter((q) => {
+        questions = questions.filter((q: any) => {
           // 1. Filtrar por año (si tu API devuelve q.year o q.anio)
           const matchYear =
             finalYearValue === '0' ||
