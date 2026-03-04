@@ -39,7 +39,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { user, isAuthenticated, loading, loginExamenes, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
 
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -78,18 +78,16 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
     }
 
     const fetchEdAvailability = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && user?.id) {
         try {
-          const data = await examenService.getPropios();
-          const hasNombramiento = data.some(
-            (s) => String(s.tipoExamenId) === '2' && s.visible
-          );
-          const hasAscenso = data.some(
-            (s) => String(s.tipoExamenId) === '1' && s.visible
-          );
+          // Use getPropiosByUser with the actual user ID for accurate per-user availability
+          const [dataNombramiento, dataAscenso] = await Promise.all([
+            examenService.getPropiosByUser(2, user.id).catch(() => []),
+            examenService.getPropiosByUser(1, user.id).catch(() => []),
+          ]);
           const newState = {
-            nombramiento: hasNombramiento,
-            ascenso: hasAscenso,
+            nombramiento: Array.isArray(dataNombramiento) && dataNombramiento.length > 0,
+            ascenso: Array.isArray(dataAscenso) && dataAscenso.length > 0,
           };
           setAvailableEdContexts(newState);
           localStorage.setItem('edAvailability', JSON.stringify(newState));
@@ -99,7 +97,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       }
     };
     fetchEdAvailability();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -220,19 +218,13 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   ];
 
   const menuItems = React.useMemo(() => {
-    const hasOfficialNombramiento = loginExamenes.some((e: any) => String(e.tipoExamenId) === '2');
-    const hasOfficialAscenso = loginExamenes.some((e: any) => String(e.tipoExamenId) === '1');
-
     // Helper to filter children based on availability
+    // 'Banco de Preguntas' is always shown if the parent section is visible (access is controlled by accesoNombres)
+    // 'Banco de Preguntas ED' is only shown if ED exams are available for that context
     const filterChildren = (items: any[], context: 'nombramiento' | 'ascenso') => {
-      const hasOfficial = context === 'nombramiento' ? hasOfficialNombramiento : hasOfficialAscenso;
-
       return items.filter(child => {
         if (child.name === 'Banco de Preguntas ED') {
           return availableEdContexts[context];
-        }
-        if (child.name === 'Banco de Preguntas') {
-          return hasOfficial;
         }
         return true;
       });
@@ -262,7 +254,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       }
       return item;
     });
-  }, [user?.accesoNombres, availableEdContexts, loginExamenes]);
+  }, [user?.accesoNombres, availableEdContexts]);
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">

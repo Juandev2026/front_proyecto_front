@@ -48,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       'accesoNombres',
       'accesoIds',
       'loginExamenes',
+      'edAvailability',
     ];
     authKeys.forEach((key) => localStorage.removeItem(key));
     setIsAuthenticated(false);
@@ -108,10 +109,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             try {
               const filters = await authService.getUserFilters(syncUser.id);
               if (filters && filters.examenes) {
-                const strExams = JSON.stringify(filters.examenes);
+                const rawExamenes = filters.examenes;
+
+                // PATCH: Build Nombramiento/Ascenso entries from userExamenes if missing
+                const userExamenesList: any[] = mergedUser.userExamenes || [];
+                const hasNombramiento = rawExamenes.some((e: any) => String(e.tipoExamenId) === '2');
+                const hasAscenso = rawExamenes.some((e: any) => String(e.tipoExamenId) === '1');
+                const accesoNombres: string[] = mergedUser.accesoNombres || [];
+                const canNombramiento = accesoNombres.some((a: string) => a.toLowerCase().includes('nombramiento'));
+                const canAscenso = accesoNombres.some((a: string) => a.toLowerCase().includes('ascenso'));
+
+                const extra: any[] = [];
+                if (!hasNombramiento && canNombramiento) {
+                  userExamenesList.forEach((ue: any, idx: number) => {
+                    extra.push({ id: -(idx + 1), tipoExamenId: 2, tipoExamenNombre: 'Nombramiento', fuenteId: 1, fuenteNombre: 'MINEDU Nombramiento', modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre, nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO', especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null, years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [] });
+                  });
+                }
+                if (!hasAscenso && canAscenso) {
+                  userExamenesList.forEach((ue: any, idx: number) => {
+                    extra.push({ id: -(idx + 500), tipoExamenId: 1, tipoExamenNombre: 'Ascenso', fuenteId: 2, fuenteNombre: 'MINEDU Ascenso', modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre, nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO', especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null, years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [] });
+                  });
+                }
+
+                const allExamenes = [...rawExamenes, ...extra];
+                const strExams = JSON.stringify(allExamenes);
                 if (strExams !== localStorage.getItem('loginExamenes')) {
                   localStorage.setItem('loginExamenes', strExams);
-                  setLoginExamenes(filters.examenes);
+                  setLoginExamenes(allExamenes);
                 }
                 lastSyncTime.current = Date.now();
               }

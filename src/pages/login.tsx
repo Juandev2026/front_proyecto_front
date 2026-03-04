@@ -68,8 +68,72 @@ const Login = () => {
       };
       
       const examenes = fullResponse.examenes || [];
-      const fullName = response.fullName || response.nombreCompleto || response.email;
+      
+      // --- PATCH: Build Nombramiento/Ascenso entries from userExamenes if missing from examenes ---
+      // The backend may only return Directivos (tipoExamenId:3) in examenes,
+      // but userExamenes contains the user's registered modalidad/nivel/especialidad combos
+      const userExamenesList: any[] = loginUser.userExamenes || [];
+      const hasNombramiento = examenes.some((e: any) => String(e.tipoExamenId) === '2');
+      const hasAscenso = examenes.some((e: any) => String(e.tipoExamenId) === '1');
+      
+      const accesoNombres: string[] = response.accesoNombres || [];
+      const canAccessNombramiento = accesoNombres.some((a: string) => a.toLowerCase().includes('nombramiento'));
+      const canAccessAscenso = accesoNombres.some((a: string) => a.toLowerCase().includes('ascenso'));
 
+      const extraExamenes: any[] = [];
+
+      if (!hasNombramiento && canAccessNombramiento && userExamenesList.length > 0) {
+        userExamenesList.forEach((ue: any, idx: number) => {
+          extraExamenes.push({
+            id: -(idx + 1), // negative id to avoid collision
+            tipoExamenId: 2,
+            tipoExamenNombre: 'Nombramiento',
+            fuenteId: 1,
+            fuenteNombre: 'MINEDU Nombramiento',
+            modalidadId: ue.modalidadId,
+            modalidadNombre: ue.modalidadNombre,
+            nivelId: ue.nivelId || 0,
+            nivelNombre: ue.nivelNombre || 'NINGUNO',
+            especialidadId: ue.especialidadId || null,
+            especialidadNombre: ue.especialidadNombre || null,
+            years: [{ year: 0, cantidadPreguntas: 0 }],
+            cantidadPreguntas: 0,
+            clasificaciones: [],
+          });
+        });
+      }
+
+      if (!hasAscenso && canAccessAscenso && userExamenesList.length > 0) {
+        userExamenesList.forEach((ue: any, idx: number) => {
+          extraExamenes.push({
+            id: -(idx + 500),
+            tipoExamenId: 1,
+            tipoExamenNombre: 'Ascenso',
+            fuenteId: 2,
+            fuenteNombre: 'MINEDU Ascenso',
+            modalidadId: ue.modalidadId,
+            modalidadNombre: ue.modalidadNombre,
+            nivelId: ue.nivelId || 0,
+            nivelNombre: ue.nivelNombre || 'NINGUNO',
+            especialidadId: ue.especialidadId || null,
+            especialidadNombre: ue.especialidadNombre || null,
+            years: [{ year: 0, cantidadPreguntas: 0 }],
+            cantidadPreguntas: 0,
+            clasificaciones: [],
+          });
+        });
+      }
+
+      const allExamenes = [...examenes, ...extraExamenes];
+      // -------------------------------------------------------------------------------
+
+      if (allExamenes.length > 0) {
+        localStorage.setItem('loginExamenes', JSON.stringify(allExamenes));
+      } else {
+        localStorage.removeItem('loginExamenes');
+      }
+
+      const fullName = response.fullName || response.nombreCompleto || response.email;
       if (fullName) localStorage.setItem('fullName', fullName);
       if (response.id) localStorage.setItem('userId', String(response.id));
       if (response.nivelId)
