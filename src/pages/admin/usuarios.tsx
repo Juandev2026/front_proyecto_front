@@ -125,7 +125,7 @@ const UsersPage = () => {
   };
 
   const getEffectiveRole = (user: User) => {
-    if (user.role?.toUpperCase() === 'PREMIUM') {
+    if (user.role?.toUpperCase() === 'PREMIUM' || user.role?.toUpperCase() === 'INVITADO') {
       if (!user.fechaExpiracion || user.fechaExpiracion === '-')
         return 'Client';
       const expDate = new Date(user.fechaExpiracion);

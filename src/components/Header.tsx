@@ -67,7 +67,8 @@ const Menu = () => {
                     isAuthenticated &&
                     (user?.role?.toUpperCase() === 'PREMIUM' ||
                       user?.role?.toUpperCase() === 'ADMIN' ||
-                      user?.role?.toUpperCase() === 'SUBADMIN')
+                      user?.role?.toUpperCase() === 'SUBADMIN' ||
+                      user?.role?.toUpperCase() === 'INVITADO')
                       ? '/bancoPreguntas'
                       : '/planes?showVideo=true'
                   }
@@ -81,7 +82,8 @@ const Menu = () => {
                     {isAuthenticated &&
                     (user?.role?.toUpperCase() === 'PREMIUM' ||
                       user?.role?.toUpperCase() === 'ADMIN' ||
-                      user?.role?.toUpperCase() === 'SUBADMIN')
+                      user?.role?.toUpperCase() === 'SUBADMIN' ||
+                      user?.role?.toUpperCase() === 'INVITADO')
                       ? '👉 Acceder al AVEND ESCALA'
                       : '👉 Practica con simulacros y preguntas tipo examen MINEDU'}
                   </div>
@@ -97,7 +99,8 @@ const Menu = () => {
                       isAuthenticated &&
                       (user?.role?.toUpperCase() === 'PREMIUM' ||
                         user?.role?.toUpperCase() === 'ADMIN' ||
-                        user?.role?.toUpperCase() === 'SUBADMIN')
+                        user?.role?.toUpperCase() === 'SUBADMIN' ||
+                        user?.role?.toUpperCase() === 'INVITADO')
                         ? '/bancoPreguntas'
                         : '/planes?showVideo=true'
                     }
@@ -111,7 +114,8 @@ const Menu = () => {
                       {isAuthenticated &&
                       (user?.role?.toUpperCase() === 'PREMIUM' ||
                         user?.role?.toUpperCase() === 'ADMIN' ||
-                        user?.role?.toUpperCase() === 'SUBADMIN')
+                        user?.role?.toUpperCase() === 'SUBADMIN' ||
+                        user?.role?.toUpperCase() === 'INVITADO')
                         ? '👉 Acceder al AVEND ESCALA'
                         : '👉 Practica con simulacros y preguntas tipo examen MINEDU'}
                     </div>
