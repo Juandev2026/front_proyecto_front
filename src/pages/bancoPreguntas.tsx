@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   AcademicCapIcon,
@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
+import { authService } from '../services/authService';
 import {
   preguntaService,
   ClasificacionExamen,
@@ -24,10 +25,13 @@ interface FilterOption {
 }
 
 const BancoPreguntasPage = () => {
-  const { isAuthenticated, loading, loginExamenes } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
 
-  // Examenes from login response (Now coming from useAuth)
+  // Fresh examenes fetched directly from API on page load (not from login cache)
+  const [examenes, setExamenes] = useState<any[]>([]);
+  const [isFetchingExamenes, setIsFetchingExamenes] = useState(false);
+
   const [allClasificaciones, setAllClasificaciones] = useState<
     ClasificacionExamen[]
   >([]);
@@ -61,10 +65,66 @@ const BancoPreguntasPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
+  // Fetch FRESH examenes from API every time the page loads
+  // This ensures new data added to DB is reflected without re-login
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    setIsFetchingExamenes(true);
+    authService
+      .getUserFilters(user.id)
+      .then((filters) => {
+        const rawExamenes = filters.examenes || [];
+
+        // Build Nombramiento/Ascenso entries from userExamenes if missing
+        const userExamenesList: any[] = (filters.user as any)?.userExamenes || user?.userExamenes || [];
+        const accesoNombres: string[] = user?.accesoNombres || [];
+        const hasNombramiento = rawExamenes.some((e: any) => String(e.tipoExamenId) === '2');
+        const hasAscenso = rawExamenes.some((e: any) => String(e.tipoExamenId) === '1');
+        const canNombramiento = accesoNombres.some((a) => a.toLowerCase().includes('nombramiento'));
+        const canAscenso = accesoNombres.some((a) => a.toLowerCase().includes('ascenso'));
+
+        const extra: any[] = [];
+        if (!hasNombramiento && canNombramiento && userExamenesList.length > 0) {
+          userExamenesList.forEach((ue: any, idx: number) => {
+            extra.push({
+              id: -(idx + 1), tipoExamenId: 2, tipoExamenNombre: 'Nombramiento',
+              fuenteId: 1, fuenteNombre: 'MINEDU Nombramiento',
+              modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
+              nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
+              especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
+              years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+            });
+          });
+        }
+        if (!hasAscenso && canAscenso && userExamenesList.length > 0) {
+          userExamenesList.forEach((ue: any, idx: number) => {
+            extra.push({
+              id: -(idx + 500), tipoExamenId: 1, tipoExamenNombre: 'Ascenso',
+              fuenteId: 2, fuenteNombre: 'MINEDU Ascenso',
+              modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
+              nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
+              especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
+              years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+            });
+          });
+        }
+
+        setExamenes([...rawExamenes, ...extra]);
+      })
+      .catch((err) => {
+        console.error('Error fetching fresh examenes:', err);
+        // Fallback: use localStorage cache if API fails
+        const cached = localStorage.getItem('examenes');
+        if (cached) {
+          try { setExamenes(JSON.parse(cached)); } catch {}
+        }
+      })
+      .finally(() => setIsFetchingExamenes(false));
+  }, [isAuthenticated, user?.id]);
+
   // Fetch classifications
   useEffect(() => {
     if (isAuthenticated) {
-      // Fetch dynamic classifications from API
       preguntaService
         .getClasificaciones()
         .then((data) => setAllClasificaciones(data))
@@ -76,7 +136,7 @@ const BancoPreguntasPage = () => {
 
   const tiposExamenData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes.forEach((e) => {
+    examenes.forEach((e) => {
       if (!map.has(e.tipoExamenId)) {
         map.set(e.tipoExamenId, {
           id: e.tipoExamenId,
@@ -85,11 +145,11 @@ const BancoPreguntasPage = () => {
       }
     });
     return Array.from(map.values());
-  }, [loginExamenes]);
+  }, [examenes]);
 
   const modalidadesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           !selectedTipoExamenId ||
@@ -109,11 +169,11 @@ const BancoPreguntasPage = () => {
         m.nombre !== 'string' &&
         m.nombre.toUpperCase() !== 'NINGUNO'
     );
-  }, [loginExamenes, selectedTipoExamenId]);
+  }, [examenes, selectedTipoExamenId]);
 
   const nivelesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           (!selectedTipoExamenId ||
@@ -129,11 +189,11 @@ const BancoPreguntasPage = () => {
     return Array.from(map.values()).filter(
       (n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO' && n.nombre !== 'string'
     );
-  }, [loginExamenes, selectedTipoExamenId, selectedModalidadId]);
+  }, [examenes, selectedTipoExamenId, selectedModalidadId]);
 
   const especialidadesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           (!selectedTipoExamenId ||
@@ -155,7 +215,7 @@ const BancoPreguntasPage = () => {
       (e) => e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
     );
   }, [
-    loginExamenes,
+    examenes,
     selectedTipoExamenId,
     selectedModalidadId,
     selectedNivelId,
@@ -163,7 +223,7 @@ const BancoPreguntasPage = () => {
 
   const aniosData = useMemo(() => {
     const set = new Set<string>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           (!selectedTipoExamenId ||
@@ -183,14 +243,14 @@ const BancoPreguntasPage = () => {
       });
     return Array.from(set)
       .filter((y) => y !== 'null' && y !== 'undefined')
-      .map((y) => (y === '0' ? 'Único' : y))
+      .map((y) => (y === '0' ? 'Ãšnico' : y))
       .sort((a, b) => {
-        if (a === 'Único') return 1;
-        if (b === 'Único') return -1;
+        if (a === 'Ãšnico') return 1;
+        if (b === 'Ãšnico') return -1;
         return Number(b) - Number(a);
       });
   }, [
-    loginExamenes,
+    examenes,
     selectedTipoExamenId,
     selectedModalidadId,
     selectedNivelId,
@@ -240,7 +300,7 @@ const BancoPreguntasPage = () => {
 
       if (resolvedNivelId === null) return;
 
-      const exam = loginExamenes.find(
+      const exam = examenes.find(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
@@ -248,7 +308,7 @@ const BancoPreguntasPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : !e.especialidadId || e.especialidadId === 0) &&
-          ((selectedYear === 'Único' &&
+          ((selectedYear === 'Ãšnico' &&
             (e.year === '0' || Number(e.year) === 0)) ||
             String(e.year) === selectedYear ||
             e.years?.some((y) => String(y.year) === selectedYear))
@@ -266,21 +326,21 @@ const BancoPreguntasPage = () => {
               (c) => c.clasificacionNombre === name
             );
 
-            // Buscar la cantidad exacta para el año seleccionado
+            // Buscar la cantidad exacta para el aÃ±o seleccionado
             let cantidadExacta = 0;
-            const isUnico = selectedYear === 'Único';
+            const isUnico = selectedYear === 'Ãšnico';
 
             if (isUnico || !item.years || item.years.length === 0) {
               cantidadExacta = item.cantidadPreguntas;
             } else {
-              // Buscar específicamente el año en el array de la clasificación
+              // Buscar especÃ­ficamente el aÃ±o en el array de la clasificaciÃ³n
               const yearData = item.years.find(
                 (y: any) => String(y.year) === selectedYear
               );
               cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
             }
 
-            // Evitar duplicados si la API mandara la misma clasificación dos veces por error
+            // Evitar duplicados si la API mandara la misma clasificaciÃ³n dos veces por error
             if (!countMap[name]) {
               countMap[name] = {
                 cantidad: cantidadExacta,
@@ -324,7 +384,7 @@ const BancoPreguntasPage = () => {
     selectedNivelId,
     selectedEspecialidadId,
     selectedYear,
-    loginExamenes,
+    examenes,
     nivelesData,
     allClasificaciones,
   ]);
@@ -355,7 +415,7 @@ const BancoPreguntasPage = () => {
           : '0');
 
       // 1. Buscamos el examen en la metadata para sacar TODOS los IDs
-      const exam = loginExamenes.find(
+      const exam = examenes.find(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
@@ -363,7 +423,7 @@ const BancoPreguntasPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : true) &&
-          ((selectedYear === 'Único' &&
+          ((selectedYear === 'Ãšnico' &&
             (e.year === '0' || Number(e.year) === 0)) ||
             String(e.year) === selectedYear ||
             e.years?.some((y) => String(y.year) === selectedYear))
@@ -372,13 +432,13 @@ const BancoPreguntasPage = () => {
       // Si no encuentra el examen en la memoria, no podemos armar el payload
       if (!exam) {
         alert(
-          'Error de sincronización: No se encontró la metadata del examen.'
+          'Error de sincronizaciÃ³n: No se encontrÃ³ la metadata del examen.'
         );
         setIsLoading(false);
         return;
       }
 
-      const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
+      const finalYearValue = selectedYear === 'Ãšnico' ? '0' : selectedYear;
 
       // 2. Extraemos los ClasificacionIds (Igual que antes)
       const clasificacionIds: number[] = [];
@@ -396,9 +456,9 @@ const BancoPreguntasPage = () => {
         fuenteId: exam.fuenteId || 0, // <-- Aseguramos que vaya
         modalidadId: exam.modalidadId,
         nivelId: exam.nivelId,
-        especialidadId: exam.especialidadId || 0, // Si es null, enviamos 0 según tu JSON
+        especialidadId: exam.especialidadId || 0, // Si es null, enviamos 0 segÃºn tu JSON
         year: finalYearValue,
-        clasificaciones: clasificacionIds, // Asegúrate de que tu API reciba este array para filtrar por RL, CL, CCP
+        clasificaciones: clasificacionIds, // AsegÃºrate de que tu API reciba este array para filtrar por RL, CL, CCP
       };
 
       console.log('Enviando filtro a la API:', payloadFiltro);
@@ -412,13 +472,13 @@ const BancoPreguntasPage = () => {
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
       if (questions.length > 0) {
         questions = questions.filter((q: any) => {
-          // 1. Filtrar por año (si tu API devuelve q.year o q.anio)
+          // 1. Filtrar por aÃ±o (si tu API devuelve q.year o q.anio)
           const matchYear =
             finalYearValue === '0' ||
             String(q.year) === finalYearValue ||
             String(q.anio) === finalYearValue;
 
-          // 2. Filtrar por tipo de pregunta (Comprensión, Razonamiento, etc)
+          // 2. Filtrar por tipo de pregunta (ComprensiÃ³n, Razonamiento, etc)
           const matchClass =
             clasificacionIds.length === 0 ||
             (q.clasificacionId !== undefined &&
@@ -428,7 +488,7 @@ const BancoPreguntasPage = () => {
         });
       }
 
-      console.log(`Preguntas después del filtro local: ${questions.length}`);
+      console.log(`Preguntas despuÃ©s del filtro local: ${questions.length}`);
       // ------------------------------------------------------------------------
 
       // 5. Guardar metadata y redirigir
@@ -450,7 +510,7 @@ const BancoPreguntasPage = () => {
       setIsLoading(false);
     }
   };
-  if (loading || !isAuthenticated) {
+  if (loading || !isAuthenticated || isFetchingExamenes) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
@@ -595,7 +655,7 @@ const BancoPreguntasPage = () => {
             <div className="border border-primary rounded-lg p-4 bg-white transition-all">
               <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                 <CalendarIcon className="h-5 w-5" />
-                <span>Elige un año</span>
+                <span>Elige un aÃ±o</span>
               </div>
               <select
                 value={selectedYear}
@@ -603,7 +663,7 @@ const BancoPreguntasPage = () => {
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 disabled={aniosData.length === 0}
               >
-                <option value="">Selecciona Año</option>
+                <option value="">Selecciona AÃ±o</option>
                 {aniosData.map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -612,7 +672,7 @@ const BancoPreguntasPage = () => {
               </select>
               {selectedModalidadId && aniosData.length === 0 && !isLoading && (
                 <p className="text-red-500 text-xs mt-2 font-medium">
-                  No hay exámenes disponibles para esta selección
+                  No hay exÃ¡menes disponibles para esta selecciÃ³n
                 </p>
               )}
             </div>
@@ -708,27 +768,27 @@ const BancoPreguntasPage = () => {
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 <span className="bg-blue-100/50 text-blue-500 border border-blue-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-blue-400">📝</span>{' '}
+                                  <span className="text-blue-400">ðŸ“</span>{' '}
                                   {data.cantidad} preguntas
                                 </span>
                                 <span className="bg-green-100/50 text-green-600 border border-green-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-green-500">⭐</span>{' '}
+                                  <span className="text-green-500">â­</span>{' '}
                                   {data.puntos} pts/correcta
                                 </span>
                                 <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-purple-400">🎯</span>{' '}
-                                  Máx: {data.cantidad * data.puntos} pts
+                                  <span className="text-purple-400">ðŸŽ¯</span>{' '}
+                                  MÃ¡x: {data.cantidad * data.puntos} pts
                                 </span>
                                 <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-orange-400">✅</span>{' '}
-                                  Mínimo: {data.minimo} pts
+                                  <span className="text-orange-400">âœ…</span>{' '}
+                                  MÃ­nimo: {data.minimo} pts
                                 </span>
                                 <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-yellow-500">⏱️</span>{' '}
+                                  <span className="text-yellow-500">â±ï¸</span>{' '}
                                   {data.tiempoPregunta} min/pregunta
                                 </span>
                                 <span className="bg-red-100/50 text-red-500 border border-red-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-red-400">⏰</span>{' '}
+                                  <span className="text-red-400">â°</span>{' '}
                                   Total: {data.cantidad * data.tiempoPregunta}{' '}
                                   min
                                 </span>
@@ -743,14 +803,14 @@ const BancoPreguntasPage = () => {
                     {/* Resumen Total */}
                     <div className="bg-[#FAFBFD] border border-gray-200 rounded-lg p-4 mt-2">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="text-lg">📊</div>
+                        <div className="text-lg">ðŸ“Š</div>
                         <span className="font-bold text-[#2B3674]">
                           Resumen Total
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>📝</span>{' '}
+                          <span>ðŸ“</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name] ? acc + curr.cantidad : acc,
@@ -759,7 +819,7 @@ const BancoPreguntasPage = () => {
                           preguntas totales
                         </span>
                         <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>⏱️</span>{' '}
+                          <span>â±ï¸</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name]
@@ -770,7 +830,7 @@ const BancoPreguntasPage = () => {
                           min totales
                         </span>
                         <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>🎯</span>{' '}
+                          <span>ðŸŽ¯</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name]
@@ -778,16 +838,16 @@ const BancoPreguntasPage = () => {
                                 : acc,
                             0
                           )}{' '}
-                          pts máximo
+                          pts mÃ¡ximo
                         </span>
                         <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>✅</span>{' '}
+                          <span>âœ…</span>{' '}
                           {Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
                               tiposPregunta[name] ? acc + curr.minimo : acc,
                             0
                           )}{' '}
-                          pts mínimo
+                          pts mÃ­nimo
                         </span>
                       </div>
                     </div>
@@ -797,7 +857,7 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
-          {/* Resumen de selección (Modalidad, Nivel, etc) */}
+          {/* Resumen de selecciÃ³n (Modalidad, Nivel, etc) */}
           {(selectedTipoExamenId ||
             selectedModalidadId ||
             selectedNivelId ||
@@ -807,7 +867,7 @@ const BancoPreguntasPage = () => {
               <div className="flex items-center gap-2 mb-6">
                 <AcademicCapIcon className="h-6 w-6 text-[#2B3674]" />
                 <h3 className="font-bold text-[#2B3674] text-lg">
-                  Resumen de selección
+                  Resumen de selecciÃ³n
                 </h3>
               </div>
 
@@ -855,7 +915,7 @@ const BancoPreguntasPage = () => {
                 )}
                 {selectedYear && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">Año</p>
+                    <p className="text-xs text-gray-500 mb-1.5 ml-1">AÃ±o</p>
                     <span className="inline-block px-4 py-1.5 border border-[#fbd38d] text-[#D69E2E] bg-[#fefcfa] rounded-md text-sm font-medium">
                       {selectedYear}
                     </span>
@@ -876,7 +936,7 @@ const BancoPreguntasPage = () => {
             <button
               onClick={handleConfirm}
               disabled={
-                // 1. Validaciones de carga y campos vacíos
+                // 1. Validaciones de carga y campos vacÃ­os
                 isLoading ||
                 !selectedModalidadId ||
                 (nivelesData.length > 0 &&
@@ -887,7 +947,7 @@ const BancoPreguntasPage = () => {
                   !selectedNivelId) ||
                 (especialidadesData.length > 0 && !selectedEspecialidadId) ||
                 (aniosData.length > 0 && !selectedYear) ||
-                // 2. NUEVA VALIDACIÓN: Bloquear si el total de preguntas es 0
+                // 2. NUEVA VALIDACIÃ“N: Bloquear si el total de preguntas es 0
                 Object.entries(conteoPreguntas).reduce(
                   (acc, [name, curr]: [string, any]) =>
                     tiposPregunta[name] ? acc + curr.cantidad : acc,
@@ -896,7 +956,7 @@ const BancoPreguntasPage = () => {
               }
               className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125"
             >
-              Confirmar selección
+              Confirmar selecciÃ³n
             </button>
           </div>
         </div>
@@ -906,3 +966,4 @@ const BancoPreguntasPage = () => {
 };
 
 export default BancoPreguntasPage;
+
