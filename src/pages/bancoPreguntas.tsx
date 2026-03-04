@@ -39,7 +39,19 @@ const BancoPreguntasPage = () => {
   const router = useRouter();
 
   // Fresh examenes fetched directly from API on page load (not from login cache)
-  const [examenes, setExamenes] = useState<any[]>([]);
+  const [examenes, setExamenes] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('examenes');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
   const [isFetchingExamenes, setIsFetchingExamenes] = useState(false);
 
   const [allClasificaciones, setAllClasificaciones] = useState<
@@ -75,65 +87,94 @@ const BancoPreguntasPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Fetch FRESH examenes from API every time the page loads
-  // This ensures new data added to DB is reflected without re-login
+  // Fetch FRESH data from API
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
-    setIsFetchingExamenes(true);
-    
-    // Also sync the global auth context to ensure user permissions are up to date
-    refreshAuth().catch(() => {});
 
-    authService
-      .getUserFilters(user.id)
-      .then((filters) => {
+    // Only show blocking loader if we have NO data in cache
+    if (examenes.length === 0) {
+      setIsFetchingExamenes(true);
+    }
+
+    const loadData = async () => {
+      try {
+        // Run all critical initialization in parallel
+        const [filters, classifications] = await Promise.all([
+          authService.getUserFilters(user.id),
+          preguntaService.getClasificaciones().catch(() => []),
+          refreshAuth().catch(() => null),
+        ]);
+
+        // Update classifications
+        if (classifications && classifications.length > 0) {
+          setAllClasificaciones(classifications);
+        }
+
+        // Process examenes
         const rawExamenes = filters.examenes || [];
         const apiUser = (filters as any).user || user;
-
-        // Build Nombramiento/Ascenso entries from userExamenes if missing
         const userExamenesList: any[] = apiUser?.userExamenes || [];
         const accesoNombres: string[] = apiUser?.accesoNombres || [];
-        const canNombramiento = accesoNombres.some((a) => a.toLowerCase().includes('nombramiento'));
-        const canAscenso = accesoNombres.some((a) => a.toLowerCase().includes('ascenso'));
+        const canNombramiento = accesoNombres.some((a) =>
+          a.toLowerCase().includes('nombramiento')
+        );
+        const canAscenso = accesoNombres.some((a) =>
+          a.toLowerCase().includes('ascenso')
+        );
 
-        // Combinamos lo que viene de la API con lo que el usuario tiene en su perfil (userExamenes)
         const combined = [...rawExamenes];
 
         if (userExamenesList.length > 0) {
           userExamenesList.forEach((ue: UserExamen, idx: number) => {
-            // Si el usuario tiene acceso a Nombramiento, aseguramos que esta modalidad/nivel de su perfil esté presente
             if (canNombramiento) {
-              const exists = combined.some(e => 
-                String(e.tipoExamenId) === '2' && 
-                Number(e.modalidadId) === Number(ue.modalidadId) && 
-                Number(e.nivelId) === Number(ue.nivelId || 0)
+              const exists = combined.some(
+                (e) =>
+                  String(e.tipoExamenId) === '2' &&
+                  Number(e.modalidadId) === Number(ue.modalidadId) &&
+                  Number(e.nivelId) === Number(ue.nivelId || 0)
               );
               if (!exists && ue.modalidadNombre) {
                 combined.push({
-                  id: -(idx + 1000), tipoExamenId: 2, tipoExamenNombre: 'Nombramiento',
-                  fuenteId: 1, fuenteNombre: 'MINEDU Nombramiento',
-                  modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
-                  nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
-                  especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
-                  years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+                  id: -(idx + 1000),
+                  tipoExamenId: 2,
+                  tipoExamenNombre: 'Nombramiento',
+                  fuenteId: 1,
+                  fuenteNombre: 'MINEDU Nombramiento',
+                  modalidadId: ue.modalidadId,
+                  modalidadNombre: ue.modalidadNombre,
+                  nivelId: ue.nivelId || 0,
+                  nivelNombre: ue.nivelNombre || 'NINGUNO',
+                  especialidadId: ue.especialidadId || null,
+                  especialidadNombre: ue.especialidadNombre || null,
+                  years: [{ year: 0, cantidadPreguntas: 0 }],
+                  cantidadPreguntas: 0,
+                  clasificaciones: [],
                 });
               }
             }
-            // Lo mismo para Ascenso
             if (canAscenso) {
-              const exists = combined.some(e => 
-                String(e.tipoExamenId) === '1' && 
-                Number(e.modalidadId) === Number(ue.modalidadId) && 
-                Number(e.nivelId) === Number(ue.nivelId || 0)
+              const exists = combined.some(
+                (e) =>
+                  String(e.tipoExamenId) === '1' &&
+                  Number(e.modalidadId) === Number(ue.modalidadId) &&
+                  Number(e.nivelId) === Number(ue.nivelId || 0)
               );
               if (!exists && ue.modalidadNombre) {
                 combined.push({
-                  id: -(idx + 2000), tipoExamenId: 1, tipoExamenNombre: 'Ascenso',
-                  fuenteId: 2, fuenteNombre: 'MINEDU Ascenso',
-                  modalidadId: ue.modalidadId, modalidadNombre: ue.modalidadNombre,
-                  nivelId: ue.nivelId || 0, nivelNombre: ue.nivelNombre || 'NINGUNO',
-                  especialidadId: ue.especialidadId || null, especialidadNombre: ue.especialidadNombre || null,
-                  years: [{ year: 0, cantidadPreguntas: 0 }], cantidadPreguntas: 0, clasificaciones: [],
+                  id: -(idx + 2000),
+                  tipoExamenId: 1,
+                  tipoExamenNombre: 'Ascenso',
+                  fuenteId: 2,
+                  fuenteNombre: 'MINEDU Ascenso',
+                  modalidadId: ue.modalidadId,
+                  modalidadNombre: ue.modalidadNombre,
+                  nivelId: ue.nivelId || 0,
+                  nivelNombre: ue.nivelNombre || 'NINGUNO',
+                  especialidadId: ue.especialidadId || null,
+                  especialidadNombre: ue.especialidadNombre || null,
+                  years: [{ year: 0, cantidadPreguntas: 0 }],
+                  cantidadPreguntas: 0,
+                  clasificaciones: [],
                 });
               }
             }
@@ -141,20 +182,19 @@ const BancoPreguntasPage = () => {
         }
 
         setExamenes(combined);
-        localStorage.setItem('examenes', JSON.stringify(combined)); // Update cache too
-      })
-      .catch((err) => {
-        console.error('Error fetching fresh examenes:', err);
-        // Fallback: use localStorage cache if API fails
-        const cached = localStorage.getItem('examenes');
-        if (cached) {
-          try { setExamenes(JSON.parse(cached)); } catch {}
-        }
-      })
-      .finally(() => setIsFetchingExamenes(false));
+        localStorage.setItem('examenes', JSON.stringify(combined));
+      } catch (err) {
+        console.error('Error fetching fresh data:', err);
+      } finally {
+        setIsFetchingExamenes(false);
+      }
+    };
+
+    loadData();
   }, [isAuthenticated, user?.id]);
 
-  // Fetch classifications
+  // Remove the old separate effect for classifications
+  /* 
   useEffect(() => {
     if (isAuthenticated) {
       preguntaService
@@ -163,6 +203,7 @@ const BancoPreguntasPage = () => {
         .catch((err) => console.error('Error fetching classifications:', err));
     }
   }, [isAuthenticated]);
+  */
 
   // ---------- Memoized Derived Options ----------
 
@@ -542,7 +583,7 @@ const BancoPreguntasPage = () => {
       setIsLoading(false);
     }
   };
-  if (loading || !isAuthenticated || isFetchingExamenes) {
+  if (loading || !isAuthenticated || (isFetchingExamenes && examenes.length === 0)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>

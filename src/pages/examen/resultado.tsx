@@ -456,7 +456,7 @@ const ResultadoPage = () => {
                 Dar nuevo examen
               </button>
               <button
-                onClick={() => router.push('/bancoPreguntas')}
+                onClick={() => router.push('/')}
                 className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
               >
                 <ArrowLeftIcon className="w-3 h-3" />

@@ -471,7 +471,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
           {!isCollapsed ? (
             <>
-              <Link href="/bancoPreguntas">
+              <Link href="/">
                 <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors">
                   <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
                   Volver a Inicio
@@ -487,7 +487,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             </>
           ) : (
             <div className="flex flex-col gap-2 items-center">
-              <Link href="/bancoPreguntas">
+              <Link href="/">
                 <a
                   className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
                   title="Volver a Inicio"
