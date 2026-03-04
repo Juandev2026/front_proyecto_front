@@ -18,17 +18,15 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 import AdminLayout from '../../../components/AdminLayout';
-import { examenService } from '../../../services/examenService';
 import { regionService, Region } from '../../../services/regionService';
 import {
   tipoAccesoService,
   TipoAcceso,
 } from '../../../services/tipoAccesoService';
 import { userService, User } from '../../../services/userService';
-import {
-  formatDateForInput,
-  parseInputDateToISO,
-} from '../../../utils/dateUtils';
+import { estructuraAcademicaService } from '../../../services/estructuraAcademicaService';
+import { premiumService, PremiumContent } from '../../../services/premiumService';
+import { log } from 'console';
 
 // Mock data type for view (adapted to match User from API partially)
 interface Docente {
@@ -75,7 +73,12 @@ const AdminPremiumDocentes = () => {
     nivelId: 0,
     especialidadId: 0,
     accesoIds: [],
+    planId: 0,
+    fechaInicio: new Date().toISOString().split('T')[0],
+    fechaExpiracion: '',
   });
+
+  const [plans, setPlans] = useState<PremiumContent[]>([]);
 
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<
@@ -125,7 +128,11 @@ const AdminPremiumDocentes = () => {
   ) => {
     setExpirationMode(mode);
     const newDate = calculateExpirationDate(mode);
-    setFormData((prev: any) => ({ ...prev, fechaExpiracion: newDate }));
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      fechaExpiracion: newDate,
+      fechaFin: newDate.split('T')[0] // Sync with fechaFin if used
+    }));
   };
 
   const calculateUserStatus = (
@@ -144,16 +151,34 @@ const AdminPremiumDocentes = () => {
 
   const fetchCatalogs = async () => {
     try {
-      const [r, t, hierarchy] = await Promise.all([
-        regionService.getAll(),
-        tipoAccesoService.getAll(),
-        examenService.getSimplifiedHierarchy(),
+      const [r, t, eaData, p] = await Promise.all([
+        regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
+        tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
+        estructuraAcademicaService.getAll().catch(err => { console.error('Error loading EstructuraAcademica:', err); return []; }),
+        premiumService.getAll().catch(err => { console.error('Error loading plans:', err); return []; }),
       ]);
       setRegions(r);
       setTiposAcceso(t);
-      setModalidades(hierarchy.modalidades.reverse() as any);
-      setNiveles(hierarchy.niveles);
-      setEspecialidades(hierarchy.especialidades);
+      
+      // eaData is ModalidadEA[]
+      const mods = eaData.map(m => ({ id: m.id, nombre: m.nombre, niveles: m.niveles }));
+      setModalidades(mods as any);
+      
+      // Flat list of levels for general usage
+      const allNivs: any[] = [];
+      const allEsps: any[] = [];
+      eaData.forEach(m => {
+        m.niveles.forEach(n => {
+          allNivs.push({ id: n.id, nombre: n.nombre, modalidadId: m.id, especialidades: n.especialidades });
+          n.especialidades.forEach(e => {
+            allEsps.push({ id: e.id, nombre: e.nombre, nivelId: n.id });
+          });
+        });
+      });
+      
+      setNiveles(allNivs);
+      setEspecialidades(allEsps);
+      setPlans(p);
     } catch (error) {
       console.error('Error fetching catalogs', error);
     }
@@ -170,27 +195,39 @@ const AdminPremiumDocentes = () => {
 
   useEffect(() => {
     if (formData.modalidadId) {
-      const filtered = niveles.filter((n) =>
-        n.modalidadIds.includes(Number(formData.modalidadId))
-      );
-      setFilteredNiveles(filtered);
+      const currentMod = (modalidades as any[]).find(m => m.id === Number(formData.modalidadId));
+      if (currentMod && currentMod.niveles) {
+        setFilteredNiveles(currentMod.niveles);
+      } else {
+        // Fallback or if not found in hierarchical mode
+        const filtered = niveles.filter((n: any) => 
+          n.modalidadId === Number(formData.modalidadId) || 
+          (n.modalidadIds && n.modalidadIds.includes(Number(formData.modalidadId)))
+        );
+        setFilteredNiveles(filtered);
+      }
     } else {
       setFilteredNiveles([]);
     }
-  }, [formData.modalidadId, niveles]);
+  }, [formData.modalidadId, niveles, modalidades]);
 
   useEffect(() => {
     if (formData.nivelId) {
-      const filtered = especialidades.filter((e) => {
-        if (Array.isArray(e.nivelId))
-          return e.nivelId.includes(Number(formData.nivelId));
-        return e.nivelId === Number(formData.nivelId);
-      });
-      setFilteredEspecialidades(filtered);
+      const currentNiv = (niveles as any[]).find(n => n.id === Number(formData.nivelId));
+      if (currentNiv && currentNiv.especialidades) {
+        setFilteredEspecialidades(currentNiv.especialidades);
+      } else {
+        const filtered = especialidades.filter((e: any) => {
+          if (Array.isArray(e.nivelId))
+            return e.nivelId.includes(Number(formData.nivelId));
+          return e.nivelId === Number(formData.nivelId);
+        });
+        setFilteredEspecialidades(filtered);
+      }
     } else {
       setFilteredEspecialidades([]);
     }
-  }, [formData.nivelId, especialidades]);
+  }, [formData.nivelId, especialidades, niveles]);
 
   const handleViewDetails = async (docenteId: number) => {
     try {
@@ -241,6 +278,8 @@ const AdminPremiumDocentes = () => {
               ? user.accesoIds.map(Number)
               : []
             : tiposAcceso.map((t) => Number(t.id)),
+        planId: (user as any).planId || 0,
+        fechaInicio: (user as any).fechaInicio || (user as any).fechaCreacion?.split('T')[0] || new Date().toISOString().split('T')[0],
       });
       setExpirationMode('custom');
       setIsModalOpen(true);
@@ -269,6 +308,9 @@ const AdminPremiumDocentes = () => {
       nivelId: 0,
       especialidadId: 0,
       accesoIds: tiposAcceso.map((t) => Number(t.id)),
+      planId: 0,
+      fechaInicio: new Date().toISOString().split('T')[0],
+      fechaExpiracion: '',
     });
     setExpirationMode('custom');
   };
@@ -326,6 +368,8 @@ const AdminPremiumDocentes = () => {
         fechaCreacion: new Date().toISOString(),
         accesoIds: formData.accesoIds || [],
         userExamenes: finalUserExamenes,
+        planId: Number((formData as any).planId) || 0,
+        fechaInicio: (formData as any).fechaInicio,
       };
 
       // Solo incluir fechaExpiracion si tiene valor válido
@@ -333,8 +377,8 @@ const AdminPremiumDocentes = () => {
         payload.fechaExpiracion = formData.fechaExpiracion;
       }
 
-      // Siempre incluir password si fue ingresada
-      if (formData.password) {
+      // Solo incluir password si es creación
+      if (!editingUser && formData.password) {
         payload.password = formData.password;
       }
 
@@ -1124,17 +1168,35 @@ const AdminPremiumDocentes = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Rol*
                   </label>
-                  <select
-                    value={formData.role ?? 'Premium'}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Client">Client</option>
-                    <option value="Premium">Premium</option>
-                  </select>
+                    <select
+                      value={formData.role ?? 'Premium'}
+                      onChange={(e) => {
+                        const newRole = e.target.value;
+                        let newFechaExpiracion = formData.fechaExpiracion;
+                        let newExpirationMode = expirationMode;
+
+                        if (newRole === 'Invitado') {
+                          const date = new Date();
+                          // 1.5 months = 45 days approximately
+                          date.setDate(date.getDate() + 45);
+                          newFechaExpiracion = date.toISOString();
+                          newExpirationMode = 'custom';
+                        }
+
+                        setFormData({
+                          ...formData,
+                          role: newRole,
+                          fechaExpiracion: newFechaExpiracion,
+                        });
+                        if (newExpirationMode) setExpirationMode(newExpirationMode as any);
+                      }}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
+                    >
+                      <option value="Admin">Admin</option>
+                      <option value="Client">Client</option>
+                      <option value="Premium">Premium</option>
+                      <option value="Invitado">Invitado (1 mes de prueba)</option>
+                    </select>
                 </div>
 
                 {/* === SECCIÓN 1: INFORMACIÓN PERSONAL === */}
@@ -1209,65 +1271,70 @@ const AdminPremiumDocentes = () => {
                     </div>
                   </div>
 
-                  {/* Contraseña (solo en crear, o siempre editable) */}
-                  <div className="mb-3">
-                    <label className="block text-sm text-gray-700 mb-1">
-                      Contraseña{!editingUser && '*'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Contraseña"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
-                        required={!editingUser}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      >
-                        {showPassword ? (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        )}
-                      </button>
+                  {/* Contraseña (solo en crear) */}
+                  {!editingUser && (
+                    <div className="mb-3">
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Contraseña*
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Contraseña"
+                          value={formData.password}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              password: e.target.value,
+                            })
+                          }
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* Región */}
                   <div className="mb-3">
                     <label className="block text-sm text-gray-700 mb-1">
@@ -1664,41 +1731,99 @@ const AdminPremiumDocentes = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 4: FECHA EXPIRACIÓN (Solo Premium o Admin) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin') && (
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <svg
-                        className="w-5 h-5 text-[#4a90f9]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <h4 className="font-bold text-[#4a90f9]">
-                        Fecha de expiración
-                      </h4>
+                {/* === SECCIÓN Suscripción Unificada === */}
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CalendarIcon className="w-5 h-5 text-[#4a90f9]" />
+                    <h4 className="font-bold text-[#4a90f9]">
+                      Información de Suscripción
+                    </h4>
+                  </div>
+
+                  {/* Plan Selection */}
+                  <div className="mb-4">
+                    <label className="block text-sm text-gray-700 mb-1 font-medium">
+                      Plan Premium
+                    </label>
+                    <select
+                      value={(formData as any).planId ?? 0}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          planId: Number(e.target.value),
+                        } as any)
+                      }
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
+                    >
+                      <option value={0}>Seleccionar Plan</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.titulo} - S/ {p.precio}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Start and End Dates */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1 font-medium">
+                        Día de Inicio
+                      </label>
+                      <input
+                        type="date"
+                        value={(formData as any).fechaInicio ?? ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            fechaInicio: e.target.value,
+                          } as any)
+                        }
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
+                      />
                     </div>
-                    <div className="space-y-2">
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1 font-medium">
+                        Día de Cierre (Expira)
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.fechaExpiracion ? formData.fechaExpiracion.split('T')[0] : ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            fechaExpiracion: e.target.value ? new Date(e.target.value).toISOString() : '',
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Presets */}
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">
+                      Asignar tiempo rápido:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
                       {[
-                        { key: '1year', label: '1 año desde hoy' },
-                        { key: '5months', label: '5 meses desde hoy' },
-                        { key: '10months', label: '10 meses desde hoy' },
-                        { key: 'custom', label: 'Elegir fecha específica' },
+                        { key: '1year', label: '1 año' },
+                        { key: '5months', label: '5 meses' },
+                        { key: '10months', label: '10 meses' },
+                        { key: 'custom', label: 'Específico' },
                       ].map(({ key, label }) => (
                         <label
                           key={key}
-                          className="flex items-center gap-3 cursor-pointer"
+                          className={`flex items-center justify-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                            expirationMode === key
+                              ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400'
+                          }`}
                         >
                           <input
                             type="radio"
                             name="expiration-preset"
+                            className="hidden"
                             checked={expirationMode === key}
                             onChange={() => {
                               if (key === 'custom') {
@@ -1707,29 +1832,13 @@ const AdminPremiumDocentes = () => {
                                 handleExpirationPresetChange(key as any);
                               }
                             }}
-                            className="w-4 h-4 accent-[#002B6B]"
                           />
-                          <span className="text-sm text-gray-800">{label}</span>
+                          <span className="text-xs font-bold">{label}</span>
                         </label>
                       ))}
                     </div>
-                    {expirationMode === 'custom' && (
-                      <input
-                        type="datetime-local"
-                        value={formatDateForInput(formData.fechaExpiracion)}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            fechaExpiracion: parseInputDateToISO(
-                              e.target.value
-                            ),
-                          })
-                        }
-                        className="mt-3 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
-                      />
-                    )}
                   </div>
-                )}
+                </div>
 
                 {/* === GUARDAR === */}
                 <button

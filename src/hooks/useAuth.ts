@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-
 import { useRouter } from 'next/router';
-
-import { authService } from '../services/authService';
-
+import { authService, ExamenLogin } from '../services/authService';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,6 +14,7 @@ export const useAuth = () => {
     especialidad?: string;
     especialidadId?: number;
   } | null>(null);
+  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -37,233 +35,137 @@ export const useAuth = () => {
     authKeys.forEach((key) => localStorage.removeItem(key));
     setIsAuthenticated(false);
     setUser(null);
+    setLoginExamenes([]);
     router.push('/login');
   }, [router]);
 
+  const verifyStatus = useCallback(async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) return;
+
+    try {
+      const status = await authService.checkStatus();
+
+      if (status) {
+        // Update localStorage
+        if (status.role) localStorage.setItem('role', status.role);
+        if (status.fullName) localStorage.setItem('fullName', status.fullName);
+        if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
+        if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
+        if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
+        if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
+        if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
+        if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
+
+        const syncUser = (status as any).user || status;
+        let currentRole = syncUser.role || localStorage.getItem('role');
+        
+        if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
+          const expDate = new Date(status.fechaExpiracion);
+          if (expDate < new Date()) {
+            currentRole = 'Client';
+          }
+        }
+
+        setUser({
+          name: syncUser.fullName || localStorage.getItem('fullName') || 'Usuario',
+          id: syncUser.id || (localStorage.getItem('userId') ? Number(localStorage.getItem('userId')) : undefined),
+          nivelId: syncUser.nivelId || (localStorage.getItem('nivelId') ? Number(localStorage.getItem('nivelId')) : undefined),
+          role: currentRole || undefined,
+          accesoNombres: syncUser.accesoNombres || (localStorage.getItem('accesoNombres') ? JSON.parse(localStorage.getItem('accesoNombres')!) : undefined),
+          accesoIds: syncUser.accesoIds || (localStorage.getItem('accesoIds') ? JSON.parse(localStorage.getItem('accesoIds')!) : undefined),
+          especialidad: syncUser.especialidad || localStorage.getItem('especialidad') || undefined,
+          especialidadId: syncUser.especialidadId || (localStorage.getItem('especialidadId') ? Number(localStorage.getItem('especialidadId')) : undefined),
+        });
+
+        // Sync filters in background
+        if (syncUser.id) {
+          authService.getUserFilters(syncUser.id).then(filters => {
+            if (filters.examenes && filters.examenes.length > 0) {
+              const strExams = JSON.stringify(filters.examenes);
+              if (strExams !== localStorage.getItem('loginExamenes')) {
+                localStorage.setItem('loginExamenes', strExams);
+                setLoginExamenes(filters.examenes);
+              }
+            }
+          }).catch(e => console.error('Error syncing user exams in background:', e));
+        }
+      }
+    } catch (error: any) {
+      console.error('Session verification failed', error);
+      const errorMessage = error.message || String(error);
+      if (
+        errorMessage.includes('401') ||
+        errorMessage.includes('Unauthorized') ||
+        errorMessage.includes('403') ||
+        errorMessage.includes('Token expired')
+      ) {
+        logout();
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [logout]);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-    let fullName = localStorage.getItem('fullName');
-    let userId = localStorage.getItem('userId');
-    let nivelId = localStorage.getItem('nivelId');
-    let role = localStorage.getItem('role');
-    const especialidad = localStorage.getItem('especialidad');
-    let especialidadId = localStorage.getItem('especialidadId');
-    const accesoNombresRaw = localStorage.getItem('accesoNombres');
-    const accesoIdsRaw = localStorage.getItem('accesoIds');
-    const fechaExpiracion = localStorage.getItem('fechaExpiracion');
-
-    // Clean up invalid strings
-    if (token === 'undefined' || token === 'null' || token === 'NaN' || !token) {
-      if (token && typeof window !== 'undefined') localStorage.removeItem('token');
+    if (!token || token === 'undefined' || token === 'null') {
       setIsAuthenticated(false);
       setUser(null);
       setLoading(false);
       return;
     }
 
-    if (userId === 'undefined' || userId === 'null' || userId === 'NaN')
-      userId = null;
-    if (nivelId === 'undefined' || nivelId === 'null' || nivelId === 'NaN')
-      nivelId = null;
-    if (
-      especialidadId === 'undefined' ||
-      especialidadId === 'null' ||
-      especialidadId === 'NaN'
-    )
-      especialidadId = null;
-    if (role === 'undefined' || role === 'null') role = null;
+    setIsAuthenticated(true);
+    
+    // Initial load from storage logic moved to separate helper if needed but here as block
+    const role = localStorage.getItem('role');
+    const fullName = localStorage.getItem('fullName');
+    const userId = localStorage.getItem('userId');
+    const nivelId = localStorage.getItem('nivelId');
+    const especialidadId = localStorage.getItem('especialidadId');
+    const especialidad = localStorage.getItem('especialidad');
+    const accesoNombresRaw = localStorage.getItem('accesoNombres');
+    const accesoIdsRaw = localStorage.getItem('accesoIds');
+    const fechaExpiracion = localStorage.getItem('fechaExpiracion');
 
-    if (token) {
-      // Decode token to check for expiration and fill missing info
-      try {
-        const parts = token.split('.');
-        if (parts.length === 3 && parts[1]) {
-          const payload = JSON.parse(atob(parts[1]));
+    let accesoNombres: string[] = [];
+    if (accesoNombresRaw) { try { accesoNombres = JSON.parse(accesoNombresRaw); } catch (e) {} }
+    let accesoIds: number[] = [];
+    if (accesoIdsRaw) { try { accesoIds = JSON.parse(accesoIdsRaw); } catch (e) {} }
 
-          // Force logout if token is definitely expired
-          if (payload.exp) {
-            const now = Math.floor(Date.now() / 1000);
-            if (payload.exp < now) {
-              console.warn('Token expired based on exp claim');
-              setLoading(false);
-              logout();
-              return;
-            }
-          }
-
-          // Fill missing info if needed
-          if (!fullName || !userId || !role) {
-            // Full Name
-            if (!fullName) {
-              fullName =
-                payload.FullName ||
-                payload.fullName ||
-                payload.name ||
-                payload[
-                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
-                ];
-              if (fullName) localStorage.setItem('fullName', fullName);
-            }
-
-            // User ID
-            if (!userId) {
-              const extractedId =
-                payload.id ||
-                payload.Id ||
-                payload.sub ||
-                payload.nameid ||
-                payload[
-                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
-                ];
-              if (extractedId) {
-                userId = String(extractedId);
-                localStorage.setItem('userId', userId);
-              }
-            }
-
-            // Role
-            if (!role) {
-              role =
-                payload.role ||
-                payload.Role ||
-                payload[
-                  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-                ] ||
-                payload[
-                  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'
-                ];
-              if (role) localStorage.setItem('role', role);
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Error decoding token in useAuth:', e);
-      }
-
-      setIsAuthenticated(true);
-
-      // Initial user object from localStorage
-      const parsedId = userId ? Number(userId) : undefined;
-      const parsedNivelId = nivelId ? Number(nivelId) : undefined;
-      const parsedEspecialidadId = especialidadId
-        ? Number(especialidadId)
-        : undefined;
-
-      let accesoNombres: string[] = [];
-      if (accesoNombresRaw) {
-        try {
-          accesoNombres = JSON.parse(accesoNombresRaw);
-        } catch (e) {
-          console.error('Error parsing accesoNombres from localStorage:', e);
-        }
-      }
-
-      let accesoIds: number[] = [];
-      if (accesoIdsRaw) {
-        try {
-          accesoIds = JSON.parse(accesoIdsRaw);
-        } catch (e) {
-          console.error('Error parsing accesoIds from localStorage:', e);
-        }
-      }
-
-      let finalInitialRole = role;
-      if (
-        fechaExpiracion &&
-        fechaExpiracion !== '-' &&
-        role?.toUpperCase() === 'PREMIUM'
-      ) {
-        const expDate = new Date(fechaExpiracion);
-        if (expDate < new Date()) {
-          finalInitialRole = 'Client';
-        }
-      }
-
-      const initialUser = {
-        name: fullName || 'Usuario',
-        id: !isNaN(parsedId!) ? parsedId : undefined,
-        nivelId: !isNaN(parsedNivelId!) ? parsedNivelId : undefined,
-        role: finalInitialRole || undefined,
-        accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
-        accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
-        especialidad: especialidad || undefined,
-        especialidadId: !isNaN(parsedEspecialidadId!)
-          ? parsedEspecialidadId
-          : undefined,
-      };
-
-      setUser(initialUser);
-      // OPTIMIZATION: Set loading to false if we have a token, trust localStorage for initial render
-      if (token) setLoading(false);
-
-      // Verify status with backend to check for expiration
-      const verifyStatus = async () => {
-        try {
-          const status = await authService.checkStatus();
-
-          if (status) {
-            // Update localStorage
-            if (status.role) localStorage.setItem('role', status.role);
-            if (status.fullName) localStorage.setItem('fullName', status.fullName);
-            if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
-            if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
-            if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
-            if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
-            if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
-            if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
-
-            const syncUser = (status as any).user || status;
-            let currentRole = syncUser.role || role;
-            if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
-              const expDate = new Date(status.fechaExpiracion);
-              if (expDate < new Date()) {
-                currentRole = 'Client';
-              }
-            }
-
-            setUser({
-              name: syncUser.fullName || fullName || 'Usuario',
-              id: syncUser.id || parsedId,
-              nivelId: syncUser.nivelId || parsedNivelId,
-              role: currentRole || undefined,
-              accesoNombres: syncUser.accesoNombres || accesoNombres,
-              accesoIds: syncUser.accesoIds || accesoIds,
-              especialidad: syncUser.especialidad || especialidad || undefined,
-              especialidadId: syncUser.especialidadId || parsedEspecialidadId,
-            });
-
-            // Sync filters in background (non-blocking)
-            if (syncUser.id) {
-              authService.getUserFilters(status.id).then(filters => {
-                if (filters.examenes && filters.examenes.length > 0) {
-                  localStorage.setItem('loginExamenes', JSON.stringify(filters.examenes));
-                }
-              }).catch(e => console.error('Error syncing user exams in background:', e));
-            }
-          }
-        } catch (error: any) {
-          console.error('Session verification failed', error);
-          const errorMessage = error.message || String(error);
-          if (
-            errorMessage.includes('401') ||
-            errorMessage.includes('Unauthorized') ||
-            errorMessage.includes('403') ||
-            errorMessage.includes('Token expired')
-          ) {
-            logout();
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      verifyStatus();
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
-      setLoading(false);
+    let finalInitialRole = role;
+    if (fechaExpiracion && fechaExpiracion !== '-' && role?.toUpperCase() === 'PREMIUM') {
+      if (new Date(fechaExpiracion) < new Date()) finalInitialRole = 'Client';
     }
-  }, [logout]);
 
-  return { isAuthenticated, user, loading, logout };
+    setUser({
+      name: fullName || 'Usuario',
+      id: userId ? Number(userId) : undefined,
+      nivelId: nivelId ? Number(nivelId) : undefined,
+      role: finalInitialRole || undefined,
+      accesoNombres: accesoNombres.length > 0 ? accesoNombres : undefined,
+      accesoIds: accesoIds.length > 0 ? accesoIds : undefined,
+      especialidad: especialidad || undefined,
+      especialidadId: especialidadId ? Number(especialidadId) : undefined,
+    });
+
+    const storedExams = localStorage.getItem('loginExamenes');
+    if (storedExams) {
+      try { setLoginExamenes(JSON.parse(storedExams)); } catch (e) {}
+    }
+
+    verifyStatus();
+    setLoading(false);
+
+    router.events.on('routeChangeComplete', verifyStatus);
+    const interval = setInterval(verifyStatus, 30000);
+
+    return () => {
+      router.events.off('routeChangeComplete', verifyStatus);
+      clearInterval(interval);
+    };
+  }, [logout, router.events, verifyStatus]);
+
+  return { isAuthenticated, user, loginExamenes, loading, logout, refreshAuth: verifyStatus };
 };

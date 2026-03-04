@@ -59,6 +59,10 @@ export interface User {
   nivelNombres?: string[];
   especialidadNombres?: string[];
   userExamenes?: any[]; // For detailed data if needed
+  planId?: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  estadoPago?: string;
 }
 
 export const userService = {

@@ -39,7 +39,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, loginExamenes } = useAuth();
 
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -60,7 +60,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         router.push('/login');
       } else {
         const role = user?.role?.toUpperCase();
-        if (role !== 'PREMIUM' && role !== 'ADMIN' && role !== 'SUBADMIN') {
+        if (role !== 'PREMIUM' && role !== 'ADMIN' && role !== 'SUBADMIN' && role !== 'INVITADO') {
           router.push('/');
         }
       }
@@ -231,15 +231,6 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   ];
 
   const menuItems = React.useMemo(() => {
-    // Check official exams availability from localStorage
-    const loginExamenesRaw = typeof window !== 'undefined' ? localStorage.getItem('loginExamenes') : null;
-    let loginExamenes: any[] = [];
-    try {
-      loginExamenes = loginExamenesRaw ? JSON.parse(loginExamenesRaw) : [];
-    } catch (e) {
-      console.error('Error parsing loginExamenes', e);
-    }
-
     const hasOfficialNombramiento = loginExamenes.some((e: any) => String(e.tipoExamenId) === '2');
     const hasOfficialAscenso = loginExamenes.some((e: any) => String(e.tipoExamenId) === '1');
 
@@ -282,7 +273,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       }
       return item;
     });
-  }, [user?.accesoNombres, availableEdContexts]);
+  }, [user?.accesoNombres, availableEdContexts, loginExamenes]);
 
   return (
     <div className="h-screen bg-[#F4F7FE] flex font-sans overflow-hidden">
