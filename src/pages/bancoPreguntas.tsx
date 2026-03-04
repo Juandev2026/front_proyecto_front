@@ -326,14 +326,14 @@ const BancoPreguntasPage = () => {
               (c) => c.clasificacionNombre === name
             );
 
-            // Buscar la cantidad exacta para el aÃ±o seleccionado
+            // Buscar la cantidad exacta para el año seleccionado
             let cantidadExacta = 0;
             const isUnico = selectedYear === 'Ãšnico';
 
             if (isUnico || !item.years || item.years.length === 0) {
               cantidadExacta = item.cantidadPreguntas;
             } else {
-              // Buscar especÃ­ficamente el aÃ±o en el array de la clasificaciÃ³n
+              // Buscar específicamente el año en el array de la clasificaciÃ³n
               const yearData = item.years.find(
                 (y: any) => String(y.year) === selectedYear
               );
@@ -472,7 +472,7 @@ const BancoPreguntasPage = () => {
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
       if (questions.length > 0) {
         questions = questions.filter((q: any) => {
-          // 1. Filtrar por aÃ±o (si tu API devuelve q.year o q.anio)
+          // 1. Filtrar por año (si tu API devuelve q.year o q.anio)
           const matchYear =
             finalYearValue === '0' ||
             String(q.year) === finalYearValue ||
@@ -655,7 +655,7 @@ const BancoPreguntasPage = () => {
             <div className="border border-primary rounded-lg p-4 bg-white transition-all">
               <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                 <CalendarIcon className="h-5 w-5" />
-                <span>Elige un aÃ±o</span>
+                <span>Elige un año</span>
               </div>
               <select
                 value={selectedYear}
@@ -663,7 +663,7 @@ const BancoPreguntasPage = () => {
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 disabled={aniosData.length === 0}
               >
-                <option value="">Selecciona AÃ±o</option>
+                <option value="">Selecciona Año</option>
                 {aniosData.map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -672,7 +672,7 @@ const BancoPreguntasPage = () => {
               </select>
               {selectedModalidadId && aniosData.length === 0 && !isLoading && (
                 <p className="text-red-500 text-xs mt-2 font-medium">
-                  No hay exÃ¡menes disponibles para esta selecciÃ³n
+                  No hay exámenes disponibles para esta selección
                 </p>
               )}
             </div>
@@ -777,11 +777,11 @@ const BancoPreguntasPage = () => {
                                 </span>
                                 <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                                   <span className="text-purple-400">ðŸŽ¯</span>{' '}
-                                  MÃ¡x: {data.cantidad * data.puntos} pts
+                                  Máx: {data.cantidad * data.puntos} pts
                                 </span>
                                 <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                                   <span className="text-orange-400">âœ…</span>{' '}
-                                  MÃ­nimo: {data.minimo} pts
+                                  Mínimo: {data.minimo} pts
                                 </span>
                                 <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                                   <span className="text-yellow-500">â±ï¸</span>{' '}
@@ -838,7 +838,7 @@ const BancoPreguntasPage = () => {
                                 : acc,
                             0
                           )}{' '}
-                          pts mÃ¡ximo
+                          pts máximo
                         </span>
                         <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                           <span>âœ…</span>{' '}
@@ -847,7 +847,7 @@ const BancoPreguntasPage = () => {
                               tiposPregunta[name] ? acc + curr.minimo : acc,
                             0
                           )}{' '}
-                          pts mÃ­nimo
+                          pts mínimo
                         </span>
                       </div>
                     </div>
@@ -857,7 +857,7 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
-          {/* Resumen de selecciÃ³n (Modalidad, Nivel, etc) */}
+          {/* Resumen de selección (Modalidad, Nivel, etc) */}
           {(selectedTipoExamenId ||
             selectedModalidadId ||
             selectedNivelId ||
@@ -867,7 +867,7 @@ const BancoPreguntasPage = () => {
               <div className="flex items-center gap-2 mb-6">
                 <AcademicCapIcon className="h-6 w-6 text-[#2B3674]" />
                 <h3 className="font-bold text-[#2B3674] text-lg">
-                  Resumen de selecciÃ³n
+                  Resumen de selección
                 </h3>
               </div>
 
@@ -915,7 +915,7 @@ const BancoPreguntasPage = () => {
                 )}
                 {selectedYear && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">AÃ±o</p>
+                    <p className="text-xs text-gray-500 mb-1.5 ml-1">Año</p>
                     <span className="inline-block px-4 py-1.5 border border-[#fbd38d] text-[#D69E2E] bg-[#fefcfa] rounded-md text-sm font-medium">
                       {selectedYear}
                     </span>
@@ -936,7 +936,7 @@ const BancoPreguntasPage = () => {
             <button
               onClick={handleConfirm}
               disabled={
-                // 1. Validaciones de carga y campos vacÃ­os
+                // 1. Validaciones de carga y campos vacíos
                 isLoading ||
                 !selectedModalidadId ||
                 (nivelesData.length > 0 &&
@@ -956,7 +956,7 @@ const BancoPreguntasPage = () => {
               }
               className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125"
             >
-              Confirmar selecciÃ³n
+              Confirmar selección
             </button>
           </div>
         </div>

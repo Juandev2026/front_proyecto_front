@@ -739,6 +739,21 @@ const Recursos = () => {
 
   const currentItems = itemsWithIndices;
 
+  // Total real de preguntas (incluye sub-preguntas de preguntas agrupadas)
+  const totalQuestionCount = useMemo(() => {
+    let count = 0;
+    for (const item of filteredItems) {
+      if (item.tipoPreguntaId === 2) {
+        // Pregunta agrupada: cuenta sus sub-preguntas
+        const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
+        count += subs.length;
+      } else {
+        count++;
+      }
+    }
+    return count;
+  }, [filteredItems, subQuestionsMap]);
+
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
@@ -2363,26 +2378,6 @@ const Recursos = () => {
                 Visualizar preguntas
               </button>
 
-              {isDirectivo && (
-                <>
-                  <a
-                    href="/admin/premium/secciones"
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
-                  >
-                    <MenuAlt2Icon className="w-4 h-4 mr-2" />
-                    Gestión de Secciones
-                  </a>
-                  <button
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600 transition-colors text-sm font-medium shadow-md"
-                    onClick={() =>
-                      alert('Módulo de gestión de exámenes en desarrollo')
-                    }
-                  >
-                    <DocumentTextIcon className="w-4 h-4 mr-2" />
-                    Gestión de Exámenes
-                  </button>
-                </>
-              )}
             </div>
 
             {/* Action Buttons for Filters */}
@@ -2464,8 +2459,8 @@ const Recursos = () => {
                     Criterios de selección
                   </span>
                   <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
-                    {filteredItems.length}{' '}
-                    {filteredItems.length === 1 ? 'Pregunta' : 'Preguntas'}
+                    {totalQuestionCount}{' '}
+                    {totalQuestionCount === 1 ? 'Pregunta' : 'Preguntas'}
                   </span>
                   {/* Display Selected Criteria as Pills */}
                   {groupedData.find((t) => t.tipoExamenId === selectedTipo) && (
