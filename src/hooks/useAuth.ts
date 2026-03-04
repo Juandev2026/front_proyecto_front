@@ -40,53 +40,75 @@ export const useAuth = () => {
   }, [router]);
 
   const verifyStatus = useCallback(async () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (!token) return;
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const userId =
+      typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+
+    if (!token || !userId) return;
 
     try {
-      const status = await authService.checkStatus();
+      // Use getUserFilters as primary sync to get both user and exam metadata
+      const data = await authService.getUserFilters(Number(userId), token);
 
-      if (status) {
-        if (status.role) localStorage.setItem('role', status.role);
-        if (status.fullName) localStorage.setItem('fullName', status.fullName);
-        if (status.nivelId) localStorage.setItem('nivelId', String(status.nivelId));
-        if (status.accesoNombres) localStorage.setItem('accesoNombres', JSON.stringify(status.accesoNombres));
-        if (status.accesoIds) localStorage.setItem('accesoIds', JSON.stringify(status.accesoIds));
-        if (status.especialidad) localStorage.setItem('especialidad', status.especialidad);
-        if (status.especialidadId) localStorage.setItem('especialidadId', String(status.especialidadId));
-        if (status.fechaExpiracion) localStorage.setItem('fechaExpiracion', status.fechaExpiracion);
+      if (data && data.user) {
+        const syncUser = data.user;
 
-        const syncUser = (status as any).user || status;
-        let currentRole = syncUser.role || localStorage.getItem('role');
-        
-        if (status.fechaExpiracion && status.fechaExpiracion !== '-' && currentRole?.toUpperCase() === 'PREMIUM') {
-          const expDate = new Date(status.fechaExpiracion);
+        // Sync localStorage
+        if (syncUser.role) localStorage.setItem('role', syncUser.role);
+        if (syncUser.fullName) localStorage.setItem('fullName', syncUser.fullName);
+        if (syncUser.nivelId)
+          localStorage.setItem('nivelId', String(syncUser.nivelId));
+        if (syncUser.accesoNombres)
+          localStorage.setItem(
+            'accesoNombres',
+            JSON.stringify(syncUser.accesoNombres)
+          );
+        if (syncUser.accesoIds)
+          localStorage.setItem('accesoIds', JSON.stringify(syncUser.accesoIds));
+        if (syncUser.especialidad)
+          localStorage.setItem('especialidad', syncUser.especialidad);
+        if (syncUser.especialidadId)
+          localStorage.setItem(
+            'especialidadId',
+            String(syncUser.especialidadId)
+          );
+        if (syncUser.fechaExpiracion)
+          localStorage.setItem('fechaExpiracion', syncUser.fechaExpiracion);
+
+        let currentRole = syncUser.role;
+
+        // Handle Role Expiration
+        if (
+          syncUser.fechaExpiracion &&
+          syncUser.fechaExpiracion !== '-' &&
+          currentRole?.toUpperCase() === 'PREMIUM'
+        ) {
+          const expDate = new Date(syncUser.fechaExpiracion);
           if (expDate < new Date()) {
             currentRole = 'Client';
           }
         }
 
+        // Update User State
         setUser({
-          name: syncUser.fullName || localStorage.getItem('fullName') || 'Usuario',
-          id: syncUser.id || (localStorage.getItem('userId') ? Number(localStorage.getItem('userId')) : undefined),
-          nivelId: syncUser.nivelId || (localStorage.getItem('nivelId') ? Number(localStorage.getItem('nivelId')) : undefined),
+          name: syncUser.fullName || 'Usuario',
+          id: syncUser.id,
+          nivelId: syncUser.nivelId || undefined,
           role: currentRole || undefined,
-          accesoNombres: syncUser.accesoNombres || (localStorage.getItem('accesoNombres') ? JSON.parse(localStorage.getItem('accesoNombres')!) : undefined),
-          accesoIds: syncUser.accesoIds || (localStorage.getItem('accesoIds') ? JSON.parse(localStorage.getItem('accesoIds')!) : undefined),
-          especialidad: syncUser.especialidad || localStorage.getItem('especialidad') || undefined,
-          especialidadId: syncUser.especialidadId || (localStorage.getItem('especialidadId') ? Number(localStorage.getItem('especialidadId')) : undefined),
+          accesoNombres: syncUser.accesoNombres || undefined,
+          accesoIds: syncUser.accesoIds || undefined,
+          especialidad: syncUser.especialidad || undefined,
+          especialidadId: syncUser.especialidadId || undefined,
         });
 
-        if (syncUser.id) {
-          authService.getUserFilters(syncUser.id).then(filters => {
-            if (filters.examenes && filters.examenes.length > 0) {
-              const strExams = JSON.stringify(filters.examenes);
-              if (strExams !== localStorage.getItem('loginExamenes')) {
-                localStorage.setItem('loginExamenes', strExams);
-                setLoginExamenes(filters.examenes);
-              }
-            }
-          }).catch(e => console.error('Error syncing user exams in background:', e));
+        // Sync Examenes
+        if (data.examenes) {
+          const strExams = JSON.stringify(data.examenes);
+          if (strExams !== localStorage.getItem('loginExamenes')) {
+            localStorage.setItem('loginExamenes', strExams);
+            setLoginExamenes(data.examenes);
+          }
         }
       }
     } catch (error: any) {
@@ -156,10 +178,15 @@ export const useAuth = () => {
     setLoading(false);
 
     router.events.on('routeChangeComplete', verifyStatus);
-    const interval = setInterval(verifyStatus, 30000);
+    
+    // Refresh on focus to catch changes made in other tabs (admin panel)
+    window.addEventListener('focus', verifyStatus);
+    
+    const interval = setInterval(verifyStatus, 15000);
 
     return () => {
       router.events.off('routeChangeComplete', verifyStatus);
+      window.removeEventListener('focus', verifyStatus);
       clearInterval(interval);
     };
   }, [logout, router.events, verifyStatus]);
