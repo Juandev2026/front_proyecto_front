@@ -14,7 +14,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { preguntaService } from '../services/preguntaService';
 
 const ExamenesDirectivosPage = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -88,7 +88,7 @@ const ExamenesDirectivosPage = () => {
       const yearFilters = examIds.map((examId) => {
         const exam = directivosExams.find((e) => e.id === examId);
         return {
-          year: exam?.year || '0',
+          year: Number(exam?.year || 0),
           clasificacionIds: selections[examId] || [],
         };
       });
@@ -102,7 +102,7 @@ const ExamenesDirectivosPage = () => {
         yearFilters,
       };
 
-      const allQuestions = await estructuraAcademicaService.getPreguntasByFilterMultiYear(
+      const allQuestions = await preguntaService.getPreguntasByFilterMultiYear(
         payload
       );
 

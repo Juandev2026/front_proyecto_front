@@ -15,6 +15,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../../hooks/useAuth';
 import PremiumLayout from '../../layouts/PremiumLayout';
+import ConfirmModal from '../../components/ConfirmModal';
 import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
 
 const normalizeName = (name: string): string => {
@@ -23,7 +24,7 @@ const normalizeName = (name: string): string => {
   if (n.includes('RAZONAMIENTO')) return 'RL';
   if (n.includes('PEDAG') || n.includes('ESPECIALIDAD') || n.includes('CCP'))
     return 'CCP';
-  return name || 'Otros';
+  return name || '';
 };
 
 const ResultadoPage = () => {
@@ -38,6 +39,7 @@ const ResultadoPage = () => {
   const [timeTaken, setTimeTaken] = useState<number>(0);
   const [examMetadata, setExamMetadata] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isNewExamModalOpen, setIsNewExamModalOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -171,7 +173,7 @@ const ResultadoPage = () => {
     };
 
     questions.forEach((q) => {
-      const className = q.clasificacionNombre || 'Otros';
+      const className = q.clasificacionNombre || '';
       if (!classificationStats[className]) {
         classificationStats[className] = {
           points: 0,
@@ -213,6 +215,7 @@ const ResultadoPage = () => {
           name,
           ...data,
         }))
+        .filter((c) => c.name && c.name.toUpperCase() !== 'OTROS' && c.name.toUpperCase() !== 'OTRO')
         .sort((a, b) => {
           const order = ['CL', 'RL', 'CCP'];
           const idxA = order.indexOf(a.name);
@@ -446,14 +449,14 @@ const ResultadoPage = () => {
                 Acciones
               </div>
               <button
-                onClick={() => router.push('/examen')}
+                onClick={() => setIsNewExamModalOpen(true)}
                 className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
               >
                 <RefreshIcon className="w-3 h-3" />
                 Dar nuevo examen
               </button>
               <button
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/bancoPreguntas')}
                 className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
               >
                 <ArrowLeftIcon className="w-3 h-3" />
@@ -789,6 +792,19 @@ const ResultadoPage = () => {
           font-family: 'Georgia', serif;
         }
       `}</style>
+      <ConfirmModal
+        isOpen={isNewExamModalOpen}
+        onClose={() => setIsNewExamModalOpen(false)}
+        onConfirm={() => {
+          setIsNewExamModalOpen(false);
+          router.push('/examen');
+        }}
+        title="Dar nuevo examen"
+        message="¿Estás seguro de que deseas iniciar un nuevo examen? Esto te llevará de vuelta a la página de examen."
+        confirmText="Sí, iniciar"
+        cancelText="Cancelar"
+        type="warning"
+      />
     </PremiumLayout>
   );
 };

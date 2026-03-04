@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useAuth } from '../hooks/useAuth';
+import LogoutModal from './LogoutModal';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -606,57 +609,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Logout Confirmation Modal */}
-      {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50 p-4 md:inset-0">
-          <div className="relative w-full max-w-md rounded-lg bg-white shadow-lg">
-            <div className="p-6 text-center">
-              <svg
-                className="mx-auto mb-4 h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              <h3 className="mb-5 text-lg font-normal text-gray-500">
-                ¿Estás seguro que quieres cerrar sesión?
-              </h3>
-              <button
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('fullName');
-                  localStorage.removeItem('userId');
-                  localStorage.removeItem('nivelId');
-                  localStorage.removeItem('role');
-                  localStorage.removeItem('accesoNombres');
-                  localStorage.removeItem('accesoIds');
-                  localStorage.removeItem('loginExamenes');
-                  localStorage.removeItem('especialidad');
-                  localStorage.removeItem('especialidadId');
-                  localStorage.removeItem('fechaExpiracion');
-                  router.push('/login');
-                }}
-                type="button"
-                className="mr-2 inline-flex items-center rounded-lg bg-red-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300"
-              >
-                Sí, cerrar sesión
-              </button>
-              <button
-                onClick={() => setIsLogoutModalOpen(false)}
-                type="button"
-                className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 hover:bg-blue-100 hover:text-gray-900 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          logout();
+          setIsLogoutModalOpen(false);
+        }}
+      />
     </div>
   );
 };

@@ -360,7 +360,7 @@ const BancoPreguntasPage = () => {
 
             // Buscar la cantidad exacta para el año seleccionado
             let cantidadExacta = 0;
-            const isUnico = selectedYear === 'Ãšnico';
+            const isUnico = selectedYear === 'Único';
 
             if (isUnico || !item.years || item.years.length === 0) {
               cantidadExacta = item.cantidadPreguntas;
@@ -979,7 +979,7 @@ const BancoPreguntasPage = () => {
                   !selectedNivelId) ||
                 (especialidadesData.length > 0 && !selectedEspecialidadId) ||
                 (aniosData.length > 0 && !selectedYear) ||
-                // 2. NUEVA VALIDACIÃ“N: Bloquear si el total de preguntas es 0
+                // 2. NUEVA VALIDACIÓN: Bloquear si el total de preguntas es 0
                 Object.entries(conteoPreguntas).reduce(
                   (acc, [name, curr]: [string, any]) =>
                     tiposPregunta[name] ? acc + curr.cantidad : acc,

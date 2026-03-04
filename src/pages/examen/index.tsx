@@ -15,6 +15,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import Toast from '../../components/Toast';
+import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../hooks/useAuth';
 import PremiumLayout from '../../layouts/PremiumLayout';
 import { evaluacionService } from '../../services/evaluacionService';
@@ -62,6 +63,10 @@ const ExamenPage = () => {
   const [showQuestionPanel, setShowQuestionPanel] = useState(true);
   const [isCountingDown, setIsCountingDown] = useState(true);
   const [countdownStep, setCountdownStep] = useState(0); // 0: Prepared, 1: Ready, 2: Go!
+
+  // Confirmation Modals State
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
 
   // Toast State
   const [toasts, setToasts] = useState<
@@ -412,28 +417,27 @@ const ExamenPage = () => {
   };
 
   const handleRegenerate = () => {
-    if (
-      confirm(
-        '¿Estás seguro de reiniciar el examen? Perderás todo el progreso.'
-      )
-    ) {
-      setSeconds(0);
-      setCurrentIndex(0);
-      setRespuestas({});
-      setExamResult(null);
-      window.speechSynthesis.cancel();
-      setIsReading(false);
-    }
+    setIsRegenerateModalOpen(true);
+  };
+
+  const confirmRegenerate = () => {
+    setSeconds(0);
+    setCurrentIndex(0);
+    setRespuestas({});
+    setExamResult(null);
+    window.speechSynthesis.cancel();
+    setIsReading(false);
+    setIsRegenerateModalOpen(false);
   };
 
   const handleFinishExam = async () => {
+    setIsFinishModalOpen(true);
+  };
+
+  const confirmFinishExam = async () => {
     console.log('--- handleFinishExam initiated ---');
     console.log('Current User Answers:', respuestas);
-
-    if (!confirm('¿Estás seguro de finalizar el examen?')) {
-      console.log('User cancelled exam finish.');
-      return;
-    }
+    setIsFinishModalOpen(false);
 
     reviewCurrentQuestion();
 
@@ -1205,6 +1209,35 @@ const ExamenPage = () => {
           }
         `}</style>
       </div>
+      <ConfirmModal
+        isOpen={isFinishModalOpen}
+        onClose={() => setIsFinishModalOpen(false)}
+        onConfirm={confirmFinishExam}
+        title="Finalizar Examen"
+        message={
+          stats.unanswered > 0
+            ? `Tienes ${stats.unanswered} preguntas sin responder. ¿Estás seguro de que quieres finalizar el examen?`
+            : '¿Estás seguro de que quieres finalizar el examen? Has respondido todas las preguntas.'
+        }
+        confirmText="Sí, finalizar"
+        cancelText="No, continuar"
+        type={stats.unanswered > 0 ? 'warning' : 'success'}
+      />
+
+      <ConfirmModal
+        isOpen={isRegenerateModalOpen}
+        onClose={() => setIsRegenerateModalOpen(false)}
+        onConfirm={confirmRegenerate}
+        title="Reiniciar Examen"
+        message={
+          stats.unanswered > 0
+            ? `Tienes ${stats.unanswered} preguntas sin responder. ¿Estás seguro de que quieres reiniciar el examen? Perderás todo el progreso actual.`
+            : '¿Estás seguro de que quieres generar el examen de nuevo? Perderás todo tu progreso actual.'
+        }
+        confirmText="Sí, reiniciar"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </PremiumLayout>
     </>
   );

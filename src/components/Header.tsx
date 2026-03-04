@@ -7,15 +7,22 @@ import { useRouter } from 'next/router';
 
 import config from '../config/index.json';
 import { useAuth } from '../hooks/useAuth';
+import LogoutModal from './LogoutModal';
 
 const Menu = () => {
   const router = useRouter();
   const { isAuthenticated, user, loading, logout } = useAuth();
   const { navigation, company } = config;
   const { name: companyName } = company;
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
+    setShowLogoutModal(false);
   };
 
   return (
@@ -416,6 +423,11 @@ const Menu = () => {
           </Popover.Panel>
         </Transition>
       </Popover>
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
     </>
   );
 };

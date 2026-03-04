@@ -25,6 +25,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import { examenService } from '../services/examenService';
+import LogoutModal from '../components/LogoutModal';
 
 interface PremiumLayoutProps {
   children: React.ReactNode;
@@ -43,6 +44,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // State for ED availability
   const [availableEdContexts, setAvailableEdContexts] = useState<{
@@ -100,7 +102,12 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   }, [isAuthenticated, user?.id]);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
+    setShowLogoutModal(false);
   };
 
   // State for expanded menu items
@@ -464,7 +471,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
           {!isCollapsed ? (
             <>
-              <Link href="/">
+              <Link href="/bancoPreguntas">
                 <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors">
                   <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
                   Volver a Inicio
@@ -480,7 +487,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             </>
           ) : (
             <div className="flex flex-col gap-2 items-center">
-              <Link href="/">
+              <Link href="/bancoPreguntas">
                 <a
                   className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
                   title="Volver a Inicio"
@@ -542,6 +549,12 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           {children}
         </main>
       </div>
+
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };
