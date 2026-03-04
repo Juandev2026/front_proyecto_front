@@ -58,12 +58,17 @@ const Login = () => {
       // Ahora obtenemos los filtros/exámenes específicos del usuario
       console.log('Fetching user filters with ID:', userId);
       const fullResponse = await authService.getUserFilters(userId, token);
+      
+      // Combinar los datos del login con los filtros del usuario
+      // para no perder información como el fullName o email si el endpoint de filtros no los trae
       const response = {
-        ...fullResponse.user,
+        ...loginUser,
+        ...(fullResponse.user || fullResponse),
         token: token, // Aseguramos que el token de login se mantenga
       };
+      
       const examenes = fullResponse.examenes || [];
-      const fullName = response.fullName || response.email;
+      const fullName = response.fullName || response.nombreCompleto || response.email;
 
       if (fullName) localStorage.setItem('fullName', fullName);
       if (response.id) localStorage.setItem('userId', String(response.id));

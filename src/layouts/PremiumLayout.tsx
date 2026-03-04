@@ -533,14 +533,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
             <div className="hidden md:flex flex-col items-end mr-2">
               <span className="text-sm font-bold text-[#4790FD] leading-tight">
-                {user?.name || 'Usuario'}
+                {user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario'}
               </span>
               <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
                 {user?.role?.toUpperCase()}
               </span>
             </div>
             <div className="h-10 w-10 rounded-full bg-[#3B82F6] text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:bg-[#3B82F6] transition-colors">
-              {(user?.name || 'U').charAt(0).toUpperCase()}
+              {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

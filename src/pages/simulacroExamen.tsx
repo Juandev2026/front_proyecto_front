@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin, authService } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { preguntaService } from '../services/preguntaService';
 import { examenService } from '../services/examenService';
 
 // ----- Types derived from login examenes -----
@@ -22,11 +22,8 @@ interface FilterOption {
 }
 
 const SimulacroExamenPage = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, loginExamenes } = useAuth();
   const router = useRouter();
-
-  // Examenes from user-filters API
-  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
 
   // Current Selection State
   const [selectedTipoExamenId] = useState<string>('2'); // Nombramiento
@@ -51,29 +48,6 @@ const SimulacroExamenPage = () => {
       router.push('/login');
     }
   }, [loading, isAuthenticated, router]);
-
-  // Fetch filters from API
-  useEffect(() => {
-    const fetchFilters = async () => {
-      if (isAuthenticated && user?.id) {
-        try {
-          setIsLoading(true);
-          const response = await authService.getUserFilters(user.id);
-          setLoginExamenes(response.examenes);
-        } catch (error) {
-          console.error('Error fetching user filters:', error);
-          // Fallback to localStorage if API fails
-          const stored = localStorage.getItem('loginExamenes');
-          if (stored) {
-            setLoginExamenes(JSON.parse(stored));
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchFilters();
-  }, [isAuthenticated, user?.id]);
 
   // Fetch Examenes Propios
   useEffect(() => {
@@ -405,7 +379,7 @@ const SimulacroExamenPage = () => {
 
       // 4. LLAMADA AL SERVICIO BLOQUE I
       const bloque1Questions =
-        await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
+        await preguntaService.getPreguntasByFilterMultiYear(payload);
 
       // --- 5. LLAMADA PARA BLOQUE II (PROPIOS) ---
       let bloque2Questions: any[] = [];
@@ -425,7 +399,7 @@ const SimulacroExamenPage = () => {
               year: '0',
               clasificaciones: [],
             };
-            const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+            const qs = await preguntaService.getPreguntasByFilter(p);
             bloque2Questions = [...bloque2Questions, ...qs];
           }
         } else {
@@ -439,7 +413,7 @@ const SimulacroExamenPage = () => {
             year: '0',
             clasificaciones: [],
           };
-          const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+          const qs = await preguntaService.getPreguntasByFilter(p);
           bloque2Questions = [...bloque2Questions, ...qs];
         }
       }
@@ -660,7 +634,7 @@ const SimulacroExamenPage = () => {
             )}
 
             {/* Hierarchical selectors for Nivel and Especialidad */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-8">
               {nivelesData.length > 0 &&
                 !(
                   nivelesData.length === 1 &&

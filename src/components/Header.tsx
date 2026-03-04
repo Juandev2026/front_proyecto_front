@@ -168,7 +168,7 @@ const Menu = () => {
                     <div className="flex flex-col items-end">
                       <span className="text-gray-700 font-bold md:font-medium text-sm md:text-sm">
                         <span className="hidden md:inline">Hola, </span>
-                        {user?.name?.split(' ')[0]}
+                        {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
                       </span>
                       <button
                         onClick={handleLogout}
@@ -178,7 +178,7 @@ const Menu = () => {
                       </button>
                     </div>
                     <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#4a90f9] text-white flex items-center justify-center font-bold text-sm md:text-base shadow-md">
-                      {(user?.name || 'U').charAt(0).toUpperCase()}
+                      {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'U').charAt(0).toUpperCase()}
                     </div>
                   </div>
                 </div>
@@ -352,7 +352,7 @@ const Menu = () => {
                 {/* Greeting if Authenticated */}
                 {isAuthenticated && (
                   <div className="text-center font-bold text-gray-900 border-b border-gray-100 pb-2 text-lg">
-                    Hola, {user?.name?.split(' ')[0]}
+                    Hola, {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
                   </div>
                 )}
 

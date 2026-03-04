@@ -11,8 +11,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { ExamenLogin, authService } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { preguntaService } from '../services/preguntaService';
 import { examenService } from '../services/examenService';
 
 // ----- Types derived from login examenes -----
@@ -22,11 +21,8 @@ interface FilterOption {
 }
 
 const SimulacroExamenAscensoPage = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, loginExamenes } = useAuth();
   const router = useRouter();
-
-  // Examenes from user-filters API
-  const [loginExamenes, setLoginExamenes] = useState<ExamenLogin[]>([]);
 
   // Current Selection State
   const [selectedTipoExamenId] = useState<string>('1'); // Ascenso
@@ -51,28 +47,6 @@ const SimulacroExamenAscensoPage = () => {
       router.push('/login');
     }
   }, [loading, isAuthenticated, router]);
-
-  // Fetch filters from API
-  useEffect(() => {
-    const fetchFilters = async () => {
-      if (isAuthenticated && user?.id) {
-        try {
-          setIsLoading(true);
-          const response = await authService.getUserFilters(user.id);
-          setLoginExamenes(response.examenes);
-        } catch (error) {
-          console.error('Error fetching user filters:', error);
-          const stored = localStorage.getItem('loginExamenes');
-          if (stored) {
-            setLoginExamenes(JSON.parse(stored));
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchFilters();
-  }, [isAuthenticated, user?.id]);
 
   // Fetch Examenes Propios (AscensoId: 1)
   useEffect(() => {
@@ -157,13 +131,14 @@ const SimulacroExamenAscensoPage = () => {
             String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId)
       )
-      .filter((e) => e.especialidadId !== null && e.especialidadNombre !== null)
       .forEach((e) => {
-        if (!map.has(e.especialidadId!)) {
-          map.set(e.especialidadId!, {
-            id: e.especialidadId!,
-            nombre: e.especialidadNombre!,
-          });
+        if (e.especialidadId) {
+          if (!map.has(e.especialidadId)) {
+            map.set(e.especialidadId, {
+              id: e.especialidadId,
+              nombre: e.especialidadNombre || '',
+            });
+          }
         }
       });
     return Array.from(map.values());
@@ -234,9 +209,8 @@ const SimulacroExamenAscensoPage = () => {
       (e) =>
         String(e.modalidadId) === selectedModalidadId &&
         (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-        (selectedEspecialidadId
-          ? String(e.especialidadId) === selectedEspecialidadId
-          : true) &&
+        (!selectedEspecialidadId ||
+          String(e.especialidadId) === selectedEspecialidadId) &&
         ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
           String(e.year) === year ||
           e.years?.some((y) => String(y.year) === year))
@@ -338,9 +312,8 @@ const SimulacroExamenAscensoPage = () => {
         (e) =>
           String(e.modalidadId) === selectedModalidadId &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (selectedEspecialidadId
-            ? String(e.especialidadId) === selectedEspecialidadId
-            : true)
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
       );
 
       if (!sampleExam) {
@@ -368,13 +341,17 @@ const SimulacroExamenAscensoPage = () => {
         nivelId:
           sampleExam.nivelId ||
           (nivelesData.length === 1 ? nivelesData[0]?.id ?? 0 : 0),
-        especialidadId: sampleExam.especialidadId || 0,
+        especialidadId:
+          sampleExam.especialidadId ||
+          (especialidadesData.length === 1
+            ? especialidadesData[0]?.id ?? 0
+            : 0),
         yearFilters,
       };
 
       // 4. LLAMADA AL SERVICIO BLOQUE I
       const bloque1Questions =
-        await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
+        await preguntaService.getPreguntasByFilterMultiYear(payload);
 
       // --- 5. LLAMADA PARA BLOQUE II (PROPIOS) ---
       let bloque2Questions: any[] = [];
@@ -394,7 +371,7 @@ const SimulacroExamenAscensoPage = () => {
               year: '0',
               clasificaciones: [],
             };
-            const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+            const qs = await preguntaService.getPreguntasByFilter(p);
             bloque2Questions = [...bloque2Questions, ...qs];
           }
         } else {
@@ -408,7 +385,7 @@ const SimulacroExamenAscensoPage = () => {
             year: '0',
             clasificaciones: [],
           };
-          const qs = await estructuraAcademicaService.getPreguntasByFilter(p);
+          const qs = await preguntaService.getPreguntasByFilter(p);
           bloque2Questions = [...bloque2Questions, ...qs];
         }
       }
@@ -516,7 +493,11 @@ const SimulacroExamenAscensoPage = () => {
       const metadata = {
         modalidad: sampleExam.modalidadNombre,
         nivel: sampleExam.nivelNombre || 'TODOS',
-        especialidad: sampleExam.especialidadNombre || null,
+        especialidad:
+          sampleExam.especialidadNombre ||
+          (especialidadesData.length === 1
+            ? especialidadesData[0]?.nombre || 'TODAS'
+            : 'TODAS'),
         year: selectedYears.join(', '),
         isSimulacro: true,
       };
@@ -628,64 +609,79 @@ const SimulacroExamenAscensoPage = () => {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {nivelesData.length > 0 &&
+            {((nivelesData.length > 0 &&
+              !(
+                nivelesData.length === 1 &&
+                nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+              )) ||
+              (especialidadesData.length > 0 &&
                 !(
-                  nivelesData.length === 1 &&
-                  nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
-                ) && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                      <FilterIcon className="h-4 w-4" />
-                      <span>Nivel</span>
+                  especialidadesData.length === 1 &&
+                  especialidadesData[0]?.nombre?.toUpperCase() === 'NINGUNA'
+                ))) && (
+              <div className="space-y-8">
+                {nivelesData.length > 0 &&
+                  !(
+                    nivelesData.length === 1 &&
+                    nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+                  ) && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                        <FilterIcon className="h-4 w-4" />
+                        <span>Nivel</span>
+                      </div>
+                      <select
+                        value={selectedNivelId}
+                        onChange={(e) => {
+                          setSelectedNivelId(e.target.value);
+                          setSelectedEspecialidadId('');
+                          setSelectedYears([]);
+                          setYearSelections({});
+                        }}
+                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                        disabled={!selectedModalidadId}
+                      >
+                        <option value="">Selecciona Nivel</option>
+                        {nivelesData.map((n) => (
+                          <option key={n.id} value={String(n.id)}>
+                            {n.nombre}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <select
-                      value={selectedNivelId}
-                      onChange={(e) => {
-                        setSelectedNivelId(e.target.value);
-                        setSelectedEspecialidadId('');
-                        setSelectedYears([]);
-                        setYearSelections({});
-                      }}
-                      className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-                      disabled={!selectedModalidadId}
-                    >
-                      <option value="">Selecciona Nivel</option>
-                      {nivelesData.map((n) => (
-                        <option key={n.id} value={String(n.id)}>
-                          {n.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                  )}
 
-              {especialidadesData.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                    <AcademicCapIcon className="h-4 w-4" />
-                    <span>Especialidad</span>
-                  </div>
-                  <select
-                    value={selectedEspecialidadId}
-                    onChange={(e) => {
-                      setSelectedEspecialidadId(e.target.value);
-                      setSelectedYears([]);
-                      setYearSelections({});
-                    }}
-                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-                    disabled={!selectedModalidadId}
-                  >
-                    <option value="">Selecciona Especialidad</option>
-                    {especialidadesData.map((e) => (
-                      <option key={e.id} value={String(e.id)}>
-                        {e.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
+                {especialidadesData.length > 0 &&
+                  !(
+                    especialidadesData.length === 1 &&
+                    especialidadesData[0]?.nombre?.toUpperCase() === 'NINGUNA'
+                  ) && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[#4790FD] font-bold">
+                        <FilterIcon className="h-4 w-4" />
+                        <span>Especialidad</span>
+                      </div>
+                      <select
+                        value={selectedEspecialidadId}
+                        onChange={(e) => {
+                          setSelectedEspecialidadId(e.target.value);
+                          setSelectedYears([]);
+                          setYearSelections({});
+                        }}
+                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                        disabled={!selectedNivelId}
+                      >
+                        <option value="">Selecciona Especialidad</option>
+                        {especialidadesData.map((esp) => (
+                          <option key={esp.id} value={String(esp.id)}>
+                            {esp.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+              </div>
+            )}
 
             <div className="space-y-4 pt-4">
               <div className="flex items-center gap-2 text-[#4790FD] font-bold">

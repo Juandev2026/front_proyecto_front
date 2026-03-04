@@ -1,0 +1,65 @@
+import React, { useEffect, useState, useMemo } from 'react';
+
+import {
+  AcademicCapIcon,
+  FilterIcon,
+  ClipboardListIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/outline';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+
+import { useAuth } from '../hooks/useAuth';
+import PremiumLayout from '../layouts/PremiumLayout';
+import { ExamenLogin, authService } from '../services/authService';
+import { preguntaService } from '../services/preguntaService';
+import { examenService } from '../services/examenService';
+
+// ----- Types derived from login examenes -----
+interface FilterOption {
+  id: number;
+  nombre: string;
+}
+
+const SimulacroExamenPage = () => {
+  const { isAuthenticated, loading, user, loginExamenes } = useAuth();
+  const router = useRouter();
+
+  // Current Selection State
+  const [selectedTipoExamenId] = useState<string>('2'); // Nombramiento
+  const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
+  const [selectedNivelId, setSelectedNivelId] = useState<string>('');
+  const [selectedEspecialidadId, setSelectedEspecialidadId] =
+    useState<string>('');
+  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+
+  // State for per-year classification selections: Record<Year, Record<ClassificationName, boolean>>
+  const [yearSelections, setYearSelections] = useState<
+    Record<string, Record<string, boolean>>
+  >({});
+
+  const [seccionesPropias, setSeccionesPropias] = useState<any[]>([]);
+  const [selectedPropiosIds, setSelectedPropiosIds] = useState<number[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [loading, isAuthenticated, router]);
+
+  // Fetch Examenes Propios
+  useEffect(() => {
+    const fetchPropios = async () => {
+      if (isAuthenticated && user?.id) {
+        try {
+          const data = await examenService.getPropiosByUser(2, user.id);
+          setSeccionesPropias(data);
+        } catch (error) {
+          console.error('Error fetching propio exams:', error);
+        }
+      }
+    };
+    fetchPropios();
+  }, [isAuthenticated, user?.id]);

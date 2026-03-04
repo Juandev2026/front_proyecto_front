@@ -10,7 +10,7 @@ import {
   StarIcon as Star,
   TicketIcon as TargetIcon,
 } from '@heroicons/react/outline';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -60,6 +60,8 @@ const ExamenPage = () => {
     useState<SpeechSynthesisVoice | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [showQuestionPanel, setShowQuestionPanel] = useState(true);
+  const [isCountingDown, setIsCountingDown] = useState(true);
+  const [countdownStep, setCountdownStep] = useState(0); // 0: Prepared, 1: Ready, 2: Go!
 
   // Toast State
   const [toasts, setToasts] = useState<
@@ -190,11 +192,63 @@ const ExamenPage = () => {
 
   // Timer Effect
   useEffect(() => {
+    if (isCountingDown) return () => {};
     const timer = setInterval(() => {
       setSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isCountingDown]);
+
+  // Countdown Animation Logic
+  useEffect(() => {
+    if (loading || !isAuthenticated || questions.length === 0) return () => {};
+
+    const steps = ['PREPARADO', 'LISTO', '¡FUERA!'];
+    let current = 0;
+    
+    const interval = setInterval(() => {
+      if (current < steps.length - 1) {
+        current++;
+        setCountdownStep(current);
+      } else {
+        clearInterval(interval);
+        setTimeout(() => setIsCountingDown(false), 800);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [loading, isAuthenticated, questions.length]);
+
+  // Navigation Guard
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!examResult && questions.length > 0 && !isSubmitting) {
+        const message = '¿Estás seguro que quieres volver? Perderás todo tu avance.';
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
+      }
+      return undefined;
+    };
+
+    const handleRouteChange = (url: string) => {
+      if (!examResult && questions.length > 0 && !isSubmitting && !url.includes('/examen/resultado')) {
+        const confirmed = window.confirm('¿Estás seguro que quieres volver? Perderás todo tu avance.');
+        if (!confirmed) {
+          router.events.emit('routeChangeError');
+          throw 'routeChange aborted.';
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    router.events.on('routeChangeStart', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [examResult, questions.length, isSubmitting, router.events]);
 
   // TTS Voices Loading
   useEffect(() => {
@@ -523,8 +577,65 @@ const ExamenPage = () => {
   }
 
   return (
-    <PremiumLayout title="Examen" breadcrumb="Pages / Examen">
-      <div ref={topRef} className="h-0 w-0" />
+    <>
+      <AnimatePresence>
+        {isCountingDown && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-[#002B6B] flex flex-col items-center justify-center text-white p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <img
+                src="/assets/images/logo_principal1.png"
+                alt="Avendo"
+                className="h-32 mb-12 mx-auto brightness-0 invert"
+              />
+              
+              <div className="relative h-40 flex items-center justify-center">
+                <AnimatePresence exitBeforeEnter>
+                  <motion.h2
+                    key={countdownStep}
+                    initial={{ y: 40, opacity: 0, scale: 0.5 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                    exit={{ y: -40, opacity: 0, scale: 1.5 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20
+                    }}
+                    className="text-6xl md:text-8xl font-black italic tracking-tighter"
+                  >
+                    {['PREPARADO', 'LISTO', '¡FUERA!'][countdownStep]}
+                  </motion.h2>
+                </AnimatePresence>
+              </div>
+
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 3, ease: "linear" }}
+                className="w-64 h-2 bg-white/20 rounded-full mt-12 mx-auto overflow-hidden"
+              >
+                <div className="h-full bg-white rounded-full" />
+              </motion.div>
+              
+              <p className="mt-8 text-blue-200 font-bold tracking-widest uppercase text-sm">
+                Cargando simulacro profesional...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <PremiumLayout title="Examen" breadcrumb="Pages / Examen">
+        <div ref={topRef} className="h-0 w-0" />
       <Head>
         <title>Examen - Avendocente</title>
       </Head>
@@ -1058,6 +1169,7 @@ const ExamenPage = () => {
           )}
         </div>
 
+
         <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
           <AnimatePresence>
             {toasts.map((toast) => (
@@ -1094,6 +1206,7 @@ const ExamenPage = () => {
         `}</style>
       </div>
     </PremiumLayout>
+    </>
   );
 };
 

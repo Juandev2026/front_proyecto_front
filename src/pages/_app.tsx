@@ -8,12 +8,12 @@ import '../styles/main.css';
 import '../styles/tiptap-editor.css';
 import 'katex/dist/katex.min.css';
 import WhatsAppWidget from '../components/WhatsAppWidget';
-import { useAuth } from '../hooks/useAuth';
+import { AuthProvider } from '../contexts/AuthContext';
 import { GA_MEASUREMENT_ID, trackPageView } from '../lib/analytics';
+import { useAuth } from '../hooks/useAuth';
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Track pageview on route change
@@ -26,6 +26,17 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
   }, [router.events]);
+
+  return (
+    <AuthProvider>
+      <AppContent Component={Component} pageProps={pageProps} />
+    </AuthProvider>
+  );
+};
+
+const AppContent = ({ Component, pageProps }: { Component: any; pageProps: any }) => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   // Check if current path is an admin page or banco preguntas area
   // ALSO hide if user is authenticated (Aula Virtual)

@@ -183,69 +183,105 @@ export const preguntaService = {
       throw new Error('Error filtering questions');
     }
     const rawData = await response.json();
-    if (!Array.isArray(rawData)) return [];
+    return transformQuestions(rawData);
+  },
 
-    const getLetter = (ans: any, alts: any[]) => {
-      if (ans === undefined || ans === null || ans === '') return '';
-      const sAns = String(ans).toUpperCase();
+  getPreguntasByFilterMultiYear: async (payload: any): Promise<Pregunta[]> => {
+    const response = await fetch(`${API_URL}/examen-filter-multi-year`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error('Error filtering multi-year questions');
+    }
+    const rawData = await response.json();
+    return transformQuestions(rawData);
+  },
 
-      if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
-      if (!alts || alts.length === 0) return '';
+  getPreguntasByFilter: async (filter: any): Promise<Pregunta[]> => {
+    const response = await fetch(`${API_URL}/examen-filter`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(filter),
+    });
+    if (!response.ok) {
+      throw new Error('Error filtering questions');
+    }
+    const rawData = await response.json();
+    return transformQuestions(rawData);
+  },
+};
 
-      const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
-      if (idxById !== -1) return String.fromCharCode(65 + idxById);
+const transformQuestions = (rawData: any[]): Pregunta[] => {
+  if (!Array.isArray(rawData)) return [];
 
-      const numAns = Number(ans);
-      if (!Number.isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
-        return String.fromCharCode(65 + numAns);
-      }
-      return sAns;
-    };
+  const getLetter = (ans: any, alts: any[]) => {
+    if (ans === undefined || ans === null || ans === '') return '';
+    const sAns = String(ans).toUpperCase();
 
-    return rawData
-      .map((q: any) => {
-        const mapped: Pregunta = {
-          id: q.id,
-          examenId: q.examenId,
-          year: q.year,
-          numero: q.numero,
-          enunciado: (q.enunciados || [])
+    if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
+    if (!alts || alts.length === 0) return '';
+
+    const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
+    if (idxById !== -1) return String.fromCharCode(65 + idxById);
+
+    const numAns = Number(ans);
+    if (!Number.isNaN(numAns) && numAns >= 0 && numAns < alts.length) {
+      return String.fromCharCode(65 + numAns);
+    }
+    return sAns;
+  };
+
+  return rawData
+    .map((q: any) => {
+      const mapped: Pregunta = {
+        id: q.id,
+        examenId: q.examenId,
+        year: q.year || q.anio,
+        numero: q.numero,
+        enunciado: (q.enunciados || [])
+          .map((e: any) => e.contenido)
+          .join('<br/>'),
+        alternativaA: q.alternativas?.[0]?.contenido || '',
+        alternativaB: q.alternativas?.[1]?.contenido || '',
+        alternativaC: q.alternativas?.[2]?.contenido || '',
+        alternativaD: q.alternativas?.[3]?.contenido || '',
+        respuesta: getLetter(q.respuesta, q.alternativas || []),
+        respuestaCorrecta: q.respuesta,
+        tipoPreguntaId: q.tipoPreguntaId,
+        clasificacionId: q.clasificacionId,
+        clasificacionNombre: q.clasificacionNombre,
+        imagen: q.imagen || '',
+        alternativas: q.alternativas,
+        justificaciones: q.justificaciones,
+        enunciados: q.enunciados,
+        subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
+          ...sub,
+          enunciado: (sub.enunciados || [])
             .map((e: any) => e.contenido)
             .join('<br/>'),
-          alternativaA: q.alternativas?.[0]?.contenido || '',
-          alternativaB: q.alternativas?.[1]?.contenido || '',
-          alternativaC: q.alternativas?.[2]?.contenido || '',
-          alternativaD: q.alternativas?.[3]?.contenido || '',
-          respuesta: getLetter(q.respuesta, q.alternativas || []),
-          respuestaCorrecta: q.respuesta,
-          tipoPreguntaId: q.tipoPreguntaId,
-          clasificacionId: q.clasificacionId,
-          clasificacionNombre: q.clasificacionNombre,
-          imagen: q.imagen || '',
-          alternativas: q.alternativas,
-          justificaciones: q.justificaciones,
-          enunciados: q.enunciados,
-          subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
-            ...sub,
-            enunciado: (sub.enunciados || [])
-              .map((e: any) => e.contenido)
-              .join('<br/>'),
-            alternativaA: sub.alternativas?.[0]?.contenido || '',
-            alternativaB: sub.alternativas?.[1]?.contenido || '',
-            alternativaC: sub.alternativas?.[2]?.contenido || '',
-            alternativaD: sub.alternativas?.[3]?.contenido || '',
-            respuesta: getLetter(
-              sub.respuestaCorrecta || sub.respuesta,
-              sub.alternativas || []
-            ),
-          })),
-        };
-        return mapped;
-      })
-      .sort((a, b) => {
-        const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
-        const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
-        return numA - numB || a.id - b.id;
-      });
-  },
+          alternativaA: sub.alternativas?.[0]?.contenido || '',
+          alternativaB: sub.alternativas?.[1]?.contenido || '',
+          alternativaC: sub.alternativas?.[2]?.contenido || '',
+          alternativaD: sub.alternativas?.[3]?.contenido || '',
+          respuesta: getLetter(
+            sub.respuestaCorrecta || sub.respuesta,
+            sub.alternativas || []
+          ),
+        })),
+      };
+      return mapped;
+    })
+    .sort((a, b) => {
+      const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
+      const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
+      return numA - numB || a.id - b.id;
+    });
 };

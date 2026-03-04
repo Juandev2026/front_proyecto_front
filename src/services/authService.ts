@@ -1,5 +1,4 @@
 import { API_BASE_URL } from '../config/api';
-import { getAuthHeaders } from '../utils/apiUtils';
 
 export interface RegisterData {
   fullName: string;
@@ -69,6 +68,7 @@ export interface ExamenLogin {
 export interface LoginResponse {
   token: string;
   fullName: string;
+  nombreCompleto?: string;
   email: string;
   role: string;
   id: number;
@@ -118,7 +118,6 @@ export const authService = {
       const response = await fetch(`${apiAuth}/register`, {
         method: 'POST',
         headers: {
-          ...getAuthHeaders(), // Keep existing helpers but ensure content-type
           'Content-Type': 'application/json',
           Accept: 'text/plain',
         },
@@ -146,7 +145,6 @@ export const authService = {
       const response = await fetch(`${apiAuth}/login`, {
         method: 'POST',
         headers: {
-          ...getAuthHeaders(),
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
@@ -155,11 +153,13 @@ export const authService = {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Login failed:', response.status, errorText);
         throw new Error(errorText || 'Error en el inicio de sesión');
       }
 
       return await response.json();
     } catch (error) {
+      console.error('Login service error:', error);
       throw error;
     }
   },

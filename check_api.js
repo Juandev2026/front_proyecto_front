@@ -1,41 +1,19 @@
-const fetch = require('node-fetch');
+const axios = require('axios');
 
-const API_URL = 'https://proyecto-bd-juan.onrender.com/api/Noticias';
-const TOKEN = '3231232141346';
-
-const headers = {
-  'Authorization': `Bearer ${TOKEN}`,
-  'Content-Type': 'application/json',
-};
-
-async function checkApi() {
+async function check() {
+  const url = 'https://proyecto-bd-juan.onrender.com/api/Auth/status';
   try {
-    console.log('Fetching all news...');
-    const response = await fetch(API_URL, { headers });
-    if (!response.ok) {
-      console.error('Error fetching all news:', response.status, response.statusText);
+    const res = await axios.get(url);
+    console.log('Status:', res.status);
+    console.log('Data:', res.data);
+  } catch (err) {
+    if (err.response) {
+      console.log('Error status:', err.response.status);
+      console.log('Error data:', err.response.data);
     } else {
-      const news = await response.json();
-      console.log(`Found ${news.length} news items.`);
-      const ids = news.map(n => n.id);
-      console.log('IDs:', ids);
-      
-      const exists = ids.includes(3);
-      console.log('ID 3 exists in list:', exists);
+      console.log('Error:', err.message);
     }
-
-    console.log('\nFetching news ID 3 directly...');
-    const response3 = await fetch(`${API_URL}/3`, { headers });
-    if (response3.ok) {
-      const item = await response3.json();
-      console.log('Item 3 found:', item);
-    } else {
-      console.error('Error fetching item 3:', response3.status, response3.statusText);
-    }
-
-  } catch (error) {
-    console.error('Error:', error);
   }
 }
 
-checkApi();
+check();

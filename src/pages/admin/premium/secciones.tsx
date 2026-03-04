@@ -12,7 +12,7 @@ import {
 import AdminLayout from '../../../components/AdminLayout';
 import {
   estructuraAcademicaService,
-  Modalidad,
+  ModalidadEA,
 } from '../../../services/estructuraAcademicaService';
 import {
   fuenteService,
@@ -65,7 +65,7 @@ const AdminPremiumSecciones = () => {
 
   // --- API DATA ---
   const [tiposAcceso, setTiposAcceso] = useState<TipoAcceso[]>([]);
-  const [modalidades, setModalidades] = useState<Modalidad[]>([]);
+  const [modalidades, setModalidades] = useState<ModalidadEA[]>([]);
 
   // --- MODAL STATE ---
   const [showAddModal, setShowAddModal] = useState(false);
