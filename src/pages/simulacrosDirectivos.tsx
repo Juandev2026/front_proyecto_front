@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { ExamenLogin, authService } from '../services/authService';
-import { estructuraAcademicaService } from '../services/estructuraAcademicaService';
+import { preguntaService } from '../services/preguntaService';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -328,12 +328,12 @@ const SimulacrosDirectivosPage = () => {
       };
 
       let questions =
-        await estructuraAcademicaService.getPreguntasByFilterMultiYear(payload);
+        await preguntaService.getPreguntasByFilterMultiYear(payload);
 
       if (questions.length > 0) {
         // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
         const filteredBySelection = questions.filter((q) => {
-          const qYear = String(q.year || q.anio || '0');
+          const qYear = String(q.year || '0');
           const filterForThisYear = yearFilters.find((f) => f.year === qYear);
           if (!filterForThisYear) return false;
           return (
@@ -352,7 +352,7 @@ const SimulacrosDirectivosPage = () => {
         });
 
         filteredBySelection.forEach((q) => {
-          const key = `${String(q.year || q.anio || '0')}-${q.clasificacionId}`;
+          const key = `${String(q.year || '0')}-${q.clasificacionId}`;
           if (groups[key]) {
             groups[key].push(q);
           }

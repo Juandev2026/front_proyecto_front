@@ -17,6 +17,8 @@ import { useAuth } from '../../hooks/useAuth';
 import PremiumLayout from '../../layouts/PremiumLayout';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
+import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
+import { erroneasService } from '../../services/erroneasService';
 
 const normalizeName = (name: string): string => {
   const n = (name || '').toUpperCase();
@@ -28,7 +30,7 @@ const normalizeName = (name: string): string => {
 };
 
 const ResultadoPage = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const router = useRouter();
 
   const [questions, setQuestions] = useState<PreguntaExamen[]>([]);
@@ -61,7 +63,7 @@ const ResultadoPage = () => {
 
       rawQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach((sub: any) => {
+          q.subPreguntas.forEach((sub: any, subIdx: number) => {
             const normalizedName = normalizeName(
               sub.clasificacionNombre || q.clasificacionNombre
             );
@@ -71,33 +73,45 @@ const ResultadoPage = () => {
               pointValue = 2;
             if (normalizedName === 'CCP') pointValue = 3;
 
+            const mappedIdA = sub.idAlternativaA ?? sub.alternativas?.[0]?.id;
+            const mappedIdB = sub.idAlternativaB ?? sub.alternativas?.[1]?.id;
+            const mappedIdC = sub.idAlternativaC ?? sub.alternativas?.[2]?.id;
+            const mappedIdD = sub.idAlternativaD ?? sub.alternativas?.[3]?.id;
+
             flattened.push({
               ...q,
-              id: sub.id || q.id,
-              preguntaId: q.id, // ID del padre
+              id: sub.id || sub.subPreguntaId || q.id || q.preguntaId,
+              preguntaId: q.preguntaId || q.id || q.preguntaId, 
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
-              alternativaA:
-                sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
-              alternativaB:
-                sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
-              alternativaC:
-                sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
-              alternativaD:
-                sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
-              idAlternativaA: sub.idAlternativaA ?? sub.alternativas?.[0]?.id,
-              idAlternativaB: sub.idAlternativaB ?? sub.alternativas?.[1]?.id,
-              idAlternativaC: sub.idAlternativaC ?? sub.alternativas?.[2]?.id,
-              idAlternativaD: sub.idAlternativaD ?? sub.alternativas?.[3]?.id,
-              puntos: pointValue,
+              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
+              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
+              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
+              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              idAlternativaA: mappedIdA,
+              idAlternativaB: mappedIdB,
+              idAlternativaC: mappedIdC,
+              idAlternativaD: mappedIdD,
+              puntos: pointValue || sub.puntaje || q.puntaje,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
-              numeroSubPregunta: sub.numero,
-              respuesta: sub.respuestaCorrecta || sub.respuesta || '',
+              numeroSubPregunta: sub.numero || sub.subPreguntaNumero || sub.orden || (subIdx + 1),
+              respuesta: (() => {
+                const res = sub.respuestaCorrecta || sub.respuesta || '';
+                if (typeof res === 'number') {
+                  if (res === mappedIdA) return 'A';
+                  if (res === mappedIdB) return 'B';
+                  if (res === mappedIdC) return 'C';
+                  if (res === mappedIdD) return 'D';
+                }
+                return res;
+              })(),
               clasificacionId: sub.clasificacionId || q.clasificacionId,
               clasificacionNombre: normalizedName,
               isSubPregunta: true,
               subPreguntas: [],
+              examenId: sub.examenId || q.examenId || 0,
+              year: sub.year || q.year || 0,
             });
           });
         } else {
@@ -108,15 +122,38 @@ const ResultadoPage = () => {
             pointValue = 2;
           if (normalizedName === 'CCP') pointValue = 3;
 
+          const mappedIdA = q.idAlternativaA ?? q.alternativas?.[0]?.id;
+          const mappedIdB = q.idAlternativaB ?? q.alternativas?.[1]?.id;
+          const mappedIdC = q.idAlternativaC ?? q.alternativas?.[2]?.id;
+          const mappedIdD = q.idAlternativaD ?? q.alternativas?.[3]?.id;
+
           flattened.push({
             ...q,
-            idAlternativaA: q.idAlternativaA ?? q.alternativas?.[0]?.id,
-            idAlternativaB: q.idAlternativaB ?? q.alternativas?.[1]?.id,
-            idAlternativaC: q.idAlternativaC ?? q.alternativas?.[2]?.id,
-            idAlternativaD: q.idAlternativaD ?? q.alternativas?.[3]?.id,
+            id: q.id || q.preguntaId,
+            preguntaId: q.preguntaId || q.id,
+            alternativaA: q.alternativaA || q.alternativas?.[0]?.contenido || '',
+            alternativaB: q.alternativaB || q.alternativas?.[1]?.contenido || '',
+            alternativaC: q.alternativaC || q.alternativas?.[2]?.contenido || '',
+            alternativaD: q.alternativaD || q.alternativas?.[3]?.contenido || '',
+            idAlternativaA: mappedIdA,
+            idAlternativaB: mappedIdB,
+            idAlternativaC: mappedIdC,
+            idAlternativaD: mappedIdD,
             clasificacionNombre: normalizedName,
-            puntos: pointValue,
+            puntos: pointValue || q.puntaje,
+            respuesta: (() => {
+              const res = q.respuestaCorrecta || q.respuesta || '';
+              if (typeof res === 'number') {
+                if (res === mappedIdA) return 'A';
+                if (res === mappedIdB) return 'B';
+                if (res === mappedIdC) return 'C';
+                if (res === mappedIdD) return 'D';
+              }
+              return res;
+            })(),
             isSubPregunta: false,
+            examenId: q.examenId || 0,
+            year: q.year || 0,
           });
         }
       });
@@ -128,32 +165,74 @@ const ResultadoPage = () => {
     if (savedTime) setTimeTaken(parseInt(savedTime, 10));
   }, [loading, isAuthenticated, router]);
 
+
+  const getQuestionResult = (
+    q: PreguntaExamen,
+    _index: number
+  ): 'correct' | 'incorrect' | 'omitted' => {
+    if (!examResult) return 'omitted';
+
+    const backendKey = Number(q.id);
+
+    // Buscamos en todos los bloques de resultados (por clasificación)
+    const matchedResult = examResult.resultados.find((r: any) => {
+      return (
+        r.idsCorrectas.some((id: any) => Number(id) === backendKey) ||
+        r.idsIncorrectas.some((id: any) => Number(id) === backendKey) ||
+        r.idsOmitidas.some((id: any) => Number(id) === backendKey)
+      );
+    });
+
+    if (matchedResult) {
+      if (
+        matchedResult.idsCorrectas.some((id: any) => Number(id) === backendKey)
+      ) {
+        return 'correct';
+      }
+      if (
+        matchedResult.idsIncorrectas.some((id: any) => Number(id) === backendKey)
+      ) {
+        return 'incorrect';
+      }
+      if (
+        matchedResult.idsOmitidas.some((id: any) => Number(id) === backendKey)
+      ) {
+        return 'omitted';
+      }
+    }
+
+    // Fallback: Si el backend no la encontró (común en Respuestas Erróneas), calificar localmente
+    const userAnswer = respuestas[String(_index)]?.alternativa;
+    if (!userAnswer) return 'omitted';
+
+    // Comparar contra q.respuesta (que cargamos en el flattening)
+    const isCorrect = userAnswer.toUpperCase() === q.respuesta?.toUpperCase();
+    return isCorrect ? 'correct' : 'incorrect';
+  };
+
   const stats = useMemo(() => {
     if (!examResult) return null;
 
     // 1. Estadísticas Globales (desde el backend)
-    const global = examResult.resultados.reduce(
-      (acc, r) => ({
-        correctas: acc.correctas + r.cantidadCorrectas,
-        incorrectas: acc.incorrectas + r.cantidadIncorrectas,
-        omitidas: acc.omitidas + r.cantidadOmitidas,
-      }),
-      { correctas: 0, incorrectas: 0, omitidas: 0 }
-    );
-
     const total = questions.length;
 
-    // Ensure accurate omitidas if backend returns 0 across the board but we have total count
-    const { correctas } = global;
-    const { incorrectas } = global;
-    let { omitidas } = global;
+    // --- RECALCULAR ESTADÍSTICAS MANUALMENTE (Para mayor precisión en lotes mixtos) ---
+    let correctas = 0;
+    let incorrectas = 0;
+    let omitidas = 0;
+    let manualScore = 0;
 
-    if (correctas === 0 && incorrectas === 0 && omitidas === 0 && total > 0) {
-      omitidas = total;
-    } else if (correctas + incorrectas + omitidas !== total && total > 0) {
-      // If sum doesn't match total, trust correctas/incorrectas and adjust omitidas
-      omitidas = Math.max(0, total - correctas - incorrectas);
-    }
+    questions.forEach((q, idx) => {
+      const res = getQuestionResult(q, idx);
+      if (res === 'correct') {
+        correctas++;
+        manualScore += Number(q.puntos) || 0;
+      } else if (res === 'incorrect') {
+        incorrectas++;
+      } else {
+        omitidas++;
+      }
+    });
 
     const answered = correctas + incorrectas;
     const maxScore = questions.reduce(
@@ -187,8 +266,8 @@ const ResultadoPage = () => {
 
       const backendKey = Number(q.id);
 
-      const isCorrect = examResult.resultados.some((r) =>
-        r.idsCorrectas.some((id) => Number(id) === backendKey)
+      const isCorrect = examResult.resultados.some((r: any) =>
+        r.idsCorrectas.some((id: any) => Number(id) === backendKey)
       );
 
       if (isCorrect) {
@@ -196,11 +275,6 @@ const ResultadoPage = () => {
         classificationStats[className].earnedPoints += Number(q.puntos) || 0;
       }
     });
-
-    const manualScore = Object.values(classificationStats).reduce(
-      (acc, curr) => acc + curr.earnedPoints,
-      0
-    );
 
     return {
       correctas,
@@ -228,50 +302,23 @@ const ResultadoPage = () => {
     };
   }, [examResult, questions]);
 
-  const getQuestionResult = (
-    q: PreguntaExamen,
-    _index: number
-  ): 'correct' | 'incorrect' | 'omitted' => {
-    if (!examResult) return 'omitted';
-
-    const backendKey = Number(q.id);
-
-    // Buscamos en todos los bloques de resultados (por clasificación)
-    const matchedResult = examResult.resultados.find((r) => {
-      return (
-        r.idsCorrectas.some((id) => Number(id) === backendKey) ||
-        r.idsIncorrectas.some((id) => Number(id) === backendKey) ||
-        r.idsOmitidas.some((id) => Number(id) === backendKey)
-      );
-    });
-
-    if (matchedResult) {
-      if (
-        matchedResult.idsCorrectas.some((id) => Number(id) === backendKey)
-      ) {
-        return 'correct';
-      }
-      if (
-        matchedResult.idsIncorrectas.some((id) => Number(id) === backendKey)
-      ) {
-        return 'incorrect';
-      }
-      if (
-        matchedResult.idsOmitidas.some((id) => Number(id) === backendKey)
-      ) {
-        return 'omitted';
-      }
-    }
-
-    // Fallback: tratar como incorrecta si se respondió algo o omitida si no
-    const userAnswer = respuestas[String(_index)]?.alternativa;
-    return userAnswer ? 'incorrect' : 'omitted';
-  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleMarkAsReviewed = async (preguntaId: number) => {
+    if (!user?.id) return;
+    try {
+      if (!window.confirm('¿Estás seguro de marcar esta pregunta como revisada? Ya no aparecerá en tu lista de errores.')) return;
+      await erroneasService.marcarRevisada(user.id, preguntaId);
+      alert('Pregunta marcada como revisada exitosamente.');
+    } catch (error) {
+      console.error('Error marking as reviewed:', error);
+      alert('Error al marcar como revisada');
+    }
   };
 
   if (!isMounted || loading || !isAuthenticated || !examResult) {
@@ -435,7 +482,10 @@ const ResultadoPage = () => {
                   errores es la clave del éxito
                 </div>
               </div>
-              <button className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap">
+              <button 
+                onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/respuestasErroneas' : '/respuestasErroneasAscenso')}
+                className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
+              >
                 Ver Respuestas Erróneas
               </button>
             </div>
@@ -689,6 +739,12 @@ const ResultadoPage = () => {
                           {getStatusIcon()}
                           {getStatusLabel()}
                         </span>
+                        <button
+                          onClick={() => handleMarkAsReviewed(q.preguntaId || q.id)}
+                          className="bg-blue-50 hover:bg-blue-100 text-[#4790FD] text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm uppercase transition-colors"
+                        >
+                          Revisado
+                        </button>
                       </div>
                     </div>
 
@@ -734,9 +790,10 @@ const ResultadoPage = () => {
                               >
                                 {opt}
                               </div>
-                              <div
+                              <HtmlMathRenderer
                                 className="text-xs font-semibold"
-                                dangerouslySetInnerHTML={{ __html: optContent }}
+                                html={optContent}
+                                alternativeLabel={opt}
                               />
                             </div>
                           );

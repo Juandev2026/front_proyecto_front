@@ -24,6 +24,8 @@ import {
   ResultadoExamenResponse,
   SolucionExamenRequest,
 } from '../../types/examen';
+import { erroneasService } from '../../services/erroneasService';
+import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
 
 const ExamenPage = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -43,6 +45,7 @@ const ExamenPage = () => {
         alternativa: string;
         alternativaId?: number;
         isCorrect?: boolean;
+        preguntaId?: number;
       }
     >
   >({}); // Results State
@@ -98,7 +101,7 @@ const ExamenPage = () => {
 
       parsedQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach((sub: any) => {
+          q.subPreguntas.forEach((sub: any, index: number) => {
             const normalizedName =
               (sub.clasificacionNombre || q.clasificacionNombre || '')
                 .toUpperCase()
@@ -127,8 +130,8 @@ const ExamenPage = () => {
 
             flattened.push({
               ...q,
-              id: sub.id || q.id,
-              preguntaId: q.id, // Importante: usar el ID del Padre para el calificador
+              id: sub.id || sub.subPreguntaId || q.id || q.preguntaId,
+              preguntaId: q.preguntaId || q.id, // Importante: usar el ID del Padre para el calificador
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
               imagen: sub.imagen || q.imagen || '',
@@ -144,14 +147,26 @@ const ExamenPage = () => {
               idAlternativaB: sub.idAlternativaB ?? sub.alternativas?.[1]?.id,
               idAlternativaC: sub.idAlternativaC ?? sub.alternativas?.[2]?.id,
               idAlternativaD: sub.idAlternativaD ?? sub.alternativas?.[3]?.id,
-              puntos: pointValue,
+              puntos: pointValue || sub.puntaje || q.puntaje,
               tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
-              numeroSubPregunta: sub.numero,
-              respuesta: sub.respuestaCorrecta || sub.respuesta || '',
+              numeroSubPregunta: sub.numero || sub.subPreguntaNumero || sub.orden || (index + 1),
+              respuesta: (() => {
+                const res = sub.respuestaCorrecta || sub.respuesta || '';
+                if (typeof res === 'number') {
+                  if (res === (sub.idAlternativaA ?? sub.alternativas?.[0]?.id)) return 'A';
+                  if (res === (sub.idAlternativaB ?? sub.alternativas?.[1]?.id)) return 'B';
+                  if (res === (sub.idAlternativaC ?? sub.alternativas?.[2]?.id)) return 'C';
+                  if (res === (sub.idAlternativaD ?? sub.alternativas?.[3]?.id)) return 'D';
+                }
+                return res;
+              })(),
               clasificacionId: sub.clasificacionId || q.clasificacionId,
               clasificacionNombre: normalizedName,
               isSubPregunta: true,
               subPreguntas: [],
+              alternativas: sub.alternativas || [], // IMPORTANT: Preserve alternatives array
+              examenId: sub.examenId || q.examenId || 0, // NEW: Preserve examenId
+              year: sub.year || q.year || 0, // NEW: Preserve year
             });
           });
         } else {
@@ -171,15 +186,36 @@ const ExamenPage = () => {
             pointValue = 2;
           if (normalizedName === 'CCP') pointValue = 3;
 
+          const mappedIdA = q.idAlternativaA ?? q.alternativas?.[0]?.id;
+          const mappedIdB = q.idAlternativaB ?? q.alternativas?.[1]?.id;
+          const mappedIdC = q.idAlternativaC ?? q.alternativas?.[2]?.id;
+          const mappedIdD = q.idAlternativaD ?? q.alternativas?.[3]?.id;
+
+          let resolvedRespuesta = q.respuestaCorrecta || q.respuesta || '';
+          if (typeof resolvedRespuesta === 'number') {
+            if (resolvedRespuesta === mappedIdA) resolvedRespuesta = 'A';
+            else if (resolvedRespuesta === mappedIdB) resolvedRespuesta = 'B';
+            else if (resolvedRespuesta === mappedIdC) resolvedRespuesta = 'C';
+            else if (resolvedRespuesta === mappedIdD) resolvedRespuesta = 'D';
+          }
+
           flattened.push({
             ...q,
-            idAlternativaA: q.idAlternativaA ?? q.alternativas?.[0]?.id,
-            idAlternativaB: q.idAlternativaB ?? q.alternativas?.[1]?.id,
-            idAlternativaC: q.idAlternativaC ?? q.alternativas?.[2]?.id,
-            idAlternativaD: q.idAlternativaD ?? q.alternativas?.[3]?.id,
+            id: q.id || q.preguntaId,
+            preguntaId: q.preguntaId || q.id,
+            alternativaA: q.alternativaA || q.alternativas?.[0]?.contenido || '',
+            alternativaB: q.alternativaB || q.alternativas?.[1]?.contenido || '',
+            alternativaC: q.alternativaC || q.alternativas?.[2]?.contenido || '',
+            alternativaD: q.alternativaD || q.alternativas?.[3]?.contenido || '',
+            idAlternativaA: mappedIdA,
+            idAlternativaB: mappedIdB,
+            idAlternativaC: mappedIdC,
+            idAlternativaD: mappedIdD,
             clasificacionNombre: normalizedName,
-            puntos: pointValue,
+            puntos: pointValue || q.puntaje,
+            respuesta: resolvedRespuesta,
             isSubPregunta: false,
+            alternativas: q.alternativas || [], // Asegurar que las alternativas estén presentes
           });
         }
       });
@@ -352,12 +388,18 @@ const ExamenPage = () => {
     );
 
     const idKey = `idAlternativa${option}` as keyof PreguntaExamen;
-    const alternativaId = currentQuestion[idKey] as number | undefined;
+    let alternativaId = currentQuestion[idKey] as number | undefined;
+
+    // Fallback: Si no está en idAlternativaX, buscar en el array de alternativas
+    if (!alternativaId && currentQuestion.alternativas) {
+      const optIndex = option.charCodeAt(0) - 65; // A=0, B=1, ...
+      alternativaId = currentQuestion.alternativas[optIndex]?.id;
+    }
 
     setRespuestas((prev) => ({
       ...prev,
       [key]: {
-        examenId: currentQuestion.examenId,
+        examenId: currentQuestion.examenId || 0,
         alternativa: option,
         alternativaId: alternativaId ?? 0,
       },
@@ -449,15 +491,31 @@ const ExamenPage = () => {
 
       const firstQuestion = questions[0];
       if (!firstQuestion) return;
-      const examYearRaw = String(
-        (metadata && metadata.year) ||
-          (firstQuestion && firstQuestion.year) ||
-          '0'
-      )
-        .split(',')[0]
-        ?.trim() || '0';
-      const examYear = parseInt(examYearRaw, 10) || 0;
 
+      // Intentar obtener el año de los metadatos o de la primera pregunta que lo tenga
+      let examYear = 0;
+      const metadataYearRaw = String(metadata?.year || '');
+      if (metadataYearRaw && !isNaN(parseInt(metadataYearRaw, 10))) {
+        examYear = parseInt(metadataYearRaw, 10);
+      } else {
+        // Buscar el primer año válido en las preguntas
+        const qWithYear = questions.find(q => q.year && !isNaN(Number(q.year)));
+        if (qWithYear) {
+          examYear = Number(qWithYear.year);
+        }
+      }
+
+      // Intentar obtener un examenId válido (distinto de 0) si es posible
+      let resolvedExamenId = 0;
+      if (metadata?.examenId) {
+        resolvedExamenId = Number(metadata.examenId);
+      } else {
+        // Buscar el primer examenId válido en las preguntas
+        const qWithExamenId = questions.find(q => q.examenId && Number(q.examenId) > 0);
+        if (qWithExamenId) {
+          resolvedExamenId = Number(qWithExamenId.examenId);
+        }
+      }
 
       const respuestasPayload = questions.map((q, index) => {
         const key = String(index);
@@ -465,7 +523,7 @@ const ExamenPage = () => {
 
         // El backend espera el ID de la alternativa marcada como número o null si no se marcó
         const finalAnswer =
-          data && data.alternativaId !== undefined && data.alternativaId !== null
+          data && data.alternativaId !== undefined && data.alternativaId !== null && data.alternativaId !== 0
             ? Number(data.alternativaId)
             : null;
 
@@ -476,16 +534,10 @@ const ExamenPage = () => {
         };
       });
 
-      // NO enviar 0 como examenId, ya que causa error de clave foránea en el backend.
-      // Si es simulacro, usamos el examenId de la primera pregunta para mantener la integridad.
-      const resolvedExamenId = metadata?.isSimulacro 
-        ? (firstQuestion?.examenId || 0) 
-        : (firstQuestion?.examenId || 0);
-
       const payload: SolucionExamenRequest = {
         examenId: resolvedExamenId,
         userId: user?.id || 0,
-        year: examYear || 0,
+        year: examYear,
         respuestas: respuestasPayload,
       };
 
@@ -507,11 +559,65 @@ const ExamenPage = () => {
       const result = await evaluacionService.calificar(payload);
       console.log('Service returned result:', result);
 
+      // Sincronizar respuestas con sus resultados para la página de resumen y eliminación
+      const finalAnswers = { ...respuestas };
+      questions.forEach((q, idx) => {
+        const key = String(idx);
+        const bKey = Number(q.id);
+        const isCorrect = result.resultados.some((r) =>
+          r.idsCorrectas.some((id) => Number(id) === bKey)
+        );
+        if (finalAnswers[key]) {
+          finalAnswers[key].isCorrect = isCorrect;
+          finalAnswers[key].preguntaId = q.preguntaId || q.id;
+        }
+      });
+
       setExamResult(result);
+
+      // --- ELIMINACIÓN DE ERRÓNEAS ---
+      try {
+        console.log('Analizando preguntas para eliminar del banco de errores...');
+        const correctItemsToBorrar: { examenId: number; year: number; preguntasId: number; subPreguntasId: number | null }[] = [];
+        
+        questions.forEach((q, idx) => {
+          const key = String(idx);
+          const bKey = Number(q.id);
+          
+          // 1. Verificación por Backend
+          const isBackendCorrect = result.resultados.some((r) =>
+            r.idsCorrectas.some((id) => Number(id) === bKey)
+          );
+
+          // 2. Verificación Local (por si el backend no la matchea en exámenes mezclados)
+          const answer = finalAnswers[key];
+          const isLocalCorrect = answer?.alternativa?.toUpperCase() === q.respuesta?.toUpperCase();
+
+          if (isBackendCorrect || isLocalCorrect) {
+            correctItemsToBorrar.push({
+              examenId: Number(q.examenId || answer?.examenId || resolvedExamenId) || 0,
+              year: Number(q.year || examYear) || 0,
+              preguntasId: Number(q.preguntaId || q.id),
+              subPreguntasId: (q as any).isSubPregunta ? Number(q.id) : null
+            });
+          }
+        });
+
+        if (correctItemsToBorrar.length > 0) {
+          console.log('--- ENVIANDO DELETE /api/Erroneas/delete-multiple ---');
+          console.log('Payload:', JSON.stringify(correctItemsToBorrar, null, 2));
+          await erroneasService.deleteMultiple(user?.id || 0, correctItemsToBorrar);
+          console.log('--- ELIMINACIÓN EXITOSA ---');
+        } else {
+          console.log('--- No se detectaron respuestas correctas para eliminar ---');
+        }
+      } catch (err) {
+        console.error('Error al intentar borrar erróneas corregidas:', err);
+      }
 
       // Persist results and answers for the dedicated results page
       localStorage.setItem('lastExamResult', JSON.stringify(result));
-      localStorage.setItem('lastRespuestas', JSON.stringify(respuestas));
+      localStorage.setItem('lastRespuestas', JSON.stringify(finalAnswers));
       localStorage.setItem('lastExamTime', String(seconds));
 
       console.log('Redirecting to results page...');
@@ -952,9 +1058,10 @@ const ExamenPage = () => {
                           >
                             {opt}
                           </div>
-                          <span
+                          <HtmlMathRenderer
                             className="font-medium text-base flex-1 alternative-content"
-                            dangerouslySetInnerHTML={{ __html: content }}
+                            html={content}
+                            alternativeLabel={opt}
                           />
                           {/* Icons for results */}
                           {examResult && isSelected && status === 'correct' && (

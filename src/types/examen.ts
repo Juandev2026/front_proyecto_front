@@ -39,6 +39,7 @@ export interface PreguntaExamen {
   idAlternativaB?: number;
   idAlternativaC?: number;
   idAlternativaD?: number;
+  alternativas?: any[];
 }
 
 export interface RespuestaUsuario {

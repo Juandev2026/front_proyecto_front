@@ -2699,7 +2699,7 @@ const Recursos = () => {
                                   <div className="grid grid-cols-1 gap-2 mb-4">
                                     {sub.alternativas &&
                                     sub.alternativas.length > 0
-                                      ? sub.alternativas.map((alt: any) => {
+                                      ? sub.alternativas.map((alt: any, altIdx: number) => {
                                           const respString =
                                             (sub.respuestaCorrecta ?? sub.respuesta)?.toString();
                                           const isCorrect =
@@ -2715,6 +2715,7 @@ const Recursos = () => {
                                             >
                                               <HtmlMathRenderer
                                                 html={alt.contenido || ''}
+                                                alternativeLabel={String.fromCharCode(65 + altIdx)}
                                                 className={`text-sm ${
                                                   isCorrect
                                                     ? 'text-green-800 font-medium'
@@ -2769,6 +2770,7 @@ const Recursos = () => {
                                                 <span className="text-sm">
                                                   <HtmlMathRenderer
                                                     html={altText || ''}
+                                                    alternativeLabel={opt}
                                                   />
                                                 </span>
                                               </div>
@@ -2802,7 +2804,7 @@ const Recursos = () => {
                         <div>
                           <div className="grid grid-cols-1 gap-3 mb-4">
                             {item.alternativas && item.alternativas.length > 0
-                              ? item.alternativas.map((alt: any) => {
+                              ? item.alternativas.map((alt: any, altIdx: number) => {
                                   // Use the raw ID for comparison, same as sub-questions
                                   const isCorrect =
                                     alt.id.toString() ===
@@ -2818,6 +2820,7 @@ const Recursos = () => {
                                     >
                                       <HtmlMathRenderer
                                         html={alt.contenido || ''}
+                                        alternativeLabel={String.fromCharCode(65 + altIdx)}
                                         className={`text-sm ${
                                           isCorrect
                                             ? 'text-green-800 font-medium'
@@ -2866,6 +2869,7 @@ const Recursos = () => {
                                         </span>
                                         <HtmlMathRenderer
                                           html={altText || ''}
+                                          alternativeLabel={opt}
                                           className="text-gray-800"
                                         />
                                       </div>

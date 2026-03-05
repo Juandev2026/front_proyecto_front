@@ -12,20 +12,28 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { erroneasService, GrupoErroneas } from '../services/erroneasService';
+import { erroneasService, GroupByFechaErroneas, PreguntaErronea } from '../services/erroneasService';
 
 const RespuestasErroneasAscensoPage = () => {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // State
-  const [modalidad, setModalidad] = useState(
-    'Educación Básica Alternativa - Inicial - Intermedio'
-  );
   const [numPreguntas, setNumPreguntas] = useState('10 preguntas');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [erroneas, setErroneas] = useState<GrupoErroneas[]>([]);
+  const [erroneas, setErroneas] = useState<GroupByFechaErroneas[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // New Practice Filters
+  const [selectedFecha, setSelectedFecha] = useState('Todas las fechas');
+  const [modalidad, setModalidad] = useState('');
+  const [fuenteMinedu, setFuenteMinedu] = useState(true);
+  const [fuenteEscala, setFuenteEscala] = useState(true);
+
+  // History Filters
+  const [historyFechaFilter, setHistoryFechaFilter] = useState('Todas las fechas');
+  const [historyCategoryFilter, setHistoryCategoryFilter] = useState('Todas las categorías');
+  const [historyFuenteFilter, setHistoryFuenteFilter] = useState('Todas las fuentes');
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -41,6 +49,16 @@ const RespuestasErroneasAscensoPage = () => {
           // Ascenso corresponds to tipoExamenId: 1
           const data = await erroneasService.getByUser(user.id, 1);
           setErroneas(data);
+          
+          if (data && data.length > 0) {
+            setSelectedFecha(data[0]?.fecha || '');
+            const firstGroup = data[0]?.modalidades?.[0];
+            const firstNivel = firstGroup?.niveles?.[0];
+            const firstEsp = firstNivel?.especialidades?.[0];
+            if (firstGroup && firstNivel && firstEsp) {
+              setModalidad(`${firstGroup.modalidadNombre} - ${firstNivel.nivelNombre} - ${firstEsp.especialidadNombre}`);
+            }
+          }
         } catch (error) {
           console.error('Error fetching erroneas:', error);
         } finally {
@@ -59,16 +77,23 @@ const RespuestasErroneasAscensoPage = () => {
     let totalErrors = 0;
     const uniqueQuestions = new Set<number>();
 
-    erroneas.forEach((group) => {
-      group.preguntas.forEach((q) => {
-        uniqueQuestions.add(q.preguntaId);
-        if (q.subPreguntas && q.subPreguntas.length > 0) {
-          totalErrors += q.subPreguntas.length;
-        } else if (q.erroresInmediatos) {
-          totalErrors += q.erroresInmediatos.length;
-        } else {
-          totalErrors += 1;
-        }
+    erroneas?.forEach((groupFecha) => {
+      groupFecha.modalidades?.forEach((mod) => {
+        mod.niveles?.forEach((niv) => {
+          niv.especialidades?.forEach((esp) => {
+            const allQs = [...(esp.propios || []), ...(esp.otros || [])];
+            allQs.forEach((q) => {
+              uniqueQuestions.add(q.preguntaId);
+              if (q.subPreguntas && q.subPreguntas.length > 0) {
+                totalErrors += q.subPreguntas.length;
+              } else if (q.erroresInmediatos && q.erroresInmediatos.length > 0) {
+                totalErrors += q.erroresInmediatos.length;
+              } else {
+                totalErrors += 1;
+              }
+            });
+          });
+        });
       });
     });
 
@@ -76,36 +101,178 @@ const RespuestasErroneasAscensoPage = () => {
     return { totalErrors, uniqueQuestions: uniqueQuestions.size, pointsLost };
   }, [erroneas]);
 
-  const groupedByDate = useMemo(() => {
-    return erroneas.map((group) => {
-      const date = group.fecha ? new Date(group.fecha + 'T12:00:00') : new Date();
-      const options: any = { day: 'numeric', month: 'long', year: 'numeric' };
-      let dateString = date.toLocaleDateString('es-ES', options);
+  const groupedByHierarchy = useMemo(() => {
+    const flatGroups: Array<{
+      title: string;
+      errors: number;
+      points: number;
+      items: PreguntaErronea[];
+      subtitle: string;
+    }> = [];
 
-      if (dateString === 'Invalid Date' || !group.fecha) {
-        dateString = 'Fecha no disponible';
+    erroneas?.forEach((groupFecha) => {
+      // Apply History Date Filter
+      if (historyFechaFilter !== 'Todas las fechas' && groupFecha.fecha !== historyFechaFilter) {
+        return;
       }
 
-      let groupErrors = 0;
-      group.preguntas.forEach((q) => {
-        if (q.subPreguntas && q.subPreguntas.length > 0) {
-          groupErrors += q.subPreguntas.length;
-        } else if (q.erroresInmediatos) {
-          groupErrors += q.erroresInmediatos.length;
-        } else {
-          groupErrors += 1;
-        }
-      });
+      groupFecha.modalidades?.forEach((mod) => {
+        mod.niveles?.forEach((niv) => {
+          niv.especialidades?.forEach((esp) => {
+            const categoryName = `${mod.modalidadNombre} - ${niv.nivelNombre} - ${esp.especialidadNombre}`;
+            
+            // Apply History Category Filter
+            if (historyCategoryFilter !== 'Todas las categorías' && categoryName !== historyCategoryFilter) {
+              return;
+            }
 
-      return {
-        date: dateString,
-        errors: groupErrors,
-        points: groupErrors * 1.5,
-        items: group.preguntas,
-        rawDate: group.fecha || '',
-      };
+            // Apply History Fuente Filter
+            // MINEDU = otros, Escala Docente = propios
+            let allQs: PreguntaErronea[] = [];
+            if (historyFuenteFilter === 'Todas las fuentes') {
+              allQs = [...(esp.propios || []), ...(esp.otros || [])];
+            } else if (historyFuenteFilter === 'MINEDU') {
+              allQs = esp.otros || [];
+            } else if (historyFuenteFilter === 'Escala Docente') {
+              allQs = esp.propios || [];
+            }
+
+            if (allQs.length === 0) return;
+
+            let groupErrors = 0;
+            allQs.forEach((q) => {
+              if (q.subPreguntas && q.subPreguntas.length > 0) {
+                groupErrors += q.subPreguntas.length;
+              } else if (q.erroresInmediatos && q.erroresInmediatos.length > 0) {
+                groupErrors += q.erroresInmediatos.length;
+              } else {
+                groupErrors += 1;
+              }
+            });
+
+            flatGroups.push({
+              title: `${mod.modalidadNombre} - ${niv.nivelNombre}`,
+              subtitle: esp.especialidadNombre,
+              errors: groupErrors,
+              points: groupErrors * 1.5,
+              items: allQs,
+            });
+          });
+        });
+      });
     });
+
+    return flatGroups;
+  }, [erroneas, historyFechaFilter, historyCategoryFilter, historyFuenteFilter]);
+
+  const fechaOptions = useMemo(() => {
+    if (!erroneas) return [];
+    return erroneas.map(g => g.fecha);
   }, [erroneas]);
+
+  const modalidadOptions = useMemo(() => {
+    const options = new Set<string>();
+    erroneas?.forEach((groupFecha) => {
+      // Filter by selected practice date
+      if (selectedFecha !== 'Todas las fechas' && groupFecha.fecha !== selectedFecha) {
+        return;
+      }
+
+      groupFecha.modalidades?.forEach((mod) => {
+        mod.niveles?.forEach((niv) => {
+          niv.especialidades?.forEach((esp) => {
+            options.add(
+              `${mod.modalidadNombre} - ${niv.nivelNombre} - ${esp.especialidadNombre}`
+            );
+          });
+        });
+      });
+    });
+    return Array.from(options);
+  }, [erroneas, selectedFecha]);
+
+  const allCategoryOptions = useMemo(() => {
+    const options = new Set<string>();
+    erroneas?.forEach((groupFecha) => {
+      groupFecha.modalidades?.forEach((mod) => {
+        mod.niveles?.forEach((niv) => {
+          niv.especialidades?.forEach((esp) => {
+            options.add(
+              `${mod.modalidadNombre} - ${niv.nivelNombre} - ${esp.especialidadNombre}`
+            );
+          });
+        });
+      });
+    });
+    return Array.from(options);
+  }, [erroneas]);
+
+  const handleStartPractice = () => {
+    let allFilteredQuestions: PreguntaErronea[] = [];
+
+    erroneas?.forEach((groupFecha) => {
+      if (selectedFecha !== 'Todas las fechas' && groupFecha.fecha !== selectedFecha) {
+        return;
+      }
+
+      groupFecha.modalidades?.forEach((mod) => {
+        mod.niveles?.forEach((niv) => {
+          niv.especialidades?.forEach((esp) => {
+            const currentHierarchy = `${mod.modalidadNombre} - ${niv.nivelNombre} - ${esp.especialidadNombre}`;
+            if (modalidad && currentHierarchy !== modalidad) return;
+
+            if (fuenteEscala) {
+              allFilteredQuestions = [...allFilteredQuestions, ...(esp.propios || [])];
+            }
+            if (fuenteMinedu) {
+              allFilteredQuestions = [...allFilteredQuestions, ...(esp.otros || [])];
+            }
+          });
+        });
+      });
+    });
+
+    if (allFilteredQuestions.length === 0) {
+      alert('No hay preguntas disponibles con los filtros seleccionados.');
+      return;
+    }
+
+    // Shuffle questions
+    const shuffled = [...allFilteredQuestions].sort(() => 0.5 - Math.random());
+
+    // Limit by numPreguntas
+    const limitString = numPreguntas.split(' ')[0] || '10';
+    const limit = parseInt(limitString, 10);
+    const selectedBatch = shuffled.slice(0, limit);
+
+    // Prepare metadata for the exam page
+    const metadata = {
+      modalidad: modalidad || 'Varias modalidades',
+      nivel: '',
+      especialidad: null,
+      year: selectedFecha === 'Todas las fechas' ? 'Histórico' : selectedFecha,
+      isSimulacro: false,
+    };
+
+    localStorage.setItem('currentQuestions', JSON.stringify(selectedBatch));
+    localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
+
+    router.push(`/examen?from=${router.pathname || ''}`);
+  };
+
+  const handleMarkAsReviewed = async (preguntaId: number) => {
+    if (!user?.id) return;
+    try {
+      if (!window.confirm('¿Estás seguro de marcar esta pregunta como revisada? Ya no aparecerá en tu lista de errores.')) return;
+      await erroneasService.marcarRevisada(user.id, preguntaId);
+      // Refresh the list
+      const data = await erroneasService.getByUser(user.id, 1);
+      setErroneas(data);
+    } catch (error) {
+      console.error('Error marking as reviewed:', error);
+      alert('Error al marcar como revisada');
+    }
+  };
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
@@ -144,6 +311,28 @@ const RespuestasErroneasAscensoPage = () => {
             </p>
 
             <div className="space-y-4">
+              {/* Fecha Dropdown */}
+              <div>
+                <label className="text-xs font-semibold text-gray-600 ml-1">
+                  Fecha
+                </label>
+                <div className="relative mt-1">
+                  <select
+                    value={selectedFecha}
+                    onChange={(e) => setSelectedFecha(e.target.value)}
+                    className="w-full appearance-none border border-gray-300 rounded-md p-2 pr-8 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shadow-sm"
+                  >
+                    <option>Todas las fechas</option>
+                    {fechaOptions.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+                </div>
+              </div>
+
               {/* Modalidad Dropdown */}
               <div>
                 <label className="text-xs font-semibold text-gray-600 ml-1">
@@ -155,10 +344,15 @@ const RespuestasErroneasAscensoPage = () => {
                     onChange={(e) => setModalidad(e.target.value)}
                     className="w-full appearance-none border border-gray-300 rounded-md p-2 pr-8 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shadow-sm"
                   >
-                    <option>
-                      Educación Básica Alternativa - Inicial - Intermedio
-                    </option>
-                    <option>Educación Básica Regular - Inicial</option>
+                    {modalidadOptions.length === 0 ? (
+                      <option value="">Cargando opciones...</option>
+                    ) : (
+                      modalidadOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))
+                    )}
                   </select>
                   <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
                 </div>
@@ -173,7 +367,8 @@ const RespuestasErroneasAscensoPage = () => {
                   <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm flex-1 cursor-pointer">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={fuenteMinedu}
+                      onChange={(e) => setFuenteMinedu(e.target.checked)}
                       className="text-red-500 focus:ring-red-500 rounded"
                     />
                     <span className="text-sm font-semibold text-gray-700">
@@ -183,7 +378,8 @@ const RespuestasErroneasAscensoPage = () => {
                   <label className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm flex-1 cursor-pointer">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={fuenteEscala}
+                      onChange={(e) => setFuenteEscala(e.target.checked)}
                       className="text-red-500 focus:ring-red-500 rounded"
                     />
                     <span className="text-sm font-semibold text-gray-700">
@@ -213,7 +409,10 @@ const RespuestasErroneasAscensoPage = () => {
               </div>
 
               {/* Button */}
-              <button className="w-full bg-[#00C853] hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md shadow-md flex items-center justify-center gap-2 mt-4 transition-colors">
+              <button 
+                onClick={handleStartPractice}
+                className="w-full bg-[#00C853] hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md shadow-md flex items-center justify-center gap-2 mt-4 transition-colors"
+              >
                 <CheckCircleIcon className="h-5 w-5" />
                 ¡Comienza a practicar Ahora!
               </button>
@@ -221,59 +420,38 @@ const RespuestasErroneasAscensoPage = () => {
           </div>
 
           {/* Right Panel: Statistics (White) */}
-          <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm">
+          <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm flex flex-col h-full">
             <div className="flex items-center gap-2 mb-6 text-gray-900">
               <ChartBarIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
             </div>
 
-            <div className="flex justify-between text-center mb-8 px-4">
-              <div>
-                <p className="text-3xl font-bold text-red-500">
-                  {stats.totalErrors}
-                </p>
-                <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                  Errores Totales
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-red-500">
-                  {stats.uniqueQuestions}
-                </p>
-                <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                  Preguntas Equivocadas
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-purple-500">
-                  {stats.pointsLost}
-                </p>
-                <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                  Puntos Perdidos
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span className="text-sm font-medium text-gray-600">
-                    Categoría
-                  </span>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex justify-around text-center px-4">
+                <div>
+                  <p className="text-3xl font-bold text-red-500">
+                    {stats.totalErrors}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
+                    Errores Totales
+                  </p>
                 </div>
-                <span className="text-sm font-bold text-red-500">
-                  {user?.especialidad || 'No especificada'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                  <span className="text-sm font-medium text-gray-600">Año</span>
+                <div>
+                  <p className="text-3xl font-bold text-red-500">
+                    {stats.uniqueQuestions}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
+                    Preguntas Equivocadas
+                  </p>
                 </div>
-                <span className="text-sm font-bold text-orange-500">
-                  {new Date().getFullYear()}
-                </span>
+                <div>
+                  <p className="text-3xl font-bold text-purple-500">
+                    {stats.pointsLost}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
+                    Puntos Perdidos
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -289,38 +467,66 @@ const RespuestasErroneasAscensoPage = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Revisa las {groupedByDate.length} fechas y las preguntas que has
-            respondido incorrectamente. Las más recientes aparecen primero.
+            Revisa las {groupedByHierarchy.length} categorías y las preguntas que has
+            respondido incorrectamente.
           </p>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label className="text-xs font-semibold text-gray-600 ml-1">
+                Filtrar por Fecha
+              </label>
+              <select 
+                value={historyFechaFilter}
+                onChange={(e) => setHistoryFechaFilter(e.target.value)}
+                className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50"
+              >
+                <option>Todas las fechas</option>
+                {fechaOptions.map(f => (
+                  <option key={f}>{f}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 ml-1">
                 Filtrar por Categoría
               </label>
-              <select className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50">
+              <select 
+                value={historyCategoryFilter}
+                onChange={(e) => setHistoryCategoryFilter(e.target.value)}
+                className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50"
+              >
                 <option>Todas las categorías</option>
+                {allCategoryOptions.map(opt => (
+                  <option key={opt}>{opt}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 ml-1">
                 Filtrar por Fuente
               </label>
-              <select className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50">
+              <select 
+                value={historyFuenteFilter}
+                onChange={(e) => setHistoryFuenteFilter(e.target.value)}
+                className="w-full mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-50"
+              >
                 <option>Todas las fuentes</option>
+                <option>MINEDU</option>
+                <option>Escala Docente</option>
               </select>
             </div>
           </div>
 
           {/* History List */}
           <div className="space-y-4">
-            {groupedByDate.length === 0 ? (
+            {groupedByHierarchy.length === 0 ? (
               <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg">
                 No tienes preguntas erróneas registradas.
               </div>
             ) : (
-              groupedByDate.map((item, index) => (
+              groupedByHierarchy.map((item, index) => (
                 <div key={index} className="space-y-3">
                   {/* Header Row */}
                   <div
@@ -333,9 +539,14 @@ const RespuestasErroneasAscensoPage = () => {
                         : 'border-gray-100 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="font-bold text-gray-900 text-sm md:text-base">
-                      Errores - {item.date}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-900 text-sm md:text-base">
+                        {item.title}
+                      </span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {item.subtitle}
+                      </span>
+                    </div>
 
                     <div className="flex items-center gap-4">
                       <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
@@ -360,7 +571,7 @@ const RespuestasErroneasAscensoPage = () => {
                   {/* Expanded Content */}
                   {expandedIndex === index && (
                     <div className="pl-0 md:pl-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                      {item.items.map((q) => (
+                      {item.items.map((q: PreguntaErronea) => (
                         <div
                           key={q.preguntaId}
                           className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
@@ -390,10 +601,10 @@ const RespuestasErroneasAscensoPage = () => {
                                 Alternativas:
                               </h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {q.alternativas.map((alt) => {
+                                {q.alternativas.map((alt: any) => {
                                   const isCorrect = String(alt.id) === String(q.respuestaCorrecta);
                                   const isMarked = q.erroresInmediatos?.some(
-                                    (err) => String(err.alternativaMarcada) === String(alt.id)
+                                    (err: any) => String(err.alternativaMarcada) === String(alt.id)
                                   );
 
                                   let bgColor = 'bg-gray-50 border-gray-100';
@@ -419,7 +630,7 @@ const RespuestasErroneasAscensoPage = () => {
                           {/* Subquestions Section */}
                           {q.subPreguntas && q.subPreguntas.length > 0 && (
                             <div className="mt-6 space-y-8">
-                              {q.subPreguntas.map((sub) => (
+                              {q.subPreguntas.map((sub: any) => (
                                 <div
                                   key={sub.subPreguntaId}
                                   className="border-l-4 border-cyan-400 pl-4 py-2 bg-gray-50/10 rounded-r-lg space-y-4"
@@ -429,7 +640,7 @@ const RespuestasErroneasAscensoPage = () => {
                                     dangerouslySetInnerHTML={{ __html: sub.enunciado }}
                                   />
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {sub.alternativas.map((alt) => {
+                                    {sub.alternativas.map((alt: any) => {
                                       const isCorrect = String(alt.id) === String(sub.respuestaCorrecta);
                                       const isMarked = String(sub.alternativaMarcada) === String(alt.id);
 
@@ -456,8 +667,20 @@ const RespuestasErroneasAscensoPage = () => {
                           )}
 
                           {/* Info Footer */}
-                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-end items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                            <div>fecha: {item.date}</div>
+                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-between items-center">
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                               categoría: {item.subtitle}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsReviewed(q.preguntaId);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#4790FD] rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border border-blue-100"
+                            >
+                              <CheckCircleIcon className="w-3.5 h-3.5" />
+                              Marcar como Revisada
+                            </button>
                           </div>
                         </div>
                       ))}
