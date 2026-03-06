@@ -30,8 +30,8 @@ const Menu = () => {
       <Popover className="bg-white/90 backdrop-filter backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300 border-b border-gray-100">
         <div className="relative px-4 sm:px-6 lg:px-8">
           {/* Top Row: Logo, Product Buttons, Auth */}
-          <div className="flex md:grid md:grid-cols-3 items-center justify-between py-2 border-b border-gray-50">
-            <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0 justify-self-start">
+          <div className="flex md:grid md:grid-cols-3 items-center justify-between py-1 md:py-2 border-b border-gray-50">
+            <div className="flex items-center flex-shrink-0 lg:flex-grow-0 justify-self-start">
               <div className="flex items-center justify-between w-full md:w-auto">
                 <div className="flex items-center gap-2">
                   <div className="-mr-2 flex items-center md:hidden gap-2">
@@ -46,7 +46,7 @@ const Menu = () => {
                         <img
                           src="/assets/images/logo_principal1.png"
                           alt="logo"
-                          className="h-20 sm:h-24 w-auto"
+                          className="h-14 sm:h-20 w-auto"
                         />
                       </a>
                     </Link>
@@ -80,7 +80,7 @@ const Menu = () => {
                       : '/planes?showVideo=true'
                   }
                 >
-                  <a className="bg-[#4a90f9] text-white px-4 py-2 rounded-md text-xs sm:text-sm font-extrabold shadow-md hover:bg-blue-600 transition-all active:scale-95 whitespace-nowrap">
+                  <a className="bg-[#4a90f9] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-[10px] sm:text-xs font-extrabold shadow-md hover:bg-blue-600 transition-all active:scale-95 whitespace-nowrap">
                     AVEND ESCALA
                   </a>
                 </Link>
@@ -112,7 +112,7 @@ const Menu = () => {
                         : '/planes?showVideo=true'
                     }
                   >
-                    <a className="bg-[#4a90f9] !text-white hover:text-white px-4 py-2.5 rounded-lg text-xs lg:text-sm font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[150px]">
+                  <a className="bg-[#4a90f9] !text-white hover:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
                       AVEND ESCALA
                     </a>
                   </Link>
@@ -131,7 +131,7 @@ const Menu = () => {
 
                 {/* AVEND PLANIFICA */}
                 <div className="relative group">
-                  <div className="bg-purple-600 !text-white px-4 py-2.5 rounded-lg text-xs lg:text-sm font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[150px]">
+                  <div className="bg-purple-600 !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
                     AVEND PLANIFICA
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -143,7 +143,7 @@ const Menu = () => {
 
                 {/* AVEND IUS */}
                 <div className="relative group">
-                  <div className="bg-[#004c7a] !text-white px-4 py-2.5 rounded-lg text-xs lg:text-sm font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[150px]">
+                  <div className="bg-[#004c7a] !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
                     AVEND IUS
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -172,8 +172,8 @@ const Menu = () => {
                       )}
                   </div>
                   <div className="flex items-center gap-2 md:gap-3">
-                    <div className="flex flex-col items-end">
-                      <span className="text-gray-700 font-bold md:font-medium text-sm md:text-sm">
+                    <div className="flex flex-col items-end min-w-0">
+                      <span className="hidden lg:block text-gray-700 font-bold md:font-medium text-xs md:text-sm truncate max-w-[80px] lg:max-w-none">
                         <span className="hidden md:inline">Hola, </span>
                         {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
                       </span>
