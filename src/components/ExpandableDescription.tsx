@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 interface ExpandableDescriptionProps {
   htmlContent: string;
@@ -11,9 +12,13 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
   className = '',
   maxLines = 5,
 }) => {
+  const { isAuthenticated } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // If user is authenticated, we want to show everything
+  const effectiveIsExpanded = isAuthenticated || isExpanded;
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -45,10 +50,10 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
       <div
         ref={contentRef}
         className={`${className} ${
-          !isExpanded ? 'line-clamp-none' : ''
+          !effectiveIsExpanded ? 'line-clamp-none' : ''
         }`}
         style={
-          !isExpanded
+          !effectiveIsExpanded
             ? {
                 display: '-webkit-box',
                 WebkitLineClamp: maxLines,
@@ -61,7 +66,7 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
         }
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
-      {(isTruncated || isExpanded) && (
+      {!isAuthenticated && (isTruncated || isExpanded) && (
         <button
           onClick={toggleExpanded}
           className="mt-3 text-primary hover:text-blue-700 font-bold text-sm flex items-center gap-1 transition-colors bg-white/50 backdrop-blur-sm px-2 py-1 rounded-md"
