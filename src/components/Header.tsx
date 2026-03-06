@@ -328,7 +328,7 @@ const Menu = () => {
                     return (
                       <div key={item.name}>
                         <Link href={item.href}>
-                          <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                          <a className="block px-3 py-1.5 rounded-md text-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                             {item.name}
                           </a>
                         </Link>
@@ -347,7 +347,7 @@ const Menu = () => {
 
                   return (
                     <Link key={item.name} href={item.href}>
-                      <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                      <a className="block px-3 py-1.5 rounded-md text-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                         {item.name}
                       </a>
                     </Link>
@@ -355,23 +355,31 @@ const Menu = () => {
                 })}
               </div>
 
-              <div className="mt-6 px-5 pb-6 space-y-4">
+              <div className="mt-2 px-5 pb-4 space-y-3">
                 {/* Greeting if Authenticated */}
                 {isAuthenticated && (
-                  <div className="text-center font-bold text-gray-900 border-b border-gray-100 pb-2 text-lg">
-                    Hola, {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                    <div className="font-bold text-gray-800 text-lg">
+                      Hola, {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="text-[10px] font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm active:bg-red-100"
+                    >
+                      Cerrar Sesión
+                    </button>
                   </div>
                 )}
 
                 {/* Vertical Product Buttons */}
-                <div className="flex flex-col gap-3">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                <div className="flex flex-col gap-2">
+                  <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">
                     PRONTO
                   </div>
-                  <div className="bg-purple-600 text-white px-5 py-3.5 rounded-xl text-center font-extrabold shadow-md text-sm cursor-default">
+                  <div className="bg-purple-600 text-white px-5 py-2.5 rounded-xl text-center font-extrabold shadow-md text-xs cursor-default">
                     AVEND PLANIFICA
                   </div>
-                  <div className="bg-[#004c7a] text-white px-5 py-3.5 rounded-xl text-center font-extrabold shadow-md text-sm cursor-default">
+                  <div className="bg-[#004c7a] text-white px-5 py-2.5 rounded-xl text-center font-extrabold shadow-md text-xs cursor-default">
                     AVEND IUS
                   </div>
                 </div>
@@ -398,24 +406,16 @@ const Menu = () => {
                 )}
 
                 {isAuthenticated && (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {!loading &&
                       (user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN') && (
                         <Link href="/admin">
-                          <a className="block w-full px-5 py-3 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl transition-colors shadow-md text-sm">
+                          <a className="block w-full px-5 py-2.5 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl transition-colors shadow-md text-sm">
                             Panel Admin
                           </a>
                         </Link>
                       )}
-                    <div className="pt-4 border-t-2 border-gray-200">
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full px-5 py-3 text-center font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all border border-red-100 shadow-sm"
-                      >
-                        Cerrar Sesión
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>
