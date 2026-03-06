@@ -182,8 +182,8 @@ const MaterialPreview = ({
                   );
                 })()}
                 {/* Price Tag Overlay */}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full px-6 py-2 shadow-lg z-10">
-                  <span className="text-xl font-bold text-primary">
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur rounded-full px-4 sm:px-6 py-1.5 sm:py-2 shadow-lg z-10 border border-white/50">
+                  <span className="text-base sm:text-xl font-extrabold text-primary">
                     {material.precio && material.precio > 0
                       ? `S/ ${material.precio.toFixed(2)}`
                       : 'Gratis'}
@@ -195,15 +195,15 @@ const MaterialPreview = ({
             {/* Title and Description Section - Right after thumbnail */}
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
               <div className="p-6 md:p-8 border-b border-gray-100">
-                <div className="flex justify-between items-start gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                   <h1
-                    className="text-2xl md:text-3xl font-bold text-gray-900"
+                    className="text-lg sm:text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight flex-grow"
                     dangerouslySetInnerHTML={{
                       __html: stripHtml(material.titulo),
                     }}
                   ></h1>
-                  <div className="flex-shrink-0 pt-1">
-                    <ShareButton title={stripHtml(material.titulo)} url={url} />
+                  <div className="flex-shrink-0 w-full sm:w-auto">
+                    <ShareButton title={stripHtml(material.titulo)} url={url} className="w-full sm:w-auto" />
                   </div>
                 </div>
 
@@ -223,10 +223,10 @@ const MaterialPreview = ({
                 />
 
                 {/* Price and Action Button */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mt-6 pt-6 border-t border-gray-100">
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-4 mt-6 pt-6 border-t border-gray-100">
                   {material.precio && material.precio > 0 ? (
                     <>
-                      <div className="bg-primary/10 rounded-lg px-4 py-2">
+                      <div className="bg-primary/10 rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                         <span className="text-2xl font-bold text-primary">
                           S/ {material.precio.toFixed(2)}
                         </span>
@@ -235,7 +235,7 @@ const MaterialPreview = ({
                         href={getWhatsAppUrl()}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
+                        className="inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 rounded-lg transition-all shadow-md hover:shadow-lg w-full sm:w-auto"
                       >
                         <svg
                           className="w-5 h-5 mr-2"
@@ -249,7 +249,7 @@ const MaterialPreview = ({
                     </>
                   ) : (
                     <>
-                      <div className="bg-primary/10 rounded-lg px-4 py-2">
+                      <div className="bg-primary/10 rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                         <span className="text-2xl font-bold text-primary">
                           Gratis
                         </span>
@@ -259,7 +259,7 @@ const MaterialPreview = ({
                         download={isDirectFile(material.url) || isDirectFile(material.archivoUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center bg-primary hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
+                        className="inline-flex items-center justify-center bg-primary hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg transition-all shadow-md hover:shadow-lg w-full sm:w-auto"
                       >
                         <DownloadIcon className="w-5 h-5 mr-2" />
                         Descargar

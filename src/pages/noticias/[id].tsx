@@ -169,13 +169,13 @@ const NewsDetail = ({
 
               {/* Title and Description */}
               <div className="p-6 md:p-8 border-b border-gray-100">
-                <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 mb-6">
                   <h1
-                    className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight w-full"
+                    className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight flex-grow"
                     dangerouslySetInnerHTML={{ __html: newsItem.titulo }}
                   />
-                  <div className="flex-shrink-0">
-                    <ShareButton title={stripHtml(newsItem.titulo)} url={url} />
+                  <div className="flex-shrink-0 w-full sm:w-auto">
+                    <ShareButton title={stripHtml(newsItem.titulo)} url={url} className="w-full sm:w-auto" />
                   </div>
                 </div>
 

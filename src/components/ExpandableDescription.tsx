@@ -19,50 +19,52 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  // Calculate max height based on line-height
-  // Assuming average line-height of 1.75rem (28px) for prose content
-  const getMaxHeight = () => {
-    const lineHeightMap: { [key: number]: string } = {
-      3: '5.25rem', // 3 * 1.75rem
-      4: '7rem', // 4 * 1.75rem
-      5: '8.75rem', // 5 * 1.75rem
-      6: '10.5rem', // 6 * 1.75rem
-    };
-    return lineHeightMap[maxLines] || '8.75rem';
-  };
 
   // Check if content is truncated
   useEffect(() => {
     const checkTruncation = () => {
       if (contentRef.current) {
         const element = contentRef.current;
-        // Compare scrollHeight (full content height) with clientHeight (visible height)
-        const isTruncatedNow = element.scrollHeight > element.clientHeight;
+        const isTruncatedNow = element.scrollHeight > element.offsetHeight;
         setIsTruncated(isTruncatedNow);
       }
     };
 
-    // Check on mount and when content changes
     checkTruncation();
+    const timer = setTimeout(checkTruncation, 150);
+    window.addEventListener('resize', checkTruncation);
 
-    // Also check after a small delay to ensure content is fully rendered
-    const timer = setTimeout(checkTruncation, 100);
-
-    return () => clearTimeout(timer);
-  }, [htmlContent, maxLines]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkTruncation);
+    };
+  }, [htmlContent, maxLines, isExpanded]);
 
   return (
     <div className="relative">
       <div
         ref={contentRef}
-        className={`${className} ${!isExpanded ? 'overflow-hidden' : ''}`}
-        style={!isExpanded ? { maxHeight: getMaxHeight() } : undefined}
+        className={`${className} ${
+          !isExpanded ? 'line-clamp-none' : ''
+        }`}
+        style={
+          !isExpanded
+            ? {
+                display: '-webkit-box',
+                WebkitLineClamp: maxLines,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }
+            : {
+                display: 'block',
+              }
+        }
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
-      {isTruncated && (
+      {(isTruncated || isExpanded) && (
         <button
           onClick={toggleExpanded}
-          className="mt-3 text-primary hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors"
+          className="mt-3 text-primary hover:text-blue-700 font-bold text-sm flex items-center gap-1 transition-colors bg-white/50 backdrop-blur-sm px-2 py-1 rounded-md"
         >
           {isExpanded ? (
             <>
@@ -76,7 +78,7 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   d="M5 15l7-7 7 7"
                 />
               </svg>
@@ -93,7 +95,7 @@ const ExpandableDescription: React.FC<ExpandableDescriptionProps> = ({
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
