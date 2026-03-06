@@ -7,9 +7,9 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
+  UserIcon,
 } from '@heroicons/react/outline';
 import {
-  UserIcon,
   AcademicCapIcon,
   LockClosedIcon,
   CalendarIcon,
@@ -25,8 +25,6 @@ import {
 } from '../../../services/tipoAccesoService';
 import { userService, User } from '../../../services/userService';
 import { estructuraAcademicaService } from '../../../services/estructuraAcademicaService';
-import { premiumService, PremiumContent } from '../../../services/premiumService';
-import { log } from 'console';
 
 // Mock data type for view (adapted to match User from API partially)
 interface Docente {
@@ -61,7 +59,7 @@ const AdminPremiumDocentes = () => {
   const [formData, setFormData] = useState<Partial<User>>({
     nombreCompleto: '',
     email: '',
-    password: '',
+    password: 'Escala2026*',
     role: 'Premium', // Default role
     celular: '',
     ie: '',
@@ -78,7 +76,6 @@ const AdminPremiumDocentes = () => {
     fechaExpiracion: '',
   });
 
-  const [plans, setPlans] = useState<PremiumContent[]>([]);
 
   const [regions, setRegions] = useState<Region[]>([]);
   const [modalidades, setModalidades] = useState<
@@ -151,17 +148,16 @@ const AdminPremiumDocentes = () => {
 
   const fetchCatalogs = async () => {
     try {
-      const [r, t, eaData, p] = await Promise.all([
+      const [r, t, eaData] = await Promise.all([
         regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
         tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
         estructuraAcademicaService.getAll().catch(err => { console.error('Error loading EstructuraAcademica:', err); return []; }),
-        premiumService.getAll().catch(err => { console.error('Error loading plans:', err); return []; }),
       ]);
       setRegions(r);
       setTiposAcceso(t);
       
       // eaData is ModalidadEA[]
-      const mods = eaData.map(m => ({ id: m.id, nombre: m.nombre, niveles: m.niveles }));
+      const mods = eaData.map((m: any) => ({ id: m.id, nombre: m.nombre, niveles: m.niveles }));
       setModalidades(mods as any);
       
       // Flat list of levels for general usage
@@ -178,7 +174,6 @@ const AdminPremiumDocentes = () => {
       
       setNiveles(allNivs);
       setEspecialidades(allEsps);
-      setPlans(p);
     } catch (error) {
       console.error('Error fetching catalogs', error);
     }
@@ -1547,14 +1542,28 @@ const AdminPremiumDocentes = () => {
                           onClick={() => {
                             if (!formData.modalidadId || !formData.nivelId)
                               return;
-                            const espsToAdd = filteredEspecialidades.map(
-                              (e) => ({
-                                modalidadId: Number(formData.modalidadId),
-                                nivelId: Number(formData.nivelId),
-                                especialidadId: e.id,
-                              })
-                            );
-                            setUserExamenes((prev) => [...prev, ...espsToAdd]);
+                            const espsToAdd = filteredEspecialidades.map((e) => ({
+                              modalidadId: Number(formData.modalidadId),
+                              nivelId: Number(formData.nivelId),
+                              especialidadId: e.id,
+                            }));
+
+                            setUserExamenes((prev) => {
+                              const newEsps = espsToAdd.filter(
+                                (newEsp) =>
+                                  !prev.some(
+                                    (ex) =>
+                                      ex.modalidadId === newEsp.modalidadId &&
+                                      ex.nivelId === newEsp.nivelId &&
+                                      ex.especialidadId === newEsp.especialidadId
+                                  )
+                              );
+                              if (newEsps.length === 0) {
+                                alert('Todas estas especialidades ya han sido agregadas.');
+                                return prev;
+                              }
+                              return [...prev, ...newEsps];
+                            });
                           }}
                           style={{ backgroundColor: '#f59e0b' }}
                           className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors hover:opacity-90"
@@ -1572,7 +1581,19 @@ const AdminPremiumDocentes = () => {
                             especialidadId:
                               Number(formData.especialidadId) || 0,
                           };
-                          setUserExamenes((prev) => [...prev, acceso]);
+                          setUserExamenes((prev) => {
+                            const exists = prev.some(
+                              (ex) =>
+                                ex.modalidadId === acceso.modalidadId &&
+                                ex.nivelId === acceso.nivelId &&
+                                ex.especialidadId === acceso.especialidadId
+                            );
+                            if (exists) {
+                              alert('Este acceso ya ha sido agregado.');
+                              return prev;
+                            }
+                            return [...prev, acceso];
+                          });
                         }}
                         style={{ backgroundColor: '#10b981' }}
                         className="w-full text-white font-semibold rounded-lg py-2.5 text-sm transition-colors hover:opacity-90"
@@ -1740,31 +1761,8 @@ const AdminPremiumDocentes = () => {
                     </h4>
                   </div>
 
-                  {/* Plan Selection */}
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-700 mb-1 font-medium">
-                      Plan Premium
-                    </label>
-                    <select
-                      value={(formData as any).planId ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          planId: Number(e.target.value),
-                        } as any)
-                      }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
-                    >
-                      <option value={0}>Seleccionar Plan</option>
-                      {plans.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.titulo} - S/ {p.precio}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
                   {/* Start and End Dates */}
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm text-gray-700 mb-1 font-medium">

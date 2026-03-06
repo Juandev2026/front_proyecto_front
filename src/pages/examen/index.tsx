@@ -349,7 +349,7 @@ const ExamenPage = () => {
     } else if (currentQuestion) {
       let textToRead = '';
       if ((currentQuestion as any).parentEnunciado) {
-        textToRead += `Texto de lectura: ${
+        textToRead += `${
           (currentQuestion as any).parentEnunciado
         }. `;
       }

@@ -10,7 +10,6 @@ import {
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 import AdSidebar from '../../components/AdSidebar';
 import CommunitySection from '../../components/CommunitySection';
@@ -34,7 +33,6 @@ const MaterialPreview = ({
   error,
   url,
 }: MaterialDetailProps) => {
-  const router = useRouter();
 
   if (error || !material) {
     return (
@@ -66,6 +64,31 @@ const MaterialPreview = ({
 
   const plainDescription = stripHtml(material.descripcion);
   const isPdf = material.url?.toLowerCase().endsWith('.pdf');
+
+  const isDirectFile = (url: string | undefined): boolean => {
+    if (!url) return false;
+    const directExtensions = [
+      '.pdf',
+      '.doc',
+      '.docx',
+      '.xls',
+      '.xlsx',
+      '.ppt',
+      '.pptx',
+      '.zip',
+      '.rar',
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.mp3',
+      '.mp4',
+    ];
+    // Check if URL ends with any of the extensions or contains them as a file part
+    const urlLower = url.toLowerCase();
+    return directExtensions.some(
+      (ext) => urlLower.endsWith(ext) || urlLower.includes(`${ext}?`) || urlLower.includes(`${ext}&`)
+    );
+  };
 
   // Logic to determine display image for OG tags and thumbnail
   const displayImage =
@@ -232,8 +255,8 @@ const MaterialPreview = ({
                         </span>
                       </div>
                       <a
-                        href={material.url}
-                        download
+                        href={isDirectFile(material.url) ? material.url : (material.archivoUrl || material.url)}
+                        download={isDirectFile(material.url) || isDirectFile(material.archivoUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center bg-primary hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg"
@@ -333,7 +356,7 @@ const MaterialPreview = ({
                         href={material.archivoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        download
+                        download={isDirectFile(material.archivoUrl)}
                         className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                       >
                         Descargar
@@ -368,7 +391,7 @@ const MaterialPreview = ({
                           href={material.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          download
+                          download={isDirectFile(material.url)}
                           className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                         >
                           Ver Archivo
