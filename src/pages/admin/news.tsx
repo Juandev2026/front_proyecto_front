@@ -35,6 +35,11 @@ import { uploadService } from '../../services/uploadService';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const AdminNews = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [news, setNews] = useState<Noticia[]>([]);
   const [categories, setCategories] = useState<CategoriaGeneral[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
@@ -239,8 +244,8 @@ const AdminNews = () => {
   const handleEdit = (item: Noticia) => {
     setEditingId(item.id);
     setFormData({
-      titulo: item.titulo,
-      descripcion: item.descripcion,
+      titulo: item.titulo || '',
+      descripcion: item.descripcion || '',
       categoriaId: item.categoriaId || 0,
       modalidadId: item.modalidadId || 0,
       nivelId: item.nivelId || 0,
@@ -704,16 +709,13 @@ const AdminNews = () => {
                     Título
                   </label>
                   <div className="mb-4">
-                    <ReactQuill
-                      key={`titulo-${editingId || 'new'}`}
-                      theme="snow"
-                      value={formData.titulo || ''}
-                      onChange={(content) =>
-                        setFormData({ ...formData, titulo: content })
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={stripHtml(formData.titulo || '')}
+                      onChange={(e) =>
+                        setFormData({ ...formData, titulo: e.target.value })
                       }
-                      modules={modules}
-                      formats={formats}
-                      className="h-16"
                     />
                   </div>
                 </div>
@@ -722,18 +724,20 @@ const AdminNews = () => {
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     Descripción
                   </label>
-                  <div className="h-56 mb-8">
-                    <ReactQuill
-                      key={`descripcion-${editingId || 'new'}`}
-                      theme="snow"
-                      value={formData.descripcion || ''}
-                      onChange={(content) =>
-                        setFormData({ ...formData, descripcion: content })
-                      }
-                      modules={modules}
-                      formats={formats}
-                      className="h-44"
-                    />
+                  <div className="h-56 mb-8 min-h-[14rem]">
+                    {mounted && isModalOpen && (
+                      <ReactQuill
+                        key={`descripcion-${editingId || 'new'}`}
+                        theme="snow"
+                        value={formData.descripcion || ''}
+                        onChange={(content) =>
+                          setFormData({ ...formData, descripcion: content })
+                        }
+                        modules={modules}
+                        formats={formats}
+                        className="h-44"
+                      />
+                    )}
                   </div>
                   <div className="flex justify-end mb-4 -mt-6 mr-1">
                     <span

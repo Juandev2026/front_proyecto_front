@@ -27,6 +27,11 @@ import 'react-quill/dist/quill.snow.css';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const AdminMaterials = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<CategoriaSimple[]>([]);
   const [estados, setEstados] = useState<Estado[]>([]);
@@ -129,9 +134,9 @@ const AdminMaterials = () => {
   const handleEdit = (item: Material) => {
     setEditingId(item.id);
     setNewMaterial({
-      titulo: item.titulo,
-      descripcion: item.descripcion, // HTML content
-      url: item.url,
+      titulo: item.titulo || '',
+      descripcion: item.descripcion || '', // HTML content
+      url: item.url || '',
       imageUrl: item.imageUrl || '',
       archivoUrl: item.archivoUrl || '',
       videoUrl: item.videoUrl || '',
@@ -580,14 +585,13 @@ const AdminMaterials = () => {
                       Título del Recurso
                     </label>
                     <div className="mb-6">
-                      <ReactQuill
-                        theme="snow"
-                        value={newMaterial.titulo}
-                        onChange={(value) =>
-                          setNewMaterial({ ...newMaterial, titulo: value })
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                        value={stripHtml(newMaterial.titulo || '')}
+                        onChange={(e) =>
+                          setNewMaterial({ ...newMaterial, titulo: e.target.value })
                         }
-                        className="h-auto bg-white"
-                        modules={modules}
                       />
                     </div>
                   </div>
@@ -853,16 +857,19 @@ const AdminMaterials = () => {
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Descripción (Detallada)
                 </label>
-                <div className="bg-white rounded-lg border border-gray-200">
-                  <ReactQuill
-                    theme="snow"
-                    value={newMaterial.descripcion}
-                    onChange={(value) =>
-                      setNewMaterial({ ...newMaterial, descripcion: value })
-                    }
-                    className="h-64 mb-12"
-                    modules={modules}
-                  />
+                <div className="bg-white rounded-lg border border-gray-200 min-h-[16rem]">
+                  {mounted && isModalOpen && (
+                    <ReactQuill
+                      key={`desc-${editingId || 'new'}`}
+                      theme="snow"
+                      value={newMaterial.descripcion || ''}
+                      onChange={(value) =>
+                        setNewMaterial({ ...newMaterial, descripcion: value })
+                      }
+                      className="h-64 mb-12"
+                      modules={modules}
+                    />
+                  )}
                 </div>
               </div>
 

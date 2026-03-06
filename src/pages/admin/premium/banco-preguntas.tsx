@@ -52,6 +52,11 @@ const TiptapEditor = dynamic(
 );
 
 const Recursos = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // --- ESTADOS LOGICOS (CRUD) ---
   const [items, setItems] = useState<Pregunta[]>([]);
 
@@ -1796,18 +1801,23 @@ const Recursos = () => {
                     </div>
                   ) : (
                     /* EDITOR DE ENUNCIADO */
-                    <div className={`quill-editor-container border border-gray-200 rounded-lg overflow-hidden ${enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}`}>
-                      <ReactQuill
-                        theme="snow"
-                        value={newItem.enunciado}
-                        onChange={(val) =>
-                          setNewItem({ ...newItem, enunciado: val })
-                        }
-                        modules={modules}
-                        className={enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}
-                        placeholder="Escribe el enunciado aquí..."
-                      />
-                    </div>
+                     mounted ? (
+                      <div className={`quill-editor-container border border-gray-200 rounded-lg overflow-hidden ${enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}`}>
+                        <ReactQuill
+                          key={`enunciado-${editingId || 'new'}`}
+                          theme="snow"
+                          value={newItem.enunciado || ''}
+                          onChange={(val) =>
+                            setNewItem({ ...newItem, enunciado: val })
+                          }
+                          modules={modules}
+                          className={enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}
+                          placeholder="Escribe el enunciado aquí..."
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-64 animate-pulse bg-gray-50 rounded-lg border border-gray-200" />
+                    )
                   )}
 
                   <div className="mt-3">

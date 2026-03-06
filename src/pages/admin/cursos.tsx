@@ -23,6 +23,11 @@ import { uploadService } from '../../services/uploadService';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const AdminCursos = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [courses, setCourses] = useState<Curso[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [modalidades, setModalidades] = useState<Modalidad[]>([]);
@@ -181,8 +186,8 @@ const AdminCursos = () => {
 
   const handleEdit = (course: Curso) => {
     setCurrentCourse({
-      nombre: course.nombre,
-      descripcion: course.descripcion,
+      nombre: course.nombre || '',
+      descripcion: course.descripcion || '',
       categoriaId: course.categoriaId,
       modalidadId: course.modalidadId || 0,
       nivelId: course.nivelId || 0,
@@ -586,15 +591,14 @@ const AdminCursos = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nombre
                   </label>
-                  <div className="mb-12">
-                    <ReactQuill
-                      theme="snow"
-                      value={currentCourse.nombre}
-                      onChange={(value) =>
-                        setCurrentCourse({ ...currentCourse, nombre: value })
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none"
+                      value={stripHtml(currentCourse.nombre || '')}
+                      onChange={(e) =>
+                        setCurrentCourse({ ...currentCourse, nombre: e.target.value })
                       }
-                      className="h-16"
-                      modules={modules}
                     />
                   </div>
                 </div>
@@ -604,19 +608,22 @@ const AdminCursos = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descripción
                   </label>
-                  <div className="mb-16">
-                    <ReactQuill
-                      theme="snow"
-                      value={currentCourse.descripcion}
-                      onChange={(value) =>
-                        setCurrentCourse({
-                          ...currentCourse,
-                          descripcion: value,
-                        })
-                      }
-                      className="h-32"
-                      modules={modules}
-                    />
+                  <div className="mb-16 min-h-[10rem]">
+                    {mounted && isModalOpen && (
+                      <ReactQuill
+                        key={`desc-${editingId || 'new'}`}
+                        theme="snow"
+                        value={currentCourse.descripcion || ''}
+                        onChange={(value) =>
+                          setCurrentCourse({
+                            ...currentCourse,
+                            descripcion: value,
+                          })
+                        }
+                        className="h-32"
+                        modules={modules}
+                      />
+                    )}
                   </div>
                 </div>
 
