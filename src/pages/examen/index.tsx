@@ -9,6 +9,8 @@ import {
   CheckCircleIcon,
   StarIcon as Star,
   TicketIcon as TargetIcon,
+  EyeIcon,
+  VolumeOffIcon,
 } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from 'framer-motion';
 import Head from 'next/head';
@@ -64,6 +66,7 @@ const ExamenPage = () => {
     useState<SpeechSynthesisVoice | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [showQuestionPanel, setShowQuestionPanel] = useState(true);
+  const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
   const [isCountingDown, setIsCountingDown] = useState(true);
   const [countdownStep, setCountdownStep] = useState(0); // 0: Prepared, 1: Ready, 2: Go!
 
@@ -700,43 +703,43 @@ const ExamenPage = () => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="text-center"
+              className="text-center w-full max-w-md mx-auto"
             >
               <img
-                src="/assets/images/logo_principal1.png"
-                alt="Avendo"
-                className="h-32 mb-12 mx-auto brightness-0 invert"
+                src="/assets/images/escala_2.png"
+                alt="Escala"
+                className="h-12 md:h-20 mb-8 md:mb-12 mx-auto brightness-0 invert"
               />
               
-              <div className="relative h-40 flex items-center justify-center">
+              <div className="relative h-32 md:h-40 flex items-center justify-center">
                 <AnimatePresence exitBeforeEnter>
                   <motion.h2
                     key={countdownStep}
-                    initial={{ y: 40, opacity: 0, scale: 0.5 }}
+                    initial={{ y: 20, opacity: 0, scale: 0.5 }}
                     animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: -40, opacity: 0, scale: 1.5 }}
+                    exit={{ y: -20, opacity: 0, scale: 1.2 }}
                     transition={{ 
                       type: "spring",
-                      stiffness: 200,
-                      damping: 20
+                      stiffness: 300,
+                      damping: 25
                     }}
-                    className="text-6xl md:text-8xl font-black italic tracking-tighter"
+                    className="text-5xl md:text-8xl font-black italic tracking-tighter uppercase px-4"
                   >
                     {['PREPARADO', 'LISTO', '¡FUERA!'][countdownStep]}
                   </motion.h2>
                 </AnimatePresence>
               </div>
 
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 3, ease: "linear" }}
-                className="w-64 h-2 bg-white/20 rounded-full mt-12 mx-auto overflow-hidden"
-              >
-                <div className="h-full bg-white rounded-full" />
-              </motion.div>
+              <div className="w-48 md:w-64 h-1.5 md:h-2 bg-white/20 rounded-full mt-12 mx-auto overflow-hidden">
+                <motion.div 
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 3, ease: "linear" }}
+                  className="h-full bg-white rounded-full"
+                />
+              </div>
               
-              <p className="mt-8 text-blue-200 font-bold tracking-widest uppercase text-sm">
+              <p className="mt-8 text-blue-200 font-bold tracking-widest uppercase text-[10px] md:text-sm px-4">
                 Cargando simulacro profesional...
               </p>
             </motion.div>
@@ -750,107 +753,144 @@ const ExamenPage = () => {
         <title>Examen - Avendocente</title>
       </Head>
 
-      <div className="w-full px-4 md:px-8 space-y-6 pb-20">
-        {/* Top Bar Controls */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 relative z-20">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Timer Section */}
-            <div className="flex items-center gap-2 text-gray-700 font-bold text-xl min-w-[140px]">
-              <ClockIcon className="h-6 w-6 text-gray-500" />
-              <div className="flex flex-col leading-tight">
-                <span className="text-sm text-gray-500 font-normal font-sans">
-                  Tiempo:
-                </span>
-                <span className="font-mono">{formatTime(seconds)}</span>
+      <div className="w-full px-0 md:px-4 space-y-4 md:space-y-6 pb-20">
+        {/* Top Bar Controls - Rediseñado y Compacto */}
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 mb-8 font-sans">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col gap-3">
+              {/* Row 1: Tiempo */}
+              <div className="flex items-center gap-3 text-gray-800 font-bold">
+                <ClockIcon className="h-6 w-6 text-gray-400" />
+                <div className="flex items-baseline gap-2">
+                  <span className="font-sans font-medium text-gray-500 text-lg">Tiempo:</span>
+                  <span className="font-mono text-2xl tracking-tight">{formatTime(seconds)}</span>
+                </div>
+              </div>
+
+              {/* Row 2: Badges Metadata (Máximo 2 líneas en móvil) */}
+              <div className="flex flex-wrap gap-1.5 md:gap-2 max-w-full md:max-w-xl">
+                {metadata?.tipoExamen && (
+                  <span className="bg-[#E6FFF1] text-[#05CD99] px-3 py-1.5 rounded-xl border border-green-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
+                    {metadata.tipoExamen}
+                  </span>
+                )}
+                {metadata?.nombre && (
+                  <span className="bg-[#EFEEFF] text-[#002B6B] px-3 py-1.5 rounded-xl border border-purple-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
+                    {metadata.nombre}
+                  </span>
+                )}
+                {metadata?.modalidad && (
+                  <span className="bg-[#FFF1F2] text-[#E11D48] px-3 py-1.5 rounded-xl border border-pink-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
+                    {metadata.modalidad}
+                  </span>
+                )}
+                {metadata?.nivel && metadata.nivel !== 'NINGUNO' && (
+                  <span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-xl border border-gray-200 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
+                    {metadata.nivel}
+                  </span>
+                )}
+                {metadata?.year && (
+                  <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
+                    {metadata.year}
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Controls Section */}
-            <div className="flex flex-wrap items-center justify-center gap-2 flex-1 font-sans">
+            {/* Row 3: Acciones Iconos (Una sola línea en móvil) */}
+            <div className="flex flex-row items-center justify-between w-full md:w-auto gap-2 md:gap-3 pb-1 md:pb-0 relative">
               <button
                 onClick={handleToggleReading}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-md text-sm transition-all ${
+                className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex-1 flex items-center justify-center ${
                   isReading
-                    ? 'bg-red-50 border-red-200 text-red-600 shadow-inner'
-                    : 'bg-red-50 border-red-100 text-red-500 hover:bg-red-100 font-medium shadow-sm'
+                    ? 'bg-red-50 border-red-200 text-red-600'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-500'
                 }`}
+                title={isReading ? 'Detener lectura' : 'Activar sonido'}
               >
-                <VolumeUpIcon className="h-4 w-4" />
-                {isReading ? 'Detener lectura' : 'Activar sonido'}
+                {isReading ? <VolumeOffIcon className="h-5 w-5 md:h-6 md:w-6" /> : <VolumeUpIcon className="h-5 w-5 md:h-6 md:w-6" />}
               </button>
 
-              <div className="relative min-w-[180px] max-w-[220px]">
-                <select
-                  className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600 appearance-none pr-8 cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 truncate font-sans"
-                  value={selectedVoice?.name || ''}
-                  onChange={(e) => {
-                    const voice = voices.find((v) => v.name === e.target.value);
-                    if (voice) setSelectedVoice(voice);
-                  }}
+              <div className="relative flex-1">
+                <button 
+                  onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
+                  className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex items-center justify-center w-full relative z-20 ${
+                    isVoiceDropdownOpen 
+                    ? 'bg-blue-50 border-blue-400 text-blue-600' 
+                    : 'bg-white border-gray-200 text-[#002B6B] hover:border-blue-400'
+                  }`}
+                  title="Seleccionar voz"
                 >
-                  {voices.length === 0 && <option>Cargando voces...</option>}
-                  {voices.map((voice, idx) => (
-                    <option
-                      key={`${voice.name}-${idx}`}
-                      value={voice.name}
-                      title={voice.name}
-                    >
-                      {voice.name.replace('Microsoft ', '').split(' - ')[0]}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                  <svg className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-300 ${isVoiceDropdownOpen ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
-                </div>
+                </button>
+                
+                <AnimatePresence>
+                  {isVoiceDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-[60]" 
+                        onClick={() => setIsVoiceDropdownOpen(false)} 
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="absolute left-0 top-full mt-3 w-72 bg-white border-2 border-blue-400 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[70] origin-top-left"
+                      >
+                        <div className="max-h-64 overflow-y-auto no-scrollbar py-2">
+                          <div className="px-4 py-2 text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-blue-50 mb-1">
+                            Voces disponibles
+                          </div>
+                          {voices.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-400 italic">Cargando voces...</div>
+                          ) : (
+                            voices.map((voice, idx) => (
+                              <button
+                                key={`${voice.name}-${idx}`}
+                                onClick={() => {
+                                  setSelectedVoice(voice);
+                                  setIsVoiceDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 text-sm transition-all flex items-center gap-3 ${
+                                  selectedVoice?.name === voice.name 
+                                  ? 'bg-blue-50 text-blue-700 font-bold' 
+                                  : 'text-gray-600 hover:bg-gray-50 hover:text-blue-500'
+                                }`}
+                              >
+                                <div className={`w-1.5 h-1.5 rounded-full ${selectedVoice?.name === voice.name ? 'bg-blue-600' : 'bg-transparent'}`} />
+                                {voice.name.includes('Microsoft') ? voice.name.split(' - ')[0] : voice.name}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
 
               <button
                 onClick={handleRegenerate}
-                className="flex items-center gap-2 px-3 py-2 border border-blue-200 text-[#002B6B] rounded-md text-sm hover:bg-blue-50 font-medium transition-colors"
+                className="p-2.5 md:p-3 rounded-xl border bg-white border-gray-200 text-gray-700 shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all flex-1 flex items-center justify-center"
+                title="Generar de nuevo"
               >
-                <RefreshIcon className="h-4 w-4" />
-                Generar de nuevo
+                <RefreshIcon className="h-5 w-5 md:h-6 md:w-6" />
               </button>
-
-              {!examResult && (
-                <button
-                  onClick={() => {
-                    console.log('Botón Finalizar Examen clickeado');
-                    handleFinishExam();
-                  }}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 font-bold transition-colors shadow-md disabled:opacity-70"
-                >
-                  <CheckCircleIcon className="h-4 w-4" />
-                  {isSubmitting ? 'Calificando...' : 'Finalizar Examen'}
-                </button>
-              )}
 
               <button
                 onClick={() => setShowQuestionPanel(!showQuestionPanel)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-md text-sm font-bold transition-all ${
+                className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex-1 flex items-center justify-center ${
                   showQuestionPanel
                     ? 'bg-[#002B6B] text-white border-[#002B6B]'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400'
                 }`}
+                title={showQuestionPanel ? 'Ocultar Panel' : 'Ver Panel'}
               >
-                <ViewGridIcon className="h-4 w-4" />
-                {showQuestionPanel ? 'Ocultar Panel' : 'Panel de Preguntas'}
+                <EyeIcon className="h-5 w-5 md:h-6 md:w-6" />
               </button>
-
+              
               <button
                 onClick={() => {
                   if (!document.fullscreenElement) {
@@ -859,73 +899,37 @@ const ExamenPage = () => {
                     document.exitFullscreen();
                   }
                 }}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="p-2.5 md:p-3 rounded-xl border bg-white border-gray-200 text-gray-700 shadow-sm hover:border-blue-400 transition-all flex-1 flex items-center justify-center"
+                title="Pantalla completa"
               >
-                <ArrowsExpandIcon className="h-4 w-4" />
-                Pantalla completa
+                <ArrowsExpandIcon className="h-5 w-5 md:h-6 md:w-6" />
               </button>
-            </div>
-
-            {/* Badges Section */}
-            <div className="flex flex-col gap-2 items-end min-w-[150px] font-sans">
-              <div className="bg-[#D6FFD8] border border-green-200 text-[#008000] px-3 py-1 rounded-full flex items-center gap-1 text-[11px] font-bold w-fit whitespace-nowrap shadow-sm">
-                <CheckCircleIcon className="h-3.5 w-3.5" />
-                ¡Examen listo!
-              </div>
-              <div className="flex gap-1 justify-end flex-wrap">
-                {metadata?.modalidad && (
-                  <span className="bg-[#EFEEFF] text-[#002B6B] text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                    {metadata.modalidad}
-                  </span>
-                )}
-                {metadata?.nivel && metadata.nivel !== 'NINGUNO' && (
-                  <span className="bg-[#EFEEFF] text-[#002B6B] text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                    {metadata.nivel}
-                  </span>
-                )}
-                {metadata?.especialidad && (
-                  <span className="bg-[#EFEEFF] text-[#002B6B] text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                    {metadata.especialidad}
-                  </span>
-                )}
-                {metadata?.year && (
-                  <span className="bg-[#D1E9FF] text-[#002B6B] text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                    {metadata.year}
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 pb-8">
           {/* Main Content (Left) */}
-          <div className="flex-1 flex flex-col gap-6 font-serif leading-relaxed text-gray-800">
+          <div className="flex-1 flex flex-col gap-6 font-sans leading-relaxed text-gray-800">
             {/* Reading Text / Question Content Section */}
-            <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg border border-gray-100 min-h-[500px] flex flex-col">
-              <div className="flex justify-between items-start mb-8 border-b border-gray-50 pb-5">
-                <div className="font-sans">
-                  <h2 className="text-gray-400 text-sm font-medium mb-2 uppercase tracking-wider">
+            <div className="bg-white p-2 md:p-10 shadow-none md:shadow-xl border-x-0 md:border border-gray-100 min-h-[500px] flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100 gap-1 md:gap-4 px-1 md:px-0">
+                <div className="flex items-center gap-1.5 md:gap-4 overflow-hidden">
+                  <h2 className="text-gray-500 text-[10px] md:text-sm font-semibold whitespace-nowrap">
                     Pregunta {currentIndex + 1} de {questions.length}
                   </h2>
-                  <span className="bg-[#002B6B] text-white text-[11px] px-3 py-1.5 rounded-lg font-bold shadow-sm inline-block">
-                    {currentQuestion?.clasificacionNombre ||
-                      'Pregunta Individual'}
-                  </span>
-                </div>
-                <div className="flex gap-2 font-sans">
+                  
                   {(() => {
-                    const name =
-                      currentQuestion?.clasificacionNombre?.toLowerCase() || '';
+                    const name = currentQuestion?.clasificacionNombre?.toLowerCase() || '';
                     let code = '';
                     let classes = '';
 
                     if (name === 'cl' || name.includes('comprensión')) {
                       code = 'CL';
-                      classes = 'bg-pink-50 text-pink-600 border-pink-100';
+                      classes = 'bg-pink-100 text-[#E91E63] border-pink-100';
                     } else if (name === 'rl' || name.includes('razonamiento')) {
                       code = 'RL';
-                      classes = 'bg-amber-50 text-amber-600 border-amber-100';
+                      classes = 'bg-amber-100 text-[#FF9800] border-amber-100';
                     } else if (
                       name === 'ccp' ||
                       name.includes('pedagógico') ||
@@ -933,32 +937,34 @@ const ExamenPage = () => {
                       name.includes('curricular')
                     ) {
                       code = 'CCP';
-                      classes = 'bg-blue-50 text-blue-600 border-blue-100';
+                      classes = 'bg-blue-50 text-[#2196F3] border-blue-50';
                     }
 
-                    if (!code) return null;
+                    if (!code) return (
+                      <span className="bg-[#EFEEFF] text-[#002B6B] text-[9px] md:text-xs font-black px-1.5 py-1 rounded-md border border-purple-100 shadow-sm uppercase whitespace-nowrap">
+                        INDIVIDUAL
+                      </span>
+                    );
 
                     return (
-                      <span
-                        className={`${classes} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}
-                      >
+                      <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1 rounded-md border shadow-sm whitespace-nowrap`}>
                         {code}
                       </span>
                     );
                   })()}
+                </div>
+
+                <div className="flex-shrink-0">
                   {(() => {
-                    const isAnyAnswered =
-                      respuestas[String(currentIndex)] !== undefined;
+                    const isAnyAnswered = respuestas[String(currentIndex)] !== undefined;
                     return (
-                      <span
-                        className={`${
-                          isAnyAnswered
-                            ? 'bg-green-50 text-green-700 border-green-100'
-                            : 'bg-gray-100 text-gray-500 border-gray-200'
-                        } text-[11px] font-extrabold px-3 py-1.5 rounded-lg border shadow-sm`}
-                      >
+                      <div className={`${
+                        isAnyAnswered
+                          ? 'bg-green-600'
+                          : 'bg-[#636e72]'
+                      } text-white text-[10px] md:text-xs font-black px-2 md:px-4 py-1.5 rounded-lg shadow-md uppercase whitespace-nowrap`}>
                         {isAnyAnswered ? 'Respondida' : 'Sin responder'}
-                      </span>
+                      </div>
                     );
                   })()}
                 </div>
@@ -966,8 +972,7 @@ const ExamenPage = () => {
 
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
-                <div className="bg-gray-100/50 p-6 md:p-8 rounded-2xl border border-blue-100 mb-8 text-gray-800 font-serif leading-relaxed shadow-sm force-black-text">
-                  
+                <div className="mb-6 text-gray-800 font-sans leading-relaxed force-black-text">
                   <div
                     dangerouslySetInnerHTML={{
                       __html: (currentQuestion as any).parentEnunciado,
@@ -977,7 +982,7 @@ const ExamenPage = () => {
                 </div>
               )}
 
-              <div className="space-y-6 text-justify mb-8 font-serif text-lg leading-relaxed text-black">
+              <div className="space-y-6 text-justify mb-8 font-sans text-lg leading-relaxed text-black">
                 {currentQuestion?.imagen && (
                   <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-md">
                     <img
@@ -988,7 +993,7 @@ const ExamenPage = () => {
                   </div>
                 )}
                 {currentQuestion && (
-                  <div className="force-black-text">
+                  <div className="force-black-text font-sans">
                     {(currentQuestion as any).isSubPregunta && (
                       <span className="bg-blue-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-md mb-4 inline-block shadow-sm">
                         Pregunta {(currentQuestion as any).numeroSubPregunta}
@@ -1003,9 +1008,9 @@ const ExamenPage = () => {
                 )}
               </div>
 
-              {/* Alternatives Area */}
-              <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 font-sans shadow-inner">
-                <div className="space-y-3">
+              {/* Alternatives Area - Edge to Edge on Mobile */}
+              <div className="font-sans px-0 md:px-0">
+                <div className="space-y-4">
                   {currentQuestion &&
                     ['A', 'B', 'C', 'D'].map((opt) => {
                       const optKey =
@@ -1051,21 +1056,21 @@ const ExamenPage = () => {
                           key={`${currentQuestion.id}-${opt}`}
                           onClick={() => handleSelectOption(opt)}
                           disabled={!!examResult || isLocked}
-                          className={`w-full flex items-center gap-4 p-4 border rounded-xl transition-all duration-200 text-left group ${containerClass}`}
+                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-sm ${containerClass}`}
                         >
                           <div
-                            className={`w-10 h-10 flex items-center justify-center border rounded-lg font-bold text-lg flex-shrink-0 transition-colors ${letterClass}`}
+                            className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border rounded-lg font-black text-sm md:text-base flex-shrink-0 transition-colors mt-0.5 ${letterClass}`}
                           >
                             {opt}
                           </div>
                           <HtmlMathRenderer
-                            className="font-medium text-base flex-1 alternative-content"
+                            className="font-medium text-base flex-1 alternative-content pt-1"
                             html={content}
                             alternativeLabel={opt}
                           />
                           {/* Icons for results */}
                           {examResult && isSelected && status === 'correct' && (
-                            <CheckCircleIcon className="w-6 h-6 text-white" />
+                            <CheckCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-white mt-1.5" />
                           )}
                         </button>
                       );
@@ -1103,9 +1108,9 @@ const ExamenPage = () => {
                 {/* Brand Logo at Bottom */}
                 <div className="flex justify-end mt-8">
                   <img
-                    src="/assets/images/logo_principal1.png"
-                    alt="Juan Avendaño"
-                    className="h-20 w-auto object-contain opacity-80"
+                    src="/assets/images/escala_2.png"
+                    alt="Escala"
+                    className="h-12 w-auto object-contain opacity-80"
                   />
                 </div>
               </div>

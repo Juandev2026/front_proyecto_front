@@ -34,6 +34,13 @@ interface UserExamen {
   especialidadNombre?: string;
 }
 
+const TIPO_FULL_NAMES: Record<string, string> = {
+  CCP: 'Conocimientos Curriculares y Pedagógicos',
+  CL: 'Comprensión Lectora',
+  RL: 'Razonamiento Lógico',
+  CG: 'Conocimientos Generales',
+};
+
 const BancoPreguntasPage = () => {
   const { isAuthenticated, loading, user, refreshAuth } = useAuth();
   const router = useRouter();
@@ -829,41 +836,34 @@ const BancoPreguntasPage = () => {
                           return (
                             <div
                               key={name}
-                              className="bg-[#F4F7FE] border border-blue-100 rounded-lg p-4"
+                              className="bg-[#F8FBFF] border border-blue-100 rounded-2xl p-5 shadow-sm"
                             >
-                              <div className="flex justify-between items-center mb-3">
-                                <span className="font-bold text-[#2B3674]">
-                                  {name}
+                              <div className="flex justify-between items-start mb-4">
+                                <span className="font-extrabold text-[#2B3674] text-base leading-tight">
+                                  {TIPO_FULL_NAMES[name] || name}
                                 </span>
-                                <div className="bg-[#4318FF] text-white text-xs font-bold w-12 h-8 rounded-full flex items-center justify-center border border-white shadow-sm overflow-hidden whitespace-nowrap px-1">
+                                <div className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg shadow-indigo-200">
                                   {name.substring(0, 3).toUpperCase()}
                                 </div>
                               </div>
-                              <div className="flex flex-wrap gap-2">
-                                <span className="bg-blue-100/50 text-blue-500 border border-blue-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-blue-400">📝</span>{' '}
-                                  {data.cantidad} preguntas
+                              <div className="grid grid-cols-2 gap-2">
+                                <span className="bg-blue-100/50 text-blue-500 border border-blue-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-blue-400">📝</span> {data.cantidad} preguntas
                                 </span>
-                                <span className="bg-green-100/50 text-green-600 border border-green-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-green-500">⭐</span>{' '}
-                                  {data.puntos} pts/correcta
+                                <span className="bg-green-100/50 text-green-600 border border-green-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-green-500">⭐</span> {data.puntos} pts/correcta
                                 </span>
-                                <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-purple-400">🎯</span>{' '}
-                                  Máx: {data.cantidad * data.puntos} pts
+                                <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-purple-400">🎯</span> Máx: {data.cantidad * data.puntos} pts
                                 </span>
-                                <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-orange-400">✅</span>{' '}
-                                  Mínimo: {data.minimo} pts
+                                <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-orange-400">✅</span> Mínimo: {data.minimo} pts
                                 </span>
-                                <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-yellow-500">⏱️</span>{' '}
-                                  {data.tiempoPregunta} min/pregunta
+                                <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-yellow-500">⏱️</span> {data.tiempoPregunta} min/preg
                                 </span>
-                                <span className="bg-red-100/50 text-red-500 border border-red-200 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                  <span className="text-red-400">⏰</span>{' '}
-                                  Total: {data.cantidad * data.tiempoPregunta}{' '}
-                                  min
+                                <span className="bg-red-100/50 text-red-500 border border-red-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
+                                  <span className="text-red-400">⏰</span> Total: {data.cantidad * data.tiempoPregunta} min
                                 </span>
                               </div>
                             </div>

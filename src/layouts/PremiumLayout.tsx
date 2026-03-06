@@ -294,17 +294,21 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         <div
           className={`flex items-center ${
             isCollapsed ? 'justify-center' : 'justify-between'
-          } h-40 px-6 border-b border-gray-50 mb-4 transition-all duration-300`}
+          } h-20 md:h-40 px-6 mb-0 transition-all duration-300`}
         >
           {!isCollapsed && (
             <Link href="/">
               <a className="flex items-center gap-2 group">
                 <img
-                  src="/assets/images/logo_principal1.png"
+                  src="/assets/images/escala_2.png"
                   alt="Avendo"
-                  className="h-32 w-auto object-contain hidden md:block"
+                  className="h-24 w-auto object-contain hidden md:block"
                 />
-                <span className="text-2xl font-bold text-[#4790FD] uppercase md:hidden">Avendo</span>
+                <img
+                  src="/assets/images/escala_2.png"
+                  alt="Avendo"
+                  className="h-16 w-auto object-contain md:hidden"
+                />
               </a>
             </Link>
           )}
@@ -526,6 +530,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                 {title}
               </h1>
             </div>
+          </div>
+
+          <div className="md:hidden flex items-center justify-center">
+            <img 
+              src="/assets/images/escala_2.png" 
+              alt="Escala" 
+              className="h-16 w-auto object-contain"
+            />
           </div>
 
           {/* Right Side: Profile & Actions */}

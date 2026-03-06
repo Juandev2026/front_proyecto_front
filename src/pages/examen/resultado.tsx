@@ -833,9 +833,9 @@ const ResultadoPage = () => {
         {/* Final Branding / Logo */}
         <div className="flex justify-center pt-8 pb-12">
           <img
-            src="/assets/images/logo_principal1.png"
-            alt="Juan Avendaño"
-            className="h-24 w-auto object-contain opacity-80"
+            src="/assets/images/escala_2.png"
+            alt="Escala"
+            className="h-14 w-auto object-contain opacity-80"
           />
         </div>
       </div>

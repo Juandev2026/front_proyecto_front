@@ -491,64 +491,64 @@ const BancoPreguntasEdPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-3 relative z-10">
+                      <div className="grid grid-cols-2 gap-2 relative z-10">
                         {/* 1. Cantidad Badge */}
-                        <div className="flex items-center gap-2 bg-[#E1F1FF] text-[#0075FF] px-4 py-1.5 rounded-full border border-blue-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 bg-[#E1F1FF] text-[#0075FF] px-2 py-1.5 rounded-full border border-blue-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             📝
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
-                            {data.cantidad} preguntas disponibles
+                          <span className="text-[10px] font-black uppercase">
+                            {data.cantidad} preguntas
                           </span>
                         </div>
 
                         {/* 2. Puntos/c Badge */}
-                        <div className="flex items-center gap-2 bg-[#E6FFF1] text-[#05CD99] px-4 py-1.5 rounded-full border border-green-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs text-yellow-500">
+                        <div className="flex items-center gap-2 bg-[#E6FFF1] text-[#05CD99] px-2 py-1.5 rounded-full border border-green-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px] text-yellow-500">
                             ⭐
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
+                          <span className="text-[10px] font-black uppercase">
                             {data.puntos || 0} pts/correcta
                           </span>
                         </div>
 
                         {/* 3. Máx Posible Badge */}
-                        <div className="flex items-center gap-2 bg-[#FEECEC] text-[#FF5B5B] px-4 py-1.5 rounded-full border border-red-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 bg-[#F3E8FF] text-[#7E22CE] px-2 py-1.5 rounded-full border border-purple-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             🎯
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
-                            Máx posible: {maxPts} pts
+                          <span className="text-[10px] font-black uppercase">
+                            Máx: {maxPts} pts
                           </span>
                         </div>
 
                         {/* 4. Mínimo Badge */}
-                        <div className="flex items-center gap-2 bg-[#FFF4E5] text-[#FF9933] px-4 py-1.5 rounded-full border border-orange-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 bg-[#FFF4E5] text-[#FF9933] px-2 py-1.5 rounded-full border border-orange-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             ✅
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
-                            Mínimo recomendado: {data.minimo || 90} pts
+                          <span className="text-[10px] font-black uppercase">
+                            Mínimo: {data.minimo || 90} pts
                           </span>
                         </div>
 
                         {/* 5. Min/p Badge */}
-                        <div className="flex items-center gap-2 bg-[#FEFCE8] text-[#A16207] px-4 py-1.5 rounded-full border border-yellow-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 bg-[#FEFCE8] text-[#A16207] px-2 py-1.5 rounded-full border border-yellow-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             ⏱️
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
-                            {data.tiempoPregunta || 3} min/pregunta
+                          <span className="text-[10px] font-black uppercase">
+                            {data.tiempoPregunta || 3} min/preg
                           </span>
                         </div>
 
                         {/* 6. Tiempo Total Badge */}
-                        <div className="flex items-center gap-2 bg-[#FFF1F2] text-[#E11D48] px-4 py-1.5 rounded-full border border-red-100 shadow-sm">
-                          <div className="w-5 h-5 bg-white/50 rounded-md flex items-center justify-center text-xs">
-                            ⌚
+                        <div className="flex items-center gap-2 bg-[#FFF1F2] text-[#E11D48] px-2 py-1.5 rounded-full border border-red-100 shadow-sm whitespace-nowrap">
+                          <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
+                            ⏰
                           </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
-                            Tiempo total: {totalTime || data.cantidad * 3}min
+                          <span className="text-[10px] font-black uppercase">
+                            Total: {totalTime || data.cantidad * 3} min
                           </span>
                         </div>
                       </div>
