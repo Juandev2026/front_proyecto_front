@@ -182,8 +182,8 @@ const MaterialPreview = ({
                   );
                 })()}
                 {/* Price Tag Overlay */}
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur rounded-full px-4 sm:px-6 py-1.5 sm:py-2 shadow-lg z-10 border border-white/50">
-                  <span className="text-base sm:text-xl font-extrabold text-primary">
+                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 backdrop-blur rounded-full px-3 sm:px-6 py-1 sm:py-2 shadow-md z-10 border border-white/50">
+                  <span className="text-xs sm:text-xl font-extrabold text-primary">
                     {material.precio && material.precio > 0
                       ? `S/ ${material.precio.toFixed(2)}`
                       : 'Gratis'}
@@ -227,7 +227,7 @@ const MaterialPreview = ({
                   {material.precio && material.precio > 0 ? (
                     <>
                       <div className="bg-primary/10 rounded-lg px-6 py-2 w-full sm:w-auto text-center">
-                        <span className="text-2xl font-bold text-primary">
+                        <span className="text-lg font-extrabold text-primary">
                           S/ {material.precio.toFixed(2)}
                         </span>
                       </div>
@@ -250,7 +250,7 @@ const MaterialPreview = ({
                   ) : (
                     <>
                       <div className="bg-primary/10 rounded-lg px-6 py-2 w-full sm:w-auto text-center">
-                        <span className="text-2xl font-bold text-primary">
+                        <span className="text-lg font-extrabold text-primary">
                           Gratis
                         </span>
                       </div>
