@@ -21,10 +21,10 @@ const About = () => {
         </div>
       </div>
 
-      <main className="flex-grow w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-12">
+      <main className="flex-grow w-full px-3 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 py-12">
         <div className="space-y-20">
           {/* Intro Section: Image + Text */}
-          <FadeIn direction="up" fullWidth>
+          <FadeIn direction="up" fullWidth padding={false}>
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all hover:shadow-2xl duration-500">
               <div className="grid grid-cols-1 md:grid-cols-2">
                 {/* Image */}
@@ -38,19 +38,19 @@ const About = () => {
                 </div>
 
                 {/* Text Content */}
-                <div className="p-8 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white to-gray-50">
+                <div className="p-4 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white to-gray-50">
                   <FadeIn delay={0.2}>
                     <div className="mb-6">
                       <span className="text-primary font-bold tracking-wider text-sm uppercase mb-2 block">
                         Nuestra Historia
                       </span>
-                      <h2 className="text-4xl font-extrabold text-gray-900 leading-tight">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight whitespace-nowrap">
                         Quiénes <span className="text-primary">Somos</span>
                       </h2>
                     </div>
                   </FadeIn>
 
-                  <div className="space-y-6 text-gray-600 text-base leading-relaxed text-justify">
+                  <div className="space-y-6 text-gray-600 text-base leading-relaxed">
                     <FadeIn delay={0.3}>
                       <p className="border-l-4 border-primary pl-4 italic bg-blue-50/50 py-2 rounded-r-lg">
                         Somos un espacio creado para acompañar el crecimiento
@@ -82,7 +82,7 @@ const About = () => {
           </FadeIn>
 
           {/* Nuestros Pilares */}
-          <FadeIn direction="up" fullWidth>
+          <FadeIn direction="up" fullWidth padding={false}>
             <div>
               <div className="text-center mb-12">
                 <span className="text-primary font-bold tracking-wider text-sm uppercase">
@@ -214,7 +214,7 @@ const About = () => {
           </FadeIn>
 
           {/* Valores */}
-          <FadeIn direction="up" fullWidth>
+          <FadeIn direction="up" fullWidth padding={false}>
             <div className="relative">
               <div
                 className="absolute inset-0 flex items-center"

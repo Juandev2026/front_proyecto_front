@@ -112,7 +112,7 @@ const Menu = () => {
                         : '/planes?showVideo=true'
                     }
                   >
-                  <a className="bg-[#4a90f9] !text-white hover:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
+                  <a className="bg-[#4a90f9] !text-white hover:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                       AVEND ESCALA
                     </a>
                   </Link>
@@ -131,7 +131,7 @@ const Menu = () => {
 
                 {/* AVEND PLANIFICA */}
                 <div className="relative group">
-                  <div className="bg-purple-600 !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
+                  <div className="bg-purple-600 !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                     AVEND PLANIFICA
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -143,7 +143,7 @@ const Menu = () => {
 
                 {/* AVEND IUS */}
                 <div className="relative group">
-                  <div className="bg-[#004c7a] !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-[10px] lg:text-sm font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[150px]">
+                  <div className="bg-[#004c7a] !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                     AVEND IUS
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -173,18 +173,18 @@ const Menu = () => {
                   </div>
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="flex flex-col items-end min-w-0">
-                      <span className="hidden lg:block text-gray-700 font-bold md:font-medium text-xs md:text-sm truncate max-w-[80px] lg:max-w-none">
+                      <span className="hidden lg:block text-gray-700 font-bold md:font-semibold text-sm md:text-base lg:text-lg truncate max-w-[100px] lg:max-w-none">
                         <span className="hidden md:inline">Hola, </span>
                         {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
                       </span>
                       <button
                         onClick={handleLogout}
-                        className="hidden md:block text-[10px] text-red-500 hover:text-red-700 font-medium"
+                        className="hidden md:block text-[11px] md:text-xs text-red-500 hover:text-red-700 font-bold"
                       >
                         Cerrar Sesión
                       </button>
                     </div>
-                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-[#4a90f9] text-white flex items-center justify-center font-bold text-sm md:text-base shadow-md">
+                    <div className="h-9 w-9 md:h-12 md:w-12 rounded-full bg-[#4a90f9] text-white flex items-center justify-center font-bold text-base md:text-xl shadow-md">
                       {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'U').charAt(0).toUpperCase()}
                     </div>
                   </div>
@@ -364,7 +364,7 @@ const Menu = () => {
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="text-[10px] font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm active:bg-red-100"
+                      className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm active:bg-red-100"
                     >
                       Cerrar Sesión
                     </button>

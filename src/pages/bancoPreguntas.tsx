@@ -10,6 +10,7 @@ import {
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
+import ConfirmModal from '../components/ConfirmModal';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import { authService } from '../services/authService';
@@ -72,6 +73,11 @@ const BancoPreguntasPage = () => {
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [examToStart, setExamToStart] = useState<any>(null);
+  const [questionsToStore, setQuestionsToStore] = useState<any[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [conteoPreguntas, setConteoPreguntas] = useState<{
@@ -472,12 +478,17 @@ const BancoPreguntasPage = () => {
   // --- Handlers ---
 
   const handleClear = () => {
+    setIsClearModalOpen(true);
+  };
+
+  const confirmClear = () => {
     setSelectedTipoExamenId('2');
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
     setSelectedYear('');
     setTiposPregunta({});
+    setIsClearModalOpen(false);
   };
 
   const handleConfirm = async () => {
@@ -520,7 +531,7 @@ const BancoPreguntasPage = () => {
 
       const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
 
-      // 2. Extraemos los ClasificacionIds (Igual que antes)
+      // 2. Extraemos los ClasificacionIds
       const clasificacionIds: number[] = [];
       if (exam.clasificaciones) {
         exam.clasificaciones.forEach((c: any) => {
@@ -533,32 +544,27 @@ const BancoPreguntasPage = () => {
       // 3. ARMAMOS EL PAYLOAD EXACTO PARA LA API
       const payloadFiltro = {
         tipoExamenId: exam.tipoExamenId,
-        fuenteId: exam.fuenteId || 0, // <-- Aseguramos que vaya
+        fuenteId: exam.fuenteId || 0,
         modalidadId: exam.modalidadId,
         nivelId: exam.nivelId,
-        especialidadId: exam.especialidadId || 0, // Si es null, enviamos 0 según tu JSON
+        especialidadId: exam.especialidadId || 0,
         year: finalYearValue,
-        clasificaciones: clasificacionIds, // Asegúrate de que tu API reciba este array para filtrar por RL, CL, CCP
+        clasificaciones: clasificacionIds,
       };
 
       console.log('Enviando filtro a la API:', payloadFiltro);
 
       // 4. LLAMADA AL SERVICIO
-      console.log('Calling preguntaService.examenFilter...');
-      let questions = await preguntaService.examenFilter(
-        payloadFiltro
-      );
+      let questions = await preguntaService.examenFilter(payloadFiltro);
 
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
       if (questions.length > 0) {
         questions = questions.filter((q: any) => {
-          // 1. Filtrar por año (si tu API devuelve q.year o q.anio)
           const matchYear =
             finalYearValue === '0' ||
             String(q.year) === finalYearValue ||
             String(q.anio) === finalYearValue;
 
-          // 2. Filtrar por tipo de pregunta (Comprensión, Razonamiento, etc)
           const matchClass =
             clasificacionIds.length === 0 ||
             (q.clasificacionId !== undefined &&
@@ -568,27 +574,33 @@ const BancoPreguntasPage = () => {
         });
       }
 
-      console.log(`Preguntas después del filtro local: ${questions.length}`);
-      // ------------------------------------------------------------------------
-
-      // 5. Guardar metadata y redirigir
-      const metadata = {
-        modalidad: exam.modalidadNombre,
-        nivel: exam.nivelNombre || 'NINGUNO',
-        especialidad: exam.especialidadNombre || null,
-        year: finalYearValue,
-      };
-
-      localStorage.setItem('currentQuestions', JSON.stringify(questions));
-      localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
-
-      router.push(`/examen?from=${router.pathname}`);
+      setQuestionsToStore(questions);
+      setExamToStart(exam);
+      setIsConfirmModalOpen(true);
     } catch (error) {
       console.error('Error confirming selection:', error);
       alert('Hubo un error al cargar las preguntas.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const confirmGoToExam = () => {
+    if (!examToStart) return;
+
+    const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
+    const metadata = {
+      tipoExamen: examToStart.tipoExamenNombre,
+      modalidad: examToStart.modalidadNombre,
+      nivel: examToStart.nivelNombre || 'NINGUNO',
+      especialidad: examToStart.especialidadNombre || null,
+      year: finalYearValue,
+    };
+
+    localStorage.setItem('currentQuestions', JSON.stringify(questionsToStore));
+    localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
+
+    router.push(`/examen?from=${router.pathname}`);
   };
   if (loading || !isAuthenticated || (isFetchingExamenes && examenes.length === 0)) {
     return (
@@ -944,64 +956,79 @@ const BancoPreguntasPage = () => {
                 </h3>
               </div>
 
-              <div className="space-y-5">
-                {/* Tipo de Examen is hidden in summary as it is fixed to Nombramiento */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedModalidadId && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Modalidad
                     </p>
-                    <span className="inline-block px-4 py-1.5 border border-[#8ec7ed] text-[#4299E1] bg-[#eef6fc] rounded-md text-sm font-medium">
+                    <div className="flex items-center gap-2 text-[#4299E1] font-extrabold text-sm">
+                      <div className="bg-[#E1F0FF] p-1.5 rounded-lg">
+                        <AcademicCapIcon className="h-4 w-4" />
+                      </div>
                       {
                         modalidadesData.find(
                           (m) => String(m.id) === selectedModalidadId
                         )?.nombre
                       }
-                    </span>
+                    </div>
                   </div>
                 )}
                 {selectedNivelId && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">Nivel</p>
-                    <span className="inline-block px-4 py-1.5 border border-[#a2e0bb] text-[#48BB78] bg-[#f0f9f4] rounded-md text-sm font-medium">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
+                      Nivel
+                    </p>
+                    <div className="flex items-center gap-2 text-[#48BB78] font-extrabold text-sm">
+                      <div className="bg-[#E6F9F0] p-1.5 rounded-lg">
+                        <FilterIcon className="h-4 w-4" />
+                      </div>
                       {
                         nivelesData.find(
                           (n) => String(n.id) === selectedNivelId
                         )?.nombre
                       }
-                    </span>
+                    </div>
                   </div>
                 )}
                 {selectedEspecialidadId && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Especialidad
                     </p>
-                    <span className="inline-block px-4 py-1.5 border border-[#d1bef6] text-[#9F7AEA] bg-[#f5f1fd] rounded-md text-sm font-medium">
+                    <div className="flex items-center gap-2 text-[#9F7AEA] font-extrabold text-sm">
+                      <div className="bg-[#F5F1FD] p-1.5 rounded-lg">
+                        <AcademicCapIcon className="h-4 w-4" />
+                      </div>
                       {
                         especialidadesData.find(
                           (e) => String(e.id) === selectedEspecialidadId
                         )?.nombre
                       }
-                    </span>
+                    </div>
                   </div>
                 )}
                 {selectedYear && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5 ml-1">Año</p>
-                    <span className="inline-block px-4 py-1.5 border border-[#fbd38d] text-[#D69E2E] bg-[#fefcfa] rounded-md text-sm font-medium">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
+                      Año
+                    </p>
+                    <div className="flex items-center gap-2 text-[#D69E2E] font-extrabold text-sm">
+                      <div className="bg-[#FFF9EA] p-1.5 rounded-lg">
+                        <CalendarIcon className="h-4 w-4" />
+                      </div>
                       {selectedYear}
-                    </span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 mb-8">
             <button
               onClick={handleClear}
-              className="flex items-center gap-2 px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-blue-50 transition-all font-bold"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-gray-100 rounded-2xl text-gray-600 hover:bg-gray-50 transition-all font-black text-sm uppercase tracking-widest shadow-sm active:scale-95"
             >
               <XIcon className="h-5 w-5" />
               Limpiar
@@ -1027,13 +1054,39 @@ const BancoPreguntasPage = () => {
                   0
                 ) === 0
               }
-              className="flex items-center gap-2 px-8 py-3 bg-[#002B6B] text-white rounded-xl hover:bg-blue-900 transition-all font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-125"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-[#002B6B] text-white rounded-2xl hover:bg-blue-900 transition-all font-black text-sm uppercase tracking-widest shadow-[0_10px_20px_rgba(0,43,107,0.2)] disabled:opacity-30 disabled:cursor-not-allowed hover:-translate-y-1 active:scale-95 whitespace-nowrap"
             >
               Confirmar selección
             </button>
           </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmGoToExam}
+        title="¿Estás listo para rendir el examen?"
+        message={`Se cargará el examen de ${
+          examToStart?.tipoExamenNombre
+        } con las preferencias de ${
+          examToStart?.modalidadNombre
+        } ${selectedYear !== 'Único' ? `del año ${selectedYear}` : ''}. ¿Deseas comenzar ahora?`}
+        confirmText="Sí, ¡empezar!"
+        cancelText="No, revisar"
+        type="success"
+      />
+
+      <ConfirmModal
+        isOpen={isClearModalOpen}
+        onClose={() => setIsClearModalOpen(false)}
+        onConfirm={confirmClear}
+        title="¿Reiniciar selección?"
+        message="Se borrarán todos los filtros que has seleccionado hasta ahora. ¿Estás seguro?"
+        confirmText="Sí, limpiar todo"
+        cancelText="No, mantener"
+        type="danger"
+      />
     </PremiumLayout>
   );
 };

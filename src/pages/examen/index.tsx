@@ -708,7 +708,7 @@ const ExamenPage = () => {
               <img
                 src="/assets/images/escala_2.png"
                 alt="Escala"
-                className="h-12 md:h-20 mb-8 md:mb-12 mx-auto brightness-0 invert"
+                className="h-20 md:h-32 mb-8 md:mb-12 mx-auto brightness-0 invert"
               />
               
               <div className="relative h-32 md:h-40 flex items-center justify-center">
@@ -754,157 +754,164 @@ const ExamenPage = () => {
       </Head>
 
       <div className="w-full px-0 md:px-4 space-y-4 md:space-y-6 pb-20">
-        {/* Top Bar Controls - Rediseñado y Compacto */}
+        {/* Top Bar Controls - Rediseñado y Estilo Premium */}
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 mb-8 font-sans">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-col gap-3">
-              {/* Row 1: Tiempo */}
-              <div className="flex items-center gap-3 text-gray-800 font-bold">
-                <ClockIcon className="h-6 w-6 text-gray-400" />
-                <div className="flex items-baseline gap-2">
-                  <span className="font-sans font-medium text-gray-500 text-lg">Tiempo:</span>
-                  <span className="font-mono text-2xl tracking-tight">{formatTime(seconds)}</span>
-                </div>
-              </div>
-
-              {/* Row 2: Badges Metadata (Máximo 2 líneas en móvil) */}
-              <div className="flex flex-wrap gap-1.5 md:gap-2 max-w-full md:max-w-xl">
-                {metadata?.tipoExamen && (
-                  <span className="bg-[#E6FFF1] text-[#05CD99] px-3 py-1.5 rounded-xl border border-green-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
-                    {metadata.tipoExamen}
-                  </span>
-                )}
-                {metadata?.nombre && (
-                  <span className="bg-[#EFEEFF] text-[#002B6B] px-3 py-1.5 rounded-xl border border-purple-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
-                    {metadata.nombre}
-                  </span>
-                )}
-                {metadata?.modalidad && (
-                  <span className="bg-[#FFF1F2] text-[#E11D48] px-3 py-1.5 rounded-xl border border-pink-100 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
-                    {metadata.modalidad}
-                  </span>
-                )}
-                {metadata?.nivel && metadata.nivel !== 'NINGUNO' && (
-                  <span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-xl border border-gray-200 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
-                    {metadata.nivel}
-                  </span>
-                )}
-                {metadata?.year && (
-                  <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-[10px] md:text-sm shadow-sm whitespace-nowrap">
-                    {metadata.year}
-                  </span>
-                )}
+          {/* Row 1: Tiempo (Izquierda) y Badges (Derecha - solo desktop) */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-3 text-gray-800 font-bold shrink-0">
+              <ClockIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+              <div className="flex items-baseline gap-2">
+                <span className="font-sans font-medium text-gray-500 text-sm md:text-lg">Tiempo:</span>
+                <span className="font-mono text-xl md:text-2xl tracking-tight">{formatTime(seconds)}</span>
               </div>
             </div>
 
-            {/* Row 3: Acciones Iconos (Una sola línea en móvil) */}
-            <div className="flex flex-row items-center justify-between w-full md:w-auto gap-2 md:gap-3 pb-1 md:pb-0 relative">
-              <button
-                onClick={handleToggleReading}
-                className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex-1 flex items-center justify-center ${
-                  isReading
-                    ? 'bg-red-50 border-red-200 text-red-600'
-                    : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-500'
+            {/* Badges Metadata (Visible en desktop) */}
+            <div className="hidden md:flex flex-wrap md:justify-end gap-2 max-w-full md:max-w-4xl">
+              {metadata?.tipoExamen && (
+                <span className="bg-[#E6FFF1] text-[#05CD99] px-3 py-1.5 rounded-xl border border-green-100 font-black text-xs shadow-sm uppercase">
+                  {metadata.tipoExamen}
+                </span>
+              )}
+              {metadata?.nombre && (
+                <span className="bg-[#EFEEFF] text-[#002B6B] px-3 py-1.5 rounded-xl border border-purple-100 font-black text-xs shadow-sm uppercase">
+                  {metadata.nombre}
+                </span>
+              )}
+              {metadata?.modalidad && (
+                <span className="bg-[#FFF1F2] text-[#E11D48] px-3 py-1.5 rounded-xl border border-pink-100 font-black text-xs shadow-sm uppercase">
+                  {metadata.modalidad}
+                </span>
+              )}
+              {metadata?.nivel && metadata.nivel !== 'NINGUNO' && (
+                <span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-xl border border-gray-200 font-black text-xs shadow-sm uppercase">
+                  {metadata.nivel}
+                </span>
+              )}
+              {metadata?.year && (
+                <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-xs shadow-sm uppercase">
+                  {metadata.year}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Metadata (Visible solo en móvil) */}
+          <div className="flex md:hidden flex-wrap gap-1.5 pt-4 pb-2">
+            {metadata?.tipoExamen && <span className="bg-[#E6FFF1] text-[#05CD99] px-2 py-1 rounded-lg border border-green-100 font-black text-[9px]">{metadata.tipoExamen}</span>}
+            {metadata?.nombre && <span className="bg-[#EFEEFF] text-[#002B6B] px-2 py-1 rounded-lg border border-purple-100 font-black text-[9px]">{metadata.nombre}</span>}
+            {metadata?.modalidad && <span className="bg-[#FFF1F2] text-[#E11D48] px-2 py-1 rounded-lg border border-pink-100 font-black text-[9px]">{metadata.modalidad}</span>}
+            {metadata?.year && <span className="bg-[#D6FFD8] text-[#008000] px-2 py-1 rounded-lg border border-green-200 font-black text-[9px]">{metadata.year}</span>}
+          </div>
+
+          {/* Row 2: Acciones (Centrado en móvil, izquierda en desktop) */}
+          <div className="flex flex-row flex-wrap items-center justify-center md:justify-start w-full gap-2 md:gap-3 pt-4 border-t border-gray-50 md:border-t-0 relative">
+            <button
+              onClick={handleToggleReading}
+              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
+                isReading
+                  ? 'bg-red-50 border-red-200 text-red-600'
+                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
+              }`}
+            >
+              {isReading ? <VolumeOffIcon className="h-5 w-5" /> : <VolumeUpIcon className="h-5 w-5" />}
+              <span className="hidden md:inline">{isReading ? 'Detener sonido' : 'Activar sonido'}</span>
+            </button>
+
+            <div className="relative flex-1 md:flex-none">
+              <button 
+                onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
+                className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex items-center justify-center w-full md:w-auto gap-2 text-xs font-bold leading-none relative z-20 ${
+                  isVoiceDropdownOpen 
+                  ? 'bg-cyan-50 border-cyan-400 text-cyan-700' 
+                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
                 }`}
-                title={isReading ? 'Detener lectura' : 'Activar sonido'}
               >
-                {isReading ? <VolumeOffIcon className="h-5 w-5 md:h-6 md:w-6" /> : <VolumeUpIcon className="h-5 w-5 md:h-6 md:w-6" />}
-              </button>
-
-              <div className="relative flex-1">
-                <button 
-                  onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
-                  className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex items-center justify-center w-full relative z-20 ${
-                    isVoiceDropdownOpen 
-                    ? 'bg-blue-50 border-blue-400 text-blue-600' 
-                    : 'bg-white border-gray-200 text-[#002B6B] hover:border-blue-400'
-                  }`}
-                  title="Seleccionar voz"
-                >
-                  <svg className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-300 ${isVoiceDropdownOpen ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                
-                <AnimatePresence>
-                  {isVoiceDropdownOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-[60]" 
-                        onClick={() => setIsVoiceDropdownOpen(false)} 
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute left-0 top-full mt-3 w-72 bg-white border-2 border-blue-400 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[70] origin-top-left"
-                      >
-                        <div className="max-h-64 overflow-y-auto no-scrollbar py-2">
-                          <div className="px-4 py-2 text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-blue-50 mb-1">
-                            Voces disponibles
-                          </div>
-                          {voices.length === 0 ? (
-                            <div className="px-4 py-3 text-sm text-gray-400 italic">Cargando voces...</div>
-                          ) : (
-                            voices.map((voice, idx) => (
-                              <button
-                                key={`${voice.name}-${idx}`}
-                                onClick={() => {
-                                  setSelectedVoice(voice);
-                                  setIsVoiceDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-3 text-sm transition-all flex items-center gap-3 ${
-                                  selectedVoice?.name === voice.name 
-                                  ? 'bg-blue-50 text-blue-700 font-bold' 
-                                  : 'text-gray-600 hover:bg-gray-50 hover:text-blue-500'
-                                }`}
-                              >
-                                <div className={`w-1.5 h-1.5 rounded-full ${selectedVoice?.name === voice.name ? 'bg-blue-600' : 'bg-transparent'}`} />
-                                {voice.name.includes('Microsoft') ? voice.name.split(' - ')[0] : voice.name}
-                              </button>
-                            ))
-                          )}
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <button
-                onClick={handleRegenerate}
-                className="p-2.5 md:p-3 rounded-xl border bg-white border-gray-200 text-gray-700 shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all flex-1 flex items-center justify-center"
-                title="Generar de nuevo"
-              >
-                <RefreshIcon className="h-5 w-5 md:h-6 md:w-6" />
-              </button>
-
-              <button
-                onClick={() => setShowQuestionPanel(!showQuestionPanel)}
-                className={`p-2.5 md:p-3 rounded-xl border transition-all shadow-sm flex-1 flex items-center justify-center ${
-                  showQuestionPanel
-                    ? 'bg-[#002B6B] text-white border-[#002B6B]'
-                    : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400'
-                }`}
-                title={showQuestionPanel ? 'Ocultar Panel' : 'Ver Panel'}
-              >
-                <EyeIcon className="h-5 w-5 md:h-6 md:w-6" />
+                <span className="hidden md:inline">
+                  {selectedVoice?.name.includes('Microsoft') ? selectedVoice.name.split(' ').slice(0, 2).join(' ') : selectedVoice?.name || 'Voz'}
+                </span>
+                <svg className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${isVoiceDropdownOpen ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
               
-              <button
-                onClick={() => {
-                  if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                  } else {
-                    document.exitFullscreen();
-                  }
-                }}
-                className="p-2.5 md:p-3 rounded-xl border bg-white border-gray-200 text-gray-700 shadow-sm hover:border-blue-400 transition-all flex-1 flex items-center justify-center"
-                title="Pantalla completa"
-              >
-                <ArrowsExpandIcon className="h-5 w-5 md:h-6 md:w-6" />
-              </button>
+              <AnimatePresence>
+                {isVoiceDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[60]" onClick={() => setIsVoiceDropdownOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-48 md:w-56 bg-white border-2 border-cyan-400 rounded-xl shadow-xl z-[70] origin-top"
+                    >
+                      <div className="max-h-64 overflow-y-auto no-scrollbar py-2">
+                        <div className="px-4 py-2 text-[10px] font-bold text-cyan-500 uppercase tracking-widest border-b border-cyan-50 mb-1">
+                          Voces disponibles
+                        </div>
+                        {voices.length === 0 ? (
+                          <div className="px-4 py-3 text-sm text-gray-400 italic">Cargando...</div>
+                        ) : (
+                          voices.map((voice, idx) => (
+                            <button
+                              key={`${voice.name}-${idx}`}
+                              onClick={() => {
+                                setSelectedVoice(voice);
+                                setIsVoiceDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-[11px] transition-all flex items-center gap-2 ${
+                                selectedVoice?.name === voice.name 
+                                ? 'bg-cyan-50 text-cyan-700 font-bold' 
+                                : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              {voice.name.includes('Microsoft') ? voice.name.split(' ').slice(0, 2).join(' ') : voice.name}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
+
+            <button
+              onClick={handleRegenerate}
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-cyan-200 bg-white text-[#002B6B] shadow-sm hover:bg-cyan-50 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              title="Generar de nuevo"
+            >
+              <RefreshIcon className="h-5 w-5" />
+              <span className="hidden md:inline">Generar de nuevo</span>
+            </button>
+
+            <button
+              onClick={() => setShowQuestionPanel(!showQuestionPanel)}
+              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
+                showQuestionPanel
+                  ? 'bg-[#002B6B] text-white border-[#002B6B]'
+                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
+              }`}
+              title={showQuestionPanel ? 'Ocultar Panel' : 'Ver Panel'}
+            >
+              <EyeIcon className="h-5 w-5" />
+              <span className="hidden md:inline">Panel de Preguntas</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen();
+                } else {
+                  document.exitFullscreen();
+                }
+              }}
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-cyan-200 bg-white text-[#002B6B] shadow-sm hover:bg-cyan-50 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              title="Pantalla completa"
+            >
+              <ArrowsExpandIcon className="h-5 w-5" />
+              <span className="hidden md:inline">Pantalla completa</span>
+            </button>
           </div>
         </div>
 

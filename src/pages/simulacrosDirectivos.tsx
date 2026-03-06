@@ -652,12 +652,33 @@ const SimulacrosDirectivosPage = () => {
             </div>
           </div>
 
-          <div className="bg-green-100/50 border border-green-200 rounded-lg p-5">
-            <p className="text-xl font-bold text-green-700">Total para el simulacro: <span className="text-2xl font-black">{totalQuestions > 60 ? 60 : totalQuestions}</span> preguntas</p>
+          <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="text-[#065F46] font-black text-xl md:text-2xl leading-tight">
+                  Total de preguntas <br className="hidden md:block" /> seleccionadas:
+                </h4>
+                <p className="text-[#065F46]/80 text-xs md:text-sm font-medium leading-relaxed mt-2 max-w-md">
+                  Incluye preguntas de Bloque I (exámenes MINEDU) y Bloque II (exámenes ED)
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white/40 px-6 py-3 rounded-2xl border border-[#05CD99]/20">
+                <span className="text-4xl md:text-5xl font-black text-[#05CD99]">
+                  {totalQuestions > 60 ? 60 : totalQuestions}
+                </span>
+                <span className="text-lg md:text-xl font-bold text-[#065F46]">
+                  preguntas
+                </span>
+              </div>
+            </div>
+            
             {totalQuestions > 60 && (
-              <p className="text-xs text-green-600 font-medium mt-1 italic">
-                * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
-              </p>
+              <div className="mt-4 pt-3 border-t border-[#05CD99]/10">
+                <p className="text-[10px] md:text-xs font-bold text-[#05CD99] italic uppercase tracking-wider">
+                  * Se han seleccionado {totalQuestions} preguntas en total, pero el simulacro se limitará a 60 distribuidas proporcionalmente.
+                </p>
+              </div>
             )}
           </div>
         </div>
