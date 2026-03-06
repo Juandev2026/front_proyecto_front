@@ -182,7 +182,7 @@ const MaterialPreview = ({
                   );
                 })()}
                 {/* Price Tag Overlay */}
-                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 backdrop-blur rounded-full px-3 sm:px-6 py-1 sm:py-2 shadow-md z-10 border border-white/50">
+                <div className="hidden sm:block absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 backdrop-blur rounded-full px-3 sm:px-6 py-1 sm:py-2 shadow-md z-10 border border-white/50">
                   <span className="text-xs sm:text-xl font-extrabold text-primary">
                     {material.precio && material.precio > 0
                       ? `S/ ${material.precio.toFixed(2)}`
