@@ -679,7 +679,7 @@ const ResultadoPage = () => {
                 <div key={idx} className="space-y-0">
                   {/* Parent text section if available and first of its group */}
                   {showParent && (
-                    <div className="bg-gray-50 border border-blue-100 p-4 md:p-6 rounded-t-3xl relative mb-0">
+                    <div className="bg-gray-50 border-y md:border border-blue-100 p-4 md:p-6 rounded-none md:rounded-t-3xl relative mb-0">
                       <div className="absolute top-0 left-8 -translate-y-1/2 bg-gray-400 text-white text-[9px] font-black px-4 py-1 rounded-md uppercase tracking-widest shadow-sm">
                         Texto de Referencia
                       </div>
@@ -694,8 +694,8 @@ const ResultadoPage = () => {
 
                   {/* Question Block */}
                   <div
-                    className={`bg-white border border-gray-100 p-3 md:p-6 space-y-8 ${
-                      showParent ? 'rounded-b-3xl border-t-0' : 'rounded-3xl'
+                    className={`bg-white border-y md:border border-gray-100 p-3 md:p-6 space-y-8 ${
+                      showParent ? 'rounded-none md:rounded-b-3xl border-t-0' : 'rounded-none md:rounded-3xl'
                     } mb-8 shadow-sm`}
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-50 pb-4">

@@ -557,7 +557,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         </header>
 
         {/* Main Scrollable Content - Reduced padding to enlarge space for content */}
-        <main className="flex-1 overflow-y-auto focus:outline-none p-1 md:p-2">
+        <main className="flex-1 overflow-y-auto focus:outline-none p-0 md:p-2">
           {children}
         </main>
       </div>

@@ -301,7 +301,7 @@ const RespuestasErroneasPage = () => {
         {/* Top Section Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Panel: Configuration (Green) */}
-          <div className="bg-[#E6F4EA] rounded-xl p-6 border border-green-100 shadow-sm">
+          <div className="bg-[#E6F4EA] rounded-none md:rounded-xl p-4 md:p-6 border-y md:border border-green-100 shadow-sm">
             <div className="flex items-center gap-2 mb-4 text-[#004d40]">
               <BookOpenIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">
@@ -424,7 +424,7 @@ const RespuestasErroneasPage = () => {
           </div>
 
           {/* Right Panel: Statistics (White) */}
-          <div className="bg-white rounded-xl p-6 border border-cyan-400 shadow-sm flex flex-col h-full">
+          <div className="bg-white rounded-none md:rounded-xl p-4 md:p-6 border-y md:border border-cyan-400 shadow-sm flex flex-col h-full">
             <div className="flex items-center gap-2 mb-6 text-gray-900">
               <ChartBarIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">Estadísticas de Errores</h2>
@@ -462,7 +462,7 @@ const RespuestasErroneasPage = () => {
         </div>
 
         {/* Bottom Section: History */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-none md:rounded-xl p-4 md:p-6 border-y md:border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 mb-2 text-gray-900">
             <ClockIcon className="h-5 w-5" />
             <h2 className="font-bold text-lg">
@@ -533,16 +533,16 @@ const RespuestasErroneasPage = () => {
               groupedByHierarchy.map((item, index) => (
                 <div key={index} className="space-y-3">
                   {/* Header Row */}
-                  <div
-                    onClick={() =>
-                      setExpandedIndex(expandedIndex === index ? null : index)
-                    }
-                    className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all group ${
-                      expandedIndex === index
-                        ? 'border-cyan-400 bg-gray-50 shadow-sm'
-                        : 'border-gray-100 hover:bg-gray-50'
-                    }`}
-                  >
+                    <div
+                      onClick={() =>
+                        setExpandedIndex(expandedIndex === index ? null : index)
+                      }
+                      className={`flex items-center justify-between p-4 border-y md:border rounded-none md:rounded-lg cursor-pointer transition-all group ${
+                        expandedIndex === index
+                          ? 'border-cyan-400 bg-gray-50 shadow-sm'
+                          : 'border-gray-100 hover:bg-gray-50'
+                      }`}
+                    >
                     <div className="flex flex-col">
                       <span className="font-bold text-gray-900 text-sm md:text-base">
                         {item.title}
@@ -578,7 +578,7 @@ const RespuestasErroneasPage = () => {
                       {item.items.map((q: PreguntaErronea) => (
                         <div
                           key={q.preguntaId}
-                          className="border border-cyan-400 rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
+                          className="border-y md:border border-cyan-400 rounded-none md:rounded-xl p-4 md:p-8 bg-white shadow-sm space-y-4"
                         >
                           {/* Question Header */}
                           <div className="flex items-center gap-3">

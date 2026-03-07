@@ -466,7 +466,7 @@ const SimulacrosDirectivosPage = () => {
 
       <div className="w-full space-y-6 px-4 md:px-6">
         <div className="text-center py-4">
-          <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
             Selecciona tus preferencias
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">

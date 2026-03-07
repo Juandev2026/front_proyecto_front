@@ -567,7 +567,7 @@ const SimulacroExamenAscensoPage = () => {
 
       <div className="w-full px-4 md:px-8 space-y-6 pb-20">
         <div className="text-center py-4">
-          <h3 className="text-2xl md:text-3xl font-extrabold text-[#4790FD]">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
             Selecciona tus preferencias
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">

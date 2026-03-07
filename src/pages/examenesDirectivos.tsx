@@ -167,7 +167,7 @@ const ExamenesDirectivosPage = () => {
         </div>
 
         <div className="text-center py-2">
-          <h4 className="text-xl font-bold text-[#4790FD]">
+          <h4 className="text-xl font-bold text-[#2B3674]">
             Selecciona tus preferencias
           </h4>
           <p className="text-[#A3AED0] text-sm">
