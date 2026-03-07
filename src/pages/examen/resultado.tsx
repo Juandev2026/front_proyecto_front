@@ -431,6 +431,30 @@ const ResultadoPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-6">
+              {/* Actions Card */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-4">
+                  <AcademicCapIcon className="w-4 h-4" />
+                  Acciones
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setIsNewExamModalOpen(true)}
+                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <RefreshIcon className="w-3 h-3" />
+                    Dar nuevo examen
+                  </button>
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeftIcon className="w-3 h-3" />
+                    Volver al inicio
+                  </button>
+                </div>
+              </div>
+
               {/* Información del examen */}
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
                 <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-6">
@@ -493,29 +517,7 @@ const ResultadoPage = () => {
                 </button>
               </div>
 
-              {/* Actions Card */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-4">
-                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-4">
-                  <AcademicCapIcon className="w-4 h-4" />
-                  Acciones
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setIsNewExamModalOpen(true)}
-                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
-                  >
-                    <RefreshIcon className="w-3 h-3" />
-                    Dar nuevo examen
-                  </button>
-                  <button
-                    onClick={() => router.push('/')}
-                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
-                  >
-                    <ArrowLeftIcon className="w-3 h-3" />
-                    Volver al inicio
-                  </button>
-                </div>
-              </div>
+
             </div>
 
             {/* Right Column */}
@@ -583,9 +585,13 @@ const ResultadoPage = () => {
                 </div>
                 <div className="w-full bg-white rounded-xl overflow-hidden border border-gray-50">
                   <img 
-                    src={examMetadata?.tipoExamenId === 2 
-                      ? "/assets/images/resultados_ascenso.png" 
-                      : "/assets/images/Puntaje_minimo.png"} 
+                    src={
+                      examMetadata?.tipoExamenId === 3
+                        ? "/assets/images/directivos.jpeg"
+                        : examMetadata?.tipoExamenId === 2 
+                        ? "/assets/images/resultados_ascenso.png" 
+                        : "/assets/images/Puntaje_minimo.png"
+                    } 
                     alt="Puntajes mínimos" 
                     className="w-full h-auto object-contain"
                   />

@@ -413,6 +413,7 @@ const SimulacrosDirectivosPage = () => {
       }
 
       const metadata = {
+        tipoExamenId: sampleExam.tipoExamenId,
         modalidad: sampleExam.modalidadNombre,
         nivel: sampleExam.nivelNombre || 'TODOS',
         especialidad: sampleExam.especialidadNombre || null,

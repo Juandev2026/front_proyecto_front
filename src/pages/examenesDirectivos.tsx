@@ -109,11 +109,13 @@ const ExamenesDirectivosPage = () => {
       const metadata =
         examIds.length > 1
           ? {
+              tipoExamenId: sampleExam.tipoExamenId,
               modalidad: 'Varios Exámenes',
               nivel: 'Múltiple',
               year: 'Varios',
             }
           : {
+              tipoExamenId: sampleExam.tipoExamenId,
               modalidad: sampleExam.modalidadNombre,
               nivel: sampleExam.nivelNombre || 'DIRECTIVO',
               year: sampleExam.year === '0' || !sampleExam.year ? 'Único' : String(sampleExam.year),
