@@ -543,23 +543,23 @@ const RespuestasErroneasPage = () => {
                           : 'border-gray-100 hover:bg-gray-50'
                       }`}
                     >
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-900 text-sm md:text-base">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold text-gray-900 text-sm md:text-base truncate">
                         {item.title}
                       </span>
-                      <span className="text-xs text-gray-500 font-medium">
+                      <span className="text-xs text-gray-500 font-medium truncate">
                         {item.subtitle}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1">
+                    <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 ml-2">
+                      <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-red-100 flex items-center gap-1 whitespace-nowrap">
                         <span className="text-base leading-none font-bold">
                           !
                         </span>{' '}
                         {item.errors} {item.errors === 1 ? 'error' : 'errores'}
                       </span>
-                      <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
+                      <span className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold whitespace-nowrap">
                         {item.points.toFixed(1)} pts
                       </span>
                       <ChevronDownIcon

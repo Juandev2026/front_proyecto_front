@@ -711,21 +711,21 @@ const ResultadoPage = () => {
                             : 'Pregunta Individual'}
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0">
                         {q.clasificacionNombre && (
-                          <span className="bg-pink-50 text-pink-500 text-[10px] font-black px-3 py-1.5 rounded-lg border border-pink-100 shadow-sm uppercase">
+                          <span className="bg-pink-50 text-pink-500 text-[10px] font-black px-3 py-1.5 rounded-lg border border-pink-100 shadow-sm uppercase whitespace-nowrap">
                             {q.clasificacionNombre}
                           </span>
                         )}
                         <span
-                          className={`${getStatusClasses()} text-[10px] font-black px-3 py-1.5 rounded-lg border shadow-sm uppercase flex items-center gap-1`}
+                          className={`${getStatusClasses()} text-[10px] font-black px-3 py-1.5 rounded-lg border shadow-sm uppercase flex items-center gap-1 whitespace-nowrap`}
                         >
                           {getStatusIcon()}
                           {getStatusLabel()}
                         </span>
                         <button
                           onClick={() => handleMarkAsReviewed(q.preguntaId || q.id)}
-                          className="bg-blue-50 hover:bg-blue-100 text-[#4790FD] text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm uppercase transition-colors"
+                          className="bg-blue-50 hover:bg-blue-100 text-[#4790FD] text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm uppercase transition-colors whitespace-nowrap"
                         >
                           Revisado
                         </button>
