@@ -250,6 +250,7 @@ const RespuestasErroneasPage = () => {
 
     // Prepare metadata for the exam page
     const metadata = {
+      tipoExamenId: 2, // Nombramiento
       modalidad: modalidad || 'Varias modalidades',
       nivel: '',
       especialidad: null,

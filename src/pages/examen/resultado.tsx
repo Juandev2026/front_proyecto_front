@@ -347,243 +347,258 @@ const ResultadoPage = () => {
         </div>
 
         {/* Top Summary Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Summary Stats */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex flex-col items-center">
-              <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter self-start mb-6">
-                <ChartBarIcon className="w-4 h-4" />
-                Resumen del examen
-              </div>
-
-              <div className="text-center">
-                <p className="text-4xl font-black text-gray-800">
-                  {stats?.score}{' '}
-                  <span className="text-lg text-gray-400 font-medium">
-                    / {stats?.maxScore} pts
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500 font-medium mt-1">
-                  Tu promedio de aciertos es de{' '}
-                  <span className="font-bold text-blue-600">
-                    {(
-                      ((stats?.correctas || 0) / (stats?.total || 1)) *
-                      100
-                    ).toFixed(1)}
-                    %
-                  </span>
-                </p>
-              </div>
-
-              {/* Progress visual */}
-              <div className="w-full max-w-md mt-8 h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner flex">
-                <div
-                  style={{
-                    width: `${
-                      ((stats?.correctas || 0) / (stats?.total || 1)) * 100
-                    }%`,
-                  }}
-                  className="bg-green-500 h-full"
-                ></div>
-                <div
-                  style={{
-                    width: `${
-                      ((stats?.incorrectas || 0) / (stats?.total || 1)) * 100
-                    }%`,
-                  }}
-                  className="bg-red-500 h-full"
-                ></div>
-              </div>
-
-              {/* Badges Grid */}
-              <div className="grid grid-cols-4 gap-8 mt-10 w-full">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-black text-green-600">
-                    {stats?.correctas}
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                    Correctas
-                  </span>
-                </div>
-                <div className="flex flex-col items-center text-red-600">
-                  <span className="text-2xl font-black">
-                    {stats?.incorrectas}
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                    Incorrectas
-                  </span>
-                </div>
-                <div className="flex flex-col items-center text-gray-500">
-                  <span className="text-2xl font-black">{stats?.omitidas}</span>
-                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                    Omitidas
-                  </span>
-                </div>
-                <div className="flex flex-col items-center text-[#4790FD]">
-                  <span className="text-2xl font-black">{stats?.total}</span>
-                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                    Total
-                  </span>
-                </div>
-              </div>
+        {/* Summary Area */}
+        <div className="space-y-6">
+          {/* Main Score Card (Full Width) */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter self-start mb-6">
+              <ChartBarIcon className="w-4 h-4" />
+              Resumen del examen
             </div>
 
-            {/* Middle: Classification points */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-              <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-6">
-                <ClockIcon className="w-4 h-4" />
-                Información del examen
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div className="space-y-1">
-                  <p className="text-xl font-bold text-gray-700">
-                    {formatTime(timeTaken)}
-                  </p>
-                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                    Tiempo total
-                  </p>
-                </div>
-                {stats?.classStats.map((c) => (
-                  <div key={c.name} className="space-y-1">
-                    <p className="text-2xl font-black text-[#4790FD]">
-                      {c.name === 'CCP' ? '3.0' : '2.0'}
-                    </p>
-                    <p className="text-sm text-gray-500 font-black uppercase tracking-widest">
-                      {c.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
+            <div className="text-center">
+              <p className="text-4xl font-black text-gray-800">
+                {stats?.score}{' '}
+                <span className="text-lg text-gray-400 font-medium">
+                  / {stats?.maxScore} pts
+                </span>
+              </p>
+              <p className="text-sm text-gray-500 font-medium mt-1">
+                Tu promedio de aciertos es de{' '}
+                <span className="font-bold text-blue-600">
+                  {(
+                    ((stats?.correctas || 0) / (stats?.total || 1)) *
+                    100
+                  ).toFixed(1)}
+                  %
+                </span>
+              </p>
             </div>
 
-            {/* Banco de Errores Card */}
-            <div className="bg-white rounded-2xl shadow-xl border border-blue-50 p-10 flex flex-col md:flex-row items-center gap-8 justify-between">
-              <div className="flex-1 text-center md:text-left space-y-4">
-                <div className="flex flex-col items-center md:items-start gap-2">
-                  <div className="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-yellow-500 font-black">!</span>
-                  </div>
-                  <h4 className="text-lg font-black text-gray-800">
-                    ¿Te equivocaste en algunas preguntas?
-                  </h4>
-                  <p className="text-sm text-gray-500">
-                    Revisa tu módulo de{' '}
-                    <span className="font-bold text-blue-600">
-                      &quot;Respuestas Erróneas&quot;
-                    </span>{' '}
-                    y convierte tus errores en oportunidades de aprendizaje.
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    👍 ¡Cada error corregido es un paso más hacia tu Ascenso!
-                  </p>
-                </div>
-                <div className="bg-blue-50 p-2 rounded-lg inline-flex items-center gap-2 text-[10px] text-blue-600 font-bold">
-                  <span className="text-blue-400">💡</span> Tip: estudiar tus
-                  errores es la clave del éxito
-                </div>
+            {/* Progress visual */}
+            <div className="w-full max-w-md mt-8 h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner flex">
+              <div
+                style={{
+                  width: `${
+                    ((stats?.correctas || 0) / (stats?.total || 1)) * 100
+                  }%`,
+                }}
+                className="bg-green-500 h-full"
+              ></div>
+              <div
+                style={{
+                  width: `${
+                    ((stats?.incorrectas || 0) / (stats?.total || 1)) * 100
+                  }%`,
+                }}
+                className="bg-red-500 h-full"
+              ></div>
+            </div>
+
+            {/* Badges Grid */}
+            <div className="grid grid-cols-4 gap-8 mt-10 w-full">
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-black text-green-600">
+                  {stats?.correctas}
+                </span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                  Correctas
+                </span>
               </div>
-              <button 
-                onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/respuestasErroneas' : '/respuestasErroneasAscenso')}
-                className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
-              >
-                Ver Respuestas Erróneas
-              </button>
+              <div className="flex flex-col items-center text-red-600">
+                <span className="text-2xl font-black">
+                  {stats?.incorrectas}
+                </span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                  Incorrectas
+                </span>
+              </div>
+              <div className="flex flex-col items-center text-gray-500">
+                <span className="text-2xl font-black">{stats?.omitidas}</span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                  Omitidas
+                </span>
+              </div>
+              <div className="flex flex-col items-center text-[#4790FD]">
+                <span className="text-2xl font-black">{stats?.total}</span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                  Total
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Right: Actions and Percentages */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-4">
-              <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-4">
-                <AcademicCapIcon className="w-4 h-4" />
-                Acciones
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-6">
+              {/* Información del examen */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-6">
+                  <ClockIcon className="w-4 h-4" />
+                  Información del examen
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                  <div className="space-y-1">
+                    <p className="text-xl font-bold text-gray-700">
+                      {formatTime(timeTaken)}
+                    </p>
+                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                      Tiempo total
+                    </p>
+                  </div>
+                  {stats?.classStats.map((c) => (
+                    <div key={c.name} className="space-y-1">
+                      <p className="text-2xl font-black text-[#4790FD]">
+                        {c.name === 'CCP' ? '3.0' : '2.0'}
+                      </p>
+                      <p className="text-sm text-gray-500 font-black uppercase tracking-widest">
+                        {c.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <button
-                onClick={() => setIsNewExamModalOpen(true)}
-                className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
-              >
-                <RefreshIcon className="w-3 h-3" />
-                Dar nuevo examen
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
-              >
-                <ArrowLeftIcon className="w-3 h-3" />
-                Volver al inicio
-              </button>
+
+              {/* Banco de Errores Card */}
+              <div className="bg-white rounded-2xl shadow-xl border border-blue-50 p-10 flex flex-col md:flex-row items-center gap-8 justify-between">
+                <div className="flex-1 text-center md:text-left space-y-4">
+                  <div className="flex flex-col items-center md:items-start gap-2">
+                    <div className="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mb-2">
+                      <span className="text-yellow-500 font-black">!</span>
+                    </div>
+                    <h4 className="text-lg font-black text-gray-800">
+                      ¿Te equivocaste en algunas preguntas?
+                    </h4>
+                    <p className="text-sm text-gray-500">
+                      Revisa tu módulo de{' '}
+                      <span className="font-bold text-blue-600">
+                        &quot;Respuestas Erróneas&quot;
+                      </span>{' '}
+                      y convierte tus errores en oportunidades de aprendizaje.
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      👍 ¡Cada error corregido es un paso más hacia tu Ascenso!
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 p-2 rounded-lg inline-flex items-center gap-2 text-[10px] text-blue-600 font-bold">
+                    <span className="text-blue-400">💡</span> Tip: estudiar tus
+                    errores es la clave del éxito
+                  </div>
+                </div>
+                <button 
+                  onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/respuestasErroneas' : '/respuestasErroneasAscenso')}
+                  className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
+                >
+                  Ver Respuestas Erróneas
+                </button>
+              </div>
+
+              {/* Actions Card */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-4">
+                  <AcademicCapIcon className="w-4 h-4" />
+                  Acciones
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setIsNewExamModalOpen(true)}
+                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <RefreshIcon className="w-3 h-3" />
+                    Dar nuevo examen
+                  </button>
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeftIcon className="w-3 h-3" />
+                    Volver al inicio
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
-              <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-2">
-                <ChartBarIcon className="w-4 h-4" />% Porcentajes del examen
-              </div>
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Percentajes Card */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6 h-fit">
+                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-2">
+                  <ChartBarIcon className="w-4 h-4" />% Porcentajes del examen
+                </div>
 
-              <div className="space-y-4">
-                {[
-                  {
-                    label: 'Correctas',
-                    count: stats?.correctas,
-                    color: 'bg-green-500',
-                  },
-                  {
-                    label: 'Incorrectas',
-                    count: stats?.incorrectas,
-                    color: 'bg-red-500',
-                  },
-                  {
-                    label: 'Sin responder',
-                    count: stats?.omitidas,
-                    color: 'bg-gray-400',
-                  },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-2">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${item.color}`}
-                        ></div>
-                        {item.label}
+                <div className="space-y-4">
+                  {[
+                    {
+                      label: 'Correctas',
+                      count: stats?.correctas,
+                      color: 'bg-green-500',
+                    },
+                    {
+                      label: 'Incorrectas',
+                      count: stats?.incorrectas,
+                      color: 'bg-red-500',
+                    },
+                    {
+                      label: 'Sin responder',
+                      count: stats?.omitidas,
+                      color: 'bg-gray-400',
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full ${item.color}`}
+                          ></div>
+                          {item.label}
+                        </div>
+                        <span>
+                          {(
+                            ((item.count || 0) / (stats?.total || 1)) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </span>
                       </div>
-                      <span>
-                        {(
-                          ((item.count || 0) / (stats?.total || 1)) *
-                          100
-                        ).toFixed(2)}
-                        %
-                      </span>
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${item.color}`}
+                          style={{
+                            width: `${
+                              ((item.count || 0) / (stats?.total || 1)) * 100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${item.color}`}
-                        style={{
-                          width: `${
-                            ((item.count || 0) / (stats?.total || 1)) * 100
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Composición de la Prueba Nacional Card (Moved here) */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter mb-4">
+                  <AcademicCapIcon className="w-4 h-4" />
+                  Composición de la Prueba Nacional
+                </div>
+                <div className="w-full bg-white rounded-xl overflow-hidden border border-gray-50">
+                  <img 
+                    src={examMetadata?.tipoExamenId === 2 
+                      ? "/assets/images/resultados_ascenso.png" 
+                      : "/assets/images/Puntaje_minimo.png"} 
+                    alt="Puntajes mínimos" 
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 font-medium text-center italic">
+                  Composición de la Prueba Nacional
+                </p>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* --- FULL WIDTH COMPOSITION IMAGE --- */}
-        <div className="w-full mt-12 mb-12 flex flex-col items-center">
-          <h4 className="text-xl md:text-3xl font-serif text-[#1F5454] font-black text-center mb-6">
-            Composición de la Prueba Nacional
-          </h4>
-          <div className="w-full bg-white rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-            <img 
-              src="/assets/images/resultados_ascenso.png" 
-              alt="Composición de la Prueba Nacional" 
-              className="w-full h-auto object-contain"
-            />
-          </div>
-        </div>
+
 
         {/* --- REVIEW SECTION --- */}
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden mt-12">

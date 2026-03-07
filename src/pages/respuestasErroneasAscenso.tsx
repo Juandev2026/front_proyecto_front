@@ -247,6 +247,7 @@ const RespuestasErroneasAscensoPage = () => {
 
     // Prepare metadata for the exam page
     const metadata = {
+      tipoExamenId: 1, // Ascenso
       modalidad: modalidad || 'Varias modalidades',
       nivel: '',
       especialidad: null,

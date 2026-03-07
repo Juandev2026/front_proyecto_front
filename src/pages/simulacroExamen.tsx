@@ -497,6 +497,7 @@ const SimulacroExamenPage = () => {
 
       // 5. Guardar metadata y redirigir
       const metadata = {
+        tipoExamenId: sampleExam.tipoExamenId,
         modalidad: sampleExam.modalidadNombre,
         nivel: sampleExam.nivelNombre || 'NINGUNO',
         especialidad: sampleExam.especialidadNombre || null,
