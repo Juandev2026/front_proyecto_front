@@ -269,33 +269,6 @@ const SimulacroExamenPage = () => {
 
   // ---------- Handlers ----------
 
-  const handleYearToggle = (year: string) => {
-    setSelectedYears((prev) => {
-      const isSelected = prev.includes(year);
-      if (isSelected) {
-        const next = prev.filter((y) => y !== year);
-        setYearSelections((prevSel) => {
-          const nextSel = { ...prevSel };
-          delete nextSel[year];
-          return nextSel;
-        });
-        return next;
-      }
-      const next = [...prev, year];
-      // Initialize classifications for this year
-      const meta = getMetadataForYear(year);
-      const initialTypeSelections: Record<string, boolean> = {};
-      meta.forEach((m) => {
-        if (m.cantidad > 0) initialTypeSelections[m.name] = true;
-      });
-      setYearSelections((prevSel) => ({
-        ...prevSel,
-        [year]: initialTypeSelections,
-      }));
-      return next;
-    });
-  };
-
   const handleTypeToggle = (year: string, typeName: string) => {
     setYearSelections((prev) => ({
       ...prev,
@@ -588,8 +561,8 @@ const SimulacroExamenPage = () => {
 
   return (
     <PremiumLayout
-      title="Simulacro de Examen"
-      breadcrumb="Pages / Simulacro de Examen"
+      title="Banco de preguntas"
+      breadcrumb="Pages / Banco de preguntas"
     >
       <Head>
         <title>Simulacro de Examen - AVENDOCENTE</title>
@@ -605,217 +578,206 @@ const SimulacroExamenPage = () => {
           </p>
         </div>
 
-        {/* Main Box: Bloque I */}
-        <div className="border border-blue-400 rounded-lg overflow-hidden bg-white shadow-sm">
-          <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
-            <AcademicCapIcon className="h-5 w-5 text-[#4790FD]" />
-            <span className="font-bold text-[#4790FD] text-lg">
-              Banco de preguntas
-            </span>
-          </div>
+        <div className="space-y-4">
+          {/* Modalidad Selector */}
+          {modalidadesData.length > 0 && (
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Modalidad habilitada</span>
+              </div>
+              <select
+                value={selectedModalidadId}
+                onChange={(e) => {
+                  setSelectedModalidadId(e.target.value);
+                  setSelectedNivelId('');
+                  setSelectedEspecialidadId('');
+                  setSelectedYears([]);
+                  setYearSelections({});
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+              >
+                <option value="">Selecciona Modalidad</option>
+                {modalidadesData.map((m) => (
+                  <option key={m.id} value={String(m.id)}>
+                    {m.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div className="p-6 space-y-8">
-            {/* Modalidad Selector */}
-            {modalidadesData.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Modalidad habilitada</span>
+          {/* Nivel Selector */}
+          {nivelesData.length > 0 &&
+            !(
+              nivelesData.length === 1 &&
+              nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
+            ) && (
+              <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+                <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
+                  <FilterIcon className="h-5 w-5" />
+                  <span>Nivel</span>
                 </div>
                 <select
-                  value={selectedModalidadId}
+                  value={selectedNivelId}
                   onChange={(e) => {
-                    setSelectedModalidadId(e.target.value);
-                    setSelectedNivelId('');
+                    setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
                     setSelectedYears([]);
                     setYearSelections({});
                   }}
-                  className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                  disabled={!selectedModalidadId}
                 >
-                  <option value="">Selecciona Modalidad</option>
-                  {modalidadesData.map((m) => (
-                    <option key={m.id} value={String(m.id)}>
-                      {m.nombre}
+                  <option value="">Selecciona Nivel</option>
+                  {nivelesData.map((n) => (
+                    <option key={n.id} value={String(n.id)}>
+                      {n.nombre}
                     </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {/* Hierarchical selectors for Nivel and Especialidad */}
-            <div className="space-y-8">
-              {nivelesData.length > 0 &&
-                !(
-                  nivelesData.length === 1 &&
-                  nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
-                ) && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                      <FilterIcon className="h-4 w-4" />
-                      <span>Nivel</span>
-                    </div>
-                    <select
-                      value={selectedNivelId}
-                      onChange={(e) => {
-                        setSelectedNivelId(e.target.value);
-                        setSelectedEspecialidadId('');
-                        setSelectedYears([]);
-                        setYearSelections({});
-                      }}
-                      className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-                      disabled={!selectedModalidadId}
-                    >
-                      <option value="">Selecciona Nivel</option>
-                      {nivelesData.map((n) => (
-                        <option key={n.id} value={String(n.id)}>
-                          {n.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-              {especialidadesData.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                    <AcademicCapIcon className="h-4 w-4" />
-                    <span>Especialidad</span>
-                  </div>
-                  <select
-                    value={selectedEspecialidadId}
-                    onChange={(e) => {
-                      setSelectedEspecialidadId(e.target.value);
-                      setSelectedYears([]);
-                      setYearSelections({});
-                    }}
-                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
-                    disabled={!selectedModalidadId}
-                  >
-                    <option value="">Selecciona Especialidad</option>
-                    {especialidadesData.map((e) => (
-                      <option key={e.id} value={String(e.id)}>
-                        {e.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-
-            {/* Years Selection with per-year classifications */}
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                <CalendarIcon className="h-4 w-4" />
-                <span>Selecciona el año de su preferencia</span>
+          {/* Especialidad Selector */}
+          {especialidadesData.length > 0 && (
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Especialidad</span>
               </div>
+              <select
+                value={selectedEspecialidadId}
+                onChange={(e) => {
+                  setSelectedEspecialidadId(e.target.value);
+                  setSelectedYears([]);
+                  setYearSelections({});
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                disabled={!selectedModalidadId}
+              >
+                <option value="">Selecciona Especialidad</option>
+                {especialidadesData.map((e) => (
+                  <option key={e.id} value={String(e.id)}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {aniosData.map((year) => {
-                  const isChecked = selectedYears.includes(year);
-                  const yearMeta = getMetadataForYear(year);
+          {/* Year Selector */}
+          {aniosData.length > 0 && (
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
+                <CalendarIcon className="h-5 w-5" />
+                <span>Puedes seleccionar el año de su preferencia</span>
+              </div>
+              <select
+                value={selectedYears[0] || ''}
+                onChange={(e) => {
+                  const year = e.target.value;
+                  if (!year) {
+                    setSelectedYears([]);
+                    setYearSelections({});
+                    return;
+                  }
+                  // Single selection like Banco de Preguntas
+                  setSelectedYears([year]);
+                  const meta = getMetadataForYear(year);
+                  const initialTypeSelections: Record<string, boolean> = {};
+                  meta.forEach((m) => {
+                    if (m.cantidad > 0) initialTypeSelections[m.name] = true;
+                  });
+                  setYearSelections({ [year]: initialTypeSelections });
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                disabled={!selectedModalidadId}
+              >
+                <option value="">Selecciona Año</option>
+                {aniosData.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
+          {/* Types of Questions (Categories) - Dynamic for selected year */}
+          {selectedYears.length > 0 && selectedYears[0] && (
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Tipos de Pregunta*</span>
+              </div>
+              <div className="space-y-3">
+                {getMetadataForYear(selectedYears[0]).map((m) => {
+                  const currentYear = selectedYears[0]!;
                   return (
-                    <div key={year} className="flex flex-col gap-3">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className="relative">
+                    <label
+                      key={m.name}
+                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                        m.cantidad > 0
+                          ? `cursor-pointer hover:bg-gray-50 ${
+                              yearSelections[currentYear]?.[m.name]
+                                ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
+                                : 'border-gray-200'
+                            }`
+                          : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
-                            checked={isChecked}
-                            onChange={() => handleYearToggle(year)}
-                            className="h-5 w-5 rounded border-[#4790FD] text-[#4790FD] focus:ring-[#4790FD]/20 transition-all"
+                            className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                            checked={
+                              yearSelections[currentYear]?.[m.name] || false
+                            }
+                            disabled={m.cantidad === 0}
+                            onChange={() =>
+                              handleTypeToggle(currentYear, m.name)
+                            }
                           />
+                          <span className="text-sm font-bold text-blue-900">
+                            {m.name}
+                          </span>
                         </div>
-                        <span
-                          className={`text-base font-bold transition-all ${
-                            isChecked ? 'text-[#4790FD]' : 'text-blue-900'
-                          }`}
-                        >
-                          {year}
+                        <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full min-w-[32px] text-center">
+                          {m.cantidad}p
                         </span>
-                      </label>
-
-                      {isChecked && yearMeta.length > 0 && (
-                        <div className="ml-2 border border-[#4790FD]/20 rounded-xl p-4 bg-blue-50/30 space-y-3 shadow-inner">
-                          <p className="text-[10px] font-bold text-[#4790FD] uppercase tracking-tighter">
-                            Tipos de Pregunta
-                          </p>
-                          <div className="space-y-2">
-                            {yearMeta.map((m) => (
-                              <label
-                                key={m.name}
-                                className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                                  m.cantidad > 0
-                                    ? `cursor-pointer ${
-                                        yearSelections[year]?.[m.name]
-                                          ? 'bg-white border-[#4790FD] shadow-sm'
-                                          : 'bg-white/50 border-gray-100 opacity-70 hover:opacity-100 hover:border-[#4790FD]/50'
-                                      }`
-                                    : 'opacity-40 cursor-not-allowed bg-gray-50 border-gray-100'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      yearSelections[year]?.[m.name] || false
-                                    }
-                                    disabled={m.cantidad === 0}
-                                    onChange={() =>
-                                      handleTypeToggle(year, m.name)
-                                    }
-                                    className="h-4 w-4 text-[#4790FD] rounded border-gray-300 focus:ring-[#4790FD]/20"
-                                  />
-                                  <span className="text-xs font-bold text-blue-800">
-                                    {m.name}
-                                  </span>
-                                </div>
-                                <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full min-w-[32px] text-center">
-                                  {m.cantidad}p
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    </label>
                   );
                 })}
               </div>
-
-              {aniosData.length === 0 && selectedModalidadId && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-lg">
-                  <p className="text-red-500 text-sm font-medium">
-                    ⚠️ No hay exámenes disponibles para esta selección
-                  </p>
-                </div>
-              )}
             </div>
+          )}
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">
-              <div className="mt-0.5">
-                <AcademicCapIcon className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-yellow-800">
-                  Cantidades de preguntas reales
-                </p>
-                <p className="text-[10px] text-yellow-700/90 leading-relaxed">
-                  Las cantidades de preguntas mostradas corresponden a los datos
-                  reales de cada examen. Total actual:{' '}
-                  <span className="font-bold">{totalQuestions}</span> preguntas.
-                </p>
-              </div>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">
+            <div className="mt-0.5">
+              <AcademicCapIcon className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-yellow-800">
+                Cantidades de preguntas reales
+              </p>
+              <p className="text-[10px] text-yellow-700/90 leading-relaxed">
+                Las cantidades de preguntas mostradas corresponden a los datos
+                reales de cada examen. Total actual:{' '}
+                <span className="font-bold">{totalQuestions}</span> preguntas.
+              </p>
             </div>
           </div>
         </div>
 
         {/* Bloque II - Exámenes Propios ED */}
-        <div className="border border-blue-400 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="border border-[#4790FD] rounded-lg overflow-hidden bg-white shadow-sm mt-8">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
-              Bloque II - Exámenes Propios ED
+              Banco de preguntas - Propios
             </span>
           </div>
 
