@@ -220,25 +220,14 @@ export const examenService = {
         method: 'DELETE',
         headers: {
           ...getAuthHeaders(),
+          'Accept': '*/*',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
 
-      console.log('Sending DELETE to /api/Examenes/remove-year with payload:', JSON.stringify(payload, null, 2));
-
       if (!response.ok) {
-        let err = '';
-        try {
-          err = await response.text();
-        } catch (e) {
-          err = 'No response body';
-        }
-        
-        if (response.status === 404) {
-          throw new Error('La ruta /api/Examenes/remove-year no fue encontrada (404). Verifica que el endpoint acepte DELETE con JSON body.');
-        }
-        
+        const err = await response.text();
         throw new Error(`Error al eliminar año (${response.status}): ${err}`);
       }
     } catch (error) {

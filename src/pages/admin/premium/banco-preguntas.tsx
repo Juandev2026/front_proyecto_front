@@ -1196,8 +1196,8 @@ const Recursos = () => {
         tipoExamenId: Number(selectedTipo),
         fuenteId: Number(selectedFuente),
         modalidadId: Number(selectedModalidad),
-        nivelId: selectedNivel ? Number(selectedNivel) : 0,
-        especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : 0,
+        nivelId: selectedNivel ? Number(selectedNivel) : null,
+        especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : null,
         year: isNaN(Number(selectedYear)) ? selectedYear : Number(selectedYear),
       };
 
