@@ -6,7 +6,6 @@ import {
   UserGroupIcon,
   ChartBarIcon,
   MenuIcon,
-  XIcon,
   LogoutIcon,
   ClipboardListIcon,
   ExclamationCircleIcon,
@@ -350,10 +349,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             )}
           </button>
           <button
-            className="md:hidden text-gray-400 hover:text-gray-600"
+            className="md:hidden text-gray-400 hover:text-[#4790FD] focus:outline-none"
             onClick={() => setSidebarOpen(false)}
           >
-            <XIcon className="h-6 w-6" />
+            <ChevronDoubleLeftIcon className="h-6 w-6" />
           </button>
         </div>
 

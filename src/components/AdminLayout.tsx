@@ -385,10 +385,16 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </Link>
           )}
 
-          {/* Toggle Button for Desktop */}
+          {/* Toggle Button */}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none"
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setIsSidebarOpen(false);
+              } else {
+                setIsCollapsed(!isCollapsed);
+              }
+            }}
+            className="flex items-center justify-center p-1 rounded-md text-gray-400 hover:text-gray-600 focus:outline-none transition-transform duration-300"
             title={isCollapsed ? 'Expandir' : 'Contraer'}
           >
             {isCollapsed ? (
