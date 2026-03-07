@@ -379,9 +379,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <img
                   src="/assets/images/logo_principal1.png"
                   alt="Avendo"
-                  className="h-28 w-auto object-contain hidden md:block"
+                  className="h-28 w-auto object-contain"
                 />
-                <span className="text-2xl font-bold text-primary uppercase md:hidden">Avendo</span>
               </a>
             </Link>
           )}

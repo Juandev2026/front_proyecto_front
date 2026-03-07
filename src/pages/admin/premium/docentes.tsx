@@ -717,8 +717,8 @@ const AdminPremiumDocentes = () => {
         </h1>
       </div>
 
-      {/* Sticky Filters & Controls */}
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 sticky top-[-24px] z-30 mb-6">
+      {/* Filters & Controls */}
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
         {/* Controls Row */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-1">
