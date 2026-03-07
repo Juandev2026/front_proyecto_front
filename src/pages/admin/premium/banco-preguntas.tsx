@@ -1681,6 +1681,7 @@ const Recursos = () => {
                   setViewMode('list');
                 }}
                 onCancel={() => setViewMode('list')}
+                numero={numeroPregunta}
               />
             ) : (
               /* --- FORMULARIO INDIVIDUAL (Estándar) --- */

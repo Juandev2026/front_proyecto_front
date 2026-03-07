@@ -45,6 +45,7 @@ interface PreguntaComunFormProps {
   selectedYear: string;
   onSuccess: () => void;
   onCancel: () => void;
+  numero?: string;
 }
 
 const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
@@ -55,6 +56,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   selectedYear,
   onSuccess,
   onCancel,
+  numero,
 }) => {
   // --- HELPERS ---
   const parseHtmlToBlocks = (html: string): ContentBlock[] => {
@@ -460,39 +462,48 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     setSaving(true);
 
     try {
-      // Construction of ATOMIC Payload
       const firstSubClasificacionId = subQuestions[0]?.clasificacionId || defaultClasificacionId || 0;
+      const numPadre = initialParent?.numero || (numero ? parseInt(numero, 10) : 1);
 
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
         year: initialParent?.year || selectedYear || '0',
         tipoPreguntaId: 2,
-        numero: 0,
+        numero: numPadre,
         clasificacionId: firstSubClasificacionId,
-        respuesta: 0,
+        respuesta: 1, // Defaulting to 1 as per example
         enunciados: [
           {
-            id: initialParent ? 1 : 0,
+            id: initialParent?.enunciados?.[0]?.id || 1,
             contenido: commonHtml,
+          },
+        ],
+        alternativas: [
+          {
+            id: initialParent?.alternativas?.[0]?.id || 1,
+            contenido: 'n',
+          },
+        ],
+        justificaciones: [
+          {
+            id: initialParent?.justificaciones?.[0]?.id || 1,
+            contenido: 'n',
           },
         ],
         subPreguntas: subQuestions.map((q, index) => {
           const correctIndex = q.alternatives.findIndex((a) => a.esCorrecta);
-          const respuestaInt = correctIndex !== -1 ? correctIndex + 1 : 0;
-
-          // Ensure unique ID for sub-questions
-          // If editing existing ones, keep their ID. For new ones, use a safe temporary ID (index + 1)
-          const subId = (q as any).id || (index + 1);
+          const respuestaInt = correctIndex !== -1 ? correctIndex + 1 : 1;
 
           return {
-            id: subId,
-            numero: index + 1,
-            respuestaCorrecta: respuestaInt,
+            examenId,
+            year: initialParent?.year || selectedYear || '0',
+            preguntaId: initialParent ? initialParent.id : 0,
+            id: (q as any).id || 0,
             clasificacionId: q.clasificacionId,
             enunciados: [
               {
-                id: initialParent ? (q as any).enunciados?.[0]?.id || (index + 1) : (index + 1),
+                id: (q as any).enunciados?.[0]?.id || 1,
                 contenido: serializeBlocks(q.specificStatement),
               },
             ],
@@ -502,15 +513,17 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             })),
             justificaciones: [
               {
-                id: initialParent ? (q as any).justificaciones?.[0]?.id || (index + 1) : (index + 1),
+                id: (q as any).justificaciones?.[0]?.id || 1,
                 contenido: q.sustento || '',
               },
             ],
+            respuestaCorrecta: respuestaInt,
+            numero: numPadre + index + 1,
           };
         }),
       };
 
-      console.log('Payload Atómico:', payload);
+      console.log('Payload Atómico (User Requirement):', payload);
 
       if (initialParent) {
         await preguntaService.update(examenId, initialParent.id, payload);

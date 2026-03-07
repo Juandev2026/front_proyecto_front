@@ -97,12 +97,12 @@ export const preguntaService = {
   },
 
   update: async (
-    _examenId: number,
+    examenId: number,
     id: number,
     item: Partial<Pregunta>
   ): Promise<Pregunta> => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${API_URL}/${examenId}/${id}`, {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(),
