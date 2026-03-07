@@ -297,9 +297,9 @@ const RespuestasErroneasAscensoPage = () => {
       <div className="w-full space-y-6">
         {/* Top Section Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Panel: Configuration (Green) */}
-          <div className="bg-[#E6F4EA] rounded-none md:rounded-xl p-4 md:p-6 border-y md:border border-green-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 text-[#004d40]">
+          {/* Left Panel: Configuration (Celeste) */}
+          <div className="bg-[#EBF5FF] rounded-none md:rounded-xl p-4 md:p-6 border-y md:border border-blue-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-[#003466]">
               <BookOpenIcon className="h-5 w-5" />
               <h2 className="font-bold text-lg">
                 Perfecciona tu rendimiento corrigiendo tus errores
@@ -321,7 +321,7 @@ const RespuestasErroneasAscensoPage = () => {
                   <select
                     value={selectedFecha}
                     onChange={(e) => setSelectedFecha(e.target.value)}
-                    className="w-full appearance-none border border-gray-300 rounded-md p-2 pr-8 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shadow-sm"
+                    className="w-full appearance-none border border-gray-300 rounded-md p-2 pr-8 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#4790FD] text-sm shadow-sm"
                   >
                     <option>Todas las fechas</option>
                     {fechaOptions.map((f) => (
@@ -370,7 +370,7 @@ const RespuestasErroneasAscensoPage = () => {
                       type="checkbox"
                       checked={fuenteMinedu}
                       onChange={(e) => setFuenteMinedu(e.target.checked)}
-                      className="text-red-500 focus:ring-red-500 rounded"
+                      className="text-[#4790FD] focus:ring-[#4790FD] rounded"
                     />
                     <span className="text-sm font-semibold text-gray-700">
                       MINEDU
@@ -381,7 +381,7 @@ const RespuestasErroneasAscensoPage = () => {
                       type="checkbox"
                       checked={fuenteEscala}
                       onChange={(e) => setFuenteEscala(e.target.checked)}
-                      className="text-red-500 focus:ring-red-500 rounded"
+                      className="text-[#4790FD] focus:ring-[#4790FD] rounded"
                     />
                     <span className="text-sm font-semibold text-gray-700">
                       Escala Docente
@@ -412,7 +412,7 @@ const RespuestasErroneasAscensoPage = () => {
               {/* Button */}
               <button 
                 onClick={handleStartPractice}
-                className="w-full bg-[#00C853] hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md shadow-md flex items-center justify-center gap-2 mt-4 transition-colors"
+                className="w-full bg-[#4790FD] hover:bg-[#3b7ddd] text-white font-bold py-3 px-4 rounded-md shadow-md flex items-center justify-center gap-2 mt-4 transition-colors"
               >
                 <CheckCircleIcon className="h-5 w-5" />
                 ¡Comienza a practicar Ahora!
