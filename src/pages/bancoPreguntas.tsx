@@ -1068,9 +1068,17 @@ const BancoPreguntasPage = () => {
         onConfirm={confirmGoToExam}
         title="¿Estás listo para rendir el examen?"
         message={`Se cargará el examen de ${
-          examToStart?.tipoExamenNombre
+          examToStart?.tipoExamenNombre || ''
         } con las preferencias de ${
-          examToStart?.modalidadNombre
+          examToStart?.modalidadNombre || ''
+        }${
+          examToStart?.nivelNombre && examToStart.nivelNombre.toUpperCase() !== 'NINGUNO' && examToStart.nivelNombre.toUpperCase() !== 'SIN NIVEL' && examToStart.nivelNombre.toUpperCase() !== 'TODAS'
+            ? ` - ${examToStart.nivelNombre}`
+            : ''
+        }${
+          examToStart?.especialidadNombre && examToStart.especialidadNombre.toUpperCase() !== 'SIN ESPECIALIDAD' && examToStart.especialidadNombre.toUpperCase() !== 'TODAS'
+            ? ` - ${examToStart.especialidadNombre}`
+            : ''
         } ${selectedYear !== 'Único' ? `del año ${selectedYear}` : ''}. ¿Deseas comenzar ahora?`}
         confirmText="Sí, ¡empezar!"
         cancelText="No, revisar"
