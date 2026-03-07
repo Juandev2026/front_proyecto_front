@@ -792,8 +792,12 @@ const BancoPreguntasPage = () => {
             </div>
 
             <div className="space-y-3">
-              {Object.entries(conteoPreguntas).map(
-                ([name, data]: [string, any]) => (
+              {Object.entries(conteoPreguntas)
+                .sort(([a], [b]) => {
+                  const order: Record<string, number> = { CL: 1, RL: 2, CCP: 3 };
+                  return (order[a] || 99) - (order[b] || 99);
+                })
+                .map(([name, data]: [string, any]) => (
                   <label
                     key={name}
                     className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
@@ -857,8 +861,12 @@ const BancoPreguntasPage = () => {
                   </h3>
 
                   <div className="space-y-3">
-                    {Object.entries(conteoPreguntas).map(
-                      ([name, data]: [string, any]) => {
+                    {Object.entries(conteoPreguntas)
+                      .sort(([a], [b]) => {
+                        const order: Record<string, number> = { CL: 1, RL: 2, CCP: 3 };
+                        return (order[a] || 99) - (order[b] || 99);
+                      })
+                      .map(([name, data]: [string, any]) => {
                         if (tiposPregunta[name] && data.cantidad > 0) {
                           return (
                             <div
