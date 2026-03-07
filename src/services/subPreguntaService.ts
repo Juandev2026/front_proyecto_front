@@ -12,7 +12,7 @@ export interface CreateSubPreguntaDTO {
   alternativaB: string;
   alternativaC: string;
   alternativaD: string;
-  respuestaCorrecta: string; // "A" | "B" | "C" | "D"
+  respuestaCorrecta: number | null; // 1 | 2 | 3 | 4
   sustento?: string;
   imagen?: string;
   clasificacionId?: number;

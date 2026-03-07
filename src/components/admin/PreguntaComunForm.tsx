@@ -117,17 +117,17 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             {
               id: 'A',
               contenido: s.alternativaA,
-              esCorrecta: s.respuestaCorrecta === 'A',
+              esCorrecta: s.respuestaCorrecta === 'A' || s.respuestaCorrecta === 1,
             },
             {
               id: 'B',
               contenido: s.alternativaB,
-              esCorrecta: s.respuestaCorrecta === 'B',
+              esCorrecta: s.respuestaCorrecta === 'B' || s.respuestaCorrecta === 2,
             },
             {
               id: 'C',
               contenido: s.alternativaC,
-              esCorrecta: s.respuestaCorrecta === 'C',
+              esCorrecta: s.respuestaCorrecta === 'C' || s.respuestaCorrecta === 3,
             },
           ],
           sustento: s.sustento || '',
@@ -461,41 +461,48 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
     try {
       // Construction of ATOMIC Payload
+      const firstSubClasificacionId = subQuestions[0]?.clasificacionId || defaultClasificacionId || 0;
+
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
         year: initialParent?.year || selectedYear || '0',
         tipoPreguntaId: 2,
         numero: 0,
+        clasificacionId: firstSubClasificacionId,
+        respuesta: 0,
         enunciados: [
           {
-            id: 0,
+            id: initialParent ? 1 : 0,
             contenido: commonHtml,
           },
         ],
         subPreguntas: subQuestions.map((q, index) => {
           const correctIndex = q.alternatives.findIndex((a) => a.esCorrecta);
-          const respuestaChar =
-            correctIndex !== -1 ? ['A', 'B', 'C'][correctIndex] || '' : '';
+          const respuestaInt = correctIndex !== -1 ? correctIndex + 1 : 0;
+
+          // Ensure unique ID for sub-questions
+          // If editing existing ones, keep their ID. For new ones, use a safe temporary ID (index + 1)
+          const subId = (q as any).id || (index + 1);
 
           return {
-            id: initialParent ? (q as any).id || 0 : index + 1, // Force 0 if creating
+            id: subId,
             numero: index + 1,
-            respuestaCorrecta: respuestaChar,
+            respuestaCorrecta: respuestaInt,
             clasificacionId: q.clasificacionId,
             enunciados: [
               {
-                id: index + 1,
+                id: initialParent ? (q as any).enunciados?.[0]?.id || (index + 1) : (index + 1),
                 contenido: serializeBlocks(q.specificStatement),
               },
             ],
             alternativas: q.alternatives.map((alt, altIdx) => ({
-              id: altIdx + 1, // Let the backend iterate correctly as it does on Question type 1
+              id: altIdx + 1,
               contenido: alt.contenido || '',
             })),
             justificaciones: [
               {
-                id: index + 1,
+                id: initialParent ? (q as any).justificaciones?.[0]?.id || (index + 1) : (index + 1),
                 contenido: q.sustento || '',
               },
             ],

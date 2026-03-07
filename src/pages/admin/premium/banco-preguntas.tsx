@@ -1614,8 +1614,7 @@ const Recursos = () => {
   if (viewMode === 'create' || viewMode === 'edit') {
     return (
       <AdminLayout>
-        <div className="space-y-6 pb-20">
-          {' '}
+        <div className="space-y-6 pb-20 -m-6">
           {/* pb-20 para dar espacio al footer flotante si lo hubiera */}
           {/* 1. HEADER CELESTE (Como en la imagen) */}
           <div className="w-full bg-[#4a90f9] py-3 px-6 shadow-md flex justify-between items-center">
@@ -2448,7 +2447,7 @@ const Recursos = () => {
 
         {/* SECCIÓN 4: LISTADO DE PREGUNTAS (CARD VIEW) - Show only if showResults */}
         {showResults && (
-          <div>
+          <div className="space-y-6">
             {/* RESULT HEADER & CRITERIA */}
             <div className="w-full bg-primary py-4 px-6 rounded-t-lg shadow-sm flex items-center gap-4">
               <button
@@ -2462,58 +2461,69 @@ const Recursos = () => {
               </h1>
             </div>
 
-            <div className="bg-white border border-gray-200 p-4 rounded-b-lg mb-6 shadow-sm">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="font-bold text-gray-700 mr-2">
-                    Criterios de selección
-                  </span>
-                  <span className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
-                    {totalQuestionCount}{' '}
-                    {totalQuestionCount === 1 ? 'Pregunta' : 'Preguntas'}
-                  </span>
-                  {/* Display Selected Criteria as Pills */}
-                  {groupedData.find((t) => t.tipoExamenId === selectedTipo) && (
-                    <span className="bg-blue-100 text-primary text-xs px-3 py-1 rounded-full font-medium">
-                      {
-                        groupedData.find((t) => t.tipoExamenId === selectedTipo)
-                          ?.tipoExamenNombre
-                      }
+            <div className="bg-white border border-gray-200 p-6 rounded-b-lg mb-6 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div className="flex flex-col items-center md:items-start gap-4 flex-1">
+                  {/* Etiqueta y Contador Principal */}
+                  <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
+                    <span className="font-bold text-gray-800 text-base md:text-lg">
+                      Criterios de selección
                     </span>
-                  )}
-                  {/* We could map other selected IDs to names here if available in state arrays or lookups */}
-                  {selectedModalidadNombre && (
-                    <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-medium">
-                      {selectedModalidadNombre}
+                    <span className="bg-gray-900 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-sm uppercase tracking-wider">
+                      {totalQuestionCount}{' '}
+                      {totalQuestionCount === 1 ? 'Pregunta' : 'Preguntas'}
                     </span>
-                  )}
-                  {selectedNivelNombre && (
-                    <span className="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">
-                      {selectedNivelNombre}
-                    </span>
-                  )}
-                  {selectedEspecialidadNombre && (
-                    <span className="bg-pink-100 text-pink-800 text-xs px-3 py-1 rounded-full font-medium">
-                      {selectedEspecialidadNombre}
-                    </span>
-                  )}
-                  {selectedYear && (
-                    <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
-                      {selectedYear}
-                    </span>
-                  )}
+                  </div>
+
+                  {/* Listado de Pills (Categorías) */}
+                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                    {/* Display Selected Criteria as Pills */}
+                    {groupedData.find((t) => t.tipoExamenId === selectedTipo) && (
+                      <span className="bg-blue-50 text-primary text-xs px-3 py-1.5 rounded-lg font-bold border border-blue-100 shadow-sm">
+                        {
+                          groupedData.find(
+                            (t) => t.tipoExamenId === selectedTipo
+                          )?.tipoExamenNombre
+                        }
+                      </span>
+                    )}
+                    {selectedModalidadNombre && (
+                      <span className="bg-purple-50 text-purple-700 text-xs px-3 py-1.5 rounded-lg font-bold border border-purple-100 shadow-sm">
+                        {selectedModalidadNombre}
+                      </span>
+                    )}
+                    {selectedNivelNombre && (
+                      <span className="bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-lg font-bold border border-indigo-100 shadow-sm">
+                        {selectedNivelNombre}
+                      </span>
+                    )}
+                    {selectedEspecialidadNombre && (
+                      <span className="bg-pink-50 text-pink-700 text-xs px-3 py-1.5 rounded-lg font-bold border border-pink-100 shadow-sm">
+                        {selectedEspecialidadNombre}
+                      </span>
+                    )}
+                    {selectedYear && (
+                      <span className="bg-green-50 text-green-700 text-xs px-3 py-1.5 rounded-lg font-bold border border-green-100 shadow-sm">
+                        {selectedYear}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={handleAddNew}
-                  className="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary transition-colors flex items-center gap-2"
-                >
-                  <PlusIcon className="w-5 h-5" />
-                  Añadir preguntas
-                </button>
+
+                {/* Botón de Acción a la derecha/abajo */}
+                <div className="w-full md:w-auto shrink-0">
+                  <button
+                    onClick={handleAddNew}
+                    className="w-full md:w-auto bg-primary text-white px-8 py-3 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                  >
+                    <PlusIcon className="w-5 h-5 pointer-events-none" />
+                    Añadir preguntas
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-6">
+          <div className="space-y-6 -mx-6">
               {currentItems.map((item) => {
                 const isParent = item.tipoPreguntaId === 2;
                 const subCount = subCountsMap[item.id] || 0;
