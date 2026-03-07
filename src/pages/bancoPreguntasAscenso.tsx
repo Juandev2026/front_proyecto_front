@@ -274,7 +274,7 @@ const BancoPreguntasAscensoPage = () => {
       localStorage.setItem('currentQuestions', JSON.stringify(questions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-      router.push(`/examen?from=${router.pathname}`);
+      router.push(`/examen?from=${router.asPath}`);
     } catch (error) {
       console.error('Error confirming selection:', error);
       alert('Hubo un error al cargar las preguntas.');

@@ -139,27 +139,27 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   const allMenuItems = [
     {
       name: 'Nombramiento',
-      href: '/bancoPreguntas',
+      href: '/avendescala/bancoPreguntas',
       icon: AcademicCapIcon,
       children: [
         {
           name: 'Banco de Preguntas',
-          href: '/bancoPreguntas',
+          href: '/avendescala/bancoPreguntas',
           icon: CollectionIcon,
         },
         {
           name: 'Banco de Preguntas ED',
-          href: '/bancoPreguntasEd?context=nombramiento',
+          href: '/avendescala/bancoPreguntasEd?context=nombramiento',
           icon: CollectionIcon,
         },
         {
           name: 'Simulacro de Examen',
-          href: '/simulacroExamen',
+          href: '/avendescala/simulacroExamen',
           icon: ClipboardListIcon,
         },
         {
           name: 'Respuestas Erróneas',
-          href: '/respuestasErroneas',
+          href: '/avendescala/respuestasErroneas',
           icon: ExclamationCircleIcon,
         },
       ],
@@ -172,25 +172,25 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       children: [
         {
           name: 'Banco de Preguntas',
-          href: '/bancoPreguntasAscenso',
+          href: '/avendescala/bancoPreguntasAscenso',
           icon: CollectionIcon,
         },
         {
           name: 'Banco de Preguntas ED',
-          href: '/bancoPreguntasEd?context=ascenso',
+          href: '/avendescala/bancoPreguntasEd?context=ascenso',
           icon: CollectionIcon,
         },
         {
           name: 'Simulacro de Examen',
-          href: '/simulacroExamenAscenso',
+          href: '/avendescala/simulacroExamenAscenso',
           icon: ClipboardListIcon,
         },
         {
           name: 'Respuestas Erróneas',
-          href: '/respuestasErroneasAscenso',
+          href: '/avendescala/respuestasErroneasAscenso',
           icon: ExclamationCircleIcon,
         },
-        { name: 'Recursos', href: '/recursosAscenso', icon: ArchiveIcon },
+        { name: 'Recursos', href: '/avendescala/recursosAscenso', icon: ArchiveIcon },
       ],
     },
     {
@@ -201,7 +201,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       children: [
         {
           name: 'Exámenes MINEDU y Simulacros',
-          href: '/examenesDirectivos',
+          href: '/avendescala/examenesDirectivos',
           icon: FolderIcon,
         },
       ],

@@ -443,7 +443,7 @@ const SimulacrosDirectivosPage = () => {
       if (questions.length === 0) {
         alert('No se encontraron preguntas para los filtros seleccionados.');
       } else {
-        router.push(`/examen?from=${router.pathname}`);
+        router.push(`/examen?from=${router.asPath}`);
       }
     } catch (error) {
       console.error('Error confirming selection:', error);

@@ -618,7 +618,7 @@ const BancoPreguntasPage = () => {
     localStorage.setItem('currentQuestions', JSON.stringify(questionsToStore));
     localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-    router.push(`/examen?from=${router.pathname}`);
+    router.push(`/examen?from=${router.asPath}`);
   };
   if (loading || !isAuthenticated || (isFetchingExamenes && examenes.length === 0)) {
     return (

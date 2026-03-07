@@ -124,7 +124,7 @@ const ExamenesDirectivosPage = () => {
       localStorage.setItem('currentQuestions', JSON.stringify(allQuestions));
       localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-      router.push(`/examen?from=${router.pathname}`);
+      router.push(`/examen?from=${router.asPath}`);
     } catch (error) {
       console.error('Error loading questions:', error);
       alert('Hubo un error al cargar las preguntas.');

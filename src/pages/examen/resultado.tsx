@@ -509,8 +509,8 @@ const ResultadoPage = () => {
                     errores es la clave del éxito
                   </div>
                 </div>
-                <button 
-                  onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/respuestasErroneas' : '/respuestasErroneasAscenso')}
+                <button
+                  onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/avendescala/respuestasErroneas' : '/avendescala/respuestasErroneasAscenso')}
                   className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
                 >
                   Ver Respuestas Erróneas

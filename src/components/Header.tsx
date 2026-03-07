@@ -76,7 +76,7 @@ const Menu = () => {
                       user?.role?.toUpperCase() === 'ADMIN' ||
                       user?.role?.toUpperCase() === 'SUBADMIN' ||
                       user?.role?.toUpperCase() === 'INVITADO')
-                      ? '/bancoPreguntas'
+                      ? '/avendescala/bancoPreguntas'
                       : '/planes?showVideo=true'
                   }
                 >
@@ -108,7 +108,7 @@ const Menu = () => {
                         user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN' ||
                         user?.role?.toUpperCase() === 'INVITADO')
-                        ? '/bancoPreguntas'
+                        ? '/avendescala/bancoPreguntas'
                         : '/planes?showVideo=true'
                     }
                   >

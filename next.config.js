@@ -21,6 +21,10 @@ module.exports = withBundleAnalyzer({
   async rewrites() {
     return [
       {
+        source: '/avendescala/:path*',
+        destination: '/:path*',
+      },
+      {
         source: '/api/:path*',
         destination: 'https://proyecto-bd-juan.onrender.com/api/:path*',
       },

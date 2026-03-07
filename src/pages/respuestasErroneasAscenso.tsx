@@ -264,7 +264,7 @@ const RespuestasErroneasAscensoPage = () => {
     localStorage.setItem('currentQuestions', JSON.stringify(selectedBatch));
     localStorage.setItem('currentExamMetadata', JSON.stringify(metadata));
 
-    router.push(`/examen?from=${router.pathname || ''}`);
+    router.push(`/examen?from=${router.asPath || ''}`);
   };
 
   const handleMarkAsReviewed = async (preguntaId: number) => {
