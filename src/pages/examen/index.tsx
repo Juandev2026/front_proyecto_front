@@ -912,6 +912,16 @@ const ExamenPage = () => {
               <ArrowsExpandIcon className="h-5 w-5" />
               <span className="hidden md:inline">Pantalla completa</span>
             </button>
+
+            <button
+              onClick={handleFinishExam}
+              disabled={isSubmitting || !!examResult}
+              className="p-2.5 md:px-6 md:py-3 rounded-xl md:rounded-lg bg-green-600 text-white shadow-lg hover:bg-green-700 hover:shadow-xl active:scale-95 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none border-none"
+              title="Finalizar Examen"
+            >
+              <CheckCircleIcon className="h-5 w-5" />
+              <span>{isSubmitting ? 'Calificando...' : 'Finalizar Examen'}</span>
+            </button>
           </div>
         </div>
 
@@ -1084,30 +1094,34 @@ const ExamenPage = () => {
                     })}
                 </div>
 
-                <div className="mt-8 flex items-center justify-between gap-4">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="px-6 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    Anterior
-                  </button>
+                <div className="mt-8 flex flex-col items-center gap-4">
+                  <div className="flex items-center justify-center gap-4 w-full">
+                    <button
+                      onClick={handlePrevious}
+                      disabled={currentIndex === 0}
+                      className="flex-1 max-w-[160px] px-6 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center"
+                    >
+                      Anterior
+                    </button>
 
-                  {currentIndex === questions.length - 1 ? (
+                    {currentIndex < questions.length - 1 && (
+                      <button
+                        onClick={handleNext}
+                        className="flex-1 max-w-[160px] bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-center"
+                      >
+                        Siguiente
+                      </button>
+                    )}
+                  </div>
+
+                  {currentIndex === questions.length - 1 && (
                     <button
                       onClick={handleFinishExam}
                       disabled={isSubmitting || !!examResult}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                      className="w-full max-w-[336px] bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 text-center"
                     >
                       <CheckCircleIcon className="w-5 h-5" />
                       {isSubmitting ? 'Calificando...' : 'Finalizar Examen'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleNext}
-                      className="flex-1 bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      Siguiente
                     </button>
                   )}
                 </div>
@@ -1219,6 +1233,17 @@ const ExamenPage = () => {
                         <span>En curso...</span>
                       </div>
                     )}
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      onClick={handleFinishExam}
+                      disabled={isSubmitting || !!examResult}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-3 text-sm uppercase tracking-wider"
+                    >
+                      <CheckCircleIcon className="w-6 h-6" />
+                      {isSubmitting ? 'Calificando...' : 'Finalizar Examen'}
+                    </button>
                   </div>
                 </div>
               </div>

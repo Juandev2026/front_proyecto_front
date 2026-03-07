@@ -338,7 +338,7 @@ const ResultadoPage = () => {
         <title>Resultados del Examen - Avendocente</title>
       </Head>
 
-      <div className="w-full px-4 md:px-8 space-y-8 pb-20">
+      <div className="w-full px-0 space-y-8 pb-20">
         {/* Header Title */}
         <div className="bg-[#4790FD] text-white p-4 rounded-xl shadow-lg border-b-4 border-blue-300 flex justify-center items-center">
           <h1 className="text-xl font-black uppercase tracking-widest">
@@ -568,57 +568,20 @@ const ResultadoPage = () => {
               </div>
             </div>
 
-            {/* National Average Table MOCK/Based on image */}
-            <div className="bg-[#EBFAFA] rounded-3xl p-8 border border-cyan-100">
-              <h4 className="text-2xl font-serif text-[#1F5454] font-black text-center mb-8">
-                Composición de la Prueba Nacional
-              </h4>
-              <div className="overflow-hidden rounded-xl border border-cyan-200 shadow-sm bg-white">
-                <table className="w-full text-[10px] text-gray-700 font-medium">
-                  <thead className="bg-cyan-50/50">
-                    <tr className="border-b border-cyan-100 text-[#1F5454]">
-                      <th className="p-3 text-left">Subpruebas</th>
-                      <th className="p-3"># de preguntas</th>
-                      <th className="p-3">Valor por pregunta</th>
-                      <th className="p-3 text-center">Puntaje máximo</th>
-                      <th className="p-3 text-center">
-                        Puntaje mínimo requerido
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-cyan-50">
-                      <td className="p-3 font-bold">Habilidades Generales</td>
-                      <td className="p-3 text-center">25</td>
-                      <td className="p-3 text-center">2</td>
-                      <td className="p-3 text-center font-bold">50</td>
-                      <td className="p-3 text-center">—</td>
-                    </tr>
-                    <tr className="border-b border-cyan-50">
-                      <td className="p-3 font-bold">
-                        Conocimientos Pedagógicos, Curriculares y Disciplinarios
-                        de la Especialidad
-                      </td>
-                      <td className="p-3 text-center">50</td>
-                      <td className="p-3 text-center">3</td>
-                      <td className="p-3 text-center font-bold">150</td>
-                      <td className="p-3 text-center font-bold">84</td>
-                    </tr>
-                    <tr className="bg-cyan-50/20">
-                      <td className="p-3 font-black uppercase">Total</td>
-                      <td className="p-3 text-center font-black text-lg">75</td>
-                      <td className="p-3 text-center">—</td>
-                      <td className="p-3 text-center font-black text-[#1F5454] text-lg">
-                        200
-                      </td>
-                      <td className="p-3 text-center font-black text-[#1F5454] text-lg">
-                        110
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          </div>
+        </div>
+
+        {/* --- FULL WIDTH COMPOSITION IMAGE --- */}
+        <div className="w-full mt-12 mb-12 flex flex-col items-center">
+          <h4 className="text-xl md:text-3xl font-serif text-[#1F5454] font-black text-center mb-6">
+            Composición de la Prueba Nacional
+          </h4>
+          <div className="w-full bg-white rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+            <img 
+              src="/assets/images/resultados_ascenso.png" 
+              alt="Composición de la Prueba Nacional" 
+              className="w-full h-auto object-contain"
+            />
           </div>
         </div>
 
@@ -657,7 +620,7 @@ const ResultadoPage = () => {
             </div>
           </div>
 
-          <div className="p-6 md:p-10 space-y-12">
+          <div className="p-2 md:p-4 space-y-12">
             {questions.map((q, idx) => {
               const result = getQuestionResult(q, idx);
               const userAnswer = respuestas[String(idx)]?.alternativa;
@@ -695,7 +658,7 @@ const ResultadoPage = () => {
                 <div key={idx} className="space-y-0">
                   {/* Parent text section if available and first of its group */}
                   {showParent && (
-                    <div className="bg-gray-50 border border-blue-100 p-8 rounded-t-3xl relative mb-0">
+                    <div className="bg-gray-50 border border-blue-100 p-4 md:p-6 rounded-t-3xl relative mb-0">
                       <div className="absolute top-0 left-8 -translate-y-1/2 bg-gray-400 text-white text-[9px] font-black px-4 py-1 rounded-md uppercase tracking-widest shadow-sm">
                         Texto de Referencia
                       </div>
@@ -710,7 +673,7 @@ const ResultadoPage = () => {
 
                   {/* Question Block */}
                   <div
-                    className={`bg-white border border-gray-100 p-4 md:p-8 space-y-8 ${
+                    className={`bg-white border border-gray-100 p-3 md:p-6 space-y-8 ${
                       showParent ? 'rounded-b-3xl border-t-0' : 'rounded-3xl'
                     } mb-8 shadow-sm`}
                   >
