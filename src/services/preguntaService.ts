@@ -217,6 +217,42 @@ export const preguntaService = {
     const rawData = await response.json();
     return transformQuestions(rawData);
   },
+  getAsignacionExamenInfo: async (
+    preguntaId: number,
+    year: number
+  ): Promise<{
+    todosLosExamenes: { id: number; descripcion: string }[];
+    examenesAsignadosIds: number[];
+  }> => {
+    const response = await fetch(
+      `${API_URL}/asignacion-examen-info?preguntaId=${preguntaId}&year=${year}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Error al obtener info de asignación de exámenes');
+    }
+    return response.json();
+  },
+
+  asignarExamenes: async (payload: {
+    preguntaId: number;
+    year: number;
+    examenIds: number[];
+  }): Promise<void> => {
+    const response = await fetch(`${API_URL}/asignar-examenes`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error('Error al asignar exámenes a la pregunta');
+    }
+  },
 };
 
 const transformQuestions = (rawData: any[]): Pregunta[] => {
