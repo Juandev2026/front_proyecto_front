@@ -122,19 +122,21 @@ const LatestNews = () => {
               Últimas Noticias
             </h2>
 
-            <div className="mt-2 mb-6 p-5 bg-blue-50 border border-blue-100 rounded-xl flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
-              <p className="text-base lg:text-lg text-blue-800 text-center lg:text-left">
-                <span className="font-bold">
-                  Inicia sesión para descargar recursos gratuitos y acceder a
-                  todo el contenido web disponible.
-                </span>
-              </p>
-              <Link href="/login?redirect=/recursos">
-                <a className="whitespace-nowrap px-8 py-3 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-all hover:scale-105 shadow-md">
-                  Iniciar Sesión
-                </a>
-              </Link>
-            </div>
+            {!isAuthenticated && (
+              <div className="mt-2 mb-6 p-5 bg-blue-50 border border-blue-100 rounded-xl flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
+                <p className="text-base lg:text-lg text-blue-800 text-center lg:text-left">
+                  <span className="font-bold">
+                    Inicia sesión para descargar recursos gratuitos y acceder a
+                    todo el contenido web disponible.
+                  </span>
+                </p>
+                <Link href="/login?redirect=/recursos">
+                  <a className="whitespace-nowrap px-8 py-3 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-all hover:scale-105 shadow-md">
+                    Iniciar Sesión
+                  </a>
+                </Link>
+              </div>
+            )}
 
             <div className="space-y-6">
               {/* Render Sub-Featured News (Top 4) */}
