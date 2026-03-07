@@ -245,12 +245,18 @@ const RespuestasErroneasAscensoPage = () => {
     const limit = parseInt(limitString, 10);
     const selectedBatch = shuffled.slice(0, limit);
 
+    const modParts = (modalidad || '').split(' - ');
+    const finalModalidad = modParts[0] || 'Varias modalidades';
+    const finalNivel = modParts[1] || 'NINGUNO';
+    const finalEspecialidad = modParts[2] || null;
+
     // Prepare metadata for the exam page
     const metadata = {
+      tipoExamen: 'Ascenso',
       tipoExamenId: 1, // Ascenso
-      modalidad: modalidad || 'Varias modalidades',
-      nivel: '',
-      especialidad: null,
+      modalidad: finalModalidad,
+      nivel: finalNivel,
+      especialidad: finalEspecialidad,
       year: selectedFecha === 'Todas las fechas' ? 'Histórico' : selectedFecha,
       isSimulacro: false,
     };

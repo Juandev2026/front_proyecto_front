@@ -248,12 +248,18 @@ const RespuestasErroneasPage = () => {
     const limit = parseInt(limitString, 10);
     const selectedBatch = shuffled.slice(0, limit);
 
+    const modParts = (modalidad || '').split(' - ');
+    const finalModalidad = modParts[0] || 'Varias modalidades';
+    const finalNivel = modParts[1] || 'NINGUNO';
+    const finalEspecialidad = modParts[2] || null;
+
     // Prepare metadata for the exam page
     const metadata = {
+      tipoExamen: 'Nombramiento',
       tipoExamenId: 2, // Nombramiento
-      modalidad: modalidad || 'Varias modalidades',
-      nivel: '',
-      especialidad: null,
+      modalidad: finalModalidad,
+      nivel: finalNivel,
+      especialidad: finalEspecialidad,
       year: selectedFecha === 'Todas las fechas' ? 'Histórico' : selectedFecha,
       isSimulacro: false,
     };

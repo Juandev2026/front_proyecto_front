@@ -783,9 +783,14 @@ const ExamenPage = () => {
                   {metadata.modalidad}
                 </span>
               )}
-              {metadata?.nivel && metadata.nivel !== 'NINGUNO' && (
-                <span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-xl border border-gray-200 font-black text-xs shadow-sm uppercase">
+              {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && (
+                <span className="bg-cyan-50 text-cyan-600 px-3 py-1.5 rounded-xl border border-cyan-100 font-black text-xs shadow-sm uppercase">
                   {metadata.nivel}
+                </span>
+              )}
+              {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && (
+                <span className="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl border border-orange-100 font-black text-xs shadow-sm uppercase">
+                  {metadata.especialidad}
                 </span>
               )}
               {metadata?.year && (
@@ -801,6 +806,8 @@ const ExamenPage = () => {
             {metadata?.tipoExamen && <span className="bg-[#E6FFF1] text-[#05CD99] px-2 py-1 rounded-lg border border-green-100 font-black text-[9px]">{metadata.tipoExamen}</span>}
             {metadata?.nombre && <span className="bg-[#EFEEFF] text-[#002B6B] px-2 py-1 rounded-lg border border-purple-100 font-black text-[9px]">{metadata.nombre}</span>}
             {metadata?.modalidad && <span className="bg-[#FFF1F2] text-[#E11D48] px-2 py-1 rounded-lg border border-pink-100 font-black text-[9px]">{metadata.modalidad}</span>}
+            {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && <span className="bg-cyan-50 text-cyan-600 px-2 py-1 rounded-lg border border-cyan-100 font-black text-[9px]">{metadata.nivel}</span>}
+            {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-lg border border-orange-100 font-black text-[9px]">{metadata.especialidad}</span>}
             {metadata?.year && <span className="bg-[#D6FFD8] text-[#008000] px-2 py-1 rounded-lg border border-green-200 font-black text-[9px]">{metadata.year}</span>}
           </div>
 

@@ -491,6 +491,8 @@ const SimulacroExamenAscensoPage = () => {
       }
 
       const metadata = {
+        tipoExamen: sampleExam.tipoExamenNombre || (sampleExam.tipoExamenId === 1 ? 'Ascenso' : 'Nombramiento'),
+        tipoExamenId: sampleExam.tipoExamenId,
         modalidad: sampleExam.modalidadNombre,
         nivel: sampleExam.nivelNombre || 'TODOS',
         especialidad:
