@@ -81,7 +81,27 @@ const SimulacroExamenAscensoPage = () => {
         });
       }
     });
-    return Array.from(map.values());
+    return Array.from(map.values())
+      .filter(
+        (m) =>
+          m.nombre &&
+          m.nombre !== 'string' &&
+          m.nombre.toUpperCase() !== 'NINGUNO'
+      )
+      .sort((a, b) => {
+        const orderValues = [
+          'Educación Básica Regular',
+          'Educación Básica Alternativa',
+          'Educación Básica Especial',
+          'CETPRO'
+        ];
+        const idxA = orderValues.findIndex((o) => a.nombre.includes(o));
+        const idxB = orderValues.findIndex((o) => b.nombre.includes(o));
+        const valA = idxA === -1 ? 99 : idxA;
+        const valB = idxB === -1 ? 99 : idxB;
+        if (valA !== valB) return valA - valB;
+        return a.nombre.localeCompare(b.nombre);
+      });
   }, [filteredExams]);
 
   // Auto-select modality
