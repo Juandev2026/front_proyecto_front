@@ -26,6 +26,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import { examenService } from '../services/examenService';
 import LogoutModal from '../components/LogoutModal';
+import ExitModal from '../components/ExitModal';
 
 interface PremiumLayoutProps {
   children: React.ReactNode;
@@ -45,6 +46,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   // State for sidebar collapse
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // State for ED availability
   const [availableEdContexts, setAvailableEdContexts] = useState<{
@@ -109,6 +111,31 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
     logout();
     setShowLogoutModal(false);
   };
+
+  // Intercept back navigation 
+  useEffect(() => {
+    router.beforePopState(({ as }) => {
+      // Determine if destination is outside the premium layout area
+      const isPremiumPath = as.startsWith('/avendescala') || 
+                            as.startsWith('/bancoPreguntas') ||
+                            as.startsWith('/simulacroExamen') ||
+                            as.startsWith('/respuestasErroneas') ||
+                            as.startsWith('/recursos') ||
+                            as.startsWith('/examen');
+                            
+      if (!isPremiumPath) {
+        setShowExitModal(true);
+        // Push state to prevent actual URL change in the browser bar
+        window.history.pushState(null, '', router.asPath);
+        return false;
+      }
+      return true;
+    });
+
+    return () => {
+      router.beforePopState(() => true);
+    };
+  }, [router, router.asPath]);
 
   // State for expanded menu items
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
@@ -470,17 +497,16 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             );
           })}
         </nav>
-
-        {/* Footer Actions */}
         <div className="p-4 mt-auto border-t border-gray-50 space-y-2 mb-4">
           {!isCollapsed ? (
             <>
-              <Link href="/">
-                <a className="group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors">
-                  <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
-                  Volver a Inicio
-                </a>
-              </Link>
+              <button
+                onClick={() => setShowExitModal(true)}
+                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
+              >
+                <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
+                Volver a Inicio
+              </button>
               <button
                 onClick={handleLogout}
                 className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
@@ -491,14 +517,13 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             </>
           ) : (
             <div className="flex flex-col gap-2 items-center">
-              <Link href="/">
-                <a
-                  className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
-                  title="Volver a Inicio"
-                >
-                  <HomeIcon className="h-6 w-6" />
-                </a>
-              </Link>
+              <button
+                onClick={() => setShowExitModal(true)}
+                className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
+                title="Volver a Inicio"
+              >
+                <HomeIcon className="h-6 w-6" />
+              </button>
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600"
@@ -566,6 +591,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
+      />
+      <ExitModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        onConfirm={() => {
+          setShowExitModal(false);
+          router.push('/');
+        }}
       />
     </div>
   );
