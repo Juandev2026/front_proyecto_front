@@ -598,7 +598,7 @@ const Recursos = () => {
           year: y.year, 
           count: y.count,
           examenId: y.examenId || y.id // Some APIs use id, others examenId in years array
-        }));
+        })).sort((a: any, b: any) => Number(b.year) - Number(a.year));
       }
 
       // Fallback for NINGUNO level if no specialty selected
@@ -608,7 +608,7 @@ const Recursos = () => {
           return defaultEsp.years.map((y: any) => ({ 
             year: y.year,
             examenId: y.examenId || y.id
-          }));
+          })).sort((a: any, b: any) => Number(b.year) - Number(a.year));
       }
     }
 
