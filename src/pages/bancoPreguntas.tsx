@@ -6,6 +6,8 @@ import {
   XIcon,
   FilterIcon,
   CalendarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -76,6 +78,7 @@ const BancoPreguntasPage = () => {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [isDesgloseOpen, setIsDesgloseOpen] = useState(true);
   const [examToStart, setExamToStart] = useState<any>(null);
   const [questionsToStore, setQuestionsToStore] = useState<any[]>([]);
 
@@ -856,11 +859,23 @@ const BancoPreguntasPage = () => {
                 0
               ) > 0 && (
                 <div className="border border-gray-200 rounded-xl p-5 bg-[#FAFAFA]">
-                  <h3 className="font-bold text-[#2B3674] text-lg mb-4">
-                    Tipos de Pregunta Seleccionados
-                  </h3>
+                  <div
+                    onClick={() => setIsDesgloseOpen(!isDesgloseOpen)}
+                    className="flex items-center justify-between cursor-pointer mb-4"
+                  >
+                    <h3 className="font-bold text-[#2B3674] text-lg">
+                 Tipos de Pregunta Seleccionados
+                    </h3>
+                    <button className="text-[#A3AED0] hover:text-[#4790FD] transition-colors focus:outline-none bg-blue-50/50 p-2 rounded-full">
+                      {isDesgloseOpen ? (
+                        <ChevronUpIcon className="h-5 w-5" />
+                      ) : (
+                        <ChevronDownIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
 
-                  <div className="space-y-3">
+                  <div className={`space-y-3 ${isDesgloseOpen ? 'block animate-fadeIn' : 'hidden'}`}>
                     {Object.entries(conteoPreguntas)
                       .sort(([a], [b]) => {
                         const order: Record<string, number> = { CL: 1, RL: 2, CCP: 3 };
@@ -905,59 +920,58 @@ const BancoPreguntasPage = () => {
                           );
                         }
                         return null;
-                      }
-                    )}
+                      })}
+                  </div>
 
-                    {/* Resumen Total */}
-                    <div className="bg-[#FAFBFD] border border-gray-200 rounded-lg p-4 mt-2">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="text-lg">📊</div>
-                        <span className="font-bold text-[#2B3674]">
-                          Resumen Total
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>📝</span>{' '}
-                          {Object.entries(conteoPreguntas).reduce(
-                            (acc, [name, curr]: [string, any]) =>
-                              tiposPregunta[name] ? acc + curr.cantidad : acc,
-                            0
-                          )}{' '}
-                          preguntas totales
-                        </span>
-                        <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>⏱️</span>{' '}
-                          {Object.entries(conteoPreguntas).reduce(
-                            (acc, [name, curr]: [string, any]) =>
-                              tiposPregunta[name]
-                                ? acc + curr.cantidad * curr.tiempoPregunta
-                                : acc,
-                            0
-                          )}{' '}
-                          min totales
-                        </span>
-                        <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>🎯</span>{' '}
-                          {Object.entries(conteoPreguntas).reduce(
-                            (acc, [name, curr]: [string, any]) =>
-                              tiposPregunta[name]
-                                ? acc + curr.cantidad * curr.puntos
-                                : acc,
-                            0
-                          )}{' '}
-                          pts máximo
-                        </span>
-                        <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
-                          <span>✅</span>{' '}
-                          {Object.entries(conteoPreguntas).reduce(
-                            (acc, [name, curr]: [string, any]) =>
-                              tiposPregunta[name] ? acc + curr.minimo : acc,
-                            0
-                          )}{' '}
-                          pts mínimo
-                        </span>
-                      </div>
+                  {/* Resumen Total */}
+                  <div className="bg-[#FAFBFD] border border-gray-200 rounded-lg p-4 mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-lg">📊</div>
+                      <span className="font-bold text-[#2B3674]">
+                        Resumen Total
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                        <span>📝</span>{' '}
+                        {Object.entries(conteoPreguntas).reduce(
+                          (acc, [name, curr]: [string, any]) =>
+                            tiposPregunta[name] ? acc + curr.cantidad : acc,
+                          0
+                        )}{' '}
+                        preguntas totales
+                      </span>
+                      <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                        <span>⏱️</span>{' '}
+                        {Object.entries(conteoPreguntas).reduce(
+                          (acc, [name, curr]: [string, any]) =>
+                            tiposPregunta[name]
+                              ? acc + curr.cantidad * curr.tiempoPregunta
+                              : acc,
+                          0
+                        )}{' '}
+                        min totales
+                      </span>
+                      <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                        <span>🎯</span>{' '}
+                        {Object.entries(conteoPreguntas).reduce(
+                          (acc, [name, curr]: [string, any]) =>
+                            tiposPregunta[name]
+                              ? acc + curr.cantidad * curr.puntos
+                              : acc,
+                          0
+                        )}{' '}
+                        pts máximo
+                      </span>
+                      <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                        <span>✅</span>{' '}
+                        {Object.entries(conteoPreguntas).reduce(
+                          (acc, [name, curr]: [string, any]) =>
+                            tiposPregunta[name] ? acc + curr.minimo : acc,
+                          0
+                        )}{' '}
+                        pts mínimo
+                      </span>
                     </div>
                   </div>
                 </div>

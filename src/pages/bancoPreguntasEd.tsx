@@ -5,6 +5,8 @@ import {
   XIcon,
   QuestionMarkCircleIcon,
   ClipboardListIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -47,6 +49,7 @@ const BancoPreguntasEdPage = () => {
   const [tiposPregunta, setTiposPregunta] = useState<Record<string, boolean>>(
     {}
   );
+  const [isDesgloseOpen, setIsDesgloseOpen] = useState(true);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -462,11 +465,23 @@ const BancoPreguntasEdPage = () => {
           {/* 3. Selección Detallada Blocks - Refined Badges */}
           {Object.entries(tiposPregunta).some(([_, checked]) => checked) && (
             <div className="mt-8 space-y-6 bg-white border border-gray-100 rounded-3xl p-6 shadow-xl shadow-gray-100/50">
-              <h3 className="font-extrabold text-[#2B3674] text-xl mb-2 ml-2">
-                Tipos de Pregunta Seleccionados
-              </h3>
+              <div 
+                onClick={() => setIsDesgloseOpen(!isDesgloseOpen)}
+                className="flex items-center justify-between cursor-pointer mb-2 ml-2"
+              >
+                <h3 className="font-extrabold text-[#2B3674] text-xl">
+              Tipos de Pregunta Seleccionados
+                </h3>
+                <button className="text-[#A3AED0] hover:text-[#4790FD] transition-colors focus:outline-none bg-blue-50/50 p-2 rounded-full">
+                  {isDesgloseOpen ? (
+                    <ChevronUpIcon className="h-5 w-5" />
+                  ) : (
+                    <ChevronDownIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
 
-              <div className="space-y-4">
+              <div className={`space-y-4 ${isDesgloseOpen ? 'block animate-fadeIn' : 'hidden'}`}>
                 {Object.entries(conteoPreguntas).map(([shortName, data]) => {
                   if (!tiposPregunta[shortName]) return null;
                   const fullName = TIPO_FULL_NAMES[shortName] || shortName;

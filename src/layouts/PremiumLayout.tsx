@@ -284,7 +284,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       {/* Sidebar */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
+        fixed inset-y-0 left-0 z-50 flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         ${isCollapsed ? 'w-20' : 'w-72'}
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
