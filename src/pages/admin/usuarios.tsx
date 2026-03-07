@@ -125,7 +125,7 @@ const UsersPage = () => {
   };
 
   const getEffectiveRole = (user: User) => {
-    if (user.role?.toUpperCase() === 'PREMIUM' || user.role?.toUpperCase() === 'INVITADO') {
+    if (user.role?.toUpperCase() === 'PREMIUM' || user.role?.toUpperCase() === 'INVITADO' || user.role?.toUpperCase() === 'PRUEBA_GRATIS_7' || user.role?.toUpperCase() === 'PRUEBA_GRATIS_15') {
       if (!user.fechaExpiracion || user.fechaExpiracion === '-')
         return 'Client';
       const expDate = new Date(user.fechaExpiracion);
@@ -247,7 +247,7 @@ const UsersPage = () => {
       if (!payload.estado) payload.estado = 'Activo';
       if (!payload.tiempo) payload.tiempo = 1;
 
-      if (payload.role !== 'Premium' && payload.role !== 'Admin' && payload.role !== 'Invitado') {
+      if (payload.role !== 'Premium' && payload.role !== 'Admin' && payload.role !== 'Invitado' && payload.role !== 'Prueba_Gratis_7' && payload.role !== 'Prueba_Gratis_15') {
         payload.ie = '';
         payload.observaciones = '';
         payload.accesoIds = [];
@@ -259,7 +259,9 @@ const UsersPage = () => {
         payload.role === 'Premium' ||
         payload.role === 'Admin' ||
         payload.role === 'Client' ||
-        payload.role === 'Invitado'
+        payload.role === 'Invitado' ||
+        payload.role === 'Prueba_Gratis_7' ||
+        payload.role === 'Prueba_Gratis_15'
       ) {
         payload.userExamenes = userExamenes;
       }
@@ -487,7 +489,8 @@ const UsersPage = () => {
             <option value="Admin">Admin</option>
             <option value="Client">Client</option>
             <option value="Premium">Premium</option>
-            <option value="Invitado">Invitado</option>
+            <option value="Prueba_Gratis_7">Prueba Gratis (1 sem)</option>
+            <option value="Prueba_Gratis_15">Prueba Gratis (15 d)</option>
           </select>
           <button
             onClick={handleExportExcel}
@@ -688,9 +691,17 @@ const UsersPage = () => {
                       const role = e.target.value;
                       setFormData((prev) => {
                         const newData = { ...prev, role };
-                        if (role === 'Invitado') {
+                        if (role === 'Prueba_Gratis_7') {
                           const date = new Date();
-                          date.setDate(date.getDate() + 45); // 1.5 months trial
+                          date.setDate(date.getDate() + 7);
+                          const iso = date.toISOString();
+                          newData.fechaExpiracion = iso;
+                          newData.fechaFin = iso.split('T')[0];
+                          newData.fechaInicio = new Date().toISOString().split('T')[0];
+                          setExpirationMode('custom');
+                        } else if (role === 'Prueba_Gratis_15') {
+                          const date = new Date();
+                          date.setDate(date.getDate() + 15);
                           const iso = date.toISOString();
                           newData.fechaExpiracion = iso;
                           newData.fechaFin = iso.split('T')[0];
@@ -705,7 +716,8 @@ const UsersPage = () => {
                     <option value="Admin">Admin</option>
                     <option value="Client">Client</option>
                     <option value="Premium">Premium</option>
-                    <option value="Invitado">Invitado</option>
+                    <option value="Prueba_Gratis_7">Prueba Gratis (1 semana)</option>
+                    <option value="Prueba_Gratis_15">Prueba Gratis (15 días)</option>
                   </select>
                 </div>
 
@@ -1109,8 +1121,8 @@ const UsersPage = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 3: INFORMACIÓN DE SUSCRIPCIÓN (Premium, Admin o Invitado) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado') && (
+                {/* === SECCIÓN 3: INFORMACIÓN DE SUSCRIPCIÓN (Premium, Admin o Prueba Gratis) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCardIcon className="w-5 h-5 text-[#4a90f9]" />
@@ -1213,8 +1225,8 @@ const UsersPage = () => {
                   </div>
                 )}
 
-                {/* === SECCIÓN 4: TIPO DE ACCESO (Premium, Admin o Invitado) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado') && (
+                {/* === SECCIÓN 4: TIPO DE ACCESO (Premium, Admin o Prueba Gratis) === */}
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <LockClosedIcon className="w-5 h-5 text-[#4a90f9]" />

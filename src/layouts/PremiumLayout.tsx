@@ -64,7 +64,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         router.push('/login');
       } else {
         const role = user?.role?.toUpperCase();
-        if (role !== 'PREMIUM' && role !== 'ADMIN' && role !== 'SUBADMIN' && role !== 'INVITADO') {
+        if (role !== 'PREMIUM' && role !== 'ADMIN' && role !== 'SUBADMIN' && role !== 'INVITADO' && role !== 'PRUEBA_GRATIS_7' && role !== 'PRUEBA_GRATIS_15') {
           router.push('/');
         }
       }

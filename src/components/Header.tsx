@@ -75,7 +75,9 @@ const Menu = () => {
                     (user?.role?.toUpperCase() === 'PREMIUM' ||
                       user?.role?.toUpperCase() === 'ADMIN' ||
                       user?.role?.toUpperCase() === 'SUBADMIN' ||
-                      user?.role?.toUpperCase() === 'INVITADO')
+                      user?.role?.toUpperCase() === 'INVITADO' ||
+                      user?.role?.toUpperCase() === 'PRUEBA_GRATIS_7' ||
+                      user?.role?.toUpperCase() === 'PRUEBA_GRATIS_15')
                       ? '/avendescala/bancoPreguntas'
                       : '/planes?showVideo=true'
                   }
@@ -90,7 +92,9 @@ const Menu = () => {
                     (user?.role?.toUpperCase() === 'PREMIUM' ||
                       user?.role?.toUpperCase() === 'ADMIN' ||
                       user?.role?.toUpperCase() === 'SUBADMIN' ||
-                      user?.role?.toUpperCase() === 'INVITADO')
+                      user?.role?.toUpperCase() === 'INVITADO' ||
+                      user?.role?.toUpperCase() === 'PRUEBA_GRATIS_7' ||
+                      user?.role?.toUpperCase() === 'PRUEBA_GRATIS_15')
                       ? '👉 Acceder al AVEND ESCALA'
                       : '👉 Practica con simulacros y preguntas tipo examen MINEDU'}
                   </div>
@@ -107,7 +111,9 @@ const Menu = () => {
                       (user?.role?.toUpperCase() === 'PREMIUM' ||
                         user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN' ||
-                        user?.role?.toUpperCase() === 'INVITADO')
+                        user?.role?.toUpperCase() === 'INVITADO' ||
+                        user?.role?.toUpperCase() === 'PRUEBA_GRATIS_7' ||
+                        user?.role?.toUpperCase() === 'PRUEBA_GRATIS_15')
                         ? '/avendescala/bancoPreguntas'
                         : '/planes?showVideo=true'
                     }
@@ -122,7 +128,9 @@ const Menu = () => {
                       (user?.role?.toUpperCase() === 'PREMIUM' ||
                         user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN' ||
-                        user?.role?.toUpperCase() === 'INVITADO')
+                        user?.role?.toUpperCase() === 'INVITADO' ||
+                        user?.role?.toUpperCase() === 'PRUEBA_GRATIS_7' ||
+                        user?.role?.toUpperCase() === 'PRUEBA_GRATIS_15')
                         ? '👉 Acceder al AVEND ESCALA'
                         : '👉 Practica con simulacros y preguntas tipo examen MINEDU'}
                     </div>

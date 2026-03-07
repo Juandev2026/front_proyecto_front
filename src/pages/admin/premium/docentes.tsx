@@ -1170,10 +1170,14 @@ const AdminPremiumDocentes = () => {
                         let newFechaExpiracion = formData.fechaExpiracion;
                         let newExpirationMode = expirationMode;
 
-                        if (newRole === 'Invitado') {
+                        if (newRole === 'Prueba_Gratis_7') {
                           const date = new Date();
-                          // 1.5 months = 45 days approximately
-                          date.setDate(date.getDate() + 45);
+                          date.setDate(date.getDate() + 7);
+                          newFechaExpiracion = date.toISOString();
+                          newExpirationMode = 'custom';
+                        } else if (newRole === 'Prueba_Gratis_15') {
+                          const date = new Date();
+                          date.setDate(date.getDate() + 15);
                           newFechaExpiracion = date.toISOString();
                           newExpirationMode = 'custom';
                         }
@@ -1190,7 +1194,8 @@ const AdminPremiumDocentes = () => {
                       <option value="Admin">Admin</option>
                       <option value="Client">Client</option>
                       <option value="Premium">Premium</option>
-                      <option value="Invitado">Invitado (1 mes de prueba)</option>
+                      <option value="Prueba_Gratis_7">Prueba Gratis (1 semana)</option>
+                      <option value="Prueba_Gratis_15">Prueba Gratis (15 días)</option>
                     </select>
                 </div>
 
