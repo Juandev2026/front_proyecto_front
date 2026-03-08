@@ -1002,12 +1002,12 @@ const ExamenPage = () => {
                       dangerouslySetInnerHTML={{
                         __html: (currentQuestion as any).parentEnunciado,
                       }}
-                      className="text-lg md:text-xl font-medium"
+                      className="text-lg md:text-xl"
                     />
                 </div>
               )}
 
-              <div className="space-y-6 text-justify mb-8 font-sans text-lg md:text-xl leading-relaxed text-black font-medium">
+              <div className="space-y-6 text-justify mb-8 font-sans text-lg md:text-xl leading-relaxed text-gray-800">
                 {currentQuestion?.imagen && (
                   <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-md">
                     <img
@@ -1101,7 +1101,7 @@ const ExamenPage = () => {
                             {opt}
                           </div>
                           <HtmlMathRenderer
-                            className="font-medium text-lg md:text-xl flex-1 alternative-content pt-1 selectable-text"
+                            className="text-lg md:text-xl flex-1 alternative-content pt-1 selectable-text"
                             html={content}
                             alternativeLabel={opt}
                           />
