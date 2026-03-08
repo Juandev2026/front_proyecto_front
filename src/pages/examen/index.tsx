@@ -818,8 +818,8 @@ const ExamenPage = () => {
               onClick={handleToggleReading}
               className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
                 isReading
-                  ? 'bg-red-50 border-red-200 text-red-600'
-                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
+                  ? 'bg-[#FFF1F2] border-[#FED7E2] text-[#E11D48]'
+                  : 'bg-[#E1F1FF] border-[#BEE3F8] text-[#0052CC] hover:bg-[#D1E9FF]'
               }`}
             >
               {isReading ? <VolumeOffIcon className="h-5 w-5" /> : <VolumeUpIcon className="h-5 w-5" />}
@@ -831,8 +831,8 @@ const ExamenPage = () => {
                 onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
                 className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex items-center justify-center w-full md:w-auto gap-2 text-xs font-bold leading-none relative z-20 ${
                   isVoiceDropdownOpen 
-                  ? 'bg-cyan-50 border-cyan-400 text-cyan-700' 
-                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
+                  ? 'bg-[#E1E7FF] border-[#C7D2FE] text-[#4338CA]' 
+                  : 'bg-[#F0F5FF] border-[#D6E4FF] text-[#0052CC] hover:bg-[#E1EAFF]'
                 }`}
               >
                 <span className="hidden md:inline">
@@ -886,7 +886,7 @@ const ExamenPage = () => {
 
             <button
               onClick={handleRegenerate}
-              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-cyan-200 bg-white text-[#002B6B] shadow-sm hover:bg-cyan-50 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#FEEBC8] bg-[#FFF9EA] text-[#B7791F] shadow-sm hover:bg-[#FDF6E3] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
               title="Generar de nuevo"
             >
               <RefreshIcon className="h-5 w-5" />
@@ -897,8 +897,8 @@ const ExamenPage = () => {
               onClick={() => setShowQuestionPanel(!showQuestionPanel)}
               className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
                 showQuestionPanel
-                  ? 'bg-[#002B6B] text-white border-[#002B6B]'
-                  : 'bg-white border-cyan-200 text-[#002B6B] hover:bg-cyan-50'
+                  ? 'bg-[#DDD6FE] text-[#5B21B6] border-[#C4B5FD]'
+                  : 'bg-[#F5F3FF] border-[#EDE9FE] text-[#7C3AED] hover:bg-[#EDE9FE]'
               }`}
               title={showQuestionPanel ? 'Ocultar Panel' : 'Ver Panel'}
             >
@@ -914,7 +914,7 @@ const ExamenPage = () => {
                   document.exitFullscreen();
                 }
               }}
-              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-cyan-200 bg-white text-[#002B6B] shadow-sm hover:bg-cyan-50 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#CCFBF1] bg-[#F0FDFA] text-[#0D9488] shadow-sm hover:bg-[#E6FFFA] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
               title="Pantalla completa"
             >
               <ArrowsExpandIcon className="h-5 w-5" />
@@ -924,7 +924,7 @@ const ExamenPage = () => {
             <button
               onClick={handleFinishExam}
               disabled={isSubmitting || !!examResult}
-              className="p-2.5 md:px-6 md:py-3 rounded-xl md:rounded-lg bg-green-600 text-white shadow-lg hover:bg-green-700 hover:shadow-xl active:scale-95 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none border-none"
+              className="p-2.5 md:px-6 md:py-3 rounded-xl md:rounded-lg bg-[#E6FFF1] text-[#05CD99] border border-[#B2F5EA] shadow-lg hover:bg-[#C6F6D5] hover:shadow-xl active:scale-95 transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
               title="Finalizar Examen"
             >
               <CheckCircleIcon className="h-5 w-5" />
