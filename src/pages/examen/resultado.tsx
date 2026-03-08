@@ -588,7 +588,7 @@ const ResultadoPage = () => {
                     src={
                       examMetadata?.tipoExamenId === 3
                         ? "/assets/images/directivos.jpeg"
-                        : examMetadata?.tipoExamenId === 1 
+                        : examMetadata?.tipoExamenId === 2 
                         ? "/assets/images/resultados_ascenso.png" 
                         : "/assets/images/Puntaje_minimo.png"
                     } 

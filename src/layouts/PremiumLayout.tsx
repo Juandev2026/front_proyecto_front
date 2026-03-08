@@ -294,10 +294,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   const menuItems = React.useMemo(() => {
     // Helper to filter children based on availability
     // 'Banco de Preguntas' is always shown if the parent section is visible (access is controlled by accesoNombres)
-    // 'Banco de Preguntas ED' is only shown if ED exams are available for that context
+    // 'Banco de Preguntas AE' is only shown if AE exams are available for that context
     const filterChildren = (items: any[], context: 'nombramiento' | 'ascenso') => {
       return items.filter(child => {
-        if (child.name === 'Banco de Preguntas ED') {
+        if (child.name === 'Banco de Preguntas AE') {
           return availableEdContexts[context];
         }
         return true;
