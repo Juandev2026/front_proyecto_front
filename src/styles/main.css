@@ -8,6 +8,22 @@
   --color-tertiaty: #99a0a3;
 }
 
+::selection {
+  background-color: rgba(255, 255, 0, 0.4); /* Resaltador amarillo suave */
+  color: black;
+}
+
+::-moz-selection {
+  background-color: rgba(255, 255, 0, 0.4);
+  color: black;
+}
+
+.selectable-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+}
+
 a {
   @apply transition-colors duration-200;
 }

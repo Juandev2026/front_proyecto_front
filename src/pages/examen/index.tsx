@@ -1056,16 +1056,18 @@ const ExamenPage = () => {
 
                       if (isSelected) {
                         containerClass =
-                          'bg-[#002B6B] border-[#002B6B] text-white shadow-md transform -translate-y-0.5';
-                        letterClass = 'bg-white/20 border-white/40 text-white';
+                          'bg-[#E3F2FD] border-[#4790FD] text-[#002B6B] shadow-md transform -translate-y-0.5';
+                        letterClass = 'bg-[#4790FD] border-[#4790FD] text-white';
 
                         // Real-time or Final result coloring
                         if (status === 'correct') {
                           containerClass =
                             'bg-green-600 border-green-600 text-white';
+                          letterClass = 'bg-white/20 border-white/40 text-white';
                         } else if (status === 'incorrect') {
                           containerClass =
                             'bg-red-500 border-red-500 text-white';
+                          letterClass = 'bg-white/20 border-white/40 text-white';
                         }
                       } else if (isLocked && !isSelected) {
                         // De-emphasize other options ONLY when locked/reviewed
@@ -1076,11 +1078,21 @@ const ExamenPage = () => {
                       }
 
                       return (
-                        <button
+                        <div
                           key={`${currentQuestion.id}-${opt}`}
-                          onClick={() => handleSelectOption(opt)}
-                          disabled={!!examResult || isLocked}
-                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-sm ${containerClass}`}
+                          onClick={() => {
+                            if (!examResult && !isLocked) {
+                              handleSelectOption(opt);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-sm cursor-pointer select-text ${containerClass}`}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              if (!examResult && !isLocked) handleSelectOption(opt);
+                            }
+                          }}
                         >
                           <div
                             className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border rounded-lg font-black text-sm md:text-base flex-shrink-0 transition-colors mt-0.5 ${letterClass}`}
@@ -1088,7 +1100,7 @@ const ExamenPage = () => {
                             {opt}
                           </div>
                           <HtmlMathRenderer
-                            className="font-medium text-base flex-1 alternative-content pt-1"
+                            className="font-medium text-base flex-1 alternative-content pt-1 selectable-text"
                             html={content}
                             alternativeLabel={opt}
                           />
@@ -1096,7 +1108,7 @@ const ExamenPage = () => {
                           {examResult && isSelected && status === 'correct' && (
                             <CheckCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-white mt-1.5" />
                           )}
-                        </button>
+                        </div>
                       );
                     })}
                 </div>

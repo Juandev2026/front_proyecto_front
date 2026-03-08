@@ -160,8 +160,10 @@ const BancoPreguntasEdPage = () => {
 
       // Auto-check categories that have questions
       const initialTipos: Record<string, boolean> = {};
-      Object.keys(countMap).forEach((name) => {
-        initialTipos[name] = true;
+      ['CL', 'RL', 'CCP', 'CG'].forEach((name) => {
+        if (countMap[name] && countMap[name].cantidad > 0) {
+          initialTipos[name] = true;
+        }
       });
       setTiposPregunta(initialTipos);
     } else {
@@ -376,7 +378,7 @@ const BancoPreguntasEdPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {['CL', 'RL', 'CCP'].map((shortName) => {
+              {['CL', 'RL', 'CCP', 'CG'].map((shortName) => {
                 const fullName = TIPO_FULL_NAMES[shortName] || shortName;
                 const data = conteoPreguntas[shortName];
                 const available = (data?.cantidad || 0) > 0;
