@@ -60,7 +60,7 @@ const ExitModal = ({ isOpen, onClose, onConfirm }: ExitModalProps) => {
                 
                 <div className="mt-2">
                   <p className="text-base text-gray-500 text-center px-4">
-                    Estás seguro que quieres salir de AVENDESCALA? Y volver a la página de inicio.
+                    ¿Estás seguro de que quieres salir de AVEND ESCALA y volver a la página de inicio?
                   </p>
                 </div>
 
