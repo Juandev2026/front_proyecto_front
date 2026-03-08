@@ -26,6 +26,15 @@ export interface CreateFuenteRequest {
   categorias: FuenteCategoria[];
 }
 
+export interface UpdateFuentePropioRequest {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  tipoExamenId: number;
+  visible: boolean;
+  categorias: FuenteCategoria[];
+}
+
 export const fuenteService = {
   getAll: async (): Promise<Fuente[]> => {
     try {
@@ -100,14 +109,7 @@ export const fuenteService = {
 
   updatePropio: async (
     id: number,
-    data: {
-      id: number;
-      nombre: string;
-      descripcion: string;
-      tipoExamenId: number;
-      visible: boolean;
-      categorias: FuenteCategoria[];
-    }
+    data: UpdateFuentePropioRequest
   ): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE_URL}/Fuentes/propios/${id}`, {

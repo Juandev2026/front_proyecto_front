@@ -157,9 +157,9 @@ const AdminPremiumSecciones = () => {
         tipoExamenId: newSection.tipoExamenId,
         categorias: newSection.categorias.map(
           ({ modalidadId, nivelId, especialidadId }) => ({
-            modalidadId: modalidadId || 0,
-            nivelId: nivelId || 0,
-            especialidadId: especialidadId || 0,
+            modalidadId: modalidadId || null,
+            nivelId: (nivelId === 0 || !nivelId) ? null : nivelId,
+            especialidadId: (especialidadId === 0 || !especialidadId) ? null : especialidadId,
           })
         ),
       });
@@ -190,18 +190,22 @@ const AdminPremiumSecciones = () => {
     }
 
     try {
-      await fuenteService.updatePropio(editingSection.id, {
+      const payload = {
         id: editingSection.id,
         nombre: editingSection.nombre,
         descripcion: editingSection.descripcion || '',
         tipoExamenId: editingSection.tipoExamenId,
         visible: editingSection.esVisible || false,
         categorias: editingSection.categorias.map((c) => ({
-          modalidadId: c.modalidadId || 0,
-          nivelId: c.nivelId || 0,
-          especialidadId: c.especialidadId || 0,
+          modalidadId: c.modalidadId || null,
+          nivelId: (c.nivelId === 0 || !c.nivelId) ? null : c.nivelId,
+          especialidadId: (c.especialidadId === 0 || !c.especialidadId) ? null : c.especialidadId,
         })),
-      });
+      };
+
+      console.log('PAYLOAD ENVIADO A /api/Fuentes/propios:', JSON.stringify(payload, null, 2));
+      
+      await fuenteService.updatePropio(editingSection.id, payload);
       await fetchSections();
       setShowEditModal(false);
       setEditingSection(null);
@@ -308,9 +312,9 @@ const AdminPremiumSecciones = () => {
           categorias: [
             ...prev.categorias,
             {
-              modalidadId: editingSection.modalidadId || 0,
-              nivelId: editingSection.nivelId || 0,
-              especialidadId: editingSection.especialidadId || 0,
+              modalidadId: editingSection.modalidadId || null,
+              nivelId: (editingSection.nivelId === 0 || !editingSection.nivelId) ? null : editingSection.nivelId,
+              especialidadId: (editingSection.especialidadId === 0 || !editingSection.especialidadId) ? null : editingSection.especialidadId,
               descripcion: name,
             },
           ],
@@ -360,9 +364,9 @@ const AdminPremiumSecciones = () => {
         categorias: [
           ...prev.categorias,
           {
-            modalidadId: newSection.modalidadId,
-            nivelId: newSection.nivelId || 0,
-            especialidadId: newSection.especialidadId || 0,
+            modalidadId: newSection.modalidadId || null,
+            nivelId: (newSection.nivelId === 0 || !newSection.nivelId) ? null : newSection.nivelId,
+            especialidadId: (newSection.especialidadId === 0 || !newSection.especialidadId) ? null : newSection.especialidadId,
             nombre: name,
           },
         ],
@@ -650,7 +654,7 @@ const AdminPremiumSecciones = () => {
             </div>
 
             {/* Body */}
-            <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               {/* Name */}
               <div>
                 <label className="block text-sm font-bold text-[#4a90f9] mb-1">
@@ -922,7 +926,7 @@ const AdminPremiumSecciones = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-bold text-[#4a90f9] mb-1">
                   Nombre *
@@ -1200,7 +1204,7 @@ const AdminPremiumSecciones = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase">ID</p>
                 <p className="text-gray-800">{viewingSection.id}</p>
