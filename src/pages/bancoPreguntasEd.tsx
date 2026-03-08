@@ -76,12 +76,12 @@ const BancoPreguntasEdPage = () => {
         tipoExamenNombre:
           s.tipoExamenNombre ||
           (context === 'nombramiento' ? 'Nombramiento' : 'Ascenso'),
-        visible: s.visible ?? true,
+        visible: s.visible,
         categorias: s.examenesPropios || [],
         clasificaciones: s.clasificaciones || [],
       }));
 
-      const filtered = mapped.filter((s: any) => s.visible !== false);
+      const filtered = mapped.filter((s: SeccionPropia) => s.visible === true);
       setSecciones(filtered);
 
       if (filtered.length > 0 && filtered[0]) {
