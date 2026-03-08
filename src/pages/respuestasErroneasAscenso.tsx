@@ -150,7 +150,7 @@ const RespuestasErroneasAscensoPage = () => {
 
             flatGroups.push({
               title: `${mod.modalidadNombre} - ${niv.nivelNombre}`,
-              subtitle: esp.especialidadNombre,
+              subtitle: `${esp.especialidadNombre} | Fecha: ${groupFecha.fecha}`,
               errors: groupErrors,
               points: groupErrors * 1.5,
               items: allQs,
@@ -347,7 +347,7 @@ const RespuestasErroneasAscensoPage = () => {
                       className="text-[#4790FD] focus:ring-[#4790FD] rounded"
                     />
                     <span className="text-sm font-semibold text-gray-700">
-                      Escala Docente
+                      AVEND ESCALA
                     </span>
                   </label>
                 </div>
@@ -400,14 +400,7 @@ const RespuestasErroneasAscensoPage = () => {
                     Errores Totales
                   </p>
                 </div>
-                <div>
-                  <p className="text-3xl font-bold text-red-500">
-                    {stats.uniqueQuestions}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                    Preguntas Equivocadas
-                  </p>
-                </div>
+
                 <div>
                   <p className="text-3xl font-bold text-purple-500">
                     {stats.pointsLost}
@@ -431,8 +424,7 @@ const RespuestasErroneasAscensoPage = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Revisa las {groupedByHierarchy.length} categorías y las preguntas que has
-            respondido incorrectamente.
+            Revisa todas las preguntas que has respondido incorrectamente, organizadas por fecha y categoría.
           </p>
 
           {/* Filters */}
@@ -478,7 +470,7 @@ const RespuestasErroneasAscensoPage = () => {
               >
                 <option>Todas las fuentes</option>
                 <option>MINEDU</option>
-                <option>Escala Docente</option>
+                <option>AVEND ESCALA</option>
               </select>
             </div>
           </div>
