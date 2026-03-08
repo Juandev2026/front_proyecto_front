@@ -138,8 +138,10 @@ const BancoPreguntasAscensoPage = () => {
       )
       .forEach((e) => {
         if (e.years && e.years.length > 0) {
-          e.years.forEach((y) => set.add(String(y.year)));
-        } else if (e.year !== undefined && e.year !== null) {
+          e.years.forEach((y) => {
+            if (y.cantidadPreguntas > 0) set.add(String(y.year));
+          });
+        } else if (e.year !== undefined && e.year !== null && (e as any).cantidadPreguntas > 0) {
           set.add(String(e.year));
         }
       });

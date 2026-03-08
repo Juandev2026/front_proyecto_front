@@ -340,8 +340,10 @@ const BancoPreguntasPage = () => {
       )
       .forEach((e: any) => {
         if (e.years && e.years.length > 0) {
-          e.years.forEach((y: any) => set.add(String(y.year)));
-        } else if (e.year !== undefined && e.year !== null) {
+          e.years.forEach((y: any) => {
+            if (y.cantidadPreguntas > 0) set.add(String(y.year));
+          });
+        } else if (e.year !== undefined && e.year !== null && e.cantidadPreguntas > 0) {
           set.add(String(e.year));
         }
       });
@@ -400,9 +402,7 @@ const BancoPreguntasPage = () => {
         (nivelesData.length === 1 &&
         firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
           ? String(firstNivel.id)
-          : null);
-
-      if (resolvedNivelId === null) return;
+          : null) || '0'; // Default to '0' if no level selected/visible, as many modalities have no specific level (id 0)
 
       const exam = examenes.find(
         (e) =>
