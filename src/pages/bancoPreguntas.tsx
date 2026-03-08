@@ -341,19 +341,23 @@ const BancoPreguntasPage = () => {
         if (e.years && Array.isArray(e.years)) {
           e.years.forEach((y: any) => {
             const yVal = typeof y === 'object' ? y.year : y;
-            if (yVal !== undefined && yVal !== null) {
+            const yCant = typeof y === 'object' ? (y.cantidadPreguntas ?? y.cantidad_p ?? 1) : 1;
+
+            if (yVal && Number(yVal) > 0 && yCant > 0) {
               map.set(Number(yVal), {
                 id: Number(yVal),
-                nombre: Number(yVal) === 0 ? 'Todos los años' : String(yVal),
+                nombre: String(yVal),
               });
             }
           });
         } else if (e.year) {
           const yVal = Number(e.year);
-          map.set(yVal, {
-            id: yVal,
-            nombre: yVal === 0 ? 'Todos los años' : String(yVal),
-          });
+          if (yVal > 0) {
+            map.set(yVal, {
+              id: yVal,
+              nombre: String(yVal),
+            });
+          }
         }
       });
     return Array.from(map.values()).sort((a, b) => b.id - a.id);
@@ -597,6 +601,7 @@ const BancoPreguntasPage = () => {
     if (!examToStart) return;
 
     const metadata = {
+      tipoExamenId: 2,
       tipoExamen: examToStart.tipoExamenNombre,
       modalidad: examToStart.modalidadNombre,
       nivel: examToStart.nivelNombre || 'NINGUNO',

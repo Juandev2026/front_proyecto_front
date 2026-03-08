@@ -12,6 +12,9 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
 import {
+  authService,
+} from '../services/authService';
+import {
   preguntaService,
 } from '../services/preguntaService';
 
@@ -22,10 +25,25 @@ interface FilterOption {
 }
 
 const BancoPreguntasAscensoPage = () => {
-  const { isAuthenticated, loading, loginExamenes } = useAuth();
+  const { isAuthenticated, loading, user, refreshAuth } = useAuth();
   const router = useRouter();
 
-  // Examenes from login response (Now coming from useAuth)
+  // Fresh examenes fetched directly from API on page load
+  const [examenes, setExamenes] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('loginExamenes');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+  // const [isFetchingExamenes, setIsFetchingExamenes] = useState(false);
+
   // Current Selection State (Locked to Ascenso - ID: '1')
   const [selectedTipoExamenId] = useState<string>('1');
   const [selectedModalidadId, setSelectedModalidadId] = useState<string>('');
@@ -43,11 +61,77 @@ const BancoPreguntasAscensoPage = () => {
     }
   }, [loading, isAuthenticated, router]);
 
+  // Fetch FRESH data from API
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+
+    if (examenes.length === 0) {
+      // setIsFetchingExamenes(true);
+    }
+
+    const loadData = async () => {
+      try {
+        const [filters] = await Promise.all([
+          authService.getUserFilters(user.id),
+          refreshAuth().catch(() => null),
+        ]);
+
+        const rawExamenes = filters.examenes || [];
+        const apiUser = (filters as any).user || user;
+        const userExamenesList: any[] = apiUser?.userExamenes || [];
+        const accesoNombres: string[] = apiUser?.accesoNombres || [];
+        const canAscenso = accesoNombres.some((a) =>
+          a.toLowerCase().includes('ascenso')
+        );
+
+        const combined = [...rawExamenes];
+
+        if (canAscenso) {
+          userExamenesList.forEach((ue: any, idx: number) => {
+            const exists = combined.some(
+              (e) =>
+                String(e.tipoExamenId) === '1' &&
+                Number(e.modalidadId) === Number(ue.modalidadId) &&
+                Number(e.nivelId) === Number(ue.nivelId || 0)
+            );
+            if (!exists) {
+              combined.push({
+                id: -(idx + 3000),
+                tipoExamenId: 1,
+                tipoExamenNombre: 'Ascenso',
+                fuenteId: 1,
+                fuenteNombre: 'MINEDU Ascenso',
+                modalidadId: ue.modalidadId,
+                modalidadNombre: ue.modalidadNombre,
+                nivelId: ue.nivelId || 0,
+                nivelNombre: ue.nivelNombre || 'NINGUNO',
+                especialidadId: ue.especialidadId || null,
+                especialidadNombre: ue.especialidadNombre || null,
+                years: [{ year: 0, cantidadPreguntas: 0 }],
+                cantidadPreguntas: 0,
+                clasificaciones: [],
+              });
+            }
+          });
+        }
+
+        setExamenes(combined);
+        localStorage.setItem('loginExamenes', JSON.stringify(combined));
+      } catch (error) {
+        console.error('Error loading filters:', error);
+      } finally {
+        // setIsFetchingExamenes(false);
+      }
+    };
+
+    loadData();
+  }, [user?.id, isAuthenticated, refreshAuth]);
+
   // ---------- Memoized Derived Options ----------
 
   const modalidadesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter((e) => String(e.tipoExamenId) === selectedTipoExamenId)
       .forEach((e) => {
         if (!map.has(e.modalidadId)) {
@@ -78,11 +162,11 @@ const BancoPreguntasAscensoPage = () => {
         if (valA !== valB) return valA - valB;
         return a.nombre.localeCompare(b.nombre);
       });
-  }, [loginExamenes, selectedTipoExamenId]);
+  }, [examenes, selectedTipoExamenId]);
 
   const nivelesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
@@ -95,11 +179,11 @@ const BancoPreguntasAscensoPage = () => {
         }
       });
     return Array.from(map.values());
-  }, [loginExamenes, selectedTipoExamenId, selectedModalidadId]);
+  }, [examenes, selectedTipoExamenId, selectedModalidadId]);
 
   const especialidadesData = useMemo(() => {
     const map = new Map<number, FilterOption>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
@@ -117,16 +201,11 @@ const BancoPreguntasAscensoPage = () => {
         }
       });
     return Array.from(map.values());
-  }, [
-    loginExamenes,
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-  ]);
+  }, [examenes, selectedTipoExamenId, selectedModalidadId, selectedNivelId]);
   
   const yearsData = useMemo(() => {
     const map = new Map<number, { id: number; nombre: string }>();
-    loginExamenes
+    examenes
       .filter(
         (e) =>
           (!selectedTipoExamenId ||
@@ -140,24 +219,28 @@ const BancoPreguntasAscensoPage = () => {
         if (e.years && Array.isArray(e.years)) {
           e.years.forEach((y: any) => {
             const yVal = typeof y === 'object' ? y.year : y;
-            if (yVal !== undefined && yVal !== null) {
+            const yCant = typeof y === 'object' ? (y.cantidadPreguntas ?? y.cantidad_p ?? 1) : 1;
+
+            if (yVal && Number(yVal) > 0 && yCant > 0) {
               map.set(Number(yVal), {
                 id: Number(yVal),
-                nombre: Number(yVal) === 0 ? 'Todos los años' : String(yVal),
+                nombre: String(yVal),
               });
             }
           });
         } else if (e.year) {
           const yVal = Number(e.year);
-          map.set(yVal, {
-            id: yVal,
-            nombre: yVal === 0 ? 'Todos los años' : String(yVal),
-          });
+          if (yVal > 0) {
+            map.set(yVal, {
+              id: yVal,
+              nombre: String(yVal),
+            });
+          }
         }
       });
     return Array.from(map.values()).sort((a, b) => b.id - a.id);
   }, [
-    loginExamenes,
+    examenes,
     selectedTipoExamenId,
     selectedModalidadId,
     selectedNivelId,
@@ -201,7 +284,7 @@ const BancoPreguntasAscensoPage = () => {
           ? String(firstNivel.id)
           : null) || '0';
 
-      const matchedExams = loginExamenes.filter(
+      const matchedExams = examenes.filter(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
@@ -254,7 +337,7 @@ const BancoPreguntasAscensoPage = () => {
     selectedNivelId,
     selectedEspecialidadId,
     selectedYearId,
-    loginExamenes,
+    examenes,
     nivelesData
   ]);
 
@@ -282,7 +365,7 @@ const BancoPreguntasAscensoPage = () => {
           ? String(firstNivel.id)
           : '0');
 
-      const exam = loginExamenes.find(
+      const exam = examenes.find(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
@@ -304,7 +387,7 @@ const BancoPreguntasAscensoPage = () => {
       const finalYearValue = selectedYearId || '0';
       const clasificacionIds: number[] = [];
       if (exam.clasificaciones) {
-        exam.clasificaciones.forEach((c) => {
+        exam.clasificaciones.forEach((c: any) => {
           clasificacionIds.push(c.clasificacionId);
         });
       }
@@ -336,6 +419,7 @@ const BancoPreguntasAscensoPage = () => {
       }
 
       const metadata = {
+        tipoExamenId: 1,
         modalidad: exam.modalidadNombre,
         nivel: exam.nivelNombre || 'NINGUNO',
         especialidad: exam.especialidadNombre || null,
