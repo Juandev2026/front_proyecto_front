@@ -282,15 +282,7 @@ const SimulacrosDirectivosPage = () => {
     });
   };
 
-  const handleTypeToggle = (year: string, typeName: string) => {
-    setYearSelections((prev) => ({
-      ...prev,
-      [year]: {
-        ...prev[year],
-        [typeName]: !prev[year]?.[typeName],
-      },
-    }));
-  };
+
 
   const handleClear = () => {
     setSelectedModalidadId('');
@@ -590,7 +582,6 @@ const SimulacrosDirectivosPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {aniosData.map((year) => {
                   const isChecked = selectedYears.includes(year);
-                  const yearMeta = getMetadataForYear(year);
 
                   return (
                     <div key={year} className="flex flex-col gap-3">
@@ -606,30 +597,7 @@ const SimulacrosDirectivosPage = () => {
                         </span>
                       </label>
 
-                      {isChecked && yearMeta.length > 0 && (
-                        <div className="ml-2 border border-[#4790FD]/20 rounded-xl p-4 bg-blue-50/30 space-y-3">
-                          <p className="text-[10px] font-bold text-[#4790FD] uppercase tracking-tighter">Tipos</p>
-                          <div className="space-y-2">
-                             {yearMeta.map((m) => (
-                              <label key={m.name} className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                                m.cantidad > 0 ? `cursor-pointer ${yearSelections[year]?.[m.name] ? 'bg-white border-[#4790FD] shadow-sm' : 'bg-white/50 border-gray-100'}` : 'opacity-40 bg-gray-50'
-                              }`}>
-                                <div className="flex items-center gap-2">
-                                  <input 
-                                    type="checkbox" 
-                                    checked={yearSelections[year]?.[m.name] || false}
-                                    disabled={m.cantidad === 0}
-                                    onChange={() => handleTypeToggle(year, m.name)}
-                                    className="h-4 w-4 text-[#4790FD] rounded border-gray-300"
-                                  />
-                                  <span className="text-xs font-bold text-blue-800">{m.name}</span>
-                                </div>
-                                <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full">{m.cantidad}p</span>
-                              </label>
-                             ))}
-                          </div>
-                        </div>
-                      )}
+
                     </div>
                   );
                 })}
