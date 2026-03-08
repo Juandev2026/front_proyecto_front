@@ -4,6 +4,7 @@ import {
   AcademicCapIcon,
   XIcon,
   FilterIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -31,6 +32,8 @@ const BancoPreguntasAscensoPage = () => {
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
+  const [selectedYearId, setSelectedYearId] = useState<string>('');
+  const [conteoPreguntas, setConteoPreguntas] = useState<any>({});
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +42,6 @@ const BancoPreguntasAscensoPage = () => {
       router.push('/login');
     }
   }, [loading, isAuthenticated, router]);
-
 
   // ---------- Memoized Derived Options ----------
 
@@ -121,31 +123,140 @@ const BancoPreguntasAscensoPage = () => {
     selectedModalidadId,
     selectedNivelId,
   ]);
-
-
+  
+  const yearsData = useMemo(() => {
+    const map = new Map<number, { id: number; nombre: string }>();
+    loginExamenes
+      .filter(
+        (e) =>
+          (!selectedTipoExamenId ||
+            String(e.tipoExamenId) === selectedTipoExamenId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
+          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+      )
+      .forEach((e) => {
+        if (e.years && Array.isArray(e.years)) {
+          e.years.forEach((y: any) => {
+            const yVal = typeof y === 'object' ? y.year : y;
+            if (yVal !== undefined && yVal !== null) {
+              map.set(Number(yVal), {
+                id: Number(yVal),
+                nombre: Number(yVal) === 0 ? 'Todos los años' : String(yVal),
+              });
+            }
+          });
+        } else if (e.year) {
+          const yVal = Number(e.year);
+          map.set(yVal, {
+            id: yVal,
+            nombre: yVal === 0 ? 'Todos los años' : String(yVal),
+          });
+        }
+      });
+    return Array.from(map.values()).sort((a, b) => b.id - a.id);
+  }, [
+    loginExamenes,
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Auto-selection Logic ----------
 
-  // 1. Auto-select Modalidad if only one
   useEffect(() => {
     if (modalidadesData.length === 1 && !selectedModalidadId) {
       setSelectedModalidadId(String(modalidadesData[0]?.id));
     }
   }, [modalidadesData, selectedModalidadId]);
 
-  // 2. Auto-select Nivel (if only NINGUNO or unique)
   useEffect(() => {
     if (nivelesData.length === 1 && !selectedNivelId) {
       setSelectedNivelId(String(nivelesData[0]?.id));
     }
   }, [nivelesData, selectedNivelId]);
 
-  // 3. Auto-select Especialidad
   useEffect(() => {
     if (especialidadesData.length === 1 && !selectedEspecialidadId) {
       setSelectedEspecialidadId(String(especialidadesData[0]?.id));
     }
   }, [especialidadesData, selectedEspecialidadId]);
+
+  useEffect(() => {
+    if (yearsData.length === 1 && yearsData[0]?.id !== 0 && !selectedYearId) {
+      setSelectedYearId(String(yearsData[0]?.id));
+    }
+  }, [yearsData, selectedYearId]);
+
+  // ---------- Counts Logic ----------
+  useEffect(() => {
+    if (selectedModalidadId) {
+      const firstNivel = nivelesData[0];
+      const resolvedNivelId =
+        selectedNivelId ||
+        (nivelesData.length === 1 &&
+        firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
+          ? String(firstNivel.id)
+          : null) || '0';
+
+      const matchedExams = loginExamenes.filter(
+        (e) =>
+          String(e.tipoExamenId) === selectedTipoExamenId &&
+          String(e.modalidadId) === selectedModalidadId &&
+          String(e.nivelId) === resolvedNivelId &&
+          (selectedEspecialidadId
+            ? String(e.especialidadId) === selectedEspecialidadId
+            : true) &&
+          (selectedYearId !== '0' && selectedYearId !== '' 
+            ? (e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId)
+            : true)
+      );
+
+      const countMap: any = {};
+      matchedExams.forEach((exam) => {
+        if (exam.clasificaciones) {
+          exam.clasificaciones.forEach((item: any) => {
+            const name = item.clasificacionNombre;
+            if (name) {
+              let cantidad = 0;
+              if (selectedYearId === '0') {
+                cantidad = item.cantidadPreguntas || 0;
+              } else if (selectedYearId) {
+                if (item.years && Array.isArray(item.years)) {
+                  const yrObj = item.years.find((y: any) => String(y.year) === selectedYearId);
+                  cantidad = yrObj ? (yrObj.cantidadPreguntas || 0) : 0;
+                } else if (String(exam.year) === selectedYearId) {
+                  cantidad = item.cantidadPreguntas || 0;
+                }
+              }
+
+              if (!countMap[name]) {
+                countMap[name] = {
+                  cantidad: cantidad,
+                  puntos: item.puntos || 0,
+                  tiempoPregunta: item.tiempoPregunta || 0,
+                  minimo: item.minimo || 0,
+                };
+              } else {
+                countMap[name].cantidad += cantidad;
+              }
+            }
+          });
+        }
+      });
+      setConteoPreguntas(countMap);
+    }
+  }, [
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+    selectedYearId,
+    loginExamenes,
+    nivelesData
+  ]);
 
   // ---------- Handlers ----------
 
@@ -153,6 +264,8 @@ const BancoPreguntasAscensoPage = () => {
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
+    setSelectedYearId('');
+    setConteoPreguntas({});
   };
 
   const handleConfirm = async () => {
@@ -176,6 +289,9 @@ const BancoPreguntasAscensoPage = () => {
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
+            : true) &&
+          (selectedYearId !== '0' && selectedYearId !== ''
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId
             : true)
       );
 
@@ -185,11 +301,10 @@ const BancoPreguntasAscensoPage = () => {
         return;
       }
 
-      const finalYearValue = '0';
+      const finalYearValue = selectedYearId || '0';
       const clasificacionIds: number[] = [];
       if (exam.clasificaciones) {
         exam.clasificaciones.forEach((c) => {
-          // Send all classifications that have questions
           clasificacionIds.push(c.clasificacionId);
         });
       }
@@ -204,12 +319,8 @@ const BancoPreguntasAscensoPage = () => {
         clasificaciones: clasificacionIds,
       };
 
-      // 4. LLAMADA AL SERVICIO
-      let questions = await preguntaService.examenFilter(
-        payloadFiltro
-      );
+      let questions = await preguntaService.examenFilter(payloadFiltro);
 
-      // Local Filter Patch
       if (questions.length > 0) {
         questions = questions.filter((q: any) => {
           const matchYear =
@@ -228,7 +339,7 @@ const BancoPreguntasAscensoPage = () => {
         modalidad: exam.modalidadNombre,
         nivel: exam.nivelNombre || 'NINGUNO',
         especialidad: exam.especialidadNombre || null,
-        year: finalYearValue,
+        year: selectedYearId || '0',
       };
 
       localStorage.setItem('currentQuestions', JSON.stringify(questions));
@@ -283,6 +394,7 @@ const BancoPreguntasAscensoPage = () => {
                 setSelectedModalidadId(e.target.value);
                 setSelectedNivelId('');
                 setSelectedEspecialidadId('');
+                setSelectedYearId('');
               }}
               className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading}
@@ -312,6 +424,7 @@ const BancoPreguntasAscensoPage = () => {
                   onChange={(e) => {
                     setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
+                    setSelectedYearId('');
                   }}
                   className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
@@ -337,6 +450,7 @@ const BancoPreguntasAscensoPage = () => {
                 value={selectedEspecialidadId}
                 onChange={(e) => {
                   setSelectedEspecialidadId(e.target.value);
+                  setSelectedYearId('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
@@ -354,9 +468,84 @@ const BancoPreguntasAscensoPage = () => {
             </div>
           )}
 
+          {/* Año Selector */}
+          {yearsData.length > 0 && (
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <AcademicCapIcon className="h-5 w-5" />
+                <span>Año</span>
+              </div>
+              <select
+                value={selectedYearId}
+                onChange={(e) => {
+                  setSelectedYearId(e.target.value);
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
+                disabled={
+                  isLoading || 
+                  !selectedModalidadId || 
+                  (nivelesData.length > 1 && !selectedNivelId) ||
+                  (especialidadesData.length > 0 && !selectedEspecialidadId)
+                }
+              >
+                <option value="">Selecciona Año</option>
+                {yearsData.map((y) => (
+                  <option key={y.id} value={String(y.id)}>
+                    {y.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
+          {/* Tipos de Pregunta - Only show after Year is selected */}
+          {selectedYearId && (
+            <div className="border border-primary rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <QuestionMarkCircleIcon className="h-5 w-5" />
+                <span>Tipos de Pregunta*</span>
+              </div>
 
-
+              <div className="space-y-3">
+                {Object.entries(conteoPreguntas)
+                  .sort(([a], [b]) => {
+                    const order: Record<string, number> = { 
+                      'CL': 1, 'Comprensión Lectora': 1,
+                      'RL': 2, 'Razonamiento Lógico': 2,
+                      'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
+                    };
+                    return (order[a] || 99) - (order[b] || 99);
+                  })
+                  .map(([name, data]: [string, any]) => (
+                    <div
+                      key={name}
+                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                        data.cantidad > 0
+                          ? 'border-gray-200 bg-gray-50/30'
+                          : 'opacity-50 border-gray-100 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[#2B3674] font-bold text-lg">
+                          {name}
+                        </span>
+                        <span
+                          className={`${
+                            data.cantidad > 0
+                              ? 'text-[#05CD99]'
+                              : 'text-gray-400'
+                          } text-sm font-medium`}
+                        >
+                          {data.cantidad > 0
+                            ? `${data.cantidad} preguntas`
+                            : '0 preguntas (no disponible)'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* Resumen de selección */}
           {selectedModalidadId && (
@@ -367,14 +556,12 @@ const BancoPreguntasAscensoPage = () => {
               </div>
 
               <div className="space-y-4">
-                {selectedModalidadId && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Modalidad</span>
-                    <div className="inline-flex px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-sm font-bold w-fit">
-                      {modalidadesData.find(m => String(m.id) === selectedModalidadId)?.nombre}
-                    </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-gray-500 uppercase">Modalidad</span>
+                  <div className="inline-flex px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-sm font-bold w-fit">
+                    {modalidadesData.find(m => String(m.id) === selectedModalidadId)?.nombre}
                   </div>
-                )}
+                </div>
 
                 {selectedNivelId && (
                   <div className="flex flex-col gap-1">
@@ -394,7 +581,14 @@ const BancoPreguntasAscensoPage = () => {
                   </div>
                 )}
 
-
+                {selectedYearId && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold text-gray-500 uppercase">Año</span>
+                    <div className="inline-flex px-3 py-1 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-sm font-bold w-fit">
+                      {yearsData.find(y => String(y.id) === selectedYearId)?.nombre || (selectedYearId === '0' ? 'Todos los años' : selectedYearId)}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -412,7 +606,8 @@ const BancoPreguntasAscensoPage = () => {
               onClick={handleConfirm}
               disabled={
                 isLoading ||
-                !selectedModalidadId
+                !selectedModalidadId ||
+                !selectedYearId
               }
               className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-opacity-90 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
