@@ -1661,7 +1661,7 @@ const Recursos = () => {
     if (Number(selectedTipo) === 2 && isMultiAssign && assignmentInfo) {
         await preguntaService.asignarExamenes({
           preguntaId: finalIdForAssignment || 0,
-          year: Number(selectedYear) || 0,
+          year: selectedYear || '0',
           examenIds: assignmentInfo.examenesAsignadosIds,
         });
         console.log('Asignación de exámenes completada');
@@ -1795,6 +1795,7 @@ const Recursos = () => {
                 }}
                 onCancel={() => setViewMode('list')}
                 numero={numeroPregunta}
+                selectedTipo={Number(selectedTipo)}
               />
             ) : (
               /* --- FORMULARIO INDIVIDUAL (Estándar) --- */

@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   DocumentTextIcon,
+  SparklesIcon,
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 
@@ -46,6 +47,7 @@ interface PreguntaComunFormProps {
   onSuccess: () => void;
   onCancel: () => void;
   numero?: string;
+  selectedTipo: number;
 }
 
 const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
@@ -57,6 +59,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   onSuccess,
   onCancel,
   numero,
+  selectedTipo,
 }) => {
   // --- HELPERS ---
   const parseHtmlToBlocks = (html: string): ContentBlock[] => {
@@ -163,6 +166,81 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         ]
   );
   const [saving, setSaving] = useState(false);
+
+  // --- ASIGNACION DE EXAMENES ---
+  const [isMultiAssign, setIsMultiAssign] = useState(false);
+  const [assignmentInfo, setAssignmentInfo] = useState<{
+    todosLosExamenes: { id: number; descripcion: string }[];
+    examenesAsignadosIds: number[];
+  } | null>(null);
+
+  const fetchAssignmentInfo = async (preguntaId: number, year: string) => {
+    if (selectedTipo !== 2) return;
+    try {
+      const info = await preguntaService.getAsignacionExamenInfo(
+        preguntaId,
+        Number(year) || 0
+      );
+      
+      // Auto-selección por defecto si es nueva
+      if (preguntaId === 0 || info.examenesAsignadosIds.length === 0) {
+        const currentId = await resolveExamenId();
+        if (currentId && !info.examenesAsignadosIds.includes(currentId)) {
+          info.examenesAsignadosIds.push(currentId);
+        }
+      }
+
+      setAssignmentInfo(info);
+      setIsMultiAssign(info.examenesAsignadosIds.length > 0);
+    } catch (err) {
+      console.error('Error fetching assignment info:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTipo === 2) {
+      fetchAssignmentInfo(initialParent?.id || 0, selectedYear || '0');
+    }
+  }, [selectedTipo, selectedYear, initialParent]);
+
+  const handleToggleMultiAssign = (checked: boolean) => {
+    setIsMultiAssign(checked);
+    if (checked && !assignmentInfo) {
+      fetchAssignmentInfo(initialParent?.id || 0, selectedYear);
+    }
+  };
+
+  const handleSelectAllExams = () => {
+    if (!assignmentInfo) return;
+    setAssignmentInfo({
+      ...assignmentInfo,
+      examenesAsignadosIds: assignmentInfo.todosLosExamenes.map((e) => e.id),
+    });
+  };
+
+  const handleDeselectAllExams = () => {
+    if (!assignmentInfo) return;
+    setAssignmentInfo({
+      ...assignmentInfo,
+      examenesAsignadosIds: [],
+    });
+  };
+
+  const handleToggleSingleExam = (id: number) => {
+    if (!assignmentInfo) return;
+    const current = assignmentInfo.examenesAsignadosIds;
+    if (current.includes(id)) {
+      setAssignmentInfo({
+        ...assignmentInfo,
+        examenesAsignadosIds: current.filter((x) => x !== id),
+      });
+    } else {
+      setAssignmentInfo({
+        ...assignmentInfo,
+        examenesAsignadosIds: [...current, id],
+      });
+    }
+  };
 
   // Hidden file input for images
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -525,12 +603,27 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
       console.log('Payload Atómico (User Requirement):', payload);
 
+      let finalIdForAssignment = initialParent?.id;
+
       if (initialParent) {
         await preguntaService.update(examenId, initialParent.id, payload);
         alert('Pregunta común actualizada con éxito');
       } else {
-        await preguntaService.create(payload as any);
+        const created = await preguntaService.create(payload as any);
+        if (created) {
+          finalIdForAssignment = created.id;
+        }
         alert('Pregunta común creada con éxito (Padre e Hijos)');
+      }
+
+      // Asignación multi-examen
+      if (selectedTipo === 2 && isMultiAssign && assignmentInfo) {
+        await preguntaService.asignarExamenes({
+          preguntaId: finalIdForAssignment || 0,
+          year: selectedYear || '0',
+          examenIds: assignmentInfo.examenesAsignadosIds,
+        });
+        console.log('Asignación de exámenes completada para pregunta grupo');
       }
 
       onSuccess();
@@ -664,6 +757,158 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         accept="image/*"
         onChange={handleFileChange}
       />
+
+      {/* --- ASIGNACIÓN DE CATEGORÍAS (Solo para Nombramiento) --- */}
+      {selectedTipo === 2 && (
+        <div className="border border-[#4790FD] rounded-lg p-6 bg-[#F8FAFF] shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 uppercase text-sm tracking-wider">
+                  Asignación de Categorías
+                </h3>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Panel de Gestión Multi-Examen</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-blue-50 shadow-sm">
+              <input
+                type="checkbox"
+                id="multiAssignMode"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                checked={isMultiAssign}
+                onChange={(e) => handleToggleMultiAssign(e.target.checked)}
+              />
+              <label
+                htmlFor="multiAssignMode"
+                className="text-xs font-bold text-blue-700 cursor-pointer"
+              >
+                ¿Activar guardado múltiple?
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-xs text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                {isMultiAssign ? 'Modo Selección Múltiple Activo' : 'Previsualización de Categorías'}
+              </p>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleSelectAllExams}
+                  className="text-[11px] text-blue-600 hover:text-blue-800 font-bold uppercase tracking-tight flex items-center gap-1"
+                >
+                  <SparklesIcon className="w-3 h-3" /> Seleccionar Todo
+                </button>
+                <button
+                  onClick={handleDeselectAllExams}
+                  className="text-[11px] text-gray-400 hover:text-red-400 font-bold uppercase tracking-tight"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+              {/* Contenedor de Checkboxes con Scroll */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white border border-gray-200 rounded-lg p-6 max-h-[400px] overflow-y-auto custom-scrollbar shadow-inner">
+                {assignmentInfo?.todosLosExamenes.map((exam) => {
+                  const isChecked = assignmentInfo.examenesAsignadosIds.includes(exam.id);
+                  
+                  // Detectar jerarquía: Soporta "A > B" o simplemente el texto completo
+                  let main = exam.descripcion;
+                  let sub = '';
+
+                  if (exam.descripcion.includes(' > ')) {
+                    const parts = exam.descripcion.split(' > ');
+                    main = parts[0] || '';
+                    sub = parts.slice(1).join(' > ');
+                  } else {
+                    const keywords = ['INICIAL', 'PRIMARIA', 'SECUNDARIA', 'AVANZADO'];
+                    for (const kw of keywords) {
+                      if (exam.descripcion.includes(kw)) {
+                        const idx = exam.descripcion.indexOf(kw);
+                        main = exam.descripcion.substring(idx);
+                        sub = exam.descripcion.substring(0, idx).trim();
+                        break;
+                      }
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={exam.id}
+                      className={`flex items-start gap-3 p-2 rounded-md transition-all duration-200 group border ${
+                        isChecked 
+                          ? 'bg-blue-50/50 border-blue-100' 
+                          : 'bg-white border-transparent hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="mt-0.5">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 text-[#4790FD] border-gray-300 rounded focus:ring-[#4790FD] cursor-pointer"
+                          checked={isChecked}
+                          onChange={() => handleToggleSingleExam(exam.id)}
+                        />
+                      </div>
+                      <div
+                        className="cursor-pointer flex-1"
+                        onClick={() => handleToggleSingleExam(exam.id)}
+                      >
+                        <p className={`text-sm font-bold leading-tight ${isChecked ? 'text-blue-800' : 'text-gray-700'}`}>
+                          {main}
+                        </p>
+                        {sub && (
+                          <p className="text-[10px] text-gray-400 font-medium uppercase mt-0.5">
+                            {sub}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {(!assignmentInfo || assignmentInfo.todosLosExamenes.length === 0) && (
+                  <div className="col-span-full py-10 flex flex-col items-center justify-center text-gray-400">
+                    <SparklesIcon className="w-8 h-8 mb-2 animate-pulse" />
+                    <p className="text-sm font-medium">Cargando lista de categorías...</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Resumen de Seleccionados */}
+              <div className="mt-6 bg-[#EDF3FF] p-4 rounded-lg border border-blue-100">
+                <p className="text-xs font-bold text-blue-800 mb-3 flex items-center gap-2">
+                  Categorías seleccionadas ({assignmentInfo?.examenesAsignadosIds.length || 0}):
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {assignmentInfo?.todosLosExamenes
+                    .filter((e) => assignmentInfo.examenesAsignadosIds.includes(e.id))
+                    .map((e) => (
+                      <span
+                        key={e.id}
+                        className="inline-flex items-center gap-1 bg-white border border-blue-200 text-[#4790FD] px-2 py-1 rounded text-[11px] font-bold shadow-sm"
+                      >
+                        {e.descripcion.split(' > ').pop()}
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleToggleSingleExam(e.id);
+                          }}
+                          className="hover:bg-red-50 hover:text-red-500 rounded p-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SECTION A: COMMON STATEMENT */}
       <div className="space-y-2">

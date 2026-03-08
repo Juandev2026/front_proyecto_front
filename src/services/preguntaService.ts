@@ -238,16 +238,34 @@ export const preguntaService = {
 
   asignarExamenes: async (payload: {
     preguntaId: number;
-    year: number;
+    year: number | string;
     examenIds: number[];
   }): Promise<void> => {
+    // Payload MUST match schema exactly: { preguntaId: int, year: int, examenIds: int[] }
+    const isNoYear = 
+      payload.year === '0' || 
+      payload.year === 0 || 
+      payload.year === 'Único' || 
+      !payload.year;
+    
+    // User explicitly requested null if no year is provided, avoiding zero.
+    const finalYearValue = isNoYear ? null : Number(payload.year);
+
+    const body = {
+      preguntaId: payload.preguntaId,
+      year: finalYearValue,
+      examenIds: payload.examenIds,
+    };
+
+    console.log('=== PAYLOAD ASIGNAR EXAMENES (SCHEMA MATCH) ===', JSON.stringify(body, null, 2));
+
     const response = await fetch(`${API_URL}/asignar-examenes`, {
       method: 'POST',
       headers: {
         ...getAuthHeaders(),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
     if (!response.ok) {
       throw new Error('Error al asignar exámenes a la pregunta');
