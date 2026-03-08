@@ -12,7 +12,6 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import { ExamenLogin, authService } from '../services/authService';
 import { preguntaService } from '../services/preguntaService';
 import { examenService } from '../services/examenService';
 
@@ -729,7 +728,20 @@ const SimulacroExamenPage = () => {
                 <span>Tipos de Pregunta*</span>
               </div>
               <div className="space-y-3">
-                {getMetadataForYear(selectedYears[0]).map((m) => {
+                {getMetadataForYear(selectedYears[0])
+                  .sort((a, b) => {
+                    const order: Record<string, number> = { 
+                      'CL': 1, 'Comprensión Lectora': 1,
+                      'RL': 2, 'Razonamiento Lógico': 2,
+                      'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
+                      'Conocimientos Curriculares y Pedagócicos': 3
+                    };
+                    const valA = order[a.name] || 99;
+                    const valB = order[b.name] || 99;
+                    if (valA !== valB) return valA - valB;
+                    return a.name.localeCompare(b.name);
+                  })
+                  .map((m) => {
                   const currentYear = selectedYears[0]!;
                   return (
                     <label

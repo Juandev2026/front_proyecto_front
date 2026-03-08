@@ -797,8 +797,16 @@ const BancoPreguntasPage = () => {
             <div className="space-y-3">
               {Object.entries(conteoPreguntas)
                 .sort(([a], [b]) => {
-                  const order: Record<string, number> = { CL: 1, RL: 2, CCP: 3 };
-                  return (order[a] || 99) - (order[b] || 99);
+                  const order: Record<string, number> = { 
+                    'CL': 1, 'Comprensión Lectora': 1,
+                    'RL': 2, 'Razonamiento Lógico': 2,
+                    'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
+                    'Conocimientos Curriculares y Pedagócicos': 3
+                  };
+                  const valA = order[a] || 99;
+                  const valB = order[b] || 99;
+                  if (valA !== valB) return valA - valB;
+                  return a.localeCompare(b);
                 })
                 .map(([name, data]: [string, any]) => (
                   <label

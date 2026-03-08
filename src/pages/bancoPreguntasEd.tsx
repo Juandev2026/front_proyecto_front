@@ -339,7 +339,7 @@ const BancoPreguntasEdPage = () => {
                     PREGUNTAS DISPONIBLES POR TIPO:
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {['CCP', 'CL', 'RL', 'CG'].map((label) => {
+                    {['CL', 'RL', 'CCP', 'CG'].map((label) => {
                       const data = conteoPreguntas[label];
                       const count = data ? data.cantidad : 0;
                       return (
