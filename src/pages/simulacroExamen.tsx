@@ -55,7 +55,8 @@ const SimulacroExamenPage = () => {
       if (isAuthenticated && user?.id) {
         try {
           const data = await examenService.getPropiosByUser(2, user.id);
-          setSeccionesPropias(data);
+          const visibleData = data.filter((s: any) => s.visible !== false);
+          setSeccionesPropias(visibleData);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
         }

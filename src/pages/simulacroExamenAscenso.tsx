@@ -54,7 +54,8 @@ const SimulacroExamenAscensoPage = () => {
       if (isAuthenticated && user?.id) {
         try {
           const data = await examenService.getPropiosByUser(1, user.id);
-          setSeccionesPropias(data);
+          const visibleData = data.filter((s: any) => s.visible !== false);
+          setSeccionesPropias(visibleData);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
         }
@@ -197,6 +198,7 @@ const SimulacroExamenAscensoPage = () => {
     return Array.from(set)
       .filter((y) => y !== 'null' && y !== 'undefined')
       .map((y) => (y === '0' ? 'Único' : y))
+      .filter((y) => y !== '2027' && y !== '2026' && y !== 'Único')
       .sort((a, b) => {
         if (a === 'Único') return 1;
         if (b === 'Único') return -1;

@@ -180,6 +180,7 @@ const SimulacrosDirectivosPage = () => {
     return Array.from(set)
       .filter((y) => y !== 'null' && y !== 'undefined')
       .map((y) => (y === '0' ? 'Único' : y))
+      .filter((y) => y !== '2027' && y !== '2026' && y !== 'Único')
       .sort((a, b) => {
         if (a === 'Único') return 1;
         if (b === 'Único') return -1;

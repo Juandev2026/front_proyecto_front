@@ -68,7 +68,7 @@ const BancoPreguntasEdPage = () => {
         user.id
       );
 
-      const filtered = data.map((s: any) => ({
+      const mapped = data.map((s: any) => ({
         id: s.fuenteId || s.id,
         nombre: s.fuenteNombre || 'Sin nombre',
         descripcion: s.descripcion || '',
@@ -76,10 +76,12 @@ const BancoPreguntasEdPage = () => {
         tipoExamenNombre:
           s.tipoExamenNombre ||
           (context === 'nombramiento' ? 'Nombramiento' : 'Ascenso'),
-        visible: true,
+        visible: s.visible ?? true,
         categorias: s.examenesPropios || [],
         clasificaciones: s.clasificaciones || [],
       }));
+
+      const filtered = mapped.filter((s: any) => s.visible !== false);
       setSecciones(filtered);
 
       if (filtered.length > 0 && filtered[0]) {
