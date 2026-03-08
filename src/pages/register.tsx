@@ -60,7 +60,7 @@ const Register = () => {
       }
 
       try {
-        const structure = await estructuraAcademicaService.getEstructuraRegistro();
+        const structure = await estructuraAcademicaService.getAll();
         const flatModalidades: any[] = [];
         const flatNiveles: any[] = [];
         const flatEspecialidades: any[] = [];
