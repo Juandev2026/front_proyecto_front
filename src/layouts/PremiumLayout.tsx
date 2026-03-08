@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import {
   HomeIcon,
@@ -39,6 +39,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   breadcrumb = 'Pages / Dashboard',
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, isAuthenticated, loading, logout } = useAuth();
 
@@ -143,6 +144,41 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
     setExpandedMenu(expandedMenu === name ? null : name);
   };
 
+  // Handle click outside to close/collapse sidebar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      
+      // If clicking inside the sidebar, do nothing
+      if (sidebarRef.current && sidebarRef.current.contains(target)) {
+        return;
+      }
+
+      // Ignore if clicking on toggle buttons
+      const desktopToggle = document.getElementById('sidebar-toggle-btn');
+      const mobileToggle = document.getElementById('mobile-sidebar-toggle-btn');
+      
+      if (desktopToggle && desktopToggle.contains(target)) return;
+      if (mobileToggle && mobileToggle.contains(target)) return;
+
+      // Click is outside: close mobile sidebar, collapse desktop sidebar
+      if (sidebarOpen) {
+        setSidebarOpen(false);
+      }
+      if (!isCollapsed && window.innerWidth >= 768) {
+        setIsCollapsed(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [sidebarOpen, isCollapsed]);
+
   // Auto-expand menu based on active route
   useEffect(() => {
     menuItems.forEach((item) => {
@@ -161,6 +197,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
       }
     });
   }, [router.pathname, router.asPath, router.query.from]);
+
+  // Close sidebar on navigation (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [router.asPath]);
 
   const allMenuItems = [
     {
@@ -300,17 +341,18 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         </div>
       )}
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-[90] bg-black/50 transition-all duration-300 md:hidden cursor-pointer ${
+          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* Sidebar */}
       <div
+        ref={sidebarRef}
         className={`
-        fixed inset-y-0 left-0 z-50 flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
+        fixed inset-y-0 left-0 z-[100] flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out transform border-r border-gray-100 shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         ${isCollapsed ? 'w-20' : 'w-72'}
         md:translate-x-0 md:static md:inset-auto md:flex md:flex-col
@@ -339,6 +381,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             </Link>
           )}
           <button
+            id="sidebar-toggle-btn"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden md:block text-gray-400 hover:text-[#4790FD] transition-colors focus:outline-none"
           >
@@ -541,7 +584,11 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         <header className="bg-white flex items-center justify-between px-6 py-4 border-b border-gray-100 md:bg-transparent md:border-none md:shadow-none">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setSidebarOpen(true)}
+              id="mobile-sidebar-toggle-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSidebarOpen(true);
+              }}
               className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
             >
               <MenuIcon className="h-6 w-6" />

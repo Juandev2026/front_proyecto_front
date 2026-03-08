@@ -9,6 +9,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sidebarRef = React.useRef<HTMLDivElement>(null);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -53,6 +54,27 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       router.push('/');
     }
   }, [router]);
+
+  // Handle click outside to close sidebar
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      // Check if sidebar is open (on mobile) and click is outside
+      if (isSidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    if (isSidebarOpen) {
+      // Use capture true to ensure we catch it before other listeners might stop propagation
+      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener('touchstart', handleClickOutside, true);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
+    };
+  }, [isSidebarOpen]);
 
   if (!isAuthorized) {
     return null; // Or a loading spinner
@@ -364,7 +386,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="h-screen bg-white flex overflow-hidden">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
+        ref={sidebarRef}
+        className={`fixed inset-y-0 left-0 z-[9999] bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
@@ -570,7 +593,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Header */}
         <header className="bg-white shadow-sm h-16 flex items-center justify-between px-6">
           <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsSidebarOpen(!isSidebarOpen);
+            }}
             className="md:hidden text-gray-500 focus:outline-none"
           >
             <svg
@@ -609,7 +635,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       {isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-[9998] md:hidden cursor-pointer"
         ></div>
       )}
 
