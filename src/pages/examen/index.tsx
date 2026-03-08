@@ -135,8 +135,8 @@ const ExamenPage = () => {
               ...q,
               id: sub.id || sub.subPreguntaId || q.id || q.preguntaId,
               preguntaId: q.preguntaId || q.id, // Importante: usar el ID del Padre para el calificador
-              enunciado: sub.enunciado || '',
-              parentEnunciado: q.enunciado || '',
+              enunciado: sub.enunciado || sub.enunciados?.map((e: any) => e.contenido).join('') || '',
+              parentEnunciado: q.enunciado || q.enunciados?.map((e: any) => e.contenido).join('') || '',
               imagen: sub.imagen || q.imagen || '',
               alternativaA:
                 sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
@@ -206,6 +206,7 @@ const ExamenPage = () => {
             ...q,
             id: q.id || q.preguntaId,
             preguntaId: q.preguntaId || q.id,
+            enunciado: q.enunciado || q.enunciados?.map((e: any) => e.contenido).join('') || '',
             alternativaA: q.alternativaA || q.alternativas?.[0]?.contenido || '',
             alternativaB: q.alternativaB || q.alternativas?.[1]?.contenido || '',
             alternativaC: q.alternativaC || q.alternativas?.[2]?.contenido || '',

@@ -26,7 +26,6 @@ const RespuestasErroneasPage = () => {
   const [loading, setLoading] = useState(true);
   
   // New Practice Filters
-  const [selectedFecha, setSelectedFecha] = useState('Todas las fechas');
   const [modalidad, setModalidad] = useState('');
   const [fuenteMinedu, setFuenteMinedu] = useState(true);
   const [fuenteEscala, setFuenteEscala] = useState(true);
@@ -53,7 +52,6 @@ const RespuestasErroneasPage = () => {
           setErroneas(data || []);
 
           if (data && data.length > 0) {
-            setSelectedFecha(data[0]?.fecha || '');
             const firstGroup = data[0]?.modalidades?.[0];
             const firstNivel = firstGroup?.niveles?.[0];
             const firstEsp = firstNivel?.especialidades?.[0];
@@ -176,11 +174,6 @@ const RespuestasErroneasPage = () => {
   const modalidadOptions = useMemo(() => {
     const options = new Set<string>();
     erroneas?.forEach((groupFecha) => {
-      // Filter by selected practice date
-      if (selectedFecha !== 'Todas las fechas' && groupFecha.fecha !== selectedFecha) {
-        return;
-      }
-
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {
@@ -192,7 +185,7 @@ const RespuestasErroneasPage = () => {
       });
     });
     return Array.from(options);
-  }, [erroneas, selectedFecha]);
+  }, [erroneas]);
 
   const allCategoryOptions = useMemo(() => {
     const options = new Set<string>();
@@ -214,10 +207,6 @@ const RespuestasErroneasPage = () => {
     let allFilteredQuestions: PreguntaErronea[] = [];
 
     erroneas?.forEach((groupFecha) => {
-      if (selectedFecha !== 'Todas las fechas' && groupFecha.fecha !== selectedFecha) {
-        return;
-      }
-
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {
@@ -260,7 +249,7 @@ const RespuestasErroneasPage = () => {
       modalidad: finalModalidad,
       nivel: finalNivel,
       especialidad: finalEspecialidad,
-      year: selectedFecha === 'Todas las fechas' ? 'Histórico' : selectedFecha,
+      year: 'Histórico',
       isSimulacro: false,
     };
 
@@ -270,19 +259,7 @@ const RespuestasErroneasPage = () => {
     router.push(`/examen?from=${router.asPath || ''}`);
   };
 
-  const handleMarkAsReviewed = async (preguntaId: number) => {
-    if (!user?.id) return;
-    try {
-      if (!window.confirm('¿Estás seguro de marcar esta pregunta como revisada? Ya no aparecerá en tu lista de errores.')) return;
-      await erroneasService.marcarRevisada(user.id, preguntaId);
-      // Refresh the list
-      const data = await erroneasService.getByUser(user.id, 2);
-      setErroneas(data || []);
-    } catch (error) {
-      console.error('Error marking as reviewed:', error);
-      alert('Error al marcar como revisada');
-    }
-  };
+
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
@@ -321,27 +298,7 @@ const RespuestasErroneasPage = () => {
             </p>
 
             <div className="space-y-4">
-              {/* Fecha Dropdown */}
-              <div>
-                <label className="text-xs font-semibold text-gray-600 ml-1">
-                  Fecha
-                </label>
-                <div className="relative mt-1">
-                  <select
-                    value={selectedFecha}
-                    onChange={(e) => setSelectedFecha(e.target.value)}
-                    className="w-full appearance-none border border-gray-300 rounded-md p-2 pr-8 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#4790FD] text-sm shadow-sm"
-                  >
-                    <option>Todas las fechas</option>
-                    {fechaOptions.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-                </div>
-              </div>
+
 
               {/* Modalidad Dropdown */}
               <div>
@@ -412,7 +369,7 @@ const RespuestasErroneasPage = () => {
                   >
                     <option>10 preguntas</option>
                     <option>20 preguntas</option>
-                    <option>50 preguntas</option>
+                    <option>30 preguntas</option>
                   </select>
                   <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
                 </div>
@@ -600,7 +557,9 @@ const RespuestasErroneasPage = () => {
                           <div className="space-y-4 text-gray-900 font-medium">
                             <div
                               className="prose prose-gray max-w-none"
-                              dangerouslySetInnerHTML={{ __html: q.enunciado }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: q.enunciado || (q as any).enunciados?.map((e: any) => e.contenido).join('') || '' 
+                              }}
                             />
                           </div>
 
@@ -648,7 +607,9 @@ const RespuestasErroneasPage = () => {
                                 >
                                   <div
                                     className="text-sm md:text-base font-bold text-gray-900"
-                                    dangerouslySetInnerHTML={{ __html: sub.enunciado }}
+                                    dangerouslySetInnerHTML={{ 
+                                      __html: sub.enunciado || sub.enunciados?.map((e: any) => e.contenido).join('') || '' 
+                                    }}
                                   />
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {sub.alternativas.map((alt: any, altIdx: number) => {
@@ -683,16 +644,6 @@ const RespuestasErroneasPage = () => {
                             <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                categoría: {item.subtitle}
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsReviewed(q.preguntaId);
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#4790FD] rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border border-blue-100"
-                            >
-                              <CheckCircleIcon className="w-3.5 h-3.5" />
-                              Marcar como Revisada
-                            </button>
                           </div>
                         </div>
                       ))}

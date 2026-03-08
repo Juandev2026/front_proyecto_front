@@ -13,6 +13,7 @@ export interface ErrorInmediato {
 export interface SubPreguntaErronea {
   subPreguntaId: number;
   enunciado: string;
+  enunciados?: { id: number; contenido: string }[];
   respuestaCorrecta: string | number;
   alternativaMarcada: number;
   alternativas: Alternativa[];
@@ -20,15 +21,18 @@ export interface SubPreguntaErronea {
 
 export interface PreguntaErronea {
   preguntaId: number;
+  id?: number;
   examenId?: number;
   year?: number;
   numero?: number;
   enunciado: string;
+  enunciados?: { id: number; contenido: string }[];
   respuestaCorrecta: string | number | null;
   alternativas: Alternativa[];
   erroresInmediatos: ErrorInmediato[] | null;
   subPreguntas: SubPreguntaErronea[];
   puntaje?: number;
+  fechaCreacionErronea?: string;
 }
 
 export interface EspecialidadErroneas {

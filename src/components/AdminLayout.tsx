@@ -55,26 +55,40 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [router]);
 
-  // Handle click outside to close sidebar
+  // Handle click outside to close/collapse sidebar
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      // Check if sidebar is open (on mobile) and click is outside
-      if (isSidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      // If clicking inside the sidebar, do nothing
+      if (sidebarRef.current && sidebarRef.current.contains(target)) {
+        return;
+      }
+
+      // Ignore if clicking on toggle buttons
+      const desktopToggle = document.getElementById('admin-sidebar-toggle-btn');
+      const mobileToggle = document.getElementById('admin-mobile-toggle-btn');
+      
+      if (desktopToggle && desktopToggle.contains(target)) return;
+      if (mobileToggle && mobileToggle.contains(target)) return;
+
+      // Click is outside: close mobile sidebar, collapse desktop sidebar
+      if (isSidebarOpen) {
         setIsSidebarOpen(false);
+      }
+      if (!isCollapsed && window.innerWidth >= 768) {
+        setIsCollapsed(true);
       }
     };
 
-    if (isSidebarOpen) {
-      // Use capture true to ensure we catch it before other listeners might stop propagation
-      document.addEventListener('mousedown', handleClickOutside, true);
-      document.addEventListener('touchstart', handleClickOutside, true);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
     
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
-      document.removeEventListener('touchstart', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, isCollapsed]);
 
   if (!isAuthorized) {
     return null; // Or a loading spinner
@@ -387,7 +401,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 z-[9999] bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-40 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:relative md:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}
       >
@@ -410,6 +424,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
           {/* Toggle Button */}
           <button
+            id="admin-sidebar-toggle-btn"
             onClick={() => {
               if (window.innerWidth < 768) {
                 setIsSidebarOpen(false);
@@ -593,6 +608,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Header */}
         <header className="bg-white shadow-sm h-16 flex items-center justify-between px-6">
           <button
+            id="admin-mobile-toggle-btn"
             onClick={(e) => {
               e.stopPropagation();
               setIsSidebarOpen(!isSidebarOpen);
@@ -635,7 +651,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       {isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-[9998] md:hidden cursor-pointer"
+          className="fixed inset-0 bg-black/50 z-30 md:hidden cursor-pointer"
         ></div>
       )}
 

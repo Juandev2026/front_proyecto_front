@@ -291,7 +291,7 @@ const AdminPremiumDocentes = () => {
     setFormData({
       nombreCompleto: '',
       email: '',
-      password: '',
+      password: 'Escala2026*',
       role: 'Premium',
       celular: '',
       ie: '',
@@ -1127,7 +1127,7 @@ const AdminPremiumDocentes = () => {
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
           <div className="relative w-full max-w-lg max-h-[95vh] flex flex-col rounded-2xl bg-white shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
@@ -1157,7 +1157,7 @@ const AdminPremiumDocentes = () => {
 
             {/* Scrollable Body */}
             <div className="overflow-y-auto p-5 space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
                 {/* Role Selection */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1233,6 +1233,7 @@ const AdminPremiumDocentes = () => {
                           nombreCompleto: e.target.value,
                         })
                       }
+                      autoComplete="off"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       required
                     />
@@ -1251,6 +1252,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
+                        autoComplete="off"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                         required
                       />
@@ -1266,6 +1268,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, celular: e.target.value })
                         }
+                        autoComplete="off"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
@@ -1288,6 +1291,7 @@ const AdminPremiumDocentes = () => {
                               password: e.target.value,
                             })
                           }
+                          autoComplete="new-password"
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
                           required
                         />
