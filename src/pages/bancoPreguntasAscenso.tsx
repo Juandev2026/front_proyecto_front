@@ -4,7 +4,6 @@ import {
   AcademicCapIcon,
   XIcon,
   FilterIcon,
-  CalendarIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -32,7 +31,6 @@ const BancoPreguntasAscensoPage = () => {
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -124,42 +122,7 @@ const BancoPreguntasAscensoPage = () => {
     selectedNivelId,
   ]);
 
-  const aniosData = useMemo(() => {
-    const set = new Set<string>();
-    loginExamenes
-      .filter(
-        (e) =>
-          String(e.tipoExamenId) === selectedTipoExamenId &&
-          (!selectedModalidadId ||
-            String(e.modalidadId) === selectedModalidadId) &&
-          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId ||
-            String(e.especialidadId) === selectedEspecialidadId)
-      )
-      .forEach((e) => {
-        if (e.years && e.years.length > 0) {
-          e.years.forEach((y) => {
-            if (y.cantidadPreguntas > 0) set.add(String(y.year));
-          });
-        } else if (e.year !== undefined && e.year !== null && (e as any).cantidadPreguntas > 0) {
-          set.add(String(e.year));
-        }
-      });
-    return Array.from(set)
-      .filter((y) => y !== 'null' && y !== 'undefined')
-      .map((y) => (y === '0' ? 'Único' : y))
-      .sort((a, b) => {
-        if (a === 'Único') return 1;
-        if (b === 'Único') return -1;
-        return Number(b) - Number(a);
-      });
-  }, [
-    loginExamenes,
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-    selectedEspecialidadId,
-  ]);
+
 
   // ---------- Auto-selection Logic ----------
 
@@ -190,11 +153,10 @@ const BancoPreguntasAscensoPage = () => {
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
-    setSelectedYear('');
   };
 
   const handleConfirm = async () => {
-    if (!selectedModalidadId || !selectedYear) return;
+    if (!selectedModalidadId) return;
 
     try {
       setIsLoading(true);
@@ -214,11 +176,7 @@ const BancoPreguntasAscensoPage = () => {
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
-            : true) &&
-          ((selectedYear === 'Único' &&
-            (e.year === '0' || Number(e.year) === 0)) ||
-            String(e.year) === selectedYear ||
-            e.years?.some((y) => String(y.year) === selectedYear))
+            : true)
       );
 
       if (!exam) {
@@ -227,7 +185,7 @@ const BancoPreguntasAscensoPage = () => {
         return;
       }
 
-      const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
+      const finalYearValue = '0';
       const clasificacionIds: number[] = [];
       if (exam.clasificaciones) {
         exam.clasificaciones.forEach((c) => {
@@ -325,7 +283,6 @@ const BancoPreguntasAscensoPage = () => {
                 setSelectedModalidadId(e.target.value);
                 setSelectedNivelId('');
                 setSelectedEspecialidadId('');
-                setSelectedYear('');
               }}
               className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading}
@@ -355,7 +312,6 @@ const BancoPreguntasAscensoPage = () => {
                   onChange={(e) => {
                     setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
-                    setSelectedYear('');
                   }}
                   className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
@@ -381,7 +337,6 @@ const BancoPreguntasAscensoPage = () => {
                 value={selectedEspecialidadId}
                 onChange={(e) => {
                   setSelectedEspecialidadId(e.target.value);
-                  setSelectedYear('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
@@ -399,36 +354,12 @@ const BancoPreguntasAscensoPage = () => {
             </div>
           )}
 
-          {/* Año Selector */}
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <CalendarIcon className="h-5 w-5" />
-              <span>Elige un año</span>
-            </div>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              disabled={aniosData.length === 0}
-            >
-              <option value="">Selecciona Año</option>
-              {aniosData.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            {selectedModalidadId && aniosData.length === 0 && !isLoading && (
-              <p className="text-red-500 text-xs mt-2 font-medium">
-                No hay años disponibles para esta selección
-              </p>
-            )}
-          </div>
+
 
 
 
           {/* Resumen de selección */}
-          {(selectedModalidadId || selectedYear) && (
+          {selectedModalidadId && (
             <div className="border border-primary rounded-lg p-4 bg-white shadow-sm mt-6">
               <div className="flex items-center gap-2 mb-4 text-primary font-bold">
                 <AcademicCapIcon className="h-5 w-5" />
@@ -463,14 +394,7 @@ const BancoPreguntasAscensoPage = () => {
                   </div>
                 )}
 
-                {selectedYear && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Año</span>
-                    <div className="inline-flex px-3 py-1 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-lg text-sm font-bold w-fit">
-                      {selectedYear}
-                    </div>
-                  </div>
-                )}
+
               </div>
             </div>
           )}
@@ -488,8 +412,7 @@ const BancoPreguntasAscensoPage = () => {
               onClick={handleConfirm}
               disabled={
                 isLoading ||
-                !selectedModalidadId ||
-                !selectedYear
+                !selectedModalidadId
               }
               className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-opacity-90 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >

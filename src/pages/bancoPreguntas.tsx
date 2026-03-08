@@ -5,7 +5,6 @@ import {
   QuestionMarkCircleIcon,
   XIcon,
   FilterIcon,
-  CalendarIcon,
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/outline';
@@ -74,7 +73,6 @@ const BancoPreguntasPage = () => {
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -325,44 +323,6 @@ const BancoPreguntasPage = () => {
     selectedNivelId,
   ]);
 
-  const aniosData = useMemo(() => {
-    const set = new Set<string>();
-    examenes
-      .filter(
-        (e) =>
-          (!selectedTipoExamenId ||
-            String(e.tipoExamenId) === selectedTipoExamenId) &&
-          (!selectedModalidadId ||
-            String(e.modalidadId) === selectedModalidadId) &&
-          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId ||
-            String(e.especialidadId) === selectedEspecialidadId)
-      )
-      .forEach((e: any) => {
-        if (e.years && e.years.length > 0) {
-          e.years.forEach((y: any) => {
-            if (y.cantidadPreguntas > 0) set.add(String(y.year));
-          });
-        } else if (e.year !== undefined && e.year !== null && e.cantidadPreguntas > 0) {
-          set.add(String(e.year));
-        }
-      });
-    return Array.from(set)
-      .filter((y) => y !== 'null' && y !== 'undefined')
-      .map((y) => (y === '0' ? 'Único' : y))
-      .sort((a, b) => {
-        if (a === 'Único') return 1;
-        if (b === 'Único') return -1;
-        return Number(b) - Number(a);
-      });
-  }, [
-    examenes,
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-    selectedEspecialidadId,
-  ]);
-
   // ---------- Auto-selection Logic ----------
 
   // 1. Auto-select Tipo de Examen
@@ -394,100 +354,65 @@ const BancoPreguntasPage = () => {
   // ---------- Counts & Categories Logic ----------
 
   useEffect(() => {
-    if (selectedModalidadId && selectedYear) {
+    if (selectedModalidadId) {
       const firstNivel = nivelesData[0];
-      // Resolve nivelId (even if hidden)
       const resolvedNivelId =
         selectedNivelId ||
         (nivelesData.length === 1 &&
         firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
           ? String(firstNivel.id)
-          : null) || '0'; // Default to '0' if no level selected/visible, as many modalities have no specific level (id 0)
+          : null) || '0';
 
-      const exam = examenes.find(
+      const matchedExams = examenes.filter(
         (e) =>
           String(e.tipoExamenId) === selectedTipoExamenId &&
           String(e.modalidadId) === selectedModalidadId &&
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
-            : !e.especialidadId || e.especialidadId === 0) &&
-          ((selectedYear === 'Único' &&
-            (e.year === '0' || Number(e.year) === 0)) ||
-            String(e.year) === selectedYear ||
-            e.years?.some((y: any) => String(y.year) === selectedYear))
+            : !e.especialidadId || e.especialidadId === 0)
       );
 
-      if (exam && exam.clasificaciones) {
-        const countMap: any = {};
+      const countMap: any = {};
+      const nextTipos: Record<string, boolean> = { ...tiposPregunta };
 
-        exam.clasificaciones.forEach((item: any) => {
-          const name = item.clasificacionNombre;
-
-          if (name) {
-            // Find metadata from dynamic API classifications if available
-            const meta = allClasificaciones.find(
-              (c) => c.clasificacionNombre === name
-            );
-
-            // Buscar la cantidad exacta para el año seleccionado
-            let cantidadExacta = 0;
-            const isUnico = selectedYear === 'Único';
-
-            if (isUnico || !item.years || item.years.length === 0) {
-              cantidadExacta = item.cantidadPreguntas;
-            } else {
-              // Buscar específicamente el año en el array de la clasificación
-              const yearData = item.years.find(
-                (y: any) => String(y.year) === selectedYear
-              );
-              cantidadExacta = yearData ? yearData.cantidadPreguntas : 0;
-            }
-
-            // Evitar duplicados si la API mandara la misma clasificación dos veces por error
-            if (!countMap[name]) {
-              countMap[name] = {
-                cantidad: cantidadExacta,
-                puntos: meta?.puntos || item.puntos || 0,
-                tiempoPregunta:
-                  meta?.tiempoPregunta || item.tiempoPregunta || 0,
-                minimo: meta?.minimo || item.minimo || 0,
-              };
-            } else {
-              countMap[name].cantidad += cantidadExacta;
-            }
-          }
-        });
-        setConteoPreguntas(countMap);
-
-        setTiposPregunta((prev: any) => {
-          const nextTipos: Record<string, boolean> = { ...prev };
+      matchedExams.forEach((exam) => {
+        if (exam.clasificaciones) {
           exam.clasificaciones.forEach((item: any) => {
             const name = item.clasificacionNombre;
-            if (name && countMap[name]) {
-              const cantidadExacta = countMap[name].cantidad;
-              // Dynamic re-selection of types based on year data
-              if (nextTipos[name] === undefined && cantidadExacta > 0) {
+            if (name) {
+              const meta = allClasificaciones.find(
+                (c) => c.clasificacionNombre === name
+              );
+              const cantidad = item.cantidadPreguntas || 0;
+
+              if (!countMap[name]) {
+                countMap[name] = {
+                  cantidad: cantidad,
+                  puntos: meta?.puntos || item.puntos || 0,
+                  tiempoPregunta: meta?.tiempoPregunta || item.tiempoPregunta || 0,
+                  minimo: meta?.minimo || item.minimo || 0,
+                };
+              } else {
+                countMap[name].cantidad += cantidad;
+              }
+
+              if (nextTipos[name] === undefined && countMap[name].cantidad > 0) {
                 nextTipos[name] = true;
-              } else if (cantidadExacta === 0) {
-                nextTipos[name] = false;
               }
             }
           });
-          return nextTipos;
-        });
-      } else {
-        setConteoPreguntas({});
-      }
-    } else {
-      setConteoPreguntas({});
+        }
+      });
+
+      setConteoPreguntas(countMap);
+      setTiposPregunta(nextTipos);
     }
   }, [
     selectedTipoExamenId,
     selectedModalidadId,
     selectedNivelId,
     selectedEspecialidadId,
-    selectedYear,
     examenes,
     nivelesData,
     allClasificaciones,
@@ -504,13 +429,12 @@ const BancoPreguntasPage = () => {
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
-    setSelectedYear('');
     setTiposPregunta({});
     setIsClearModalOpen(false);
   };
 
   const handleConfirm = async () => {
-    if (!selectedModalidadId || !selectedYear) return;
+    if (!selectedModalidadId) return;
 
     try {
       setIsLoading(true);
@@ -531,11 +455,7 @@ const BancoPreguntasPage = () => {
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
-            : true) &&
-          ((selectedYear === 'Único' &&
-            (e.year === '0' || Number(e.year) === 0)) ||
-            String(e.year) === selectedYear ||
-            e.years?.some((y: any) => String(y.year) === selectedYear))
+            : true)
       );
 
       // Si no encuentra el examen en la memoria, no podemos armar el payload
@@ -547,7 +467,7 @@ const BancoPreguntasPage = () => {
         return;
       }
 
-      const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
+      const finalYearValue = '0';
 
       // 2. Extraemos los ClasificacionIds
       const clasificacionIds: number[] = [];
@@ -561,12 +481,12 @@ const BancoPreguntasPage = () => {
 
       // 3. ARMAMOS EL PAYLOAD EXACTO PARA LA API
       const payloadFiltro = {
-        tipoExamenId: exam.tipoExamenId,
-        fuenteId: exam.fuenteId || 0,
-        modalidadId: exam.modalidadId,
-        nivelId: exam.nivelId,
-        especialidadId: exam.especialidadId || 0,
-        year: finalYearValue,
+        tipoExamenId: Number(selectedTipoExamenId),
+        fuenteId: 0,
+        modalidadId: Number(selectedModalidadId),
+        nivelId: Number(resolvedNivelId),
+        especialidadId: Number(selectedEspecialidadId || 0),
+        year: '0',
         clasificaciones: clasificacionIds,
       };
 
@@ -606,13 +526,12 @@ const BancoPreguntasPage = () => {
   const confirmGoToExam = () => {
     if (!examToStart) return;
 
-    const finalYearValue = selectedYear === 'Único' ? '0' : selectedYear;
     const metadata = {
       tipoExamen: examToStart.tipoExamenNombre,
       modalidad: examToStart.modalidadNombre,
       nivel: examToStart.nivelNombre || 'NINGUNO',
       especialidad: examToStart.especialidadNombre || null,
-      year: finalYearValue,
+      year: '0',
     };
 
     localStorage.setItem('currentQuestions', JSON.stringify(questionsToStore));
@@ -661,7 +580,6 @@ const BancoPreguntasPage = () => {
                 setSelectedModalidadId('');
                 setSelectedNivelId('');
                 setSelectedEspecialidadId('');
-                setSelectedYear('');
                 setTiposPregunta({});
               }}
               className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
@@ -688,7 +606,6 @@ const BancoPreguntasPage = () => {
                   setSelectedModalidadId(e.target.value);
                   setSelectedNivelId('');
                   setSelectedEspecialidadId('');
-                  setSelectedYear('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={isLoading || !selectedTipoExamenId}
@@ -718,7 +635,6 @@ const BancoPreguntasPage = () => {
                   onChange={(e) => {
                     setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
-                    setSelectedYear('');
                   }}
                   className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
@@ -743,7 +659,6 @@ const BancoPreguntasPage = () => {
                 value={selectedEspecialidadId}
                 onChange={(e) => {
                   setSelectedEspecialidadId(e.target.value);
-                  setSelectedYear('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
@@ -761,32 +676,7 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
-          {aniosData.length > 0 && (
-            <div className="border border-primary rounded-lg p-4 bg-white transition-all">
-              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-                <CalendarIcon className="h-5 w-5" />
-                <span>Elige un año</span>
-              </div>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                disabled={aniosData.length === 0}
-              >
-                <option value="">Selecciona Año</option>
-                {aniosData.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-              {selectedModalidadId && aniosData.length === 0 && !isLoading && (
-                <p className="text-red-500 text-xs mt-2 font-medium">
-                  No hay exámenes disponibles para esta selección
-                </p>
-              )}
-            </div>
-          )}
+
 
           <div className="border border-primary rounded-lg p-4 bg-white">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
@@ -991,8 +881,7 @@ const BancoPreguntasPage = () => {
           {(selectedTipoExamenId ||
             selectedModalidadId ||
             selectedNivelId ||
-            selectedEspecialidadId ||
-            selectedYear) && (
+            selectedEspecialidadId) && (
             <div className="border border-cyan-300 rounded-xl p-6 bg-white shadow-sm mt-6">
               <div className="flex items-center gap-2 mb-6">
                 <AcademicCapIcon className="h-6 w-6 text-[#2B3674]" />
@@ -1053,19 +942,7 @@ const BancoPreguntasPage = () => {
                     </div>
                   </div>
                 )}
-                {selectedYear && (
-                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
-                      Año
-                    </p>
-                    <div className="flex items-center gap-2 text-[#D69E2E] font-extrabold text-sm">
-                      <div className="bg-[#FFF9EA] p-1.5 rounded-lg">
-                        <CalendarIcon className="h-4 w-4" />
-                      </div>
-                      {selectedYear}
-                    </div>
-                  </div>
-                )}
+
               </div>
             </div>
           )}
@@ -1091,7 +968,6 @@ const BancoPreguntasPage = () => {
                   ) &&
                   !selectedNivelId) ||
                 (especialidadesData.length > 0 && !selectedEspecialidadId) ||
-                (aniosData.length > 0 && !selectedYear) ||
                 // 2. NUEVA VALIDACIÓN: Bloquear si el total de preguntas es 0
                 Object.entries(conteoPreguntas).reduce(
                   (acc, [name, curr]: [string, any]) =>
@@ -1124,7 +1000,7 @@ const BancoPreguntasPage = () => {
           examToStart?.especialidadNombre && examToStart.especialidadNombre.toUpperCase() !== 'SIN ESPECIALIDAD' && examToStart.especialidadNombre.toUpperCase() !== 'TODAS'
             ? ` - ${examToStart.especialidadNombre}`
             : ''
-        } ${selectedYear !== 'Único' ? `del año ${selectedYear}` : ''}. ¿Deseas comenzar ahora?`}
+        }? ¿Deseas comenzar ahora?`}
         confirmText="Sí, ¡empezar!"
         cancelText="No, revisar"
         type="success"
