@@ -365,7 +365,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           } h-20 md:h-40 px-6 mb-0 transition-all duration-300`}
         >
           {!isCollapsed && (
-            <Link href="/">
+            <Link href="/premium">
               <a className="flex items-center gap-2 group">
                 <img
                   src="/assets/images/escala_2.png"
@@ -604,11 +604,15 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           </div>
 
           <div className="md:hidden flex items-center justify-center">
-            <img 
-              src="/assets/images/escala_2.png" 
-              alt="Escala" 
-              className="h-16 w-auto object-contain"
-            />
+            <Link href="/premium">
+              <a className="block">
+                <img 
+                  src="/assets/images/escala_2.png" 
+                  alt="Escala" 
+                  className="h-16 w-auto object-contain"
+                />
+              </a>
+            </Link>
           </div>
 
           {/* Right Side: Profile & Actions */}
