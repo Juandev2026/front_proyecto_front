@@ -215,7 +215,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas ED',
+          name: 'Banco de Preguntas AE',
           href: '/avendescala/bancoPreguntasEd?context=nombramiento',
           icon: CollectionIcon,
         },
@@ -243,7 +243,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas ED',
+          name: 'Banco de Preguntas AE',
           href: '/avendescala/bancoPreguntasEd?context=ascenso',
           icon: CollectionIcon,
         },
