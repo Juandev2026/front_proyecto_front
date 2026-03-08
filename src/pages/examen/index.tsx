@@ -998,16 +998,16 @@ const ExamenPage = () => {
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
                 <div className="mb-6 text-gray-800 font-sans leading-relaxed force-black-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: (currentQuestion as any).parentEnunciado,
-                    }}
-                    className="text-base md:text-lg"
-                  />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: (currentQuestion as any).parentEnunciado,
+                      }}
+                      className="text-lg md:text-xl font-medium"
+                    />
                 </div>
               )}
 
-              <div className="space-y-6 text-justify mb-8 font-sans text-lg leading-relaxed text-black">
+              <div className="space-y-6 text-justify mb-8 font-sans text-lg md:text-xl leading-relaxed text-black font-medium">
                 {currentQuestion?.imagen && (
                   <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 shadow-md">
                     <img
@@ -1101,7 +1101,7 @@ const ExamenPage = () => {
                             {opt}
                           </div>
                           <HtmlMathRenderer
-                            className="font-medium text-base flex-1 alternative-content pt-1 selectable-text"
+                            className="font-medium text-lg md:text-xl flex-1 alternative-content pt-1 selectable-text"
                             html={content}
                             alternativeLabel={opt}
                           />
