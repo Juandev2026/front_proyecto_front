@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   AcademicCapIcon,
@@ -7,6 +7,7 @@ import {
   FilterIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  CalendarIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -73,6 +74,7 @@ const BancoPreguntasPage = () => {
   const [selectedNivelId, setSelectedNivelId] = useState<string>('');
   const [selectedEspecialidadId, setSelectedEspecialidadId] =
     useState<string>('');
+  const [selectedYearId, setSelectedYearId] = useState<string>('');
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -322,6 +324,50 @@ const BancoPreguntasPage = () => {
     selectedModalidadId,
     selectedNivelId,
   ]);
+  
+  const yearsData = useMemo(() => {
+    const map = new Map<number, { id: number; nombre: string }>();
+    examenes
+      .filter(
+        (e) =>
+          (!selectedTipoExamenId ||
+            String(e.tipoExamenId) === selectedTipoExamenId) &&
+          (!selectedModalidadId ||
+            String(e.modalidadId) === selectedModalidadId) &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
+          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+      )
+      .forEach((e) => {
+        if (e.years && Array.isArray(e.years)) {
+          e.years.forEach((y: any) => {
+            const yVal = typeof y === 'object' ? y.year : y;
+            const yCant = typeof y === 'object' ? (y.cantidadPreguntas ?? y.cantidad_p ?? 1) : 1;
+
+            if (yVal && Number(yVal) > 0 && yCant > 0) {
+              map.set(Number(yVal), {
+                id: Number(yVal),
+                nombre: String(yVal),
+              });
+            }
+          });
+        } else if (e.year) {
+          const yVal = Number(e.year);
+          if (yVal > 0) {
+            map.set(yVal, {
+              id: yVal,
+              nombre: String(yVal),
+            });
+          }
+        }
+      });
+    return Array.from(map.values()).sort((a, b) => b.id - a.id);
+  }, [
+    examenes,
+    selectedTipoExamenId,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Auto-selection Logic ----------
 
@@ -351,6 +397,13 @@ const BancoPreguntasPage = () => {
     }
   }, [especialidadesData, selectedEspecialidadId]);
 
+  // 4. Auto-select Year if only one specific year
+  useEffect(() => {
+    if (yearsData.length === 1 && yearsData[0]?.id !== 0 && !selectedYearId) {
+      setSelectedYearId(String(yearsData[0]?.id));
+    }
+  }, [yearsData, selectedYearId]);
+
   // ---------- Counts & Categories Logic ----------
 
   useEffect(() => {
@@ -370,7 +423,10 @@ const BancoPreguntasPage = () => {
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
-            : !e.especialidadId || e.especialidadId === 0)
+            : !e.especialidadId || e.especialidadId === 0) &&
+          (selectedYearId !== '0' 
+            ? (e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId)
+            : true)
       );
 
       const countMap: any = {};
@@ -384,7 +440,20 @@ const BancoPreguntasPage = () => {
               const meta = allClasificaciones.find(
                 (c) => c.clasificacionNombre === name
               );
-              const cantidad = item.cantidadPreguntas || 0;
+              
+              let cantidad = 0;
+              if (selectedYearId === '0') {
+                // Total accumulation (existing logic)
+                cantidad = item.cantidadPreguntas || 0;
+              } else if (selectedYearId) {
+                // Year-specific drill down
+                if (item.years && Array.isArray(item.years)) {
+                  const yrObj = item.years.find((y: any) => String(y.year) === selectedYearId);
+                  cantidad = yrObj ? (yrObj.cantidadPreguntas || yrObj.cantidad_p || 0) : 0;
+                } else if (String(exam.year) === selectedYearId) {
+                  cantidad = item.cantidadPreguntas || 0;
+                }
+              }
 
               if (!countMap[name]) {
                 countMap[name] = {
@@ -413,6 +482,7 @@ const BancoPreguntasPage = () => {
     selectedModalidadId,
     selectedNivelId,
     selectedEspecialidadId,
+    selectedYearId,
     examenes,
     nivelesData,
     allClasificaciones,
@@ -429,6 +499,7 @@ const BancoPreguntasPage = () => {
     setSelectedModalidadId('');
     setSelectedNivelId('');
     setSelectedEspecialidadId('');
+    setSelectedYearId('0');
     setTiposPregunta({});
     setIsClearModalOpen(false);
   };
@@ -455,6 +526,9 @@ const BancoPreguntasPage = () => {
           String(e.nivelId) === resolvedNivelId &&
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
+            : true) &&
+          (selectedYearId !== '0'
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId
             : true)
       );
 
@@ -467,7 +541,7 @@ const BancoPreguntasPage = () => {
         return;
       }
 
-      const finalYearValue = '0';
+      const finalYearValue = selectedYearId || '0';
 
       // 2. Extraemos los ClasificacionIds
       const clasificacionIds: number[] = [];
@@ -486,7 +560,7 @@ const BancoPreguntasPage = () => {
         modalidadId: Number(selectedModalidadId),
         nivelId: Number(resolvedNivelId),
         especialidadId: Number(selectedEspecialidadId || 0),
-        year: '0',
+        year: finalYearValue,
         clasificaciones: clasificacionIds,
       };
 
@@ -527,11 +601,12 @@ const BancoPreguntasPage = () => {
     if (!examToStart) return;
 
     const metadata = {
+      tipoExamenId: 2,
       tipoExamen: examToStart.tipoExamenNombre,
       modalidad: examToStart.modalidadNombre,
       nivel: examToStart.nivelNombre || 'NINGUNO',
       especialidad: examToStart.especialidadNombre || null,
-      year: '0',
+      year: selectedYearId || '0',
     };
 
     localStorage.setItem('currentQuestions', JSON.stringify(questionsToStore));
@@ -606,6 +681,7 @@ const BancoPreguntasPage = () => {
                   setSelectedModalidadId(e.target.value);
                   setSelectedNivelId('');
                   setSelectedEspecialidadId('');
+                  setSelectedYearId('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={isLoading || !selectedTipoExamenId}
@@ -635,6 +711,7 @@ const BancoPreguntasPage = () => {
                   onChange={(e) => {
                     setSelectedNivelId(e.target.value);
                     setSelectedEspecialidadId('');
+                    setSelectedYearId('');
                   }}
                   className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
@@ -659,6 +736,7 @@ const BancoPreguntasPage = () => {
                 value={selectedEspecialidadId}
                 onChange={(e) => {
                   setSelectedEspecialidadId(e.target.value);
+                  setSelectedYearId('');
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
@@ -676,9 +754,41 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
+          {/* Year Selector */}
+          {yearsData.length > 0 && (
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <FilterIcon className="h-5 w-5" />
+                <span>Año</span>
+              </div>
+              <select
+                value={selectedYearId}
+                onChange={(e) => {
+                  setSelectedYearId(e.target.value);
+                }}
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
+                disabled={
+                  isLoading || 
+                  !selectedModalidadId || 
+                  (nivelesData.length > 1 && !selectedNivelId) ||
+                  (especialidadesData.length > 0 && !selectedEspecialidadId)
+                }
+              >
+                <option value="">Selecciona Año</option>
+                {yearsData.map((y) => (
+                  <option key={y.id} value={String(y.id)}>
+                    {y.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
 
-          <div className="border border-primary rounded-lg p-4 bg-white">
+
+          {/* Tipos de Pregunta - Only show after Year is selected */}
+          {selectedYearId && (
+            <div className="border border-primary rounded-lg p-4 bg-white">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <QuestionMarkCircleIcon className="h-5 w-5" />
               <span>Tipos de Pregunta*</span>
@@ -749,6 +859,7 @@ const BancoPreguntasPage = () => {
               * Selecciona al menos un tipo de pregunta
             </p>
           </div>
+          )}
 
           {Object.values(tiposPregunta).some((isChecked) => isChecked) && (
             <div className="mt-8 space-y-6">
@@ -942,7 +1053,23 @@ const BancoPreguntasPage = () => {
                     </div>
                   </div>
                 )}
-
+                {selectedYearId && selectedYearId !== '0' && (
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
+                      Año
+                    </p>
+                    <div className="flex items-center gap-2 text-[#D69E2E] font-extrabold text-sm">
+                      <div className="bg-[#FEF6E1] p-1.5 rounded-lg">
+                        <CalendarIcon className="h-4 w-4" />
+                      </div>
+                      {
+                        yearsData.find(
+                          (y) => String(y.id) === selectedYearId
+                        )?.nombre
+                      }
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

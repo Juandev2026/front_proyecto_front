@@ -510,7 +510,7 @@ const ResultadoPage = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => router.push(examMetadata?.tipoExamenId === 2 ? '/avendescala/respuestasErroneas' : '/avendescala/respuestasErroneasAscenso')}
+                  onClick={() => router.push(examMetadata?.tipoExamenId === 1 ? '/avendescala/respuestasErroneasAscenso' : '/avendescala/respuestasErroneas')}
                   className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
                 >
                   Ver Respuestas Erróneas

@@ -794,7 +794,7 @@ const ExamenPage = () => {
                   {metadata.especialidad}
                 </span>
               )}
-              {metadata?.year && (
+              {metadata?.year && metadata.year !== '0' && (
                 <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-xs shadow-sm uppercase">
                   {metadata.year}
                 </span>

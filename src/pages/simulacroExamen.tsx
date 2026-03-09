@@ -55,7 +55,7 @@ const SimulacroExamenPage = () => {
       if (isAuthenticated && user?.id) {
         try {
           const data = await examenService.getPropiosByUser(2, user.id);
-          const visibleData = data.filter((s: any) => s.visible !== false);
+          const visibleData = data.filter((s: any) => s.visible === true);
           setSeccionesPropias(visibleData);
         } catch (error) {
           console.error('Error fetching propio exams:', error);
@@ -758,7 +758,7 @@ const SimulacroExamenPage = () => {
           </div>
         </div>
 
-        {/* Bloque II - Exámenes Propios ED */}
+        {/* Bloque II - Exámenes Propios AE */}
         <div className="border border-[#4790FD] rounded-lg overflow-hidden bg-white shadow-sm mt-8">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
@@ -769,7 +769,7 @@ const SimulacroExamenPage = () => {
 
           <div className="p-6">
             <p className="text-xs text-blue-800 font-medium mb-4">
-              Selecciona las secciones ED adicionales que deseas incluir en tu
+              Selecciona las secciones AE adicionales que deseas incluir en tu
               simulacro.
             </p>
 
@@ -1000,7 +1000,7 @@ const SimulacroExamenPage = () => {
                     Total de preguntas <br className="hidden md:block" /> seleccionadas:
                   </h4>
                   <p className="text-[#065F46]/80 text-xs md:text-sm font-medium leading-relaxed mt-2 max-w-md">
-                    Incluye preguntas de Bloque I (exámenes MINEDU) y Bloque II (exámenes ED)
+                    Incluye preguntas de Bloque I (exámenes MINEDU) y Bloque II (exámenes AE)
                   </p>
                 </div>
                 

@@ -76,12 +76,12 @@ const BancoPreguntasEdPage = () => {
         tipoExamenNombre:
           s.tipoExamenNombre ||
           (context === 'nombramiento' ? 'Nombramiento' : 'Ascenso'),
-        visible: s.visible ?? true,
+        visible: s.visible,
         categorias: s.examenesPropios || [],
         clasificaciones: s.clasificaciones || [],
       }));
 
-      const filtered = mapped.filter((s: any) => s.visible !== false);
+      const filtered = mapped.filter((s: SeccionPropia) => s.visible === true);
       setSecciones(filtered);
 
       if (filtered.length > 0 && filtered[0]) {
@@ -269,17 +269,17 @@ const BancoPreguntasEdPage = () => {
 
   return (
     <PremiumLayout
-      title="Banco de Preguntas ED"
-      breadcrumb="Pages / Banco de Preguntas ED"
+      title="Banco de Preguntas AE"
+      breadcrumb="Pages / Banco de Preguntas AE"
     >
       <Head>
-        <title>Banco de Preguntas ED - AVENDOCENTE</title>
+        <title>Banco de Preguntas AE - AVENDOCENTE</title>
       </Head>
 
       <div className="w-full space-y-6">
         <div className="text-center py-4">
           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
-            Banco de Preguntas ED
+            Banco de Preguntas AE
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">
             Selecciona tu sección de estudio para practicar hoy
@@ -291,7 +291,7 @@ const BancoPreguntasEdPage = () => {
           <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <ClipboardListIcon className="h-5 w-5" />
-              <span>Exámenes Propios ED</span>
+              <span>Exámenes Propios AE</span>
               <span className="ml-auto bg-blue-50 text-blue-600 px-3 py-0.5 rounded-full text-xs font-bold ring-1 ring-blue-100">
                 {secciones.length} Disponibles
               </span>
