@@ -78,8 +78,13 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           content: (node as HTMLImageElement).src,
         });
       } else if (
+        node.nodeType === Node.ELEMENT_NODE &&
         node.nodeName === 'DIV' &&
-        (node as HTMLElement).classList.contains('bg-gray-100')
+        ((node as HTMLElement).classList.contains('bg-gray-100') ||
+         (node as HTMLElement).classList.contains('bg-gray-50') ||
+         (node as HTMLElement).classList.contains('bg-gray-block') ||
+         (node as HTMLElement).classList.contains('bg-var-gray') ||
+         (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
       ) {
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
@@ -495,7 +500,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       .map((b) => {
         if (b.type === 'image') return `<img src="${b.content}" alt="Image" />`;
         if (b.isGray) {
-            return `<div class="bg-gray-100 p-4 rounded-lg my-2">${b.content}</div>`;
+            return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 bg-gray-block bg-var-gray rounded-md text-justify">${b.content}</div>`;
         }
         return b.content;
       })

@@ -6,6 +6,7 @@
   --color-primary: #4790fd;
   --color-secondary: #2b6cb0;
   --color-tertiaty: #99a0a3;
+  --color-bg-50: #f0f2f5; /* A bit more gray */
 }
 
 ::selection {
@@ -145,6 +146,19 @@ a:hover {
   color: black !important;
 }
 
+/* Gray blocks for questions/dialogues */
+.bg-gray-block {
+  background-color: #f3f4f6 !important; /* Tailwind gray-100 */
+}
+
+.bg-var-gray {
+  background-color: var(--color-bg-50, #f3f4f6) !important;
+}
+
+.bg-\[var\(--color-bg-50\)\] {
+  background-color: var(--color-bg-50) !important;
+}
+
 /* Custom Scrollbar Utility */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -159,6 +173,8 @@ a:hover {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+
+
 
 
 

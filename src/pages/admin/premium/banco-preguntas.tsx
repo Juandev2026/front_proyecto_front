@@ -38,13 +38,11 @@ import {
   TipoPregunta,
 } from '../../../services/tipoPreguntaService';
 import { uploadService } from '../../../services/uploadService';
-import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
 
 
 
-// Dynamic import for ReactQuill
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
 
 // Dynamic import for TiptapEditor (Math Editor)
 const TiptapEditor = dynamic(
@@ -52,12 +50,14 @@ const TiptapEditor = dynamic(
   { ssr: false }
 );
 
-const Recursos = () => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+interface ContentBlock {
+  id: string;
+  type: 'text' | 'image';
+  content: string; // HTML or Image URL
+  isGray?: boolean;
+}
 
+const Recursos = () => {
   // --- ESTADOS LOGICOS (CRUD) ---
   const [items, setItems] = useState<Pregunta[]>([]);
 
@@ -275,6 +275,54 @@ const Recursos = () => {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  // --- ENUNCIADO STATE (BLOCKS) ---
+  const [enunciadoBlocks, setEnunciadoBlocks] = useState<ContentBlock[]>([]);
+  const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] = useState(false);
+
+  const addEnunciadoText = () => {
+    setEnunciadoBlocks((prev) => [
+      ...prev,
+      { id: Date.now().toString(), type: 'text', content: '', isGray: false },
+    ]);
+  };
+
+  const removeEnunciadoBlock = (id: string) => {
+    setEnunciadoBlocks((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const updateEnunciadoBlock = (id: string, content: string) => {
+    setEnunciadoBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, content } : b))
+    );
+  };
+
+  const toggleEnunciadoBlockGray = (id: string) => {
+    setEnunciadoBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, isGray: !b.isGray } : b))
+    );
+  };
+
+  const handleEnunciadoImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingEnunciadoImage(true);
+    try {
+      const url = await uploadService.uploadImage(file);
+      setEnunciadoBlocks((prev) => [
+        ...prev,
+        { id: Date.now().toString(), type: 'image', content: url },
+      ]);
+    } catch (err) {
+      alert('Error subiendo imagen de enunciado');
+    } finally {
+      setIsUploadingEnunciadoImage(false);
+      if (enunciadoImageInputRef.current)
+        enunciadoImageInputRef.current.value = '';
+    }
+  };
+
   // --- JUSTIFICATION STATE ---
   interface JustificationBlock {
     id: string;
@@ -286,32 +334,7 @@ const Recursos = () => {
   >([]);
   const justificationFileInputRef = React.useRef<HTMLInputElement>(null);
   const enunciadoImageInputRef = React.useRef<HTMLInputElement>(null);
-  const [enunciadoImages, setEnunciadoImages] = React.useState<string[]>([]);
-  const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] =
-    React.useState(false);
-  const [enunciadoIsGray, setEnunciadoIsGray] = useState(false);
 
-  const handleEnunciadoImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploadingEnunciadoImage(true);
-    try {
-      const url = await uploadService.uploadImage(file);
-      setEnunciadoImages((prev) => [...prev, url]);
-      // También activar el editor si estaba vacío
-      if (!newItem.enunciado || newItem.enunciado === '<p><br></p>') {
-        setNewItem({ ...newItem, enunciado: '<p> </p>' });
-      }
-    } catch (err) {
-      alert('Error subiendo imagen de enunciado');
-    } finally {
-      setIsUploadingEnunciadoImage(false);
-      if (enunciadoImageInputRef.current)
-        enunciadoImageInputRef.current.value = '';
-    }
-  };
 
   const selectedModalidadNombre = useMemo(() => {
     if (!selectedModalidad) return '';
@@ -934,48 +957,69 @@ const Recursos = () => {
       ? item.enunciados.map((e: any) => e.contenido).join('')
       : item.enunciado || '';
 
-    let cleanedEnunciado = rawEnunciado;
-    const extractedImages: string[] = [];
+    const enunciadoBlocksLocal: ContentBlock[] = [];
 
     if (typeof window !== 'undefined') {
       const div = document.createElement('div');
       div.innerHTML = rawEnunciado;
 
-      // Extract all images from enunciado, whether wrapped in data-block-type or not
-      const images = Array.from(div.querySelectorAll('img'));
-      images.forEach((img: any) => {
-        if (img.src) {
-          extractedImages.push(img.src);
-          // If wrapped in our custom block, remove the whole wrapper
-          const parent = img.closest('[data-block-type="image"]');
-          if (parent) {
-            parent.remove();
-          } else {
-            // Otherwise remove just the image
-            img.remove();
+      const children = Array.from(div.childNodes);
+      children.forEach((node) => {
+        if (node.nodeName === 'IMG') {
+          enunciadoBlocksLocal.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'image',
+            content: (node as HTMLImageElement).src,
+          });
+        } else if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.nodeName === 'DIV' &&
+          ((node as HTMLElement).getAttribute('data-block-type') === 'image')
+        ) {
+          const img = (node as HTMLElement).querySelector('img');
+          if (img) {
+            enunciadoBlocksLocal.push({
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'image',
+              content: img.src,
+            });
+          }
+        } else if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.nodeName === 'DIV' &&
+          ((node as HTMLElement).classList.contains('bg-gray-100') ||
+           (node as HTMLElement).classList.contains('bg-gray-50') ||
+           (node as HTMLElement).classList.contains('bg-gray-block') ||
+           (node as HTMLElement).classList.contains('bg-var-gray') ||
+           (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
+        ) {
+          enunciadoBlocksLocal.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'text',
+            content: (node as HTMLElement).innerHTML,
+            isGray: true,
+          });
+        } else if (
+          node.nodeType === Node.TEXT_NODE ||
+          node.nodeType === Node.ELEMENT_NODE
+        ) {
+          const content = (node as HTMLElement).outerHTML || node.textContent || '';
+          if (content.trim()) {
+            enunciadoBlocksLocal.push({
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'text',
+              content,
+              isGray: false,
+            });
           }
         }
       });
-
-      // Detect "Texto en gris"
-      const grayWrapper = div.querySelector('div.bg-gray-100');
-      if (grayWrapper) {
-        setEnunciadoIsGray(true);
-        // Replace the wrapper with its content to keep the HTML for the editor
-        const content = grayWrapper.innerHTML;
-        grayWrapper.insertAdjacentHTML('beforebegin', content);
-        grayWrapper.remove();
-      } else {
-        setEnunciadoIsGray(false);
-      }
-
-      cleanedEnunciado = div.innerHTML;
     }
 
-    setEnunciadoImages(extractedImages);
+    setEnunciadoBlocks(enunciadoBlocksLocal);
 
     setNewItem({
-      enunciado: cleanedEnunciado,
+      enunciado: '', // Now using blocks
       respuesta: item.respuesta?.toString() || '',
       sustento: item.sustento || '',
       examenId: item.examenId,
@@ -1027,10 +1071,10 @@ const Recursos = () => {
     setImageFile(null);
 
     // Parse Justification prioritising the array if it exists
-    const blocks: JustificationBlock[] = [];
+    const justificationBlocksLocal: JustificationBlock[] = [];
     if (item.justificaciones && item.justificaciones.length > 0) {
       item.justificaciones.forEach((j: any) => {
-        blocks.push({
+        justificationBlocksLocal.push({
           id: j.id?.toString() || Math.random().toString(),
           type: 'text', // Backend usually sends text, improve if it supports images
           content: j.contenido || '',
@@ -1050,13 +1094,13 @@ const Recursos = () => {
             const type = c.getAttribute('data-block-type');
             if (type === 'image') {
               const imgTag = c.querySelector('img');
-              blocks.push({
+              justificationBlocksLocal.push({
                 id: Math.random().toString(),
                 type: 'image',
                 content: imgTag?.src || '',
               });
             } else {
-              blocks.push({
+              justificationBlocksLocal.push({
                 id: Math.random().toString(),
                 type: 'text',
                 content: c.innerHTML,
@@ -1064,13 +1108,13 @@ const Recursos = () => {
             }
           });
         } else {
-          blocks.push({ id: '1', type: 'text', content: item.sustento });
+          justificationBlocksLocal.push({ id: '1', type: 'text', content: item.sustento });
         }
       } else {
-        blocks.push({ id: '1', type: 'text', content: item.sustento });
+        justificationBlocksLocal.push({ id: '1', type: 'text', content: item.sustento });
       }
     }
-    setJustificationBlocks(blocks);
+    setJustificationBlocks(justificationBlocksLocal);
 
     // Cargar info de asignación si es Nombramiento
     if (Number(selectedTipo) === 2) {
@@ -1085,7 +1129,7 @@ const Recursos = () => {
     setJustificationBlocks([]);
     setImageFile(null);
     setNumeroPregunta('');
-    setEnunciadoImages([]);
+    setEnunciadoBlocks([]);
     setNewItem({
       enunciado: '',
       respuesta: '',
@@ -1610,18 +1654,17 @@ const Recursos = () => {
         enunciados: [
           {
             id: editingId ? 1 : 1, // Defaulting to 1 for structure as requested
-            contenido:
-              (enunciadoIsGray
-                ? `<div class="bg-gray-100 p-4 rounded-lg my-2">${newItem.enunciado}</div>`
-                : newItem.enunciado) +
-              (enunciadoImages.length > 0
-                ? enunciadoImages
-                    .map(
-                      (url) =>
-                        `<div data-block-type="image"><img src="${url}" alt="imagen" /></div>`
-                    )
-                    .join('')
-                : ''),
+            contenido: enunciadoBlocks
+              .map((b) => {
+                if (b.type === 'image') {
+                  return `<div data-block-type="image"><img src="${b.content}" alt="imagen" /></div>`;
+                }
+                if (b.isGray) {
+                  return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 bg-gray-block bg-var-gray rounded-md text-justify">${b.content}</div>`;
+                }
+                return b.content;
+              })
+              .join('<br/>'),
           },
         ],
         alternativas: mappedAlternativas,
@@ -1675,7 +1718,7 @@ const Recursos = () => {
         setViewMode('list');
       }
       resetForm();
-      setEnunciadoIsGray(false);
+
 
       if (stayInCreateMode) {
         setNumeroPregunta((numPreguntaParsed + 1).toString());
@@ -1698,18 +1741,7 @@ const Recursos = () => {
     }
   };
 
-  // --- EDITOR CONFIG ---
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'clean'],
-      ],
-    }),
-    []
-  );
+
 
   // --- RENDER ---
   if (loading && rawGroupedData.length === 0)
@@ -2018,12 +2050,7 @@ const Recursos = () => {
                     {/* Botones de Acción */}
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                       <button
-                        onClick={() =>
-                          setNewItem({
-                            ...newItem,
-                            enunciado: newItem.enunciado || '<p> </p>',
-                          })
-                        }
+                        onClick={addEnunciadoText}
                         className="flex items-center gap-2 text-[#4790FD] border border-[#4790FD] px-3 md:px-4 py-1.5 rounded hover:bg-blue-50 text-xs md:text-sm font-medium transition-colors"
                       >
                         <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
@@ -2055,7 +2082,7 @@ const Recursos = () => {
                   </div>
 
                   {/* Lógica de Visualización: Editor o Placeholder */}
-                  {!newItem.enunciado || newItem.enunciado === '<p><br></p>' ? (
+                  {enunciadoBlocks.length === 0 ? (
                     /* PLACEHOLDER PUNTEADO (Como la imagen) */
                     <div className="border-2 border-dashed border-gray-200 rounded-lg h-32 flex flex-col items-center justify-center text-center bg-gray-50/50">
                       <p className="text-gray-500 text-sm font-medium mb-1">
@@ -2066,84 +2093,65 @@ const Recursos = () => {
                       </p>
                     </div>
                   ) : (
-                    /* EDITOR DE ENUNCIADO */
-                     mounted ? (
-                      <div className={`quill-editor-container border border-gray-200 rounded-lg overflow-hidden ${enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}`}>
-                        <ReactQuill
-                          key={`enunciado-${editingId || 'new'}`}
-                          theme="snow"
-                          value={newItem.enunciado || ''}
-                          onChange={(val) =>
-                            setNewItem({ ...newItem, enunciado: val })
-                          }
-                          modules={modules}
-                          className={enunciadoIsGray ? 'bg-gray-100' : 'bg-white'}
-                          placeholder="Escribe el enunciado aquí..."
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-64 animate-pulse bg-gray-50 rounded-lg border border-gray-200" />
-                    )
-                  )}
-
-                  <div className="mt-3">
-                        <label className="flex items-center gap-2 cursor-pointer group w-fit">
-                             <div className="relative flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:bg-primary checked:border-primary transition-all shadow-sm"
-                                    checked={enunciadoIsGray}
-                                    onChange={(e) => setEnunciadoIsGray(e.target.checked)}
-                                />
-                                <svg 
-                                    className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" 
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
-                                >
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                             </div>
-                             <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Texto en gris</span>
-                        </label>
-                  </div>
-
-                  {/* Imágenes cargadas en el enunciado */}
-                  {enunciadoImages.length > 0 && (
-                    <div className="space-y-3 mt-4">
-                      {enunciadoImages.map((url, imgIdx) => (
-                        <div
-                          key={imgIdx}
-                          className="relative group border border-gray-200 rounded-lg p-3 bg-gray-50 flex justify-center"
-                        >
+                    <div className="space-y-4">
+                      {enunciadoBlocks.map((block) => (
+                        <div key={block.id} className="relative group w-full">
                           <button
-                            type="button"
-                            onClick={() =>
-                              setEnunciadoImages((prev) =>
-                                prev.filter((_, i) => i !== imgIdx)
-                              )
-                            }
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors z-10"
-                            title="Eliminar imagen"
+                            onClick={() => removeEnunciadoBlock(block.id)}
+                            className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Eliminar bloque"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
+                            <TrashIcon className="w-4 h-4" />
                           </button>
-                          <img
-                            src={url}
-                            alt={`Imagen ${imgIdx + 1}`}
-                            className="max-h-64 rounded shadow-sm"
-                          />
+                          {block.type === 'text' ? (
+                            <div
+                              className={`p-4 rounded-lg border border-gray-100 shadow-sm ${
+                                block.isGray ? 'bg-gray-100' : 'bg-white'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-3 text-gray-500">
+                                  <DocumentTextIcon className="w-4 h-4" />
+                                  <span className="text-xs font-bold uppercase tracking-wider">Texto</span>
+                              </div>
+                              <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden bg-white">
+                                  <TiptapEditor
+                                    value={block.content}
+                                    onChange={(val) =>
+                                      updateEnunciadoBlock(block.id, val)
+                                    }
+                                    placeholder={`Escribe aquí...`}
+                                    borderColor="border-gray-200"
+                                  />
+                              </div>
+                              <div className="mt-3 flex items-center">
+                                  <label className="flex items-center gap-2 cursor-pointer group">
+                                       <div className="relative flex items-center">
+                                          <input 
+                                              type="checkbox" 
+                                              className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:bg-primary checked:border-primary transition-all"
+                                              checked={block.isGray}
+                                              onChange={() => toggleEnunciadoBlockGray(block.id)}
+                                          />
+                                          <svg 
+                                              className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" 
+                                              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                                          >
+                                              <polyline points="20 6 9 17 4 12"></polyline>
+                                          </svg>
+                                       </div>
+                                       <span className="text-xs font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Texto en gris</span>
+                                  </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="border rounded-lg p-4 bg-gray-50 flex justify-center items-center">
+                              <img
+                                src={block.content}
+                                alt="Content"
+                                className="max-h-64 rounded shadow-sm"
+                              />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

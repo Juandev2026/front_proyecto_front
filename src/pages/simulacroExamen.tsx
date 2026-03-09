@@ -284,14 +284,33 @@ const SimulacroExamenPage = () => {
 
   // ---------- Handlers ----------
 
-  const handleTypeToggle = (year: string, typeName: string) => {
-    setYearSelections((prev) => ({
-      ...prev,
-      [year]: {
-        ...prev[year],
-        [typeName]: !prev[year]?.[typeName],
-      },
-    }));
+
+
+  const handleYearToggle = (year: string) => {
+    setSelectedYears((prev) => {
+      const isSelected = prev.includes(year);
+      if (isSelected) {
+        const next = prev.filter((y) => y !== year);
+        setYearSelections((prevSel) => {
+          const nextSel = { ...prevSel };
+          delete nextSel[year];
+          return nextSel;
+        });
+        return next;
+      }
+      const next = [...prev, year];
+      // Initialize classifications for this year
+      const meta = getMetadataForYear(year);
+      const initialTypeSelections: Record<string, boolean> = {};
+      meta.forEach((m) => {
+        if (m.cantidad > 0) initialTypeSelections[m.name] = true;
+      });
+      setYearSelections((prevSel) => ({
+        ...prevSel,
+        [year]: initialTypeSelections,
+      }));
+      return next;
+    });
   };
 
   const handleClear = () => {
@@ -304,7 +323,7 @@ const SimulacroExamenPage = () => {
   };
 
   const handleConfirm = async () => {
-    const minMineduSelected = selectedYears.length >= 1;
+    const minMineduSelected = selectedYears.length >= 2;
     const somethingPropiosSelected = selectedPropiosIds.length > 0;
 
     if (
@@ -688,94 +707,29 @@ const SimulacroExamenPage = () => {
             <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
               <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                 <CalendarIcon className="h-5 w-5" />
-                <span>Puedes seleccionar el año de su preferencia</span>
+                <span>Selecciona mínimo dos años*</span>
               </div>
-              <select
-                value={selectedYears[0] || ''}
-                onChange={(e) => {
-                  const year = e.target.value;
-                  if (!year) {
-                    setSelectedYears([]);
-                    setYearSelections({});
-                    return;
-                  }
-                  // Single selection like Banco de Preguntas
-                  setSelectedYears([year]);
-                  const meta = getMetadataForYear(year);
-                  const initialTypeSelections: Record<string, boolean> = {};
-                  meta.forEach((m) => {
-                    if (m.cantidad > 0) initialTypeSelections[m.name] = true;
-                  });
-                  setYearSelections({ [year]: initialTypeSelections });
-                }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
-                disabled={!selectedModalidadId}
-              >
-                <option value="">Selecciona Año</option>
-                {aniosData.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Types of Questions (Categories) - Dynamic for selected year */}
-          {selectedYears.length > 0 && selectedYears[0] && (
-            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
-                <AcademicCapIcon className="h-5 w-5" />
-                <span>Tipos de Pregunta*</span>
-              </div>
-              <div className="space-y-3">
-                {getMetadataForYear(selectedYears[0])
-                  .sort((a, b) => {
-                    const order: Record<string, number> = { 
-                      'CL': 1, 'Comprensión Lectora': 1,
-                      'RL': 2, 'Razonamiento Lógico': 2,
-                      'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
-                      'Conocimientos Curriculares y Pedagócicos': 3
-                    };
-                    const valA = order[a.name] || 99;
-                    const valB = order[b.name] || 99;
-                    if (valA !== valB) return valA - valB;
-                    return a.name.localeCompare(b.name);
-                  })
-                  .map((m) => {
-                  const currentYear = selectedYears[0]!;
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                {aniosData.map((year) => {
+                  const isChecked = selectedYears.includes(year);
                   return (
                     <label
-                      key={m.name}
-                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                        m.cantidad > 0
-                          ? `cursor-pointer hover:bg-gray-50 ${
-                              yearSelections[currentYear]?.[m.name]
-                                ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
-                                : 'border-gray-200'
-                            }`
-                          : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                      key={year}
+                      className={`flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        isChecked
+                          ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
+                          : 'border-gray-200 hover:border-blue-200'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
-                            checked={
-                              yearSelections[currentYear]?.[m.name] || false
-                            }
-                            disabled={m.cantidad === 0}
-                            onChange={() =>
-                              handleTypeToggle(currentYear, m.name)
-                            }
-                          />
-                          <span className="text-sm font-bold text-blue-900">
-                            {m.name}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-black bg-blue-100 text-[#4790FD] px-2 py-0.5 rounded-full min-w-[32px] text-center">
-                          {m.cantidad}p
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleYearToggle(year)}
+                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                        />
+                        <span className={`text-sm font-bold ${isChecked ? 'text-[#4790FD]' : 'text-blue-900'}`}>
+                          {year}
                         </span>
                       </div>
                     </label>
@@ -784,6 +738,8 @@ const SimulacroExamenPage = () => {
               </div>
             </div>
           )}
+
+
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">
             <div className="mt-0.5">
