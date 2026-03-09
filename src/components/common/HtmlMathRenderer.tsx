@@ -39,6 +39,14 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
     if (alternativeLabel) {
       processedHtml = cleanAlternativeContent(html, alternativeLabel);
     }
+
+    // 1.5 Replace asterisks with points (dots) globally as requested
+    processedHtml = processedHtml.replace(/\*/g, '.');
+
+    // 1.6 Intensify gray backgrounds globally as requested
+    processedHtml = processedHtml.replace(/bg-gray-100/g, 'bg-gray-300 border border-gray-400')
+                                .replace(/bg-gray-200/g, 'bg-gray-300 border border-gray-400');
+
     el.innerHTML = processedHtml;
 
     // 2. Find all math-inline spans and render with KaTeX

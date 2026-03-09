@@ -591,7 +591,7 @@ const SimulacroExamenAscensoPage = () => {
           </p>
         </div>
 
-        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-md">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <AcademicCapIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
@@ -614,7 +614,7 @@ const SimulacroExamenAscensoPage = () => {
                   setSelectedYears([]);
                   setYearSelections({});
                 }}
-                className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
               >
                 <option value="">Selecciona Modalidad</option>
                 {modalidadesData.map((m) => (
@@ -654,7 +654,7 @@ const SimulacroExamenAscensoPage = () => {
                           setSelectedYears([]);
                           setYearSelections({});
                         }}
-                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
                         disabled={!selectedModalidadId}
                       >
                         <option value="">Selecciona Nivel</option>
@@ -684,7 +684,7 @@ const SimulacroExamenAscensoPage = () => {
                           setSelectedYears([]);
                           setYearSelections({});
                         }}
-                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                        className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
                         disabled={!selectedNivelId}
                       >
                         <option value="">Selecciona Especialidad</option>
@@ -751,7 +751,7 @@ const SimulacroExamenAscensoPage = () => {
         </div>
 
         {/* Bloque II - Exámenes Propios ED */}
-        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-md">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
@@ -799,7 +799,7 @@ const SimulacroExamenAscensoPage = () => {
                     className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
                       isSelected
                         ? 'border-[#4790FD] bg-blue-50 ring-2 ring-[#4790FD]'
-                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
+                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-md'
                     }`}
                   >
                     <div className="flex items-start gap-3 relative z-10">
@@ -818,7 +818,7 @@ const SimulacroExamenAscensoPage = () => {
                             ]);
                           }
                         }}
-                        className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-300 focus:ring-[#4790FD]"
+                        className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-400 focus:ring-[#4790FD]"
                       />
                       <div className="flex flex-col">
                         <span className="text-blue-900 font-extrabold text-sm">
@@ -868,7 +868,7 @@ const SimulacroExamenAscensoPage = () => {
           </div>
         </div>
 
-        <div className="border border-[#4790FD]/30 rounded-lg p-6 bg-white shadow-sm space-y-6">
+        <div className="border border-[#4790FD]/30 rounded-lg p-6 bg-white shadow-md space-y-6">
           <div className="flex items-center gap-2 text-[#4790FD] font-extrabold pb-3 border-b border-gray-100">
             <AcademicCapIcon className="h-6 w-6" />
             <h3 className="text-xl">Resumen de selección</h3>
@@ -879,7 +879,7 @@ const SimulacroExamenAscensoPage = () => {
               <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                 Modalidad
               </p>
-              <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-[#4790FD] font-bold text-xs rounded-md shadow-sm">
+              <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-[#4790FD] font-bold text-xs rounded-md shadow-md">
                 {modalidadesData.find(
                   (m) => String(m.id) === selectedModalidadId
                 )?.nombre || 'None'}
@@ -918,7 +918,7 @@ const SimulacroExamenAscensoPage = () => {
                     .map((s) => (
                       <span
                         key={s.id}
-                        className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm"
+                        className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-md"
                       >
                         {s.fuenteNombre || s.nombre}
                       </span>
@@ -932,7 +932,7 @@ const SimulacroExamenAscensoPage = () => {
             </div>
           </div>
 
-          <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-sm transition-all hover:shadow-md">
+          <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-md transition-all hover:shadow-md">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <h4 className="text-[#065F46] font-black text-xl md:text-2xl leading-tight">

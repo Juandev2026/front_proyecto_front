@@ -500,7 +500,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       .map((b) => {
         if (b.type === 'image') return `<img src="${b.content}" alt="Image" />`;
         if (b.isGray) {
-            return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 bg-gray-block bg-var-gray rounded-md text-justify">${b.content}</div>`;
+            return `<div class="mb-2 p-4 bg-gray-300 bg-gray-block border border-gray-400 rounded-md text-justify">${b.content}</div>`;
         }
         return b.content;
       })
@@ -695,8 +695,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 </button>
                 {block.type === 'text' ? (
                   <div
-                    className={`p-4 rounded-lg border border-gray-100 shadow-sm ${
-                      block.isGray ? 'bg-gray-100' : 'bg-white'
+                    className={`p-4 rounded-lg border border-gray-400 shadow-sm ${
+                      block.isGray ? 'bg-gray-300' : 'bg-white'
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-3 text-gray-500">

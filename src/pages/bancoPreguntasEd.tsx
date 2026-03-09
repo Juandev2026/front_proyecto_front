@@ -320,7 +320,7 @@ const BancoPreguntasEdPage = () => {
 
         <div className="space-y-4">
           {/* Sección / Fuente Selector */}
-          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+          <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-md">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <ClipboardListIcon className="h-5 w-5" />
               <span>Exámenes Propios Avend Docente</span>
@@ -331,7 +331,7 @@ const BancoPreguntasEdPage = () => {
             <select
               value={selectedSeccionId}
               onChange={(e) => setSelectedSeccionId(Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading || secciones.length === 0}
             >
               {secciones.length === 0 ? (
@@ -346,7 +346,7 @@ const BancoPreguntasEdPage = () => {
             </select>
 
             {selectedSeccion && (
-              <div className="mt-4 p-5 bg-[#F0F7FF] rounded-2xl border border-blue-100 shadow-sm animate-fadeIn">
+              <div className="mt-4 p-5 bg-[#F0F7FF] rounded-2xl border border-blue-100 shadow-md animate-fadeIn">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
                     <ClipboardListIcon className="h-5 w-5" />
@@ -368,7 +368,7 @@ const BancoPreguntasEdPage = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-blue-50 p-4 shadow-sm">
+                <div className="bg-white rounded-xl border border-blue-50 p-4 shadow-md">
                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 text-center">
                     PREGUNTAS DISPONIBLES POR TIPO:
                   </p>
@@ -405,7 +405,7 @@ const BancoPreguntasEdPage = () => {
           </div>
 
           {/* 2. Tipos de Pregunta Checkboxes */}
-          <div className="border border-primary rounded-lg p-5 bg-white shadow-sm">
+          <div className="border border-primary rounded-lg p-5 bg-white shadow-md">
             <div className="flex items-center gap-2 mb-4 text-primary font-bold">
               <QuestionMarkCircleIcon className="h-5 w-5" />
               <span>Tipos de Pregunta*</span>
@@ -426,7 +426,7 @@ const BancoPreguntasEdPage = () => {
                         ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed'
                         : isSelected
                         ? 'border-blue-600 bg-blue-50 shadow-md ring-1 ring-blue-600'
-                        : 'border-gray-200 bg-white hover:border-blue-200 cursor-pointer'
+                        : 'border-gray-400 bg-white hover:border-blue-200 cursor-pointer'
                     }`}
                   >
                     <div className="flex-shrink-0">
@@ -434,7 +434,7 @@ const BancoPreguntasEdPage = () => {
                         className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
                           isSelected
                             ? 'bg-blue-600 border-blue-600'
-                            : 'bg-white border-gray-300'
+                            : 'bg-white border-gray-400'
                         }`}
                       >
                         {isSelected && (
@@ -544,7 +544,7 @@ const BancoPreguntasEdPage = () => {
 
                       <div className="grid grid-cols-2 gap-2 relative z-10">
                         {/* 1. Cantidad Badge */}
-                        <div className="flex items-center gap-2 bg-[#E1F1FF] text-[#0075FF] px-2 py-1.5 rounded-full border border-blue-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#E1F1FF] text-[#0075FF] px-2 py-1.5 rounded-full border border-blue-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             📝
                           </div>
@@ -554,7 +554,7 @@ const BancoPreguntasEdPage = () => {
                         </div>
 
                         {/* 2. Puntos/c Badge */}
-                        <div className="flex items-center gap-2 bg-[#E6FFF1] text-[#05CD99] px-2 py-1.5 rounded-full border border-green-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#E6FFF1] text-[#05CD99] px-2 py-1.5 rounded-full border border-green-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px] text-yellow-500">
                             ⭐
                           </div>
@@ -564,7 +564,7 @@ const BancoPreguntasEdPage = () => {
                         </div>
 
                         {/* 3. Máx Posible Badge */}
-                        <div className="flex items-center gap-2 bg-[#F3E8FF] text-[#7E22CE] px-2 py-1.5 rounded-full border border-purple-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#F3E8FF] text-[#7E22CE] px-2 py-1.5 rounded-full border border-purple-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             🎯
                           </div>
@@ -574,7 +574,7 @@ const BancoPreguntasEdPage = () => {
                         </div>
 
                         {/* 4. Mínimo Badge */}
-                        <div className="flex items-center gap-2 bg-[#FFF4E5] text-[#FF9933] px-2 py-1.5 rounded-full border border-orange-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#FFF4E5] text-[#FF9933] px-2 py-1.5 rounded-full border border-orange-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             ✅
                           </div>
@@ -584,7 +584,7 @@ const BancoPreguntasEdPage = () => {
                         </div>
 
                         {/* 5. Min/p Badge */}
-                        <div className="flex items-center gap-2 bg-[#FEFCE8] text-[#A16207] px-2 py-1.5 rounded-full border border-yellow-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#FEFCE8] text-[#A16207] px-2 py-1.5 rounded-full border border-yellow-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             ⏱️
                           </div>
@@ -594,7 +594,7 @@ const BancoPreguntasEdPage = () => {
                         </div>
 
                         {/* 6. Tiempo Total Badge */}
-                        <div className="flex items-center gap-2 bg-[#FFF1F2] text-[#E11D48] px-2 py-1.5 rounded-full border border-red-100 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2 bg-[#FFF1F2] text-[#E11D48] px-2 py-1.5 rounded-full border border-red-100 shadow-md whitespace-nowrap">
                           <div className="w-4 h-4 bg-white/50 rounded-md flex items-center justify-center text-[10px]">
                             ⏰
                           </div>
@@ -623,7 +623,7 @@ const BancoPreguntasEdPage = () => {
                   <span className="text-xs font-black text-[#A3AED0] uppercase tracking-[0.2em] ml-1">
                     Sección
                   </span>
-                  <div className="inline-flex px-5 py-3 bg-[#E1F1FF] text-[#0075FF] border border-[#BEE3F8] rounded-2xl text-base font-black w-fit shadow-sm">
+                  <div className="inline-flex px-5 py-3 bg-[#E1F1FF] text-[#0075FF] border border-[#BEE3F8] rounded-2xl text-base font-black w-fit shadow-md">
                     {selectedSeccion.nombre}
                   </div>
                 </div>
@@ -642,7 +642,7 @@ const BancoPreguntasEdPage = () => {
                         return (
                           <div
                             key={shortName}
-                            className="inline-flex px-5 py-3 bg-[#F4ECFF] text-[#7A00FF] border border-[#E9D8FD] rounded-2xl text-base font-black w-fit shadow-sm"
+                            className="inline-flex px-5 py-3 bg-[#F4ECFF] text-[#7A00FF] border border-[#E9D8FD] rounded-2xl text-base font-black w-fit shadow-md"
                           >
                             {fullName} ({shortName}) - {data?.cantidad || 0}{' '}
                             preguntas (Min: {data?.minimo || 0} pts)
@@ -657,7 +657,7 @@ const BancoPreguntasEdPage = () => {
                   <span className="text-xs font-black text-[#A3AED0] uppercase tracking-[0.2em] ml-1">
                     Puntaje Mínimo Requerido
                   </span>
-                  <div className="inline-flex px-5 py-3 bg-orange-50 text-orange-700 border border-orange-200 rounded-2xl text-base font-black w-fit shadow-sm">
+                  <div className="inline-flex px-5 py-3 bg-orange-50 text-orange-700 border border-orange-200 rounded-2xl text-base font-black w-fit shadow-md">
                     {(() => {
                       const isNombramiento = selectedSeccion?.tipoExamenId === 2;
                       const hasCCP = Object.entries(conteoPreguntas).some(

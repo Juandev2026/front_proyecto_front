@@ -483,7 +483,7 @@ const SimulacrosDirectivosPage = () => {
           </p>
         </div>
 
-        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="border border-[#4790FD]/30 rounded-lg overflow-hidden bg-white shadow-md">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <AcademicCapIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
@@ -507,7 +507,7 @@ const SimulacrosDirectivosPage = () => {
                     setSelectedYears([]);
                     setYearSelections({});
                   }}
-                  className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                  className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
                 >
                   <option value="">Selecciona Modalidad</option>
                   {modalidadesData.map((m) => (
@@ -534,7 +534,7 @@ const SimulacrosDirectivosPage = () => {
                       setSelectedYears([]);
                       setYearSelections({});
                     }}
-                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
                     disabled={!selectedModalidadId}
                   >
                     <option value="">Selecciona Nivel</option>
@@ -560,7 +560,7 @@ const SimulacrosDirectivosPage = () => {
                       setSelectedYears([]);
                       setYearSelections({});
                     }}
-                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-sm"
+                    className="w-full border border-blue-200 rounded-md p-3 text-blue-900 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all shadow-md"
                     disabled={!selectedModalidadId}
                   >
                     <option value="">Selecciona Especialidad</option>
@@ -615,7 +615,7 @@ const SimulacrosDirectivosPage = () => {
           </div>
         </div>
 
-        <div className="border border-[#4790FD]/30 rounded-lg p-6 bg-white shadow-sm space-y-6">
+        <div className="border border-[#4790FD]/30 rounded-lg p-6 bg-white shadow-md space-y-6">
           <div className="flex items-center gap-2 text-[#4790FD] font-extrabold pb-3 border-b border-gray-100">
             <AcademicCapIcon className="h-6 w-6" />
             <h3 className="text-xl">Resumen de selección</h3>
@@ -624,7 +624,7 @@ const SimulacrosDirectivosPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
               <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Modalidad</p>
-              <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-[#4790FD] font-bold text-xs rounded-md shadow-sm">
+              <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-[#4790FD] font-bold text-xs rounded-md shadow-md">
                 {modalidadesData.find(m => String(m.id) === selectedModalidadId)?.nombre || 'None'}
               </div>
             </div>
@@ -638,7 +638,7 @@ const SimulacrosDirectivosPage = () => {
             </div>
           </div>
 
-          <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-sm transition-all hover:shadow-md">
+          <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-md transition-all hover:shadow-md">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <h4 className="text-[#065F46] font-black text-xl md:text-2xl leading-tight">

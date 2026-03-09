@@ -673,7 +673,7 @@ const BancoPreguntasPage = () => {
 
         <div className="space-y-4">
           {/* 1. Tipo de Examen - Locked to Nombramiento */}
-          {/* <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+          {/* <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-md">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <FilterIcon className="h-5 w-5" />
               <span>Tipo de Examen habilitado</span>
@@ -687,7 +687,7 @@ const BancoPreguntasPage = () => {
                 setSelectedEspecialidadId('');
                 setTiposPregunta({});
               }}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading}
             >
               <option value="">Selecciona Tipo de Examen</option>
@@ -700,7 +700,7 @@ const BancoPreguntasPage = () => {
           </div> */}
 
           {modalidadesData.length > 0 && (
-            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-md">
               <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                 <AcademicCapIcon className="h-5 w-5" />
                 <span>Modalidad habilitada</span>
@@ -713,7 +713,7 @@ const BancoPreguntasPage = () => {
                   setSelectedEspecialidadId('');
                   setSelectedYearId('');
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={isLoading || !selectedTipoExamenId}
               >
                 <option value="">Selecciona Modalidad</option>
@@ -743,7 +743,7 @@ const BancoPreguntasPage = () => {
                     setSelectedEspecialidadId('');
                     setSelectedYearId('');
                   }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                  className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
                 >
                   <option value="">Selecciona Nivel</option>
@@ -768,7 +768,7 @@ const BancoPreguntasPage = () => {
                   setSelectedEspecialidadId(e.target.value);
                   setSelectedYearId('');
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
                   !selectedModalidadId ||
                   (nivelesData.length > 1 && !selectedNivelId)
@@ -786,7 +786,7 @@ const BancoPreguntasPage = () => {
 
           {/* Year Selector */}
           {yearsData.length > 0 && (
-            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-md">
               <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                 <FilterIcon className="h-5 w-5" />
                 <span>Año</span>
@@ -796,7 +796,7 @@ const BancoPreguntasPage = () => {
                 onChange={(e) => {
                   setSelectedYearId(e.target.value);
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
+                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
                 disabled={
                   isLoading || 
                   !selectedModalidadId || 
@@ -846,15 +846,15 @@ const BancoPreguntasPage = () => {
                         ? `cursor-pointer hover:bg-gray-50 ${
                             tiposPregunta[name]
                               ? 'border-primary bg-blue-50 ring-1 ring-primary'
-                              : 'border-gray-200'
+                              : 'border-gray-400'
                           }`
-                        : 'cursor-not-allowed opacity-50 border-gray-200 bg-gray-50'
+                        : 'cursor-not-allowed opacity-50 border-gray-400 bg-gray-50'
                     }`}
                   >
                     <div className="flex items-start gap-2">
                       <input
                         type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
+                        className="mt-1 h-4 w-4 rounded border-gray-400 text-primary focus:ring-primary disabled:opacity-50"
                         checked={tiposPregunta[name] || false}
                         disabled={data.cantidad === 0}
                         onChange={(e) =>
@@ -897,7 +897,7 @@ const BancoPreguntasPage = () => {
                 (acc: number, curr: any) => acc + curr.cantidad,
                 0
               ) > 0 && (
-                <div className="border border-gray-200 rounded-xl p-5 bg-[#FAFAFA]">
+                <div className="border border-gray-400 rounded-xl p-5 bg-[#FAFAFA]">
                   <div
                     onClick={() => setIsDesgloseOpen(!isDesgloseOpen)}
                     className="flex items-center justify-between cursor-pointer mb-4"
@@ -925,7 +925,7 @@ const BancoPreguntasPage = () => {
                           return (
                             <div
                               key={name}
-                              className="bg-[#F8FBFF] border border-blue-100 rounded-2xl p-5 shadow-sm"
+                              className="bg-[#F8FBFF] border border-blue-100 rounded-2xl p-5 shadow-md"
                             >
                               <div className="flex justify-between items-start mb-4">
                                 <span className="font-extrabold text-[#2B3674] text-base leading-tight">
@@ -963,7 +963,7 @@ const BancoPreguntasPage = () => {
                   </div>
 
                   {/* Resumen Total */}
-                  <div className="bg-[#FAFBFD] border border-gray-200 rounded-lg p-4 mt-4">
+                  <div className="bg-[#FAFBFD] border border-gray-400 rounded-lg p-4 mt-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="text-lg">📊</div>
                       <span className="font-bold text-[#2B3674]">
@@ -971,7 +971,7 @@ const BancoPreguntasPage = () => {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-md">
                         <span>📝</span>{' '}
                         {Object.entries(conteoPreguntas).reduce(
                           (acc, [name, curr]: [string, any]) =>
@@ -980,7 +980,7 @@ const BancoPreguntasPage = () => {
                         )}{' '}
                         preguntas totales
                       </span>
-                      <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                      <span className="bg-green-50 text-green-700 border border-green-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-md">
                         <span>⏱️</span>{' '}
                         {Object.entries(conteoPreguntas).reduce(
                           (acc, [name, curr]: [string, any]) =>
@@ -991,7 +991,7 @@ const BancoPreguntasPage = () => {
                         )}{' '}
                         min totales
                       </span>
-                      <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                      <span className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-md">
                         <span>🎯</span>{' '}
                         {Object.entries(conteoPreguntas).reduce(
                           (acc, [name, curr]: [string, any]) =>
@@ -1002,7 +1002,7 @@ const BancoPreguntasPage = () => {
                         )}{' '}
                         pts máximo
                       </span>
-                      <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                      <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-md">
                         <span>✅</span>{' '}
                         {(() => {
                           const isNombramiento = String(selectedTipoExamenId) === '2';
@@ -1034,7 +1034,7 @@ const BancoPreguntasPage = () => {
             selectedModalidadId ||
             selectedNivelId ||
             selectedEspecialidadId) && (
-            <div className="border border-cyan-300 rounded-xl p-6 bg-white shadow-sm mt-6">
+            <div className="border border-cyan-300 rounded-xl p-6 bg-white shadow-md mt-6">
               <div className="flex items-center gap-2 mb-6">
                 <AcademicCapIcon className="h-6 w-6 text-[#2B3674]" />
                 <h3 className="font-bold text-[#2B3674] text-lg">
@@ -1044,7 +1044,7 @@ const BancoPreguntasPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedModalidadId && (
-                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-md transition-all hover:shadow-md">
                     <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Modalidad
                     </p>
@@ -1061,7 +1061,7 @@ const BancoPreguntasPage = () => {
                   </div>
                 )}
                 {selectedNivelId && (
-                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-md transition-all hover:shadow-md">
                     <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Nivel
                     </p>
@@ -1078,7 +1078,7 @@ const BancoPreguntasPage = () => {
                   </div>
                 )}
                 {selectedEspecialidadId && (
-                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-md transition-all hover:shadow-md">
                     <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Especialidad
                     </p>
@@ -1095,7 +1095,7 @@ const BancoPreguntasPage = () => {
                   </div>
                 )}
                 {selectedYearId && selectedYearId !== '0' && (
-                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                  <div className="bg-[#F4F7FE] p-3 rounded-2xl border border-gray-100 shadow-md transition-all hover:shadow-md">
                     <p className="text-[10px] uppercase tracking-widest text-[#A3AED0] font-black mb-1 ml-1">
                       Año
                     </p>
@@ -1118,7 +1118,7 @@ const BancoPreguntasPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 mb-8">
             <button
               onClick={handleClear}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-gray-100 rounded-2xl text-gray-600 hover:bg-gray-50 transition-all font-black text-sm uppercase tracking-widest shadow-sm active:scale-95"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-gray-100 rounded-2xl text-gray-600 hover:bg-gray-50 transition-all font-black text-sm uppercase tracking-widest shadow-md active:scale-95"
             >
               <XIcon className="h-5 w-5" />
               Limpiar

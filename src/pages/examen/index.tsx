@@ -806,32 +806,32 @@ const ExamenPage = () => {
             {/* Badges Metadata (Visible en desktop) */}
             <div className="hidden md:flex flex-wrap md:justify-end gap-2 max-w-full md:max-w-4xl">
               {metadata?.tipoExamen && (
-                <span className="bg-[#E6FFF1] text-[#05CD99] px-3 py-1.5 rounded-xl border border-green-100 font-black text-xs shadow-sm uppercase">
+                <span className="bg-[#E6FFF1] text-[#05CD99] px-3 py-1.5 rounded-xl border border-green-100 font-black text-xs shadow-md uppercase">
                   {metadata.tipoExamen}
                 </span>
               )}
               {metadata?.nombre && (
-                <span className="bg-[#EFEEFF] text-[#002B6B] px-3 py-1.5 rounded-xl border border-purple-100 font-black text-xs shadow-sm uppercase">
+                <span className="bg-[#EFEEFF] text-[#002B6B] px-3 py-1.5 rounded-xl border border-purple-100 font-black text-xs shadow-md uppercase">
                   {metadata.nombre}
                 </span>
               )}
               {metadata?.modalidad && (
-                <span className="bg-[#FFF1F2] text-[#E11D48] px-3 py-1.5 rounded-xl border border-pink-100 font-black text-xs shadow-sm uppercase">
+                <span className="bg-[#FFF1F2] text-[#E11D48] px-3 py-1.5 rounded-xl border border-pink-100 font-black text-xs shadow-md uppercase">
                   {metadata.modalidad}
                 </span>
               )}
               {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && (
-                <span className={`${getLevelStyles(metadata.nivel)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-sm uppercase`}>
+                <span className={`${getLevelStyles(metadata.nivel)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-md uppercase`}>
                   {metadata.nivel}
                 </span>
               )}
               {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && (
-                <span className={`${getEspecialidadStyles(metadata.especialidad)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-sm uppercase`}>
+                <span className={`${getEspecialidadStyles(metadata.especialidad)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-md uppercase`}>
                   {metadata.especialidad}
                 </span>
               )}
               {metadata?.year && metadata.year !== '0' && (
-                <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-xs shadow-sm uppercase">
+                <span className="bg-[#D6FFD8] text-[#008000] px-3 py-1.5 rounded-xl border border-green-200 font-black text-xs shadow-md uppercase">
                   {metadata.year}
                 </span>
               )}
@@ -852,7 +852,7 @@ const ExamenPage = () => {
           <div className="flex flex-row flex-wrap items-center justify-center md:justify-start w-full gap-2 md:gap-3 pt-4 border-t border-gray-50 md:border-t-0 relative">
             <button
               onClick={handleToggleReading}
-              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
+              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-md flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
                 isReading
                   ? 'bg-[#FFF1F2] border-[#FED7E2] text-[#E11D48]'
                   : 'bg-[#E1F1FF] border-[#BEE3F8] text-[#0052CC] hover:bg-[#D1E9FF]'
@@ -865,7 +865,7 @@ const ExamenPage = () => {
             <div className="relative flex-1 md:flex-none">
               <button 
                 onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
-                className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex items-center justify-center w-full md:w-auto gap-2 text-xs font-bold leading-none relative z-20 ${
+                className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-md flex items-center justify-center w-full md:w-auto gap-2 text-xs font-bold leading-none relative z-20 ${
                   isVoiceDropdownOpen 
                   ? 'bg-[#E1E7FF] border-[#C7D2FE] text-[#4338CA]' 
                   : 'bg-[#F0F5FF] border-[#D6E4FF] text-[#0052CC] hover:bg-[#E1EAFF]'
@@ -922,7 +922,7 @@ const ExamenPage = () => {
 
             <button
               onClick={handleRegenerate}
-              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#FEEBC8] bg-[#FFF9EA] text-[#B7791F] shadow-sm hover:bg-[#FDF6E3] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#FEEBC8] bg-[#FFF9EA] text-[#B7791F] shadow-md hover:bg-[#FDF6E3] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
               title="Generar de nuevo"
             >
               <RefreshIcon className="h-5 w-5" />
@@ -931,7 +931,7 @@ const ExamenPage = () => {
 
             <button
               onClick={() => setShowQuestionPanel(!showQuestionPanel)}
-              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-sm flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
+              className={`p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border transition-all shadow-md flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none ${
                 showQuestionPanel
                   ? 'bg-[#DDD6FE] text-[#5B21B6] border-[#C4B5FD]'
                   : 'bg-[#F5F3FF] border-[#EDE9FE] text-[#7C3AED] hover:bg-[#EDE9FE]'
@@ -950,7 +950,7 @@ const ExamenPage = () => {
                   document.exitFullscreen();
                 }
               }}
-              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#CCFBF1] bg-[#F0FDFA] text-[#0D9488] shadow-sm hover:bg-[#E6FFFA] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
+              className="p-2.5 md:px-4 md:py-2.5 rounded-xl md:rounded-lg border border-[#CCFBF1] bg-[#F0FDFA] text-[#0D9488] shadow-md hover:bg-[#E6FFFA] transition-all flex-1 md:flex-none flex items-center justify-center gap-2 text-xs font-bold leading-none"
               title="Pantalla completa"
             >
               <ArrowsExpandIcon className="h-5 w-5" />
@@ -1004,7 +1004,7 @@ const ExamenPage = () => {
                     if (!code) return null;
 
                     return (
-                      <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1 rounded-md border shadow-sm whitespace-nowrap`}>
+                      <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1 rounded-md border shadow-md whitespace-nowrap`}>
                         {code}
                       </span>
                     );
@@ -1029,11 +1029,9 @@ const ExamenPage = () => {
 
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
-                <div className="mb-6 bg-gray-100 p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm leading-relaxed force-black-text">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: (currentQuestion as any).parentEnunciado.replace(/\*/g, '.'),
-                    }}
+                <div className="mb-6 bg-gray-300 p-4 md:p-6 rounded-2xl border border-gray-400 shadow-md leading-relaxed force-black-text">
+                  <HtmlMathRenderer
+                    html={(currentQuestion as any).parentEnunciado}
                     className="text-lg md:text-xl text-gray-800"
                   />
                 </div>
@@ -1050,16 +1048,14 @@ const ExamenPage = () => {
                   </div>
                 )}
                 {currentQuestion && (
-                  <div className="bg-gray-100 p-4 md:p-6 rounded-2xl border border-gray-200 force-black-text font-sans">
+                  <div className="bg-gray-300 p-4 md:p-6 rounded-2xl border border-gray-400 force-black-text font-sans">
                     {(currentQuestion as any).isSubPregunta && (
-                      <span className="bg-[#E0F2FE] text-[#0369A1] text-[10px] uppercase font-black px-3 py-1.5 rounded-lg mb-4 inline-block shadow-sm border border-[#BAE6FD]">
+                      <span className="bg-[#E0F2FE] text-[#0369A1] text-[10px] uppercase font-black px-3 py-1.5 rounded-lg mb-4 inline-block shadow-md border border-[#BAE6FD]">
                         Pregunta {(currentQuestion as any).numeroSubPregunta}
                       </span>
                     )}
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: (currentQuestion.enunciado || '').replace(/\*/g, '.'),
-                      }}
+                    <HtmlMathRenderer
+                      html={currentQuestion.enunciado || ''}
                     />
                   </div>
                 )}
@@ -1107,7 +1103,7 @@ const ExamenPage = () => {
                         containerClass =
                           'bg-gray-50 border-gray-100 text-gray-400 opacity-60';
                         letterClass =
-                          'bg-gray-100 border-gray-200 text-gray-300';
+                          'bg-gray-200 border-gray-200 text-gray-300';
                       }
 
                       return (
@@ -1120,7 +1116,7 @@ const ExamenPage = () => {
                           }}
                           role="button"
                           tabIndex={0}
-                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-sm cursor-pointer select-text ${containerClass}`}
+                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-md cursor-pointer select-text ${containerClass}`}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               if (!examResult && !isLocked) handleSelectOption(opt);
@@ -1245,9 +1241,9 @@ const ExamenPage = () => {
                         {stats.answered}/{stats.total}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-3 border border-gray-50 shadow-inner overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-3 border border-gray-50 shadow-inner overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-blue-600 to-[#002B6B] h-full rounded-full transition-all duration-1000 ease-out shadow-sm"
+                        className="bg-gradient-to-r from-blue-600 to-[#002B6B] h-full rounded-full transition-all duration-1000 ease-out shadow-md"
                         style={{ width: `${stats.percentage}%` }}
                       ></div>
                     </div>

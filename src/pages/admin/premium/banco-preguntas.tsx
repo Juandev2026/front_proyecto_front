@@ -2808,7 +2808,7 @@ const Recursos = () => {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                    className="bg-white rounded-xl shadow-md border border-gray-400 overflow-hidden hover:shadow-lg transition-shadow"
                   >
                     {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
                     <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">

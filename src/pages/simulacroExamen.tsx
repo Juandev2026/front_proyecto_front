@@ -617,7 +617,7 @@ const SimulacroExamenPage = () => {
         <div className="space-y-4">
           {/* Modalidad Selector */}
           {modalidadesData.length > 0 && (
-            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-md">
               <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                 <AcademicCapIcon className="h-5 w-5" />
                 <span>Modalidad habilitada</span>
@@ -631,7 +631,7 @@ const SimulacroExamenPage = () => {
                   setSelectedYears([]);
                   setYearSelections({});
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
               >
                 <option value="">Selecciona Modalidad</option>
                 {modalidadesData.map((m) => (
@@ -649,7 +649,7 @@ const SimulacroExamenPage = () => {
               nivelesData.length === 1 &&
               nivelesData[0]?.nombre?.toUpperCase() === 'NINGUNO'
             ) && (
-              <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+              <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-md">
                 <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                   <FilterIcon className="h-5 w-5" />
                   <span>Nivel</span>
@@ -662,7 +662,7 @@ const SimulacroExamenPage = () => {
                     setSelectedYears([]);
                     setYearSelections({});
                   }}
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                  className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
                   disabled={!selectedModalidadId}
                 >
                   <option value="">Selecciona Nivel</option>
@@ -677,7 +677,7 @@ const SimulacroExamenPage = () => {
 
           {/* Especialidad Selector */}
           {especialidadesData.length > 0 && (
-            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-md">
               <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                 <AcademicCapIcon className="h-5 w-5" />
                 <span>Especialidad</span>
@@ -689,7 +689,7 @@ const SimulacroExamenPage = () => {
                   setSelectedYears([]);
                   setYearSelections({});
                 }}
-                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
                 disabled={!selectedModalidadId}
               >
                 <option value="">Selecciona Especialidad</option>
@@ -704,7 +704,7 @@ const SimulacroExamenPage = () => {
 
           {/* Year Selector */}
           {aniosData.length > 0 && (
-            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-sm">
+            <div className="border border-[#4790FD] rounded-lg p-4 bg-white transition-all shadow-md">
               <div className="flex items-center gap-2 mb-3 text-[#4790FD] font-bold">
                 <CalendarIcon className="h-5 w-5" />
                 <span>Selecciona mínimo dos años*</span>
@@ -718,7 +718,7 @@ const SimulacroExamenPage = () => {
                       className={`flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                         isChecked
                           ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
-                          : 'border-gray-200 hover:border-blue-200'
+                          : 'border-gray-400 hover:border-blue-200'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -726,7 +726,7 @@ const SimulacroExamenPage = () => {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleYearToggle(year)}
-                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                          className="h-4 w-4 rounded border-gray-400 text-[#4790FD] focus:ring-[#4790FD]"
                         />
                         <span className={`text-sm font-bold ${isChecked ? 'text-[#4790FD]' : 'text-blue-900'}`}>
                           {year}
@@ -741,7 +741,7 @@ const SimulacroExamenPage = () => {
 
 
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 shadow-md">
             <div className="mt-0.5">
               <AcademicCapIcon className="h-5 w-5 text-yellow-600" />
             </div>
@@ -759,7 +759,7 @@ const SimulacroExamenPage = () => {
         </div>
 
         {/* Bloque II - Exámenes Propios Avend Docente */}
-        <div className="border border-[#4790FD] rounded-lg overflow-hidden bg-white shadow-sm mt-8">
+        <div className="border border-[#4790FD] rounded-lg overflow-hidden bg-white shadow-md mt-8">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
             <span className="font-bold text-[#4790FD] text-lg">
@@ -807,7 +807,7 @@ const SimulacroExamenPage = () => {
                     className={`border rounded-2xl p-5 cursor-pointer transition-all flex flex-col gap-4 relative overflow-hidden ${
                       isSelected
                         ? 'border-primary bg-blue-50 ring-2 ring-primary'
-                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-sm'
+                        : 'border-gray-100 bg-white hover:border-blue-200 shadow-md'
                     }`}
                   >
                     <div className="flex items-start gap-3 relative z-10">
@@ -826,7 +826,7 @@ const SimulacroExamenPage = () => {
                             ]);
                           }
                         }}
-                        className="mt-1 h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary"
+                        className="mt-1 h-5 w-5 text-primary rounded border-gray-400 focus:ring-primary"
                       />
                       <div className="flex flex-col">
                         <span className="text-blue-900 font-extrabold text-sm">
@@ -877,7 +877,7 @@ const SimulacroExamenPage = () => {
         </div>
 
         {/* Resumen Section */}
-        <div className="border border-blue-400 rounded-lg p-6 bg-white shadow-sm space-y-6">
+        <div className="border border-blue-400 rounded-lg p-6 bg-white shadow-md space-y-6">
           <div className="flex items-center gap-2 text-blue-900 font-extrabold pb-3 border-b border-gray-100">
             <AcademicCapIcon className="h-6 w-6" />
             <h3 className="text-xl">Resumen de selección</h3>
@@ -889,7 +889,7 @@ const SimulacroExamenPage = () => {
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                   Modalidad
                 </p>
-                <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-500 font-bold text-xs rounded-md shadow-sm">
+                <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-500 font-bold text-xs rounded-md shadow-md">
                   {modalidadesData.find(
                     (m) => String(m.id) === selectedModalidadId
                   )?.nombre || 'None'}
@@ -905,7 +905,7 @@ const SimulacroExamenPage = () => {
                     selectedYears.map((y) => (
                       <span
                         key={y}
-                        className="px-3 py-1 bg-yellow-100/50 border border-yellow-300 text-yellow-700 font-bold text-xs rounded-md shadow-sm"
+                        className="px-3 py-1 bg-yellow-100/50 border border-yellow-300 text-yellow-700 font-bold text-xs rounded-md shadow-md"
                       >
                         {y}
                       </span>
@@ -931,7 +931,7 @@ const SimulacroExamenPage = () => {
                       .map((s) => (
                         <span
                           key={s.id}
-                          className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-sm"
+                          className="px-3 py-1 bg-green-50 border border-green-200 text-green-600 font-bold text-xs rounded-md shadow-md"
                         >
                           {s.fuenteNombre || s.nombre}
                         </span>
@@ -960,7 +960,7 @@ const SimulacroExamenPage = () => {
                     return (
                       <div
                         key={year}
-                        className="bg-gray-50/50 border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between"
+                        className="bg-gray-50/50 border border-gray-400 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between"
                       >
                         <p className="text-xs font-black text-blue-900 min-w-[80px]">
                           Año {year}:
@@ -974,7 +974,7 @@ const SimulacroExamenPage = () => {
                               return (
                                 <span
                                   key={name}
-                                  className="px-2.5 py-1 bg-white border border-blue-100 text-blue-500 font-bold text-[10px] rounded-md shadow-sm flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-white border border-blue-100 text-blue-500 font-bold text-[10px] rounded-md shadow-md flex items-center gap-1"
                                 >
                                   {name} ({meta?.cantidad} preguntas)
                                 </span>
@@ -993,7 +993,7 @@ const SimulacroExamenPage = () => {
               </div>
             )}
 
-            <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="bg-[#E6F9EE] border-l-4 md:border-l-[6px] border-[#05CD99] rounded-2xl p-6 shadow-md transition-all hover:shadow-md">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h4 className="text-[#065F46] font-black text-xl md:text-2xl leading-tight">
@@ -1034,7 +1034,7 @@ const SimulacroExamenPage = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4 py-6">
           <button
             onClick={handleClear}
-            className="px-10 py-2.5 border border-blue-400 rounded-md text-blue-500 font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
+            className="px-10 py-2.5 border border-blue-400 rounded-md text-blue-500 font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2 text-sm shadow-md"
           >
             <span className="text-lg">✕</span> Limpiar
           </button>
