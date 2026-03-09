@@ -56,6 +56,7 @@ const ExamenPage = () => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
+  const questionRef = useRef<HTMLDivElement>(null);
 
   // Timer State
   const [seconds, setSeconds] = useState(0);
@@ -87,6 +88,29 @@ const ExamenPage = () => {
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const getLevelStyles = (nivel: string) => {
+    const n = nivel.toUpperCase();
+    if (n.includes('INICIAL')) return 'bg-pink-100 text-pink-700 border-pink-200';
+    if (n.includes('PRIMARIA')) return 'bg-green-100 text-green-700 border-green-200';
+    if (n.includes('SECUNDARIA')) return 'bg-slate-200 text-slate-800 border-slate-300';
+    if (n.includes('SUPERIOR')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+    return 'bg-cyan-50 text-cyan-600 border-cyan-100';
+  };
+
+  const getEspecialidadStyles = (especialidad: string) => {
+    const e = especialidad.toUpperCase();
+    if (e.includes('RELIGIOSA')) return 'bg-orange-100 text-orange-700 border-orange-200';
+    if (e.includes('SOCIALES')) return 'bg-cyan-100 text-cyan-700 border-cyan-200';
+    if (e.includes('COMUNICACIÓN')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    if (e.includes('MATEMÁTICA')) return 'bg-red-100 text-red-700 border-red-200';
+    if (e.includes('CIENCIA') || e.includes('TECNOLOGÍA')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    if (e.includes('DPCC') || e.includes('CÍVICA')) return 'bg-rose-100 text-rose-700 border-rose-200';
+    if (e.includes('INGLÉS')) return 'bg-violet-100 text-violet-700 border-violet-200';
+    if (e.includes('FÍSICA')) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    if (e.includes('ARTE') || e.includes('CULTURA')) return 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200';
+    return 'bg-orange-50 text-orange-600 border-orange-100';
+  };
 
   // Auth Guard & Data Loading
   useEffect(() => {
@@ -445,20 +469,22 @@ const ExamenPage = () => {
 
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
+      setTimeout(() => {
+        questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       window.speechSynthesis.cancel();
       setIsReading(false);
-      // Subir la vista al cambiar de pregunta
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
+      setTimeout(() => {
+        questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       window.speechSynthesis.cancel();
       setIsReading(false);
-      // Subir la vista al cambiar de pregunta
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -640,8 +666,16 @@ const ExamenPage = () => {
   const stats = useMemo(() => {
     const total = questions.length;
     let answeredCount = 0;
+    let correctCount = 0;
+    let incorrectCount = 0;
+
     Object.keys(respuestas).forEach((key) => {
-      if (respuestas[key]?.alternativa) answeredCount++;
+      const resp = respuestas[key];
+      if (resp?.alternativa) {
+        answeredCount++;
+        if (resp.isCorrect === true) correctCount++;
+        else if (resp.isCorrect === false) incorrectCount++;
+      }
     });
     const percentage = total > 0 ? (answeredCount / total) * 100 : 0;
 
@@ -649,6 +683,8 @@ const ExamenPage = () => {
       total,
       answered: answeredCount,
       unanswered: Math.max(0, total - answeredCount),
+      correct: correctCount,
+      incorrect: incorrectCount,
       percentage,
     };
   }, [questions, respuestas]);
@@ -785,12 +821,12 @@ const ExamenPage = () => {
                 </span>
               )}
               {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && (
-                <span className="bg-cyan-50 text-cyan-600 px-3 py-1.5 rounded-xl border border-cyan-100 font-black text-xs shadow-sm uppercase">
+                <span className={`${getLevelStyles(metadata.nivel)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-sm uppercase`}>
                   {metadata.nivel}
                 </span>
               )}
               {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && (
-                <span className="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl border border-orange-100 font-black text-xs shadow-sm uppercase">
+                <span className={`${getEspecialidadStyles(metadata.especialidad)} px-3 py-1.5 rounded-xl border font-black text-xs shadow-sm uppercase`}>
                   {metadata.especialidad}
                 </span>
               )}
@@ -807,8 +843,8 @@ const ExamenPage = () => {
             {metadata?.tipoExamen && <span className="bg-[#E6FFF1] text-[#05CD99] px-2 py-1 rounded-lg border border-green-100 font-black text-[9px]">{metadata.tipoExamen}</span>}
             {metadata?.nombre && <span className="bg-[#EFEEFF] text-[#002B6B] px-2 py-1 rounded-lg border border-purple-100 font-black text-[9px]">{metadata.nombre}</span>}
             {metadata?.modalidad && <span className="bg-[#FFF1F2] text-[#E11D48] px-2 py-1 rounded-lg border border-pink-100 font-black text-[9px]">{metadata.modalidad}</span>}
-            {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && <span className="bg-cyan-50 text-cyan-600 px-2 py-1 rounded-lg border border-cyan-100 font-black text-[9px]">{metadata.nivel}</span>}
-            {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-lg border border-orange-100 font-black text-[9px]">{metadata.especialidad}</span>}
+            {metadata?.nivel && metadata.nivel.toUpperCase() !== 'NINGUNO' && metadata.nivel.toUpperCase() !== 'SIN NIVEL' && metadata.nivel.toUpperCase() !== 'TODAS' && <span className={`${getLevelStyles(metadata.nivel)} px-2 py-1 rounded-lg border font-black text-[9px]`}>{metadata.nivel}</span>}
+            {metadata?.especialidad && metadata.especialidad.toUpperCase() !== 'SIN ESPECIALIDAD' && metadata.especialidad.toUpperCase() !== 'TODAS' && <span className={`${getEspecialidadStyles(metadata.especialidad)} px-2 py-1 rounded-lg border font-black text-[9px]`}>{metadata.especialidad}</span>}
             {metadata?.year && <span className="bg-[#D6FFD8] text-[#008000] px-2 py-1 rounded-lg border border-green-200 font-black text-[9px]">{metadata.year}</span>}
           </div>
 
@@ -937,7 +973,7 @@ const ExamenPage = () => {
           {/* Main Content (Left) */}
           <div className="flex-1 flex flex-col gap-6 font-sans leading-relaxed text-gray-800">
             {/* Reading Text / Question Content Section */}
-            <div className="bg-white p-2 md:p-10 shadow-none md:shadow-xl border-x-0 md:border border-gray-100 min-h-[500px] flex flex-col overflow-hidden">
+            <div ref={questionRef} className="bg-white p-2 md:p-10 shadow-none md:shadow-xl border-x-0 md:border border-gray-100 min-h-[500px] flex flex-col overflow-hidden scroll-mt-10">
               <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100 gap-1 md:gap-4 px-1 md:px-0">
                 <div className="flex items-center gap-1.5 md:gap-4 overflow-hidden">
                   <h2 className="text-gray-500 text-[10px] md:text-sm font-semibold whitespace-nowrap">
@@ -965,11 +1001,7 @@ const ExamenPage = () => {
                       classes = 'bg-blue-50 text-[#2196F3] border-blue-50';
                     }
 
-                    if (!code) return (
-                      <span className="bg-[#EFEEFF] text-[#002B6B] text-[9px] md:text-xs font-black px-1.5 py-1 rounded-md border border-purple-100 shadow-sm uppercase whitespace-nowrap">
-                        INDIVIDUAL
-                      </span>
-                    );
+                    if (!code) return null;
 
                     return (
                       <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1 rounded-md border shadow-sm whitespace-nowrap`}>
@@ -997,13 +1029,13 @@ const ExamenPage = () => {
 
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
-                <div className="mb-6 text-gray-800 font-sans leading-relaxed force-black-text">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: (currentQuestion as any).parentEnunciado,
-                      }}
-                      className="text-lg md:text-xl"
-                    />
+                <div className="mb-6 bg-gray-100 p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm leading-relaxed force-black-text">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: (currentQuestion as any).parentEnunciado.replace(/\*/g, '.'),
+                    }}
+                    className="text-lg md:text-xl text-gray-800"
+                  />
                 </div>
               )}
 
@@ -1018,15 +1050,15 @@ const ExamenPage = () => {
                   </div>
                 )}
                 {currentQuestion && (
-                  <div className="force-black-text font-sans">
+                  <div className="bg-gray-100 p-4 md:p-6 rounded-2xl border border-gray-200 force-black-text font-sans">
                     {(currentQuestion as any).isSubPregunta && (
-                      <span className="bg-blue-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-md mb-4 inline-block shadow-sm">
+                      <span className="bg-[#E0F2FE] text-[#0369A1] text-[10px] uppercase font-black px-3 py-1.5 rounded-lg mb-4 inline-block shadow-sm border border-[#BAE6FD]">
                         Pregunta {(currentQuestion as any).numeroSubPregunta}
                       </span>
                     )}
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: currentQuestion.enunciado,
+                        __html: (currentQuestion.enunciado || '').replace(/\*/g, '.'),
                       }}
                     />
                   </div>
@@ -1115,11 +1147,11 @@ const ExamenPage = () => {
                 </div>
 
                 <div className="mt-8 flex flex-col items-center gap-4">
-                  <div className="flex items-center justify-center gap-4 w-full">
+                  <div className="flex items-center justify-center gap-6 w-full mt-4">
                     <button
                       onClick={handlePrevious}
                       disabled={currentIndex === 0}
-                      className="flex-1 max-w-[160px] px-6 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center"
+                      className="flex-1 max-w-[200px] px-8 py-4 border-2 border-gray-300 rounded-2xl text-gray-600 font-black hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center text-lg uppercase tracking-wide"
                     >
                       Anterior
                     </button>
@@ -1127,7 +1159,7 @@ const ExamenPage = () => {
                     {currentIndex < questions.length - 1 && (
                       <button
                         onClick={handleNext}
-                        className="flex-1 max-w-[160px] bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-center"
+                        className="flex-1 max-w-[200px] bg-[#002B6B] hover:bg-blue-900 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-center text-lg uppercase tracking-wide"
                       >
                         Siguiente
                       </button>
@@ -1168,21 +1200,37 @@ const ExamenPage = () => {
                   Resumen actual
                 </h3>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="bg-green-50 p-3 rounded-2xl border border-green-100 flex flex-col items-center">
-                    <p className="text-2xl font-black text-green-600">
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                  <div className="bg-blue-50 p-3 rounded-2xl border border-blue-100 flex flex-col items-center">
+                    <p className="text-xl font-black text-blue-600">
                       {stats.answered}
                     </p>
-                    <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest">
+                    <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest text-center">
                       Respondidas
                     </p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-2xl border border-gray-200 flex flex-col items-center">
-                    <p className="text-2xl font-black text-gray-500">
+                    <p className="text-xl font-black text-gray-500">
                       {stats.unanswered}
                     </p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest text-center">
                       Pendientes
+                    </p>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded-2xl border border-green-100 flex flex-col items-center">
+                    <p className="text-xl font-black text-green-600">
+                      {stats.correct}
+                    </p>
+                    <p className="text-[9px] text-green-600 font-bold uppercase tracking-widest text-center">
+                      Correctas
+                    </p>
+                  </div>
+                  <div className="bg-red-50 p-3 rounded-2xl border border-red-100 flex flex-col items-center">
+                    <p className="text-xl font-black text-red-600">
+                      {stats.incorrect}
+                    </p>
+                    <p className="text-[9px] text-red-600 font-bold uppercase tracking-widest text-center">
+                      Incorrectas
                     </p>
                   </div>
                 </div>
@@ -1250,7 +1298,8 @@ const ExamenPage = () => {
                     ) : (
                       <div className="flex items-center gap-3 text-sm text-[#4790FD] font-medium bg-blue-50/50 p-2.5 rounded-xl border border-blue-50">
                         <ClockIcon className="w-4 h-4 text-primary" />
-                        <span>En curso...</span>
+                        <span className="font-mono font-bold text-lg">{formatTime(seconds)}</span>
+                        <span className="text-[10px] uppercase font-bold text-gray-400">En curso</span>
                       </div>
                     )}
                   </div>
@@ -1329,7 +1378,7 @@ const ExamenPage = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 bg-blue-50 border border-blue-200 rounded-sm"></div>
-                    <span>Hecho</span>
+                    <span>Pendiente</span>
                   </div>
                 </div>
               </div>

@@ -456,14 +456,44 @@ const BancoPreguntasPage = () => {
               }
 
               if (!countMap[name]) {
+                // Official Nombramiento 2024 Score Logic
+                let correctedMinimo = meta?.minimo || item.minimo || 0;
+                let correctedCantidad = cantidad;
+
+                if (String(selectedTipoExamenId) === '2') { // Nombramiento
+                  if (name === 'CL' || name === 'Comprensión Lectora') {
+                    correctedMinimo = 0;
+                    if (cantidad > 0) correctedCantidad = 15;
+                  } else if (name === 'RL' || name === 'Razonamiento Lógico') {
+                    correctedMinimo = 0;
+                  } else if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') {
+                    correctedMinimo = 90;
+                    if (cantidad > 0) correctedCantidad = 50;
+                  }
+                }
+
                 countMap[name] = {
-                  cantidad: cantidad,
+                  cantidad: correctedCantidad,
                   puntos: meta?.puntos || item.puntos || 0,
                   tiempoPregunta: meta?.tiempoPregunta || item.tiempoPregunta || 0,
-                  minimo: meta?.minimo || item.minimo || 0,
+                  minimo: correctedMinimo,
                 };
               } else {
-                countMap[name].cantidad += cantidad;
+                let correctedCantidad = cantidad;
+                if (String(selectedTipoExamenId) === '2') {
+                  if ((name === 'CL' || name === 'Comprensión Lectora') && cantidad > 0) {
+                     // We don't want to sum up to more than 15 if it's already set or being accumulated
+                     // but the logic here handles accumulation. For Nombramiento, it's usually one exam anyway.
+                     // If it's multi-source, we ensure the final display is 15.
+                  }
+                }
+                countMap[name].cantidad += correctedCantidad;
+                
+                // Final cap for Nombramiento display
+                if (String(selectedTipoExamenId) === '2') {
+                  if (name === 'CL' || name === 'Comprensión Lectora') countMap[name].cantidad = 15;
+                  if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') countMap[name].cantidad = 50;
+                }
               }
 
               if (nextTipos[name] === undefined && countMap[name].cantidad > 0) {
@@ -974,11 +1004,22 @@ const BancoPreguntasPage = () => {
                       </span>
                       <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
                         <span>✅</span>{' '}
-                        {Object.entries(conteoPreguntas).reduce(
-                          (acc, [name, curr]: [string, any]) =>
-                            tiposPregunta[name] ? acc + curr.minimo : acc,
-                          0
-                        )}{' '}
+                        {(() => {
+                          const isNombramiento = String(selectedTipoExamenId) === '2';
+                          const hasCCP = Object.entries(conteoPreguntas).some(
+                            ([name, _]) => tiposPregunta[name] && (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos')
+                          );
+                          
+                          if (isNombramiento) {
+                            return hasCCP ? 110 : 0;
+                          }
+
+                          return Object.entries(conteoPreguntas).reduce(
+                            (acc, [name, curr]: [string, any]) =>
+                              tiposPregunta[name] ? acc + (curr.minimo || 0) : acc,
+                            0
+                          );
+                        })()}{' '}
                         pts mínimo
                       </span>
                     </div>

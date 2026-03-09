@@ -122,13 +122,28 @@ const BancoPreguntasEdPage = () => {
             if (rawName === 'CGI') name = 'CG';
 
             const cantidad = item.cantidadPreguntas || 0;
+            let correctedMinimo = item.minimo || 0;
+            let correctedCantidad = cantidad;
+
+            if (selectedSeccion?.tipoExamenId === 2) { // Nombramiento
+              if (name === 'CL' || name === 'Comprensión Lectora') {
+                correctedMinimo = 0;
+                if (cantidad > 0) correctedCantidad = 15;
+              } else if (name === 'RL' || name === 'Razonamiento Lógico') {
+                correctedMinimo = 0;
+              } else if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') {
+                correctedMinimo = 90;
+                if (cantidad > 0) correctedCantidad = 50;
+              }
+            }
+
             if (cantidad > 0) {
               countMap[name] = {
                 id: item.clasificacionId,
-                cantidad: cantidad,
+                cantidad: correctedCantidad,
                 puntos: item.puntos || 0,
                 tiempoPregunta: item.tiempoPregunta || 0,
-                minimo: item.minimo || 0,
+                minimo: correctedMinimo,
               };
             }
           }
@@ -140,18 +155,35 @@ const BancoPreguntasEdPage = () => {
               const name = item.clasificacionNombre;
               if (name) {
                 const cantidad = item.cantidadPreguntas || 0;
-                if (cantidad > 0) {
+                  let correctedMinimo = item.minimo || 0;
+                  let correctedCantidad = cantidad;
+
+                  if (selectedSeccion?.tipoExamenId === 2) { // Nombramiento
+                    if (name === 'CL' || name === 'Comprensión Lectora') {
+                      correctedMinimo = 0;
+                    } else if (name === 'RL' || name === 'Razonamiento Lógico') {
+                      correctedMinimo = 0;
+                    } else if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') {
+                      correctedMinimo = 90;
+                    }
+                  }
+
                   if (!countMap[name]) {
                     countMap[name] = {
                       id: item.clasificacionId,
                       cantidad: 0,
                       puntos: item.puntos || 0,
                       tiempoPregunta: item.tiempoPregunta || 0,
-                      minimo: item.minimo || 0,
+                      minimo: correctedMinimo,
                     };
                   }
-                  countMap[name].cantidad += cantidad;
-                }
+                  countMap[name].cantidad += correctedCantidad;
+
+                  // Final cap for Nombramiento display
+                  if (selectedSeccion?.tipoExamenId === 2) {
+                    if ((name === 'CL' || name === 'Comprensión Lectora') && countMap[name].cantidad > 0) countMap[name].cantidad = 15;
+                    if ((name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') && countMap[name].cantidad > 0) countMap[name].cantidad = 50;
+                  }
               }
             });
           }
@@ -269,17 +301,17 @@ const BancoPreguntasEdPage = () => {
 
   return (
     <PremiumLayout
-      title="Banco de Preguntas AE"
-      breadcrumb="Pages / Banco de Preguntas AE"
+      title="Banco de Preguntas Avend Docente"
+      breadcrumb="Pages / Banco de Preguntas Avend Docente"
     >
       <Head>
-        <title>Banco de Preguntas AE - AVENDOCENTE</title>
+        <title>Banco de Preguntas Avend Docente - AVENDOCENTE</title>
       </Head>
 
       <div className="w-full space-y-6">
         <div className="text-center py-4">
           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
-            Banco de Preguntas AE
+            Banco de Preguntas Avend Docente
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">
             Selecciona tu sección de estudio para practicar hoy
@@ -291,7 +323,7 @@ const BancoPreguntasEdPage = () => {
           <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <ClipboardListIcon className="h-5 w-5" />
-              <span>Exámenes Propios AE</span>
+              <span>Exámenes Propios Avend Docente</span>
               <span className="ml-auto bg-blue-50 text-blue-600 px-3 py-0.5 rounded-full text-xs font-bold ring-1 ring-blue-100">
                 {secciones.length} Disponibles
               </span>
@@ -613,11 +645,35 @@ const BancoPreguntasEdPage = () => {
                             className="inline-flex px-5 py-3 bg-[#F4ECFF] text-[#7A00FF] border border-[#E9D8FD] rounded-2xl text-base font-black w-fit shadow-sm"
                           >
                             {fullName} ({shortName}) - {data?.cantidad || 0}{' '}
-                            preguntas
+                            preguntas (Min: {data?.minimo || 0} pts)
                           </div>
                         );
                       }
                     )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-black text-[#A3AED0] uppercase tracking-[0.2em] ml-1">
+                    Puntaje Mínimo Requerido
+                  </span>
+                  <div className="inline-flex px-5 py-3 bg-orange-50 text-orange-700 border border-orange-200 rounded-2xl text-base font-black w-fit shadow-sm">
+                    {(() => {
+                      const isNombramiento = selectedSeccion?.tipoExamenId === 2;
+                      const hasCCP = Object.entries(conteoPreguntas).some(
+                        ([name, _]) => tiposPregunta[name] && (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos')
+                      );
+                      
+                      if (isNombramiento) {
+                        return hasCCP ? 110 : 0;
+                      }
+
+                      return Object.entries(conteoPreguntas).reduce(
+                        (acc, [name, curr]: [string, any]) =>
+                          tiposPregunta[name] ? acc + (curr.minimo || 0) : acc,
+                        0
+                      );
+                    })()} pts
                   </div>
                 </div>
               </div>

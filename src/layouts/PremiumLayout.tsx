@@ -215,7 +215,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas AE',
+          name: 'Banco de Preguntas Avend Docente',
           href: '/avendescala/bancoPreguntasEd?context=nombramiento',
           icon: CollectionIcon,
         },
@@ -243,7 +243,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas AE',
+          name: 'Banco de Preguntas Avend Docente',
           href: '/avendescala/bancoPreguntasEd?context=ascenso',
           icon: CollectionIcon,
         },
@@ -294,10 +294,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   const menuItems = React.useMemo(() => {
     // Helper to filter children based on availability
     // 'Banco de Preguntas' is always shown if the parent section is visible (access is controlled by accesoNombres)
-    // 'Banco de Preguntas AE' is only shown if AE exams are available for that context
+    // 'Banco de Preguntas Avend Docente' is only shown if Avend Docente exams are available for that context
     const filterChildren = (items: any[], context: 'nombramiento' | 'ascenso') => {
       return items.filter(child => {
-        if (child.name === 'Banco de Preguntas AE') {
+        if (child.name === 'Banco de Preguntas Avend Docente') {
           return availableEdContexts[context];
         }
         return true;
