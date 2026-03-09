@@ -818,7 +818,7 @@ const SimulacroExamenAscensoPage = () => {
                             ]);
                           }
                         }}
-                        className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-400 focus:ring-[#4790FD]"
+                        className="mt-1 h-5 w-5 text-[#4790FD] rounded border-gray-300 focus:ring-[#4790FD]"
                       />
                       <div className="flex flex-col">
                         <span className="text-blue-900 font-extrabold text-sm">

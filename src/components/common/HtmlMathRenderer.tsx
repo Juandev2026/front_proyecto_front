@@ -40,12 +40,12 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
       processedHtml = cleanAlternativeContent(html, alternativeLabel);
     }
 
-    // 1.5 Replace asterisks with points (dots) globally as requested
-    processedHtml = processedHtml.replace(/\*/g, '.');
+    // 1.5 Replace asterisks with bullet points (dots) globally as requested
+    processedHtml = processedHtml.replace(/\*/g, '•');
 
     // 1.6 Intensify gray backgrounds globally as requested
-    processedHtml = processedHtml.replace(/bg-gray-100/g, 'bg-gray-300 border border-gray-400')
-                                .replace(/bg-gray-200/g, 'bg-gray-300 border border-gray-400');
+    processedHtml = processedHtml.replace(/bg-gray-100/g, 'bg-gray-200 border border-gray-200')
+                                .replace(/bg-gray-300/g, 'bg-gray-200 border border-gray-200');
 
     el.innerHTML = processedHtml;
 

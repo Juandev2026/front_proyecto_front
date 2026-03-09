@@ -687,7 +687,7 @@ const BancoPreguntasPage = () => {
                 setSelectedEspecialidadId('');
                 setTiposPregunta({});
               }}
-              className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading}
             >
               <option value="">Selecciona Tipo de Examen</option>
@@ -713,7 +713,7 @@ const BancoPreguntasPage = () => {
                   setSelectedEspecialidadId('');
                   setSelectedYearId('');
                 }}
-                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={isLoading || !selectedTipoExamenId}
               >
                 <option value="">Selecciona Modalidad</option>
@@ -743,7 +743,7 @@ const BancoPreguntasPage = () => {
                     setSelectedEspecialidadId('');
                     setSelectedYearId('');
                   }}
-                  className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   disabled={!selectedModalidadId}
                 >
                   <option value="">Selecciona Nivel</option>
@@ -768,7 +768,7 @@ const BancoPreguntasPage = () => {
                   setSelectedEspecialidadId(e.target.value);
                   setSelectedYearId('');
                 }}
-                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                 disabled={
                   !selectedModalidadId ||
                   (nivelesData.length > 1 && !selectedNivelId)
@@ -796,7 +796,7 @@ const BancoPreguntasPage = () => {
                 onChange={(e) => {
                   setSelectedYearId(e.target.value);
                 }}
-                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
                 disabled={
                   isLoading || 
                   !selectedModalidadId || 
@@ -846,15 +846,15 @@ const BancoPreguntasPage = () => {
                         ? `cursor-pointer hover:bg-gray-50 ${
                             tiposPregunta[name]
                               ? 'border-primary bg-blue-50 ring-1 ring-primary'
-                              : 'border-gray-400'
+                              : 'border-gray-300'
                           }`
-                        : 'cursor-not-allowed opacity-50 border-gray-400 bg-gray-50'
+                        : 'cursor-not-allowed opacity-50 border-gray-300 bg-gray-50'
                     }`}
                   >
                     <div className="flex items-start gap-2">
                       <input
                         type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-gray-400 text-primary focus:ring-primary disabled:opacity-50"
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                         checked={tiposPregunta[name] || false}
                         disabled={data.cantidad === 0}
                         onChange={(e) =>
@@ -897,7 +897,7 @@ const BancoPreguntasPage = () => {
                 (acc: number, curr: any) => acc + curr.cantidad,
                 0
               ) > 0 && (
-                <div className="border border-gray-400 rounded-xl p-5 bg-[#FAFAFA]">
+                <div className="border border-gray-300 rounded-xl p-5 bg-[#FAFAFA]">
                   <div
                     onClick={() => setIsDesgloseOpen(!isDesgloseOpen)}
                     className="flex items-center justify-between cursor-pointer mb-4"
@@ -963,7 +963,7 @@ const BancoPreguntasPage = () => {
                   </div>
 
                   {/* Resumen Total */}
-                  <div className="bg-[#FAFBFD] border border-gray-400 rounded-lg p-4 mt-4">
+                  <div className="bg-[#FAFBFD] border border-gray-300 rounded-lg p-4 mt-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="text-lg">📊</div>
                       <span className="font-bold text-[#2B3674]">

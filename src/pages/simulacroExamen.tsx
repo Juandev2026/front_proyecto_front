@@ -631,7 +631,7 @@ const SimulacroExamenPage = () => {
                   setSelectedYears([]);
                   setYearSelections({});
                 }}
-                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
               >
                 <option value="">Selecciona Modalidad</option>
                 {modalidadesData.map((m) => (
@@ -662,7 +662,7 @@ const SimulacroExamenPage = () => {
                     setSelectedYears([]);
                     setYearSelections({});
                   }}
-                  className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                  className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
                   disabled={!selectedModalidadId}
                 >
                   <option value="">Selecciona Nivel</option>
@@ -689,7 +689,7 @@ const SimulacroExamenPage = () => {
                   setSelectedYears([]);
                   setYearSelections({});
                 }}
-                className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
+                className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4790FD] bg-white transition-all"
                 disabled={!selectedModalidadId}
               >
                 <option value="">Selecciona Especialidad</option>
@@ -718,7 +718,7 @@ const SimulacroExamenPage = () => {
                       className={`flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                         isChecked
                           ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
-                          : 'border-gray-400 hover:border-blue-200'
+                          : 'border-gray-300 hover:border-blue-200'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -726,7 +726,7 @@ const SimulacroExamenPage = () => {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleYearToggle(year)}
-                          className="h-4 w-4 rounded border-gray-400 text-[#4790FD] focus:ring-[#4790FD]"
+                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
                         />
                         <span className={`text-sm font-bold ${isChecked ? 'text-[#4790FD]' : 'text-blue-900'}`}>
                           {year}
@@ -826,7 +826,7 @@ const SimulacroExamenPage = () => {
                             ]);
                           }
                         }}
-                        className="mt-1 h-5 w-5 text-primary rounded border-gray-400 focus:ring-primary"
+                        className="mt-1 h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary"
                       />
                       <div className="flex flex-col">
                         <span className="text-blue-900 font-extrabold text-sm">
@@ -960,7 +960,7 @@ const SimulacroExamenPage = () => {
                     return (
                       <div
                         key={year}
-                        className="bg-gray-50/50 border border-gray-400 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between"
+                        className="bg-gray-50/50 border border-gray-300 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between"
                       >
                         <p className="text-xs font-black text-blue-900 min-w-[80px]">
                           Año {year}:

@@ -331,7 +331,7 @@ const BancoPreguntasEdPage = () => {
             <select
               value={selectedSeccionId}
               onChange={(e) => setSelectedSeccionId(Number(e.target.value))}
-              className="w-full border border-gray-400 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               disabled={isLoading || secciones.length === 0}
             >
               {secciones.length === 0 ? (
@@ -426,7 +426,7 @@ const BancoPreguntasEdPage = () => {
                         ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed'
                         : isSelected
                         ? 'border-blue-600 bg-blue-50 shadow-md ring-1 ring-blue-600'
-                        : 'border-gray-400 bg-white hover:border-blue-200 cursor-pointer'
+                        : 'border-gray-300 bg-white hover:border-blue-200 cursor-pointer'
                     }`}
                   >
                     <div className="flex-shrink-0">
@@ -434,7 +434,7 @@ const BancoPreguntasEdPage = () => {
                         className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
                           isSelected
                             ? 'bg-blue-600 border-blue-600'
-                            : 'bg-white border-gray-400'
+                            : 'bg-white border-gray-300'
                         }`}
                       >
                         {isSelected && (
