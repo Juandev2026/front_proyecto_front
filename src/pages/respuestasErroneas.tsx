@@ -273,11 +273,11 @@ const RespuestasErroneasPage = () => {
 
   return (
     <PremiumLayout
-      title="Respuestas Erróneas"
-      breadcrumb="Pages / Respuestas Erróneas"
+      title="Respuestas Erróneas - Nombramiento"
+      breadcrumb="Pages / Respuestas Erróneas - Nombramiento"
     >
       <Head>
-        <title>Respuestas Erróneas - Avendocente</title>
+        <title>Respuestas Erróneas - Nombramiento - Avendocente</title>
       </Head>
 
       <div className="w-full space-y-6">

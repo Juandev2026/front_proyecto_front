@@ -72,21 +72,24 @@ export const anunciosGeneralesService = {
 
   update: async (
     id: number,
-    anuncio: AnuncioGeneral
+    anuncio: Partial<AnuncioGeneral>
   ): Promise<AnuncioGeneral> => {
     try {
+      // Create a copy of the object and remove the id if it exists
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _, ...dataToSend } = anuncio as any;
+
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(anuncio),
+        body: JSON.stringify(dataToSend),
       });
       if (!response.ok) {
+        const errorText = await response.text();
         throw new Error(
-          `Error updating anuncio general: ${response.status} ${response.statusText}`
+          `Error updating anuncio general: ${response.status} ${response.statusText} - ${errorText}`
         );
       }
-      // The API documentation differs slightly on return types sometimes, but usually it returns the object or 200 OK.
-      // If it returns plain text, handle it.
       const text = await response.text();
       return text ? JSON.parse(text) : ({} as AnuncioGeneral);
     } catch (error) {

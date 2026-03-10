@@ -1029,7 +1029,7 @@ const ExamenPage = () => {
 
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
-                <div className="mb-6 bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm leading-relaxed force-black-text">
+                <div className="mb-6 bg-[var(--color-bg-50)] p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm leading-relaxed force-black-text text-justify">
                   <HtmlMathRenderer
                     html={(currentQuestion as any).parentEnunciado}
                     className="text-lg md:text-xl text-gray-800"
@@ -1048,7 +1048,7 @@ const ExamenPage = () => {
                   </div>
                 )}
                 {currentQuestion && (
-                  <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 force-black-text font-sans">
+                  <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 force-black-text font-sans text-justify">
                     {(currentQuestion as any).isSubPregunta && (
                       <span className="bg-[#E0F2FE] text-[#0369A1] text-[10px] uppercase font-black px-3 py-1.5 rounded-lg mb-4 inline-block shadow-md border border-[#BAE6FD]">
                         Pregunta {(currentQuestion as any).numeroSubPregunta}
@@ -1116,7 +1116,7 @@ const ExamenPage = () => {
                           }}
                           role="button"
                           tabIndex={0}
-                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-left group shadow-md cursor-pointer select-text ${containerClass}`}
+                          className={`w-full flex items-start gap-2 md:gap-4 p-3 md:p-5 border-y md:border-2 md:rounded-2xl transition-all duration-200 text-justify group shadow-md cursor-pointer select-text ${containerClass}`}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               if (!examResult && !isLocked) handleSelectOption(opt);
