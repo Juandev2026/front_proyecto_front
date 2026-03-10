@@ -1056,6 +1056,7 @@ const ExamenPage = () => {
                     )}
                     <HtmlMathRenderer
                       html={currentQuestion.enunciado || ''}
+                      className="text-lg md:text-xl text-gray-800"
                     />
                   </div>
                 )}
