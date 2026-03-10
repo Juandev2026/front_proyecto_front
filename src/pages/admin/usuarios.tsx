@@ -49,7 +49,7 @@ const UsersPage = () => {
   const [formData, setFormData] = useState<Partial<User>>({
     nombreCompleto: '',
     email: '',
-    password: '',
+    password: 'Escala2026*',
     role: 'Client',
     celular: '',
     regionId: 0,
@@ -105,7 +105,7 @@ const UsersPage = () => {
     setFormData({
       nombreCompleto: '',
       email: '',
-      password: '',
+      password: 'Escala2026*',
       role: 'Client',
       celular: '',
       regionId: 0,
@@ -361,6 +361,7 @@ const UsersPage = () => {
     });
 
     setExpirationMode('custom');
+    setShowPassword(false);
     setIsModalOpen(true);
   };
 
@@ -476,6 +477,7 @@ const UsersPage = () => {
   const handleCreateUser = () => {
     setEditingUser(null);
     resetForm();
+    setShowPassword(true);
     setIsModalOpen(true);
   };
 
@@ -808,6 +810,7 @@ const UsersPage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, celular: e.target.value })
                         }
+                        autoComplete="off"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
                       />
                     </div>
@@ -830,6 +833,7 @@ const UsersPage = () => {
                               password: e.target.value,
                             })
                           }
+                          autoComplete="new-password"
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
                           required
                         />
