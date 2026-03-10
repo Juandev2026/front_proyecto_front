@@ -18,6 +18,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isRedirectingToWsp, setIsRedirectingToWsp] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState('');
 
   const planName = router.query.planName as string;
   const planId = router.query.planId as string;
@@ -176,12 +177,15 @@ const Login = () => {
         localStorage.removeItem('loginExamenes');
       }
 
-      if (planName) {
+      if (planName || finalRole?.toUpperCase() === 'CLIENT') {
+        setRedirectTarget(finalRole?.toUpperCase() === 'CLIENT' ? 'PLAN GRATUITO' : planName);
         setIsRedirectingToWsp(true);
         setTimeout(() => {
-          const wspUrl = `https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(
-            planName
-          )}`;
+          const message = finalRole?.toUpperCase() === 'CLIENT'
+            ? "Hola 👋, vengo desde AVEND ESCALA para activar mi PLAN GRATUITO."
+            : `Hola, me interesa el ${planName}`;
+            
+          const wspUrl = `https://wa.me/51947282682?text=${encodeURIComponent(message)}`;
           window.location.href = wspUrl;
         }, 2500);
         return;
@@ -266,7 +270,7 @@ const Login = () => {
                 </h3>
                 <p className="text-green-700">
                   Acceso concedido. Estamos redirigiéndote al chat con Juan para
-                  activar tu {planName}...
+                  activar tu {redirectTarget}...
                 </p>
               </div>
             )}

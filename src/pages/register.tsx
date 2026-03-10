@@ -613,14 +613,8 @@ const Register = () => {
                     </button>
                   </div>
 
-                  {/* Password Example and Requirements */}
-                  <div className="mt-3 space-y-3">
-                    <p className="text-sm font-bold text-gray-900">
-                      Ejemplo:{' '}
-                      <span className="font-normal text-gray-600">
-                        Escala2026*
-                      </span>
-                    </p>
+                  {/* Password Requirements */}
+                  <div className="mt-3 space-y-2">
                     <p className="text-xs font-medium text-gray-700">
                       La contraseña debe contener:
                     </p>
