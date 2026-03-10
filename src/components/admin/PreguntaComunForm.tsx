@@ -719,7 +719,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               <div key={block.id} className="relative group w-full">
                 <button
                   onClick={() => removeBlock(block.id, context, subQId)}
-                  className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
                   title="Eliminar bloque"
                 >
                   <TrashIcon className="w-4 h-4" />

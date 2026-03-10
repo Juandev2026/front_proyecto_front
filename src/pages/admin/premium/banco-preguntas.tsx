@@ -2176,7 +2176,7 @@ const Recursos = () => {
                           <div className="flex-1 min-w-0 relative">
                             <button
                               onClick={() => removeEnunciadoBlock(block.id)}
-                              className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
                               title="Eliminar bloque"
                             >
                               <TrashIcon className="w-4 h-4" />
@@ -2385,7 +2385,7 @@ const Recursos = () => {
                         <button
                           type="button"
                           onClick={() => removeJustificationBlock(block.id)}
-                          className="absolute -right-2 -top-2 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 z-10 transition-colors"
+                          className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
                           title="Eliminar bloque"
                         >
                           <TrashIcon className="w-4 h-4" />
