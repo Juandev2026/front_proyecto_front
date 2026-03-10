@@ -1579,7 +1579,11 @@ const Recursos = () => {
       return;
     }
 
-    if (!newItem.enunciado.trim()) {
+    const hasEnunciadoContent = enunciadoBlocks.some(
+      (b) => (b.type === 'text' && b.content.trim()) || b.type === 'image'
+    );
+
+    if (!hasEnunciadoContent) {
       // eslint-disable-next-line no-alert
       alert('El enunciado es obligatorio');
       return;
@@ -1672,6 +1676,14 @@ const Recursos = () => {
           id: idx + 1,
           contenido: b.content,
         })),
+        sustento: justificationBlocks
+          .map((b) => {
+            if (b.type === 'image') {
+              return `<div data-block-type="image"><img src="${b.content}" alt="justificacion" /></div>`;
+            }
+            return b.content;
+          })
+          .join('<br/>'),
         subPreguntas: [],
         imagen: finalUrl || '',
       };
