@@ -653,7 +653,7 @@ const BancoPreguntasPage = () => {
           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
             Selecciona tus preferencias
           </h3>
-          <p className="text-[#A3AED0] text-base mt-1 font-medium">
+          <p className="text-[#2B3674] text-base mt-1 font-medium">
             Filtra paso a paso para encontrar el examen deseado
           </p>
           <p className="text-xl md:text-2xl font-extrabold text-[#2B3674] mt-2">

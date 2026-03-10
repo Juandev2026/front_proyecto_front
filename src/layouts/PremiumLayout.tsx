@@ -440,7 +440,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                       ${
                         isExpanded
                           ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
+                          : 'text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]'
                       }
                     `}
                     title={isCollapsed ? item.name : ''}
@@ -456,7 +456,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isExpanded
                               ? 'text-white'
-                              : 'text-gray-600 group-hover:text-[#4790FD]'
+                              : 'text-[#2B3674] group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
                         `}
@@ -466,8 +466,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                     {/* Arrow Icon */}
                     {!isCollapsed && (
                       <svg
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
+                        className={`w-4 h-4 transition-all duration-200 ${
+                          isExpanded ? 'rotate-180 text-white' : 'text-[#2B3674] group-hover:text-[#4790FD]'
                         }`}
                         fill="none"
                         viewBox="0 0 24 24"
@@ -490,7 +490,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         ${
                           isActive
                             ? 'bg-[#4790FD] text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
+                            : 'text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]'
                         }
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
@@ -502,7 +502,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isActive
                               ? 'text-white'
-                              : 'text-gray-600 group-hover:text-[#4790FD]'
+                              : 'text-[#2B3674] group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
                         `}
@@ -531,17 +531,17 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                     ? 'text-gray-400 cursor-not-allowed opacity-75'
                                     : isChildActive
                                     ? 'bg-[#4790FD] text-white hover:text-white shadow-md'
-                                    : 'text-gray-600 hover:text-[#4790FD] hover:bg-gray-50'
+                                    : 'text-[#2B3674] hover:text-[#4790FD] hover:bg-gray-50'
                                 }
                              `}
                             >
                             <div className="flex items-center">
                               {child.icon && (
                                 <child.icon
-                                  className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                                  className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
                                     isChildActive
                                       ? 'text-white'
-                                      : 'text-gray-600'
+                                      : 'text-[#2B3674] group-hover:text-[#4790FD]'
                                   }`}
                                 />
                               )}
@@ -565,16 +565,16 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <>
               <button
                 onClick={() => setShowExitModal(true)}
-                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-gray-600 rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
+                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-[#2B3674] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
               >
-                <HomeIcon className="mr-4 h-5 w-5 text-gray-600 group-hover:text-[#4790FD]" />
+                <HomeIcon className="mr-4 h-5 w-5 text-[#2B3674] group-hover:text-[#4790FD]" />
                 Volver a Inicio
               </button>
               <button
                 onClick={handleLogout}
                 className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-red-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors"
               >
-                <LogoutIcon className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-500" />
+                <LogoutIcon className="mr-4 h-5 w-5 text-red-500 group-hover:text-red-600" />
                 Cerrar Sesión
               </button>
             </>
@@ -582,7 +582,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <div className="flex flex-col gap-2 items-center">
               <button
                 onClick={() => setShowExitModal(true)}
-                className="p-2 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]"
+                className="p-2 rounded-xl text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]"
                 title="Volver a Inicio"
               >
                 <HomeIcon className="h-6 w-6" />
@@ -617,7 +617,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 
             {/* Breadcrumb / Page Title Placeholder */}
             <div className="hidden md:block">
-              <p className="text-sm text-[#707EAE] font-medium">{breadcrumb}</p>
+              <p className="text-sm text-[#2B3674] font-medium">{breadcrumb}</p>
               <h1 className="text-2xl font-bold text-[#4790FD] mt-1">
                 {title}
               </h1>
@@ -650,7 +650,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
               <span className="text-sm font-bold text-[#4790FD] leading-tight">
                 {user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario'}
               </span>
-              <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
+              <span className="text-[10px] text-[#2B3674] font-bold tracking-wide">
                 {user?.role?.toUpperCase()}
               </span>
             </div>

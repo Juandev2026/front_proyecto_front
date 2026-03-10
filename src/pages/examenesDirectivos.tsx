@@ -170,7 +170,7 @@ const ExamenesDirectivosPage = () => {
           <h4 className="text-xl font-bold text-[#2B3674]">
             Selecciona tus preferencias
           </h4>
-          <p className="text-[#A3AED0] text-sm">
+          <p className="text-[#2B3674] text-sm font-medium">
             Selecciona el/los exámenes que deseas resolver ahora
           </p>
         </div>
@@ -207,14 +207,14 @@ const ExamenesDirectivosPage = () => {
                   {group.exams.map((exam) => (
                     <div key={exam.id} className="space-y-4">
                       {/* Exam Header within Accordion */}
-                      <div className="flex items-center gap-2 text-[#4790FD] font-bold">
-                        <div className="p-1 px-1.5 bg-blue-100 rounded-full">
-                          <AcademicCapIcon className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-[#1B2559] font-bold">
+                        <div className="p-1 px-1.5 bg-blue-50 rounded-full">
+                          <AcademicCapIcon className="h-4 w-4 text-[#4790FD]" />
                         </div>
                         <span className="text-sm md:text-base">
                           {exam.nivelNombre}
                         </span>
-                        <span className="text-xs text-gray-400 font-normal ml-3">
+                        <span className="text-xs text-[#A3AED0] font-normal ml-3">
                           Total de preguntas: {exam.cantidadPreguntas}
                         </span>
                       </div>
@@ -264,10 +264,10 @@ const ExamenesDirectivosPage = () => {
                                 )}
                               </div>
                               <div className="flex flex-col">
-                                <span className="font-bold text-[#4790FD] text-sm md:text-base leading-tight">
+                                <span className="font-bold text-[#1B2559] text-sm md:text-base leading-tight">
                                   {displayName}
                                 </span>
-                                <span className="text-xs md:text-sm text-[#05CD99] font-semibold mt-1">
+                                <span className="text-xs md:text-sm text-[#4790FD] font-semibold mt-1">
                                   {c.cantidadPreguntas} preguntas
                                 </span>
                               </div>
@@ -304,7 +304,7 @@ const ExamenesDirectivosPage = () => {
                     className="border-b border-gray-50 pb-4 last:border-0 last:pb-0"
                   >
                     <div className="flex flex-col gap-1.5 mb-2">
-                      <span className="text-[11px] font-bold text-gray-400 subtitle uppercase tracking-wider">
+                      <span className="text-[11px] font-bold text-[#A3AED0] subtitle uppercase tracking-wider">
                         {exam.modalidadNombre} - {exam.nivelNombre}
                       </span>
                     </div>
@@ -316,7 +316,7 @@ const ExamenesDirectivosPage = () => {
                         return (
                           <span
                             key={id}
-                            className="px-4 py-1.5 bg-green-50 text-[#05CD99] border border-green-100 rounded-xl text-sm font-bold shadow-sm"
+                            className="px-4 py-1.5 bg-blue-50 text-[#4790FD] border border-blue-100 rounded-xl text-sm font-bold shadow-sm"
                           >
                             {c?.clasificacionNombre}
                           </span>
