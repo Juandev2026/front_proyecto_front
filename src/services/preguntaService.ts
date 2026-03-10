@@ -316,8 +316,14 @@ const transformQuestions = (rawData: any[]): Pregunta[] => {
         alternativas: q.alternativas,
         justificaciones: q.justificaciones,
         enunciados: q.enunciados,
+        sustento: (q.justificaciones && q.justificaciones.length > 0)
+          ? q.justificaciones.map((j: any) => j.contenido).join('<br/>')
+          : (q.sustento || ''),
         subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
           ...sub,
+          sustento: (sub.justificaciones && sub.justificaciones.length > 0)
+            ? sub.justificaciones.map((j: any) => j.contenido).join('<br/>')
+            : (sub.sustento || ''),
           enunciado: (sub.enunciados || [])
             .map((e: any) => e.contenido)
             .join('<br/>'),

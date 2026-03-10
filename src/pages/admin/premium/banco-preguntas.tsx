@@ -3092,7 +3092,7 @@ const Recursos = () => {
                                     <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">
                                       Sustento:
                                     </span>
-                                    <div className="italic">
+                                    <div className="text-gray-800 mt-2">
                                       {sub.sustento ? (
                                         <HtmlMathRenderer html={sub.sustento} />
                                       ) : (
@@ -3190,7 +3190,7 @@ const Recursos = () => {
                             <span className="font-bold text-gray-700 block mb-1">
                               Sustento:
                             </span>
-                            <div className="italic">
+                            <div className="text-gray-800 mt-2">
                               {item.sustento ? (
                                 <HtmlMathRenderer html={item.sustento} />
                               ) : (
