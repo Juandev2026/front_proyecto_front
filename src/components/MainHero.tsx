@@ -79,7 +79,7 @@ const MainHero = ({
         </div>
 
         <div className="mt-8 flex gap-4 justify-end sm:justify-start">
-          {celular ? (
+          {celular && (precio === undefined || precio > 0) ? (
             <a
               href={`https://wa.me/${celular}?text=${encodeURIComponent(
                 'Me interesa este anuncio'

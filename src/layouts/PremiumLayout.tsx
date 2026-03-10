@@ -440,7 +440,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                       ${
                         isExpanded
                           ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
-                          : 'text-gray-800 hover:bg-gray-50 hover:text-[#4790FD]'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
                       }
                     `}
                     title={isCollapsed ? item.name : ''}
@@ -456,7 +456,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isExpanded
                               ? 'text-white'
-                              : 'text-gray-800 group-hover:text-[#4790FD]'
+                              : 'text-gray-600 group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
                         `}
@@ -490,7 +490,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         ${
                           isActive
                             ? 'bg-[#4790FD] text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
-                            : 'text-gray-800 hover:bg-gray-50 hover:text-[#4790FD]'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
                         }
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
@@ -502,7 +502,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isActive
                               ? 'text-white'
-                              : 'text-gray-800 group-hover:text-[#4790FD]'
+                              : 'text-gray-600 group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
                         `}
@@ -531,7 +531,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                     ? 'text-gray-400 cursor-not-allowed opacity-75'
                                     : isChildActive
                                     ? 'bg-[#4790FD] text-white hover:text-white shadow-md'
-                                    : 'text-gray-800 hover:text-[#4790FD] hover:bg-gray-50'
+                                    : 'text-gray-600 hover:text-[#4790FD] hover:bg-gray-50'
                                 }
                              `}
                             >
@@ -541,7 +541,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                   className={`mr-3 h-5 w-5 flex-shrink-0 ${
                                     isChildActive
                                       ? 'text-white'
-                                      : 'text-gray-800'
+                                      : 'text-gray-600'
                                   }`}
                                 />
                               )}
@@ -565,9 +565,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <>
               <button
                 onClick={() => setShowExitModal(true)}
-                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-gray-800 rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
+                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-gray-600 rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
               >
-                <HomeIcon className="mr-4 h-5 w-5 text-gray-800 group-hover:text-[#4790FD]" />
+                <HomeIcon className="mr-4 h-5 w-5 text-gray-600 group-hover:text-[#4790FD]" />
                 Volver a Inicio
               </button>
               <button
@@ -582,7 +582,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <div className="flex flex-col gap-2 items-center">
               <button
                 onClick={() => setShowExitModal(true)}
-                className="p-2 rounded-xl text-gray-800 hover:bg-gray-50 hover:text-[#4790FD]"
+                className="p-2 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]"
                 title="Volver a Inicio"
               >
                 <HomeIcon className="h-6 w-6" />

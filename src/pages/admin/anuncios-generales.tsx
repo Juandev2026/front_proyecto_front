@@ -64,13 +64,13 @@ const AdminAnunciosGenerales = () => {
 
   const handleEdit = (anuncio: AnuncioGeneral) => {
     setCurrentAnuncio({
-      titulo: anuncio.titulo,
-      descripcion: anuncio.descripcion,
-      celular: anuncio.celular,
-      imagenUrl: anuncio.imagenUrl,
-      ruta: anuncio.ruta,
-      precio: anuncio.precio,
-      telefono: anuncio.telefono,
+      titulo: anuncio.titulo || '',
+      descripcion: anuncio.descripcion || '',
+      celular: anuncio.celular || '',
+      imagenUrl: anuncio.imagenUrl || '',
+      ruta: anuncio.ruta || '',
+      precio: anuncio.precio || 0,
+      telefono: anuncio.telefono || '',
     });
     setEditingId(anuncio.id);
     setPreviewUrl(anuncio.imagenUrl || '');

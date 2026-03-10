@@ -29,7 +29,19 @@ import {
   SolucionExamenRequest,
 } from '../../types/examen';
 import { erroneasService } from '../../services/erroneasService';
+import { clasificacionService } from '../../services/clasificacionService';
 import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
+
+const processCitation = (html: string) => {
+  if (!html) return '';
+  return html.replace(
+    /<p([^>]*)>\s*(Adaptado de|Tomado de|Adaptación|Fuente:)(.*?)<\/p>/gi,
+    '<p$1 style="font-size: 0.8em; color: #6b7280; text-align: right; margin-top: 1.5rem; font-style: italic;">$2$3</p>'
+  ).replace(
+    /(?:<br\s*\/?>\s*)*(Adaptado de|Tomado de|Fuente:)(.*?)(?=<\/p>|$)/gi,
+    '<div style="font-size: 0.8em; color: #6b7280; text-align: right; margin-top: 1.5rem; font-style: italic;">$1$2</div>'
+  );
+};
 
 const ExamenPage = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -39,6 +51,7 @@ const ExamenPage = () => {
   const [questions, setQuestions] = useState<PreguntaExamen[]>([]);
   const [metadata, setMetadata] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [clasificacionMap, setClasificacionMap] = useState<Map<number, string>>(new Map());
 
   // { "preguntaId" o "preguntaId_subNumero": { examenId: number, alternativa: string } }
   const [respuestas, setRespuestas] = useState<
@@ -124,6 +137,10 @@ const ExamenPage = () => {
 
     const savedQuestions = localStorage.getItem('currentQuestions');
     const savedMetadata = localStorage.getItem('currentExamMetadata');
+
+    clasificacionService.getAll().then((data) => {
+      setClasificacionMap(new Map(data.map(c => [c.id, c.clasificacionNombre])));
+    }).catch(console.error);
 
     if (savedQuestions) {
       const parsedQuestions = JSON.parse(savedQuestions);
@@ -275,13 +292,43 @@ const ExamenPage = () => {
   useEffect(() => {
     if (loading || !isAuthenticated || questions.length === 0) return () => {};
 
+    const playBeep = (freq: number, type: OscillatorType, duration: number) => {
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = type;
+        oscillator.frequency.value = freq;
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        setTimeout(() => oscillator.stop(), duration * 1000);
+      } catch (e) {
+        console.warn("Audio Context no soportado o bloqueado", e);
+      }
+    };
+
     const steps = ['PREPARADO', 'LISTO', '¡FUERA!'];
     let current = 0;
     
+    setTimeout(() => {
+      playBeep(440, 'sine', 0.15);
+    }, 100);
+
     const interval = setInterval(() => {
       if (current < steps.length - 1) {
         current++;
         setCountdownStep(current);
+
+        if (current === 1) {
+           playBeep(440, 'sine', 0.15);
+        } else if (current === 2) {
+           playBeep(880, 'sine', 0.4);
+        }
       } else {
         clearInterval(interval);
         setTimeout(() => setIsCountingDown(false), 800);
@@ -998,21 +1045,28 @@ const ExamenPage = () => {
                   <h2 className="text-gray-500 text-[10px] md:text-sm font-semibold whitespace-nowrap">
                     Pregunta {currentIndex + 1} de {questions.length}
                   </h2>
-                  
+                </div>
+
+                <div className="flex-shrink-0 flex items-center gap-2">
                   {(() => {
-                    const name = currentQuestion?.clasificacionNombre?.toLowerCase() || '';
+                    let rawName = currentQuestion?.clasificacionNombre || '';
+                    if (!rawName && currentQuestion?.clasificacionId) {
+                      rawName = clasificacionMap.get(currentQuestion.clasificacionId) || '';
+                    }
+                    const name = rawName.toLowerCase();
                     let code = '';
                     let classes = '';
 
-                    if (name === 'cl' || name.includes('comprensión')) {
+                    if (name === 'cl' || name.includes('comprensión') || name.includes('comprension')) {
                       code = 'CL';
                       classes = 'bg-pink-100 text-[#E91E63] border-pink-100';
-                    } else if (name === 'rl' || name.includes('razonamiento')) {
-                      code = 'RL';
+                    } else if (name === 'rm' || name === 'rl' || name.includes('razonamiento')) {
+                      code = 'RM'; // As per requested abbreviation
                       classes = 'bg-amber-100 text-[#FF9800] border-amber-100';
                     } else if (
                       name === 'ccp' ||
                       name.includes('pedagógico') ||
+                      name.includes('pedagogico') ||
                       name.includes('conocimientos') ||
                       name.includes('curricular')
                     ) {
@@ -1020,17 +1074,13 @@ const ExamenPage = () => {
                       classes = 'bg-blue-50 text-[#2196F3] border-blue-50';
                     }
 
-                    if (!code) return null;
-
-                    return (
-                      <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1 rounded-md border shadow-md whitespace-nowrap`}>
+                    return code ? (
+                      <span className={`${classes} text-[9px] md:text-xs font-black px-2 py-1.5 rounded-lg border shadow-sm whitespace-nowrap`}>
                         {code}
                       </span>
-                    );
+                    ) : null;
                   })()}
-                </div>
-
-                <div className="flex-shrink-0">
+                  
                   {(() => {
                     const isAnyAnswered = respuestas[String(currentIndex)] !== undefined;
                     return (
@@ -1050,7 +1100,7 @@ const ExamenPage = () => {
               {(currentQuestion as any)?.parentEnunciado && (
                 <div className="mb-6 bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm leading-relaxed force-black-text">
                   <HtmlMathRenderer
-                    html={(currentQuestion as any).parentEnunciado}
+                    html={processCitation((currentQuestion as any).parentEnunciado)}
                     className="text-lg md:text-xl text-gray-800"
                   />
                 </div>
@@ -1074,7 +1124,7 @@ const ExamenPage = () => {
                       </span>
                     )}
                     <HtmlMathRenderer
-                      html={currentQuestion.enunciado || ''}
+                      html={processCitation(currentQuestion.enunciado || '')}
                       className="text-lg md:text-xl text-gray-800"
                     />
                   </div>
