@@ -15,9 +15,8 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: 'Escala2026*',
+    password: '',
     celular: '',
-    region: '',
     regionId: 0,
     modalidadId: 0,
     nivelId: 0,
@@ -43,9 +42,9 @@ const Register = () => {
   const planId = router.query.planId as string;
   const redirect = router.query.redirect as string;
   const [passwordRequirements, setPasswordRequirements] = useState({
-    length: true,
+    length: false,
     uppercase: false,
-    number: true,
+    number: false,
     special: false,
   });
 
@@ -216,12 +215,50 @@ const Register = () => {
       return;
     }
 
+    // Validar nombre completo (al menos un nombre y un apellido)
+    if (!formData.name.trim().includes(' ') || formData.name.trim().split(/\s+/).length < 2) {
+      setError('Por favor ingrese nombres y apellidos (mínimo dos términos).');
+      setLoading(false);
+      return;
+    }
+
+    // Validar celular de 9 dígitos
+    if (formData.celular.trim().length < 9) {
+      setError('El número de celular debe tener al menos 9 dígitos.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar región
+    if (!formData.regionId || formData.regionId === 0) {
+      setError('Por favor seleccione su región.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar modalidad
+    if (!formData.modalidadId) {
+      setError('Por favor seleccione una modalidad.');
+      setLoading(false);
+      return;
+    }
+
     // Validar que Nivel sea seleccionado cuando el campo está disponible
     const nivelesDisponibles = formData.modalidadId
       ? getNivelesForModalidad(Number(formData.modalidadId))
       : [];
     if (nivelesDisponibles.length > 0 && !formData.nivelId) {
       setError('Por favor seleccione un nivel.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar que Especialidad sea seleccionada cuando el campo está disponible
+    const especialidadesDisponibles = formData.nivelId
+      ? getEspecialidadesForNivel(Number(formData.nivelId))
+      : [];
+    if (especialidadesDisponibles.length > 0 && !formData.especialidadId) {
+      setError('Por favor seleccione su especialidad.');
       setLoading(false);
       return;
     }
@@ -326,7 +363,7 @@ const Register = () => {
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nombre completo
+                    Nombre y Apellidos (completo)
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <input
@@ -338,7 +375,7 @@ const Register = () => {
                       value={formData.name}
                       onChange={handleChange}
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm"
-                      placeholder="Ej. Juan Pérez"
+                      placeholder="Ej. Juan Pérez Flores"
                     />
                   </div>
                 </div>
@@ -361,7 +398,7 @@ const Register = () => {
                       value={formData.email}
                       onChange={handleChange}
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm"
-                      placeholder="juan@ejemplo.com"
+                      placeholder="usuario@gmail.com"
                     />
                   </div>
                 </div>
@@ -487,14 +524,12 @@ const Register = () => {
                       htmlFor="especialidadId"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Especialidad{' '}
-                      <span className="text-gray-400 font-normal">
-                        (Opcional)
-                      </span>
+                      Especialidad
                     </label>
                     <select
                       id="especialidadId"
                       name="especialidadId"
+                      required={displayedEspecialidades.length > 0}
                       value={formData.especialidadId}
                       onChange={handleChange}
                       disabled={
