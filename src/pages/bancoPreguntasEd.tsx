@@ -238,14 +238,7 @@ const BancoPreguntasEdPage = () => {
           const questions =
             await preguntaService.examenFilter(payload);
 
-          // Local Filter Patch just in case
-          const filteredQuestions = questions.filter(
-            (q: any) =>
-              q.clasificacionId !== undefined &&
-              selectedClasificacionIds.includes(q.clasificacionId)
-          );
-
-          allQuestions = [...allQuestions, ...filteredQuestions];
+          allQuestions = [...allQuestions, ...questions]; // Removed strict local filter
         }
       } else {
         // New structure
@@ -261,11 +254,7 @@ const BancoPreguntasEdPage = () => {
         const questions = await preguntaService.examenFilter(
           payload
         );
-        allQuestions = questions.filter(
-          (q: any) =>
-            q.clasificacionId !== undefined &&
-            selectedClasificacionIds.includes(q.clasificacionId)
-        );
+        allQuestions = questions; // Removed strict local filter to avoid missing questions with inconsistent metadata
       }
 
       // Eliminar duplicados si los hay (por id de pregunta)

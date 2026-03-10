@@ -600,21 +600,8 @@ const BancoPreguntasPage = () => {
       let questions = await preguntaService.examenFilter(payloadFiltro);
 
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
-      if (questions.length > 0) {
-        questions = questions.filter((q: any) => {
-          const matchYear =
-            finalYearValue === '0' ||
-            String(q.year) === finalYearValue ||
-            String(q.anio) === finalYearValue;
-
-          const matchClass =
-            clasificacionIds.length === 0 ||
-            (q.clasificacionId !== undefined &&
-              clasificacionIds.includes(q.clasificacionId));
-
-          return matchYear && matchClass;
-        });
-      }
+      // Note: We used to filter locally here, but it was causing missing questions 
+      // when metadata was inconsistent. Trust the API result.
 
       setQuestionsToStore(questions);
       setExamToStart(exam);

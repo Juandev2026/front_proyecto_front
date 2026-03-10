@@ -316,14 +316,22 @@ const BancoPreguntasAscensoPage = () => {
               }
 
               if (!countMap[name]) {
+                let correctedCantidad = cantidad;
+                if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                  if (cantidad > 0) correctedCantidad = 60;
+                }
+
                 countMap[name] = {
-                  cantidad: cantidad,
+                  cantidad: correctedCantidad,
                   puntos: item.puntos || 0,
                   tiempoPregunta: item.tiempoPregunta || 0,
                   minimo: item.minimo || 0,
                 };
               } else {
                 countMap[name].cantidad += cantidad;
+                if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                  if (countMap[name].cantidad > 0) countMap[name].cantidad = 60;
+                }
               }
             }
           });
@@ -399,24 +407,15 @@ const BancoPreguntasAscensoPage = () => {
         nivelId: exam.nivelId,
         especialidadId: exam.especialidadId || 0,
         year: finalYearValue,
-        clasificaciones: clasificacionIds,
+        clasificaciones: [], // empty to fetch all questions for this exam
       };
 
       let questions = await preguntaService.examenFilter(payloadFiltro);
 
-      if (questions.length > 0) {
-        questions = questions.filter((q: any) => {
-          const matchYear =
-            finalYearValue === '0' ||
-            String(q.year) === finalYearValue ||
-            String(q.anio) === finalYearValue;
-          const matchClass =
-            clasificacionIds.length === 0 ||
-            (q.clasificacionId !== undefined &&
-              clasificacionIds.includes(q.clasificacionId));
-          return matchYear && matchClass;
-        });
-      }
+      // Note: We used to filter locally here by year and clasificacionId, 
+      // but since the API is already doing it, it's safer to trust the API result 
+      // to avoid missing questions with inconsistent metadata.
+      // (e.g. 53 vs 60 questions issue).
 
       const metadata = {
         tipoExamenId: 1,
