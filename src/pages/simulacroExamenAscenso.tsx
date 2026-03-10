@@ -255,8 +255,13 @@ const SimulacroExamenAscensoPage = () => {
             }
 
             if (!aggCountMap[name]) {
+              let correctedCantidad = cantidadExacta;
+              if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                if (cantidadExacta > 0) correctedCantidad = 60;
+              }
+
               aggCountMap[name] = {
-                cantidad: cantidadExacta,
+                cantidad: correctedCantidad,
                 id: item.clasificacionId,
                 puntos: item.puntos || 0,
                 tiempo: item.tiempoPregunta || 0,
@@ -264,6 +269,9 @@ const SimulacroExamenAscensoPage = () => {
               };
             } else {
               aggCountMap[name].cantidad += cantidadExacta;
+              if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                if (aggCountMap[name].cantidad > 0) aggCountMap[name].cantidad = 60;
+              }
             }
           }
         });
@@ -412,16 +420,9 @@ const SimulacroExamenAscensoPage = () => {
       );
 
       if (questions.length > 0) {
-        // 1. Filtrar primero por lo que el usuario seleccionó realmente (localmente)
-        const filteredBySelection = questions.filter((q) => {
-          const qYear = String(q.year || q.anio || '0');
-          const filterForThisYear = yearFilters.find((f) => f.year === qYear);
-          if (!filterForThisYear) return false;
-          return (
-            q.clasificacionId !== undefined &&
-            filterForThisYear.clasificacionIds.includes(q.clasificacionId)
-          );
-        });
+        // 1. We used to filter locally here by year and clasificacionId, 
+        // but it's safer to trust the API pool to avoid missing questions with inconsistent metadata.
+        const filteredBySelection = questions;
 
         // 2. Agrupar por (año, clasificacionId)
         const groups: Record<string, any[]> = {};
@@ -433,9 +434,19 @@ const SimulacroExamenAscensoPage = () => {
         });
 
         filteredBySelection.forEach((q) => {
-          const key = `${String(q.year || q.anio || '0')}-${q.clasificacionId}`;
-          if (groups[key]) {
-            groups[key].push(q);
+          const qYear = String(q.year || q.anio || '0');
+          const qClass = q.clasificacionId;
+          
+          // Try to find the matching group key, or fallback to the first active group if only one year is selected
+          let key: string = `${qYear}-${qClass}`;
+          if (!groups[key] && activeGroupKeys.length > 0) {
+            // If the question has no year or unexpected class, but we have a result for the exam, 
+            // assign it to the first active group to ensure it's counted.
+            key = activeGroupKeys[0] || '';
+          }
+
+          if (key && groups[key]) {
+            groups[key]!.push(q);
           }
         });
 
