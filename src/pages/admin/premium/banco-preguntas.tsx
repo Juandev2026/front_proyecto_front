@@ -1579,7 +1579,11 @@ const Recursos = () => {
       return;
     }
 
-    if (!newItem.enunciado.trim()) {
+    const hasEnunciadoContent = enunciadoBlocks.some(
+      (b) => (b.type === 'text' && b.content.trim()) || b.type === 'image'
+    );
+
+    if (!hasEnunciadoContent) {
       // eslint-disable-next-line no-alert
       alert('El enunciado es obligatorio');
       return;
@@ -1621,10 +1625,11 @@ const Recursos = () => {
       // strictly for linking with 'respuesta' in the same save operation.
       const safeAlts = alternatives.map((a) => ({ ...a }));
       const mappedAlternativas = safeAlts.map((alt, idx) => {
-        const tempId =
-          isNaN(Number(alt.id)) || Number(alt.id) < 1
-            ? idx + 1
-            : Number(alt.id);
+        let tempId = Number(alt.id);
+        // Fallback backward compat & fix Int32 overflow from Date.now() IDs
+        if (isNaN(tempId) || tempId < 1 || tempId > 2000000000) {
+          tempId = idx + 1;
+        }
 
         return {
           id: tempId,
@@ -1672,6 +1677,14 @@ const Recursos = () => {
           id: idx + 1,
           contenido: b.content,
         })),
+        sustento: justificationBlocks
+          .map((b) => {
+            if (b.type === 'image') {
+              return `<div data-block-type="image"><img src="${b.content}" alt="justificacion" /></div>`;
+            }
+            return b.content;
+          })
+          .join('<br/>'),
         subPreguntas: [],
         imagen: finalUrl || '',
       };
@@ -3079,7 +3092,7 @@ const Recursos = () => {
                                     <span className="font-bold text-gray-700 block mb-1 uppercase tracking-tight">
                                       Sustento:
                                     </span>
-                                    <div className="italic">
+                                    <div className="text-gray-800 mt-2">
                                       {sub.sustento ? (
                                         <HtmlMathRenderer html={sub.sustento} />
                                       ) : (
@@ -3177,7 +3190,7 @@ const Recursos = () => {
                             <span className="font-bold text-gray-700 block mb-1">
                               Sustento:
                             </span>
-                            <div className="italic">
+                            <div className="text-gray-800 mt-2">
                               {item.sustento ? (
                                 <HtmlMathRenderer html={item.sustento} />
                               ) : (

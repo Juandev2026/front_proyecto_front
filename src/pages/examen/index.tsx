@@ -1029,7 +1029,7 @@ const ExamenPage = () => {
 
               {/* Reading Text (if sub-question) */}
               {(currentQuestion as any)?.parentEnunciado && (
-                <div className="mb-6 bg-gray-200 p-4 md:p-6 rounded-2xl border border-gray-300 shadow-md leading-relaxed force-black-text">
+                <div className="mb-6 bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm leading-relaxed force-black-text">
                   <HtmlMathRenderer
                     html={(currentQuestion as any).parentEnunciado}
                     className="text-lg md:text-xl text-gray-800"
@@ -1048,7 +1048,7 @@ const ExamenPage = () => {
                   </div>
                 )}
                 {currentQuestion && (
-                  <div className="bg-gray-200 p-4 md:p-6 rounded-2xl border border-gray-300 force-black-text font-sans">
+                  <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 force-black-text font-sans">
                     {(currentQuestion as any).isSubPregunta && (
                       <span className="bg-[#E0F2FE] text-[#0369A1] text-[10px] uppercase font-black px-3 py-1.5 rounded-lg mb-4 inline-block shadow-md border border-[#BAE6FD]">
                         Pregunta {(currentQuestion as any).numeroSubPregunta}
