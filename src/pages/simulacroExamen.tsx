@@ -612,6 +612,9 @@ const SimulacroExamenPage = () => {
           <p className="text-[#A3AED0] text-base mt-1 font-medium">
             Filtra paso a paso para encontrar el examen deseado
           </p>
+          <p className="text-xl md:text-2xl font-extrabold text-[#2B3674] mt-2">
+            {selectedTipoExamenId === '1' ? 'Ascenso' : 'Nombramiento'}
+          </p>
         </div>
 
         <div className="space-y-4">
