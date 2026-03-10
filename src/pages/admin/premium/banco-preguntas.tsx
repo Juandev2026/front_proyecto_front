@@ -1625,10 +1625,11 @@ const Recursos = () => {
       // strictly for linking with 'respuesta' in the same save operation.
       const safeAlts = alternatives.map((a) => ({ ...a }));
       const mappedAlternativas = safeAlts.map((alt, idx) => {
-        const tempId =
-          isNaN(Number(alt.id)) || Number(alt.id) < 1
-            ? idx + 1
-            : Number(alt.id);
+        let tempId = Number(alt.id);
+        // Fallback backward compat & fix Int32 overflow from Date.now() IDs
+        if (isNaN(tempId) || tempId < 1 || tempId > 2000000000) {
+          tempId = idx + 1;
+        }
 
         return {
           id: tempId,
