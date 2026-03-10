@@ -1796,6 +1796,21 @@ const Recursos = () => {
 
       // Sync the list view with the server to ensure all fields (like respuestaCorrecta) are correctly mapped
       await fetchData();
+
+      // Scroll to the modified question if we are returning to the list view
+      const targetIdToScroll = stayInCreateMode ? finalIdForAssignment : (editingId || finalIdForAssignment);
+      if (targetIdToScroll) {
+        setTimeout(() => {
+          const el = document.getElementById(`pregunta-row-${targetIdToScroll}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-[6px]', 'ring-blue-300', 'transition-shadow', 'duration-500');
+            setTimeout(() => {
+              el.classList.remove('ring-[6px]', 'ring-blue-300');
+            }, 3000);
+          }
+        }, 500); // Allow list render time
+      }
     } catch (err) {
       console.error(err);
       // eslint-disable-next-line no-alert
@@ -2893,7 +2908,8 @@ const Recursos = () => {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow"
+                    id={`pregunta-row-${item.id}`}
+                    className="bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden hover:shadow-lg transition-all"
                   >
                     {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
                     <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">

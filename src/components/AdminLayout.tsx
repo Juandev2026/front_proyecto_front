@@ -389,7 +389,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const toggleMenu = (name: string) => {
-    if (isCollapsed) return; // Disable sub-menu toggling when collapsed
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      setExpandedMenus((prev) => ({
+        ...prev,
+        [name]: true,
+      }));
+      return;
+    }
     setExpandedMenus((prev) => ({
       ...prev,
       [name]: !prev[name],
