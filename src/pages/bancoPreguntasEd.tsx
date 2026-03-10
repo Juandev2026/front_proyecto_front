@@ -290,17 +290,17 @@ const BancoPreguntasEdPage = () => {
 
   return (
     <PremiumLayout
-      title="Banco de Preguntas Avend Docente"
-      breadcrumb="Pages / Banco de Preguntas Avend Docente"
+      title="Banco de Preguntas Avend Escala"
+      breadcrumb="Pages / Banco de Preguntas Avend Escala"
     >
       <Head>
-        <title>Banco de Preguntas Avend Docente - AVENDOCENTE</title>
+        <title>Banco de Preguntas Avend Escala - AVENDOCENTE</title>
       </Head>
 
       <div className="w-full space-y-6">
         <div className="text-center py-4">
           <h3 className="text-2xl md:text-3xl font-extrabold text-[#2B3674]">
-            Banco de Preguntas Avend Docente
+            Banco de Preguntas Avend Escala
           </h3>
           <p className="text-[#A3AED0] text-base mt-1 font-medium">
             Selecciona tu sección de estudio para practicar hoy
@@ -312,7 +312,7 @@ const BancoPreguntasEdPage = () => {
           <div className="border border-primary rounded-lg p-4 bg-white transition-all shadow-md">
             <div className="flex items-center gap-2 mb-3 text-primary font-bold">
               <ClipboardListIcon className="h-5 w-5" />
-              <span>Exámenes Propios Avend Docente</span>
+              <span>Exámenes Propios Avend Escala</span>
               <span className="ml-auto bg-blue-50 text-blue-600 px-3 py-0.5 rounded-full text-xs font-bold ring-1 ring-blue-100">
                 {secciones.length} Disponibles
               </span>

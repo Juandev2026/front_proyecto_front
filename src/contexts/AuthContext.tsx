@@ -100,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const nameToStore = mergedUser.fullName || mergedUser.nombreCompleto;
         if (nameToStore) localStorage.setItem('fullName', nameToStore);
         if (mergedUser.especialidad) localStorage.setItem('especialidad', mergedUser.especialidad);
+        if (mergedUser.fechaExpiracion) localStorage.setItem('fechaExpiracion', mergedUser.fechaExpiracion);
 
         // 2. Background sync exams if needed
         if (syncUser.id) {
@@ -220,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const userId = localStorage.getItem('userId');
     const especialidad = localStorage.getItem('especialidad');
     const especialidadId = localStorage.getItem('especialidadId');
+    const fechaExpiracion = localStorage.getItem('fechaExpiracion');
 
     setIsAuthenticated(true);
     setUser({
@@ -231,6 +233,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       token: token,
       especialidad: especialidad || undefined,
       especialidadId: especialidadId ? Number(especialidadId) : undefined,
+      fechaExpiracion: fechaExpiracion || undefined,
     });
 
     const storedExams = localStorage.getItem('loginExamenes');

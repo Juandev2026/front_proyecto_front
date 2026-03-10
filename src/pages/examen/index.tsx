@@ -11,6 +11,8 @@ import {
   TicketIcon as TargetIcon,
   EyeIcon,
   VolumeOffIcon,
+  PauseIcon,
+  PlayIcon,
 } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from 'framer-motion';
 import Head from 'next/head';
@@ -70,6 +72,7 @@ const ExamenPage = () => {
   const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
   const [isCountingDown, setIsCountingDown] = useState(true);
   const [countdownStep, setCountdownStep] = useState(0); // 0: Prepared, 1: Ready, 2: Go!
+  const [isPaused, setIsPaused] = useState(false);
 
   // Confirmation Modals State
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
@@ -261,12 +264,12 @@ const ExamenPage = () => {
 
   // Timer Effect
   useEffect(() => {
-    if (isCountingDown) return () => {};
+    if (isCountingDown || isPaused) return () => {};
     const timer = setInterval(() => {
       setSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [isCountingDown]);
+  }, [isCountingDown, isPaused]);
 
   // Countdown Animation Logic
   useEffect(() => {
@@ -973,7 +976,23 @@ const ExamenPage = () => {
           {/* Main Content (Left) */}
           <div className="flex-1 flex flex-col gap-6 font-sans leading-relaxed text-gray-800">
             {/* Reading Text / Question Content Section */}
-            <div ref={questionRef} className="bg-white p-2 md:p-10 shadow-none md:shadow-xl border-x-0 md:border border-gray-100 min-h-[500px] flex flex-col overflow-hidden scroll-mt-10">
+            <div ref={questionRef} className="bg-white p-2 md:p-10 shadow-none md:shadow-xl border-x-0 md:border border-gray-100 min-h-[500px] flex flex-col overflow-hidden scroll-mt-10 relative">
+              {isPaused ? (
+                <div className="absolute inset-0 bg-white/95 backdrop-blur-md z-50 flex flex-col items-center justify-center px-4 py-8">
+                  <PauseIcon className="w-24 h-24 text-[#002B6B] mb-6 opacity-70 animate-pulse" />
+                  <h2 className="text-3xl font-black text-[#002B6B] mb-4 text-center">Examen en Pausa</h2>
+                  <p className="text-gray-500 mb-10 max-w-md text-center text-sm md:text-base leading-relaxed">
+                    El tiempo se ha detenido. Las preguntas están ocultas para mantener la integridad de tu prueba.
+                  </p>
+                  <button
+                    onClick={() => setIsPaused(false)}
+                    className="bg-[#002B6B] hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 text-lg uppercase tracking-wider w-full md:w-auto"
+                  >
+                    <PlayIcon className="w-6 h-6" />
+                    Reanudar Examen
+                  </button>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100 gap-1 md:gap-4 px-1 md:px-0">
                 <div className="flex items-center gap-1.5 md:gap-4 overflow-hidden">
                   <h2 className="text-gray-500 text-[10px] md:text-sm font-semibold whitespace-nowrap">
@@ -1148,7 +1167,7 @@ const ExamenPage = () => {
                     <button
                       onClick={handlePrevious}
                       disabled={currentIndex === 0}
-                      className="flex-1 max-w-[200px] px-8 py-4 border-2 border-gray-300 rounded-2xl text-gray-600 font-black hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center text-lg uppercase tracking-wide"
+                      className="flex-1 md:max-w-none px-6 py-5 border-2 border-gray-300 rounded-2xl text-gray-600 font-black hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center text-xl md:text-2xl uppercase tracking-widest shadow-sm hover:shadow-md"
                     >
                       Anterior
                     </button>
@@ -1156,7 +1175,7 @@ const ExamenPage = () => {
                     {currentIndex < questions.length - 1 && (
                       <button
                         onClick={handleNext}
-                        className="flex-1 max-w-[200px] bg-[#002B6B] hover:bg-blue-900 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-center text-lg uppercase tracking-wide"
+                        className="flex-1 md:max-w-none bg-[#002B6B] hover:bg-blue-900 text-white font-black py-5 px-6 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-center text-xl md:text-2xl uppercase tracking-widest"
                       >
                         Siguiente
                       </button>
@@ -1178,9 +1197,9 @@ const ExamenPage = () => {
                 {/* Brand Logo at Bottom */}
                 <div className="flex justify-end mt-8">
                   <img
-                    src="/assets/images/escala_2.png"
-                    alt="Escala"
-                    className="h-12 w-auto object-contain opacity-80"
+                    src="/assets/images/avendEscala.jpeg"
+                    alt="Avend Escala"
+                    className="h-24 w-auto object-contain opacity-90"
                   />
                 </div>
               </div>
@@ -1301,7 +1320,17 @@ const ExamenPage = () => {
                     )}
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-4 space-y-3">
+                    {!examResult && (
+                      <button
+                        onClick={() => setIsPaused(true)}
+                        disabled={isSubmitting || !!examResult || isPaused}
+                        className="w-full bg-white border-2 border-[#FF9800] text-[#FF9800] hover:bg-[#FFF3E0] font-black py-3 px-4 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider disabled:opacity-50 disabled:transform-none"
+                      >
+                        <PauseIcon className="w-5 h-5 flex-shrink-0" />
+                        Pausar Examen
+                      </button>
+                    )}
                     <button
                       onClick={handleFinishExam}
                       disabled={isSubmitting || !!examResult}
@@ -1324,7 +1353,7 @@ const ExamenPage = () => {
                   <h3>Panel de Navegación</h3>
                 </div>
 
-                <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto px-2 py-2 -mx-2 custom-scrollbar">
                   {questions.map((_, i) => {
                     const status = getQuestionStatus(i);
                     const isAnswered = respuestas[String(i)] !== undefined;
