@@ -1370,9 +1370,10 @@ const AdminPremiumDocentes = () => {
                     </div>
                   </div>
 
-                  {/* IE (Solo Premium o Admin) */}
+                  {/* IE (Solo Premium, Admin o Client) */}
                   {(formData.role === 'Premium' ||
-                    formData.role === 'Admin') && (
+                    formData.role === 'Admin' ||
+                    formData.role === 'Client') && (
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">
                         Institución Educativa
@@ -1389,9 +1390,10 @@ const AdminPremiumDocentes = () => {
                     </div>
                   )}
 
-                  {/* Observaciones (Solo Premium o Admin) */}
+                  {/* Observaciones (Solo Premium, Admin o Client) */}
                   {(formData.role === 'Premium' ||
-                    formData.role === 'Admin') && (
+                    formData.role === 'Admin' ||
+                    formData.role === 'Client') && (
                     <div>
                       <label className="block text-sm text-gray-700 mb-1">
                         Observaciones

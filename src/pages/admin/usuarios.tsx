@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/solid';
 
 import AdminLayout from '../../components/AdminLayout';
-import { examenService } from '../../services/examenService';
+import { estructuraAcademicaService } from '../../services/estructuraAcademicaService';
 import { premiumService, PremiumContent } from '../../services/premiumService';
 import { regionService, Region } from '../../services/regionService';
 import {
@@ -167,21 +167,52 @@ const UsersPage = () => {
         const [
           regionsData,
           tiposAccesoData,
-          hierarchyData,
+          academicStructure,
           plansData,
         ] = await Promise.all([
           regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
           tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
-          examenService.getSimplifiedHierarchy().catch(err => { console.error('Error loading hierarchy:', err); return { modalidades: [], niveles: [], especialidades: [] }; }),
+          estructuraAcademicaService.getAll().catch(err => { console.error('Error loading academic structure:', err); return []; }),
           premiumService.getAll().catch(err => { console.error('Error loading plans:', err); return []; }),
         ]);
 
         setRegions(regionsData);
-        if (hierarchyData.modalidades && hierarchyData.modalidades.length > 0) {
-          setModalidades([...hierarchyData.modalidades].reverse() as any);
-        }
-        setNiveles(hierarchyData.niveles || []);
-        setEspecialidades(hierarchyData.especialidades || []);
+        
+        const flatModalidades: any[] = [];
+        const flatNiveles: any[] = [];
+        const flatEspecialidades: any[] = [];
+
+        academicStructure.forEach((mod) => {
+          flatModalidades.push({ id: mod.id, nombre: mod.nombre });
+          mod.niveles.forEach((niv) => {
+            const existingNivel = flatNiveles.find((n) => n.id === niv.id);
+            if (existingNivel) {
+              if (!existingNivel.modalidadIds.includes(mod.id)) {
+                existingNivel.modalidadIds.push(mod.id);
+              }
+            } else {
+              flatNiveles.push({
+                id: niv.id,
+                nombre: niv.nombre,
+                modalidadIds: [mod.id],
+              });
+            }
+
+            niv.especialidades.forEach((esp) => {
+              if (!flatEspecialidades.some(e => e.id === esp.id && e.nivelId === niv.id)) {
+                flatEspecialidades.push({
+                  id: esp.id,
+                  nombre: esp.nombre,
+                  nivelId: niv.id,
+                });
+              }
+            });
+          });
+        });
+
+        setModalidades(flatModalidades);
+        setNiveles(flatNiveles);
+        setEspecialidades(flatEspecialidades);
         setTiposAcceso(tiposAccesoData);
         setPlans(plansData);
       } catch (error) {
@@ -839,9 +870,10 @@ const UsersPage = () => {
                     </select>
                   </div>
 
-                  {/* IE (Solo Premium o Admin) */}
+                  {/* IE (Solo Premium, Admin o Client) */}
                   {(formData.role === 'Premium' ||
-                    formData.role === 'Admin') && (
+                    formData.role === 'Admin' ||
+                    formData.role === 'Client') && (
                     <div className="mb-3">
                       <label className="block text-sm text-gray-700 mb-1">
                         Institución Educativa
@@ -858,9 +890,10 @@ const UsersPage = () => {
                     </div>
                   )}
 
-                  {/* Observaciones (Solo Premium o Admin) */}
+                  {/* Observaciones (Solo Premium, Admin o Client) */}
                   {(formData.role === 'Premium' ||
-                    formData.role === 'Admin') && (
+                    formData.role === 'Admin' ||
+                    formData.role === 'Client') && (
                     <div>
                       <label className="block text-sm text-gray-700 mb-1">
                         Observaciones
