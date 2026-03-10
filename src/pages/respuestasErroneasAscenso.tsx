@@ -47,7 +47,7 @@ const RespuestasErroneasAscensoPage = () => {
           setLoading(true);
           // Ascenso corresponds to tipoExamenId: 1
           const data = await erroneasService.getByUser(user.id, 1);
-          setErroneas(data);
+          setErroneas(Array.isArray(data) ? data : []);
           
           if (data && data.length > 0) {
             const firstGroup = data[0]?.modalidades?.[0];
@@ -75,7 +75,9 @@ const RespuestasErroneasAscensoPage = () => {
     let totalErrors = 0;
     const uniqueQuestions = new Set<number>();
 
-    erroneas?.forEach((groupFecha) => {
+    if (!Array.isArray(erroneas)) return { totalErrors: 0, uniqueQuestions: 0, pointsLost: '0.0' };
+
+    erroneas.forEach((groupFecha) => {
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {
@@ -108,7 +110,9 @@ const RespuestasErroneasAscensoPage = () => {
       subtitle: string;
     }> = [];
 
-    erroneas?.forEach((groupFecha) => {
+    if (!Array.isArray(erroneas)) return [];
+
+    erroneas.forEach((groupFecha) => {
       // Apply History Date Filter
       if (historyFechaFilter !== 'Todas las fechas' && groupFecha.fecha !== historyFechaFilter) {
         return;
@@ -164,13 +168,15 @@ const RespuestasErroneasAscensoPage = () => {
   }, [erroneas, historyFechaFilter, historyCategoryFilter, historyFuenteFilter]);
 
   const fechaOptions = useMemo(() => {
-    if (!erroneas) return [];
+    if (!Array.isArray(erroneas)) return [];
     return erroneas.map(g => g.fecha);
   }, [erroneas]);
 
   const modalidadOptions = useMemo(() => {
     const options = new Set<string>();
-    erroneas?.forEach((groupFecha) => {
+    if (!Array.isArray(erroneas)) return [];
+
+    erroneas.forEach((groupFecha) => {
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {
@@ -186,7 +192,9 @@ const RespuestasErroneasAscensoPage = () => {
 
   const allCategoryOptions = useMemo(() => {
     const options = new Set<string>();
-    erroneas?.forEach((groupFecha) => {
+    if (!Array.isArray(erroneas)) return [];
+
+    erroneas.forEach((groupFecha) => {
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {
@@ -202,8 +210,9 @@ const RespuestasErroneasAscensoPage = () => {
 
   const handleStartPractice = () => {
     let allFilteredQuestions: PreguntaErronea[] = [];
+    if (!Array.isArray(erroneas)) return;
 
-    erroneas?.forEach((groupFecha) => {
+    erroneas.forEach((groupFecha) => {
       groupFecha.modalidades?.forEach((mod) => {
         mod.niveles?.forEach((niv) => {
           niv.especialidades?.forEach((esp) => {

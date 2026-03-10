@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --color-primary: #4790fd;
   --color-secondary: #2b6cb0;
@@ -182,8 +183,6 @@ a:hover {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
-
-
-
-
-
+.font-handwriting {
+  font-family: 'Caveat', cursive;
+}

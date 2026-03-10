@@ -79,7 +79,9 @@ export const erroneasService = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error('Error al obtener respuestas erróneas');
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        throw new Error(`Error al obtener respuestas erróneas: ${response.status}`);
       }
       return await response.json();
     } catch (error) {

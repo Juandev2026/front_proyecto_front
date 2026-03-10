@@ -48,7 +48,7 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
                                 .replace(/bg-gray-300/g, 'bg-gray-200 border border-gray-200');
 
     // 1.7 Strip inline font-sizes so the text uniformly inherits the container's font size (like text-lg)
-    // This removes style="... font-size: 16px; ..." avoiding tiny pasted text.
+    // This removes style="... font-size: 16px; ..." avoiding tiny or huge pasted text.
     processedHtml = processedHtml.replace(/font-size:\s*[^;"']+;?/gi, '');
 
     el.innerHTML = processedHtml;

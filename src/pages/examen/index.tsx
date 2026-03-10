@@ -1477,26 +1477,7 @@ const ExamenPage = () => {
           </AnimatePresence>
         </div>
 
-        <style jsx global>{`
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #d1d1d1;
-            border-radius: 10px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-          }
-          @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
-          .font-handwriting {
-            font-family: 'Caveat', cursive;
-          }
-        `}</style>
+
       </div>
       <ConfirmModal
         isOpen={isFinishModalOpen}
