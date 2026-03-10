@@ -950,7 +950,7 @@ const SimulacroExamenAscensoPage = () => {
                   Total de preguntas <br className="hidden md:block" /> seleccionadas:
                 </h4>
                 <p className="text-[#065F46]/80 text-xs md:text-sm font-medium leading-relaxed mt-2 max-w-md">
-                  Incluye preguntas de Bloque I (exámenes MINEDU) y Bloque II (exámenes Avend Docente)
+                  Incluye preguntas de Bloque I (exámenes MINEDU) y Bloque II (exámenes Avend Escala)
                 </p>
               </div>
               

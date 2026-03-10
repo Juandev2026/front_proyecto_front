@@ -47,6 +47,10 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
     processedHtml = processedHtml.replace(/bg-gray-100/g, 'bg-gray-200 border border-gray-200')
                                 .replace(/bg-gray-300/g, 'bg-gray-200 border border-gray-200');
 
+    // 1.7 Strip inline font-sizes so the text uniformly inherits the container's font size (like text-lg)
+    // This removes style="... font-size: 16px; ..." avoiding tiny pasted text.
+    processedHtml = processedHtml.replace(/font-size:\s*[^;"']+;?/gi, '');
+
     el.innerHTML = processedHtml;
 
     // 2. Find all math-inline spans and render with KaTeX

@@ -761,7 +761,7 @@ const SimulacroExamenPage = () => {
           </div>
         </div>
 
-        {/* Bloque II - Exámenes Propios Avend Docente */}
+        {/* Bloque II - Exámenes Propios Avend Escala */}
         <div className="border border-[#4790FD] rounded-lg overflow-hidden bg-white shadow-md mt-8">
           <div className="bg-[#4790FD]/5 border-b border-[#4790FD]/20 px-6 py-3 flex items-center gap-2">
             <ClipboardListIcon className="h-5 w-5 text-[#4790FD]" />
@@ -772,7 +772,7 @@ const SimulacroExamenPage = () => {
 
           <div className="p-6">
             <p className="text-xs text-blue-800 font-medium mb-4">
-              Selecciona las secciones Avend Docente adicionales que deseas incluir en tu
+              Selecciona las secciones Avend Escala adicionales que deseas incluir en tu
               simulacro.
             </p>
 

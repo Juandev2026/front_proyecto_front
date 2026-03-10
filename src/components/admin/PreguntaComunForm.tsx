@@ -70,13 +70,43 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     const blocks: ContentBlock[] = [];
     const children = Array.from(div.childNodes);
 
+    let currentTextHtml = '';
+
+    const flushCurrentText = () => {
+      const textContent = currentTextHtml.replace(/<[^>]*>?/gm, '').trim();
+      if (textContent !== '' || currentTextHtml.includes('<img')) {
+        blocks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'text',
+          content: currentTextHtml,
+          isGray: false,
+        });
+      }
+      currentTextHtml = '';
+    };
+
     children.forEach((node) => {
       if (node.nodeName === 'IMG') {
+        flushCurrentText();
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
           type: 'image',
           content: (node as HTMLImageElement).src,
         });
+      } else if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        node.nodeName === 'DIV' &&
+        ((node as HTMLElement).getAttribute('data-block-type') === 'image')
+      ) {
+        flushCurrentText();
+        const img = (node as HTMLElement).querySelector('img');
+        if (img) {
+          blocks.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'image',
+            content: img.src,
+          });
+        }
       } else if (
         node.nodeType === Node.ELEMENT_NODE &&
         node.nodeName === 'DIV' &&
@@ -86,6 +116,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
          (node as HTMLElement).classList.contains('bg-var-gray') ||
          (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
       ) {
+        flushCurrentText();
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
           type: 'text',
@@ -96,18 +127,18 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         node.nodeType === Node.TEXT_NODE ||
         node.nodeType === Node.ELEMENT_NODE
       ) {
-        const content =
-          (node as HTMLElement).outerHTML || node.textContent || '';
-        if (content.trim()) {
-          blocks.push({
-            id: Math.random().toString(36).substr(2, 9),
-            type: 'text',
-            content,
-            isGray: false,
-          });
+        const content = (node as HTMLElement).outerHTML || node.textContent || '';
+        if (content.trim() === '<br>' || content.trim() === '<br/>') {
+           if (currentTextHtml !== '') {
+             currentTextHtml += content;
+           }
+        } else {
+           currentTextHtml += content;
         }
       }
     });
+
+    flushCurrentText();
     return blocks;
   };
 
@@ -688,7 +719,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               <div key={block.id} className="relative group w-full">
                 <button
                   onClick={() => removeBlock(block.id, context, subQId)}
-                  className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
                   title="Eliminar bloque"
                 >
                   <TrashIcon className="w-4 h-4" />

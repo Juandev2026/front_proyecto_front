@@ -18,6 +18,7 @@ import {
   UserIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  BellIcon,
 } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -56,6 +57,26 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
     nombramiento: false,
     ascenso: false,
   });
+
+  const daysRemaining = React.useMemo(() => {
+    if (!user?.fechaExpiracion) return null;
+    try {
+      // Expecting ISO or standard date format from backend
+      const expDate = new Date(user.fechaExpiracion);
+      if (isNaN(expDate.getTime())) return null;
+      
+      const today = new Date();
+      // Set both to midnight to compare just days
+      const d1 = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+      const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      
+      const diffTime = d1.getTime() - d2.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    } catch (e) {
+      return null;
+    }
+  }, [user?.fechaExpiracion]);
 
   // Redirection logic for non-premium users
   useEffect(() => {
@@ -215,7 +236,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas Avend Docente',
+          name: 'Banco de Preguntas Avend Escala',
           href: '/avendescala/bancoPreguntasEd?context=nombramiento',
           icon: CollectionIcon,
         },
@@ -243,7 +264,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
           icon: CollectionIcon,
         },
         {
-          name: 'Banco de Preguntas Avend Docente',
+          name: 'Banco de Preguntas Avend Escala',
           href: '/avendescala/bancoPreguntasEd?context=ascenso',
           icon: CollectionIcon,
         },
@@ -294,10 +315,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
   const menuItems = React.useMemo(() => {
     // Helper to filter children based on availability
     // 'Banco de Preguntas' is always shown if the parent section is visible (access is controlled by accesoNombres)
-    // 'Banco de Preguntas Avend Docente' is only shown if Avend Docente exams are available for that context
+    // 'Banco de Preguntas Avend Escala' is only shown if Avend Escala exams are available for that context
     const filterChildren = (items: any[], context: 'nombramiento' | 'ascenso') => {
       return items.filter(child => {
-        if (child.name === 'Banco de Preguntas Avend Docente') {
+        if (child.name === 'Banco de Preguntas Avend Escala') {
           return availableEdContexts[context];
         }
         return true;
@@ -362,20 +383,20 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
         <div
           className={`flex items-center ${
             isCollapsed ? 'justify-center' : 'justify-between'
-          } h-20 md:h-40 px-6 mb-0 transition-all duration-300`}
+          } h-24 md:h-48 px-6 mb-0 transition-all duration-300`}
         >
           {!isCollapsed && (
             <Link href="/premium">
               <a className="flex items-center gap-2 group">
                 <img
-                  src="/assets/images/escala_2.png"
+                  src="/assets/images/avendEscala.jpeg"
                   alt="Avendo"
-                  className="h-24 w-auto object-contain hidden md:block"
+                  className="h-32 w-auto object-contain hidden md:block"
                 />
                 <img
-                  src="/assets/images/escala_2.png"
+                  src="/assets/images/avendEscala.jpeg"
                   alt="Avendo"
-                  className="h-16 w-auto object-contain md:hidden"
+                  className="h-20 w-auto object-contain md:hidden"
                 />
               </a>
             </Link>
@@ -419,7 +440,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                       ${
                         isExpanded
                           ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
-                          : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
                       }
                     `}
                     title={isCollapsed ? item.name : ''}
@@ -435,7 +456,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isExpanded
                               ? 'text-white'
-                              : 'text-[#A3AED0] group-hover:text-[#4790FD]'
+                              : 'text-gray-600 group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
                         `}
@@ -469,7 +490,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         ${
                           isActive
                             ? 'bg-[#4790FD] text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
-                            : 'text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]'
                         }
                          ${isCollapsed ? 'justify-center' : ''} 
                       `}
@@ -481,7 +502,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           ${
                             isActive
                               ? 'text-white'
-                              : 'text-[#A3AED0] group-hover:text-[#4790FD]'
+                              : 'text-gray-600 group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : 'h-6 w-6'}
                         `}
@@ -510,7 +531,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                     ? 'text-gray-400 cursor-not-allowed opacity-75'
                                     : isChildActive
                                     ? 'bg-[#4790FD] text-white hover:text-white shadow-md'
-                                    : 'text-[#A3AED0] hover:text-[#4790FD] hover:bg-gray-50'
+                                    : 'text-gray-600 hover:text-[#4790FD] hover:bg-gray-50'
                                 }
                              `}
                             >
@@ -520,7 +541,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                   className={`mr-3 h-5 w-5 flex-shrink-0 ${
                                     isChildActive
                                       ? 'text-white'
-                                      : 'text-[#A3AED0]'
+                                      : 'text-gray-600'
                                   }`}
                                 />
                               )}
@@ -544,9 +565,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <>
               <button
                 onClick={() => setShowExitModal(true)}
-                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-[#A3AED0] rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
+                className="w-full group flex items-center px-4 py-3 text-sm font-semibold text-gray-600 rounded-xl hover:bg-gray-50 hover:text-[#4790FD] transition-colors"
               >
-                <HomeIcon className="mr-4 h-5 w-5 text-[#A3AED0] group-hover:text-[#4790FD]" />
+                <HomeIcon className="mr-4 h-5 w-5 text-gray-600 group-hover:text-[#4790FD]" />
                 Volver a Inicio
               </button>
               <button
@@ -561,7 +582,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <div className="flex flex-col gap-2 items-center">
               <button
                 onClick={() => setShowExitModal(true)}
-                className="p-2 rounded-xl text-[#A3AED0] hover:bg-gray-50 hover:text-[#4790FD]"
+                className="p-2 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-[#4790FD]"
                 title="Volver a Inicio"
               >
                 <HomeIcon className="h-6 w-6" />
@@ -607,9 +628,9 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             <Link href="/premium">
               <a className="block">
                 <img 
-                  src="/assets/images/escala_2.png" 
+                  src="/assets/images/avendEscala.jpeg" 
                   alt="Escala" 
-                  className="h-16 w-auto object-contain"
+                  className="h-20 w-auto object-contain"
                 />
               </a>
             </Link>
@@ -617,6 +638,14 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
 
           {/* Right Side: Profile & Actions */}
           <div className="flex items-center gap-4 bg-white p-2 rounded-full shadow-sm">
+            {daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0 && (
+              <div className="flex items-center px-4 py-1.5 bg-red-50 border border-red-100 rounded-full animate-pulse shadow-sm mr-2 cursor-help" title="Tu suscripción premium está por vencer">
+                <BellIcon className="w-4 h-4 text-red-500 mr-2" />
+                <span className="text-[11px] font-extrabold text-red-600 uppercase tracking-tight whitespace-nowrap">
+                   {daysRemaining === 0 ? 'VENCE HOY' : `VENCE EN ${daysRemaining} DÍA${daysRemaining > 1 ? 'S' : ''}`}
+                </span>
+              </div>
+            )}
             <div className="hidden md:flex flex-col items-end mr-2">
               <span className="text-sm font-bold text-[#4790FD] leading-tight">
                 {user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario'}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline';
 
@@ -10,8 +10,7 @@ import {
 const RelevantInfoCarousel = () => {
   const [items, setItems] = useState<InformacionRelevante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,166 +26,119 @@ const RelevantInfoCarousel = () => {
     fetchData();
   }, []);
 
-  // Auto-scroll logic (Interval based)
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (!isHovered && items.length > 1) {
-      intervalId = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
-      }, 3000);
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' 
+        ? scrollLeft - clientWidth / 2 
+        : scrollLeft + clientWidth / 2;
+      
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
     }
-
-    return () => clearInterval(intervalId);
-  }, [items, isHovered]);
-
-  const handlePrev = () => {
-    setCurrentIndex(
-      (prevIndex) => (prevIndex - 1 + items.length) % items.length
-    );
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
 
   if (loading) {
     return (
-      <div className="h-64 flex items-center justify-center">Cargando...</div>
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
-  if (items.length === 0) {
-    return null;
-  }
-
-  const currentItem = items[currentIndex];
-
-  if (!currentItem) return null;
+  if (items.length === 0) return null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8">
-      {/* General Title */}
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center uppercase tracking-wide">
-        INFORMACIÓN RELEVANTE
-      </h2>
-
-      <div
-        className="relative w-full bg-white rounded-2xl shadow-xl overflow-hidden group flex flex-col md:flex-row h-auto min-h-[500px] border border-gray-100"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onTouchStart={() => setIsHovered(true)}
-        onTouchEnd={() => setIsHovered(false)}
-      >
-        {/* Left: Image Section */}
-        <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden">
-          <div
-            className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-in-out hover:scale-105"
-            style={{ backgroundImage: `url(${currentItem.urlImagen})` }}
-          />
-        </div>
-
-        {/* Right: Content Section */}
-        <div className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center items-start text-left bg-white relative">
-          <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 text-cyan-500 leading-tight">
-            {currentItem.titulo}
-          </h2>
-          <p className="text-base md:text-lg mb-6 md:mb-8 text-gray-600 leading-relaxed">
-            {currentItem.descripcion}
-          </p>
-
-          {/* Buttons / Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-6 w-full">
-            <div className="flex gap-2 flex-1">
-              {/* WhatsApp / Buy Button - Moved First */}
-              {currentItem.telefono && (
-                <a
-                  href={`https://wa.me/${currentItem.telefono.replace(
-                    /\s+/g,
-                    ''
-                  )}?text=Hola, estoy interesado en ${encodeURIComponent(
-                    currentItem.titulo
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                >
-                  <span>Comprar</span>
-                </a>
-              )}
-
-              {/* Ver más - Moved Second (Right) */}
-              {currentItem.url && (
-                <a
-                  href={currentItem.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
-                >
-                  Ver más
-                </a>
-              )}
-            </div>
-
-            {/* Price Display */}
-            {currentItem.precio > 0 && (
-              <div className="flex justify-center sm:justify-start">
-                <span className="text-xl font-bold text-gray-800 bg-blue-50 px-5 py-2 rounded-lg border border-blue-100 shadow-sm whitespace-nowrap">
-                  S/. {currentItem.precio.toFixed(2)}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Global Arrows - Visible on all screens now */}
-        {items.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePrev();
-              }}
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg z-20 active:scale-95 transition-all duration-200 focus:outline-none flex items-center justify-center backdrop-blur-sm"
-              aria-label="Anterior"
-            >
-              <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNext();
-              }}
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg z-20 active:scale-95 transition-all duration-200 focus:outline-none flex items-center justify-center backdrop-blur-sm"
-              aria-label="Siguiente"
-            >
-              <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6" />
-            </button>
-          </>
-        )}
-
-        {/* Dots Indicator */}
-        {items.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-            {items.map((_, index) => (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentIndex(index);
-                }}
-                className={`transition-all duration-300 shadow-sm ${
-                  index === currentIndex
-                    ? 'bg-blue-600 w-8 h-2 rounded-full'
-                    : 'bg-gray-300 w-2 h-2 rounded-full hover:bg-gray-400'
-                }`}
-                aria-label={`Ir a diapositiva ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
+    <div className="w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50 rounded-3xl">
+      <div className="text-center mb-10">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-[#002B6B] tracking-tight">
+          Información Relevante
+        </h2>
+        <div className="mt-2 h-1.5 w-24 bg-primary mx-auto rounded-full opacity-20"></div>
       </div>
+
+      <div className="relative group">
+        {/* Navigation Buttons */}
+        <button
+          onClick={() => scroll('left')}
+          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white shadow-xl border border-gray-100 text-gray-400 hover:text-primary transition-all opacity-0 group-hover:opacity-100 hidden md:flex active:scale-90"
+        >
+          <ChevronLeftIcon className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={() => scroll('right')}
+          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white shadow-xl border border-gray-100 text-gray-400 hover:text-primary transition-all opacity-0 group-hover:opacity-100 hidden md:flex active:scale-90"
+        >
+          <ChevronRightIcon className="w-6 h-6" />
+        </button>
+
+        {/* Horizontal Scrollable Container */}
+        <div 
+          ref={scrollRef}
+          className="flex overflow-x-auto gap-6 pb-8 px-4 no-scrollbar snap-x snap-mandatory touch-pan-x md:justify-center"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {items.map((item) => (
+            <div 
+              key={item.id}
+              className="min-w-[280px] md:min-w-[320px] max-w-[320px] bg-white rounded-[2.5rem] shadow-lg border border-gray-100/50 overflow-hidden flex flex-col snap-start transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group/card"
+            >
+              <div className="relative h-56 w-full overflow-hidden bg-gray-50 flex items-center justify-center p-4">
+                <img 
+                  src={item.urlImagen} 
+                  alt={item.titulo}
+                  className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-105"
+                />
+              </div>
+
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight mb-3 line-clamp-2 h-14">
+                  {item.titulo}
+                </h3>
+                <p className="text-sm text-gray-500 line-clamp-3 mb-6 flex-1">
+                  {item.descripcion}
+                </p>
+
+                <div className="flex flex-col gap-2">
+                  <a 
+                    href={item.url || '#'} 
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3 bg-[#f3f4f6] hover:bg-[#e5e7eb] text-gray-400 hover:text-gray-600 font-bold text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2"
+                  >
+                    + Información
+                  </a>
+                  {item.telefono && (
+                    <a 
+                      href={`https://wa.me/${item.telefono.replace(/\D/g, '')}`} 
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] font-bold text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2"
+                    >
+                      Solicitar S/ {item.precio || 0}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <a 
+          href="/informacion-relevante" 
+          className="px-8 py-3 bg-white border-2 border-primary text-primary font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-primary/5 transition-all shadow-sm active:scale-95"
+        >
+          Ver todo
+        </a>
+      </div>
+      
+      <style jsx>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };

@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   PhotographIcon,
   MenuAlt2Icon,
+  MenuIcon,
 } from '@heroicons/react/outline';
 import dynamic from 'next/dynamic';
 
@@ -278,6 +279,37 @@ const Recursos = () => {
   // --- ENUNCIADO STATE (BLOCKS) ---
   const [enunciadoBlocks, setEnunciadoBlocks] = useState<ContentBlock[]>([]);
   const [isUploadingEnunciadoImage, setIsUploadingEnunciadoImage] = useState(false);
+
+  // Drag State for Enunciado Blocks
+  const [draggedEnunciadoIndex, setDraggedEnunciadoIndex] = useState<number | null>(null);
+
+  const handleDragStartEnunciado = (e: React.DragEvent, index: number) => {
+    setDraggedEnunciadoIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    // Small delay to prevent the dragged image from instantly disappearing
+    setTimeout(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }, 0);
+  };
+
+  const handleDragOverEnunciado = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedEnunciadoIndex === null || draggedEnunciadoIndex === index) return;
+
+    const newBlocks = [...enunciadoBlocks];
+    const item = newBlocks.splice(draggedEnunciadoIndex, 1)[0];
+    if (item) {
+      newBlocks.splice(index, 0, item);
+      setEnunciadoBlocks(newBlocks);
+      setDraggedEnunciadoIndex(index);
+    }
+  };
+
+  const handleDragEndEnunciado = () => {
+    setDraggedEnunciadoIndex(null);
+  };
 
   const addEnunciadoText = () => {
     setEnunciadoBlocks((prev) => [
@@ -964,8 +996,26 @@ const Recursos = () => {
       div.innerHTML = rawEnunciado;
 
       const children = Array.from(div.childNodes);
+      let currentTextHtml = '';
+
+      const flushCurrentText = () => {
+        const textContent = currentTextHtml.replace(/<[^>]*>?/gm, '').trim();
+        // Allow if it contains an image like <img /> inside the text that wasn't a parsed block, 
+        // or actually has text content. Skip lonely `<br/>` elements.
+        if (textContent !== '' || currentTextHtml.includes('<img')) {
+          enunciadoBlocksLocal.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'text',
+            content: currentTextHtml,
+            isGray: false,
+          });
+        }
+        currentTextHtml = '';
+      };
+
       children.forEach((node) => {
         if (node.nodeName === 'IMG') {
+          flushCurrentText();
           enunciadoBlocksLocal.push({
             id: Math.random().toString(36).substr(2, 9),
             type: 'image',
@@ -976,6 +1026,7 @@ const Recursos = () => {
           node.nodeName === 'DIV' &&
           ((node as HTMLElement).getAttribute('data-block-type') === 'image')
         ) {
+          flushCurrentText();
           const img = (node as HTMLElement).querySelector('img');
           if (img) {
             enunciadoBlocksLocal.push({
@@ -993,27 +1044,27 @@ const Recursos = () => {
            (node as HTMLElement).classList.contains('bg-var-gray') ||
            (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
         ) {
+          flushCurrentText();
           enunciadoBlocksLocal.push({
             id: Math.random().toString(36).substr(2, 9),
             type: 'text',
             content: (node as HTMLElement).innerHTML,
             isGray: true,
           });
-        } else if (
-          node.nodeType === Node.TEXT_NODE ||
-          node.nodeType === Node.ELEMENT_NODE
-        ) {
+        } else if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) {
           const content = (node as HTMLElement).outerHTML || node.textContent || '';
-          if (content.trim()) {
-            enunciadoBlocksLocal.push({
-              id: Math.random().toString(36).substr(2, 9),
-              type: 'text',
-              content,
-              isGray: false,
-            });
+          // We optionally skip a standing <br> if we're at the start to avoid leading newlines 
+          // caused by our join('<br/>') strategy
+          if (content.trim() === '<br>' || content.trim() === '<br/>') {
+             if (currentTextHtml !== '') {
+               currentTextHtml += content;
+             }
+          } else {
+             currentTextHtml += content;
           }
         }
       });
+      flushCurrentText();
     }
 
     setEnunciadoBlocks(enunciadoBlocksLocal);
@@ -1745,6 +1796,21 @@ const Recursos = () => {
 
       // Sync the list view with the server to ensure all fields (like respuestaCorrecta) are correctly mapped
       await fetchData();
+
+      // Scroll to the modified question if we are returning to the list view
+      const targetIdToScroll = stayInCreateMode ? finalIdForAssignment : (editingId || finalIdForAssignment);
+      if (targetIdToScroll) {
+        setTimeout(() => {
+          const el = document.getElementById(`pregunta-row-${targetIdToScroll}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-[6px]', 'ring-blue-300', 'transition-shadow', 'duration-500');
+            setTimeout(() => {
+              el.classList.remove('ring-[6px]', 'ring-blue-300');
+            }, 3000);
+          }
+        }, 500); // Allow list render time
+      }
     } catch (err) {
       console.error(err);
       // eslint-disable-next-line no-alert
@@ -2107,38 +2173,58 @@ const Recursos = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {enunciadoBlocks.map((block) => (
-                        <div key={block.id} className="relative group w-full">
-                          <button
-                            onClick={() => removeEnunciadoBlock(block.id)}
-                            className="absolute -right-2 -top-2 p-1 bg-red-100 text-red-500 rounded-full shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Eliminar bloque"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                          {block.type === 'text' ? (
-                            <div
-                              className={`p-4 rounded-lg border border-gray-100 shadow-sm ${
-                                block.isGray ? 'bg-gray-100' : 'bg-white'
-                              }`}
+                      {enunciadoBlocks.map((block, index) => (
+                        <div 
+                          key={block.id} 
+                          className={`relative group w-full flex gap-3 transition-opacity ${draggedEnunciadoIndex === index ? 'opacity-50' : 'opacity-100'}`}
+                          draggable
+                          onDragStart={(e) => handleDragStartEnunciado(e, index)}
+                          onDragOver={(e) => handleDragOverEnunciado(e, index)}
+                          onDragEnd={handleDragEndEnunciado}
+                          style={{ cursor: 'move' }}
+                        >
+                          {/* Drag Handle */}
+                          <div className="flex flex-col items-center justify-center text-gray-400 hover:text-[#4790FD] cursor-move transition-colors pt-4">
+                             <MenuIcon className="w-6 h-6" />
+                          </div>
+                          
+                          <div className="flex-1 min-w-0 relative">
+                            <button
+                              onClick={() => removeEnunciadoBlock(block.id)}
+                              className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
+                              title="Eliminar bloque"
                             >
-                              <div className="flex items-center gap-2 mb-3 text-gray-500">
-                                  <DocumentTextIcon className="w-4 h-4" />
-                                  <span className="text-xs font-bold uppercase tracking-wider">Texto</span>
-                              </div>
-                              <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden bg-white">
-                                  <TiptapEditor
-                                    value={block.content}
-                                    onChange={(val) =>
-                                      updateEnunciadoBlock(block.id, val)
-                                    }
-                                    placeholder={`Escribe aquí...`}
-                                    borderColor="border-gray-200"
-                                  />
-                              </div>
-                              <div className="mt-3 flex items-center">
-                                  <label className="flex items-center gap-2 cursor-pointer group">
-                                       <div className="relative flex items-center">
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                            {block.type === 'text' ? (
+                              <div
+                                className={`p-4 rounded-lg border shadow-sm ${
+                                  block.isGray ? 'bg-gray-100 border-gray-200' : 'bg-white border-gray-100'
+                                }`}
+                                onDragStart={(e) => {
+                                  // Prevent child inputs from triggering drag if user is just selecting text
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                draggable={true}
+                              >
+                                <div className="flex items-center gap-2 mb-3 text-gray-500">
+                                    <DocumentTextIcon className="w-4 h-4" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Texto</span>
+                                </div>
+                                <div className="quill-editor-container border border-gray-200 rounded-lg overflow-hidden bg-white">
+                                    <TiptapEditor
+                                      value={block.content}
+                                      onChange={(val) =>
+                                        updateEnunciadoBlock(block.id, val)
+                                      }
+                                      placeholder={`Escribe aquí...`}
+                                      borderColor="border-gray-200"
+                                    />
+                                </div>
+                                <div className="mt-3 flex items-center">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                         <div className="relative flex items-center">
                                           <input 
                                               type="checkbox" 
                                               className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:bg-primary checked:border-primary transition-all"
@@ -2165,6 +2251,7 @@ const Recursos = () => {
                               />
                             </div>
                           )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -2313,7 +2400,7 @@ const Recursos = () => {
                         <button
                           type="button"
                           onClick={() => removeJustificationBlock(block.id)}
-                          className="absolute -right-2 -top-2 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 z-10 transition-colors"
+                          className="absolute right-4 top-4 p-1.5 bg-red-50 text-red-500 rounded-md shadow-sm hover:bg-red-100 z-10 opacity-0 group-hover:opacity-100 transition-all"
                           title="Eliminar bloque"
                         >
                           <TrashIcon className="w-4 h-4" />
@@ -2821,7 +2908,8 @@ const Recursos = () => {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow"
+                    id={`pregunta-row-${item.id}`}
+                    className="bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden hover:shadow-lg transition-all"
                   >
                     {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
                     <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
