@@ -111,8 +111,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
             examenService.getPropiosByUser(1, user.id).catch(() => []),
           ]);
           const newState = {
-            nombramiento: Array.isArray(dataNombramiento) && dataNombramiento.length > 0,
-            ascenso: Array.isArray(dataAscenso) && dataAscenso.length > 0,
+            nombramiento: Array.isArray(dataNombramiento) && dataNombramiento.filter((s: any) => s.visible).length > 0,
+            ascenso: Array.isArray(dataAscenso) && dataAscenso.filter((s: any) => s.visible).length > 0,
           };
           setAvailableEdContexts(newState);
           localStorage.setItem('edAvailability', JSON.stringify(newState));
@@ -438,8 +438,10 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                     className={`
                       w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                       ${
-                        isExpanded
+                        isActive
                           ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                          : isExpanded
+                          ? 'bg-blue-50 text-[#4790FD]'
                           : 'text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]'
                       }
                     `}
@@ -454,8 +456,8 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         className={`
                           h-6 w-6 flex-shrink-0 transition-colors
                           ${
-                            isExpanded
-                              ? 'text-white'
+                            isActive || isExpanded
+                              ? isActive ? 'text-white' : 'text-[#4790FD]'
                               : 'text-[#2B3674] group-hover:text-[#4790FD]'
                           }
                           ${!isCollapsed ? 'mr-4 h-5 w-5' : ''}
@@ -467,7 +469,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                     {!isCollapsed && (
                       <svg
                         className={`w-4 h-4 transition-all duration-200 ${
-                          isExpanded ? 'rotate-180 text-white' : 'text-[#2B3674] group-hover:text-[#4790FD]'
+                          isActive ? 'rotate-180 text-white' : isExpanded ? 'rotate-180 text-[#4790FD]' : 'text-[#2B3674] group-hover:text-[#4790FD]'
                         }`}
                         fill="none"
                         viewBox="0 0 24 24"
@@ -525,12 +527,12 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                           <Link key={child.name} href={child.href}>
                             <a
                               className={`
-                                flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200
+                                flex items-center justify-between px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ml-2 mb-1
                                 ${
                                   child.locked
                                     ? 'text-gray-400 cursor-not-allowed opacity-75'
                                     : isChildActive
-                                    ? 'bg-[#4790FD] text-white hover:text-white shadow-md'
+                                    ? 'bg-[#4790FD] text-white shadow-md'
                                     : 'text-[#2B3674] hover:text-[#4790FD] hover:bg-gray-50'
                                 }
                              `}
