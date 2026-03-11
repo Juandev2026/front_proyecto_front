@@ -1775,6 +1775,7 @@ const Recursos = () => {
       const prevClasificacionId = newItem.clasificacionId;
       const prevTipoPreguntaId = newItem.tipoPreguntaId;
 
+      alert('Guardado con éxito. Ya está genial.');
       if (!stayInCreateMode) setViewMode('list');
       resetForm();
 
@@ -1868,6 +1869,62 @@ const Recursos = () => {
                   </select>
                 </div>
                 <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+              </div>
+            </div>
+
+            {/* 3. FILA: NÚMERO Y CLASIFICACIÓN (Visible para ambos modos) */}
+            <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Número */}
+                <div className="w-full md:w-1/4">
+                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
+                    Número de la pregunta{' '}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    className={`w-full border rounded px-3 py-2 text-gray-700 focus:ring-1 outline-none transition-all ${
+                      !numeroPregunta.trim() ||
+                      isNaN(parseInt(numeroPregunta, 10)) ||
+                      parseInt(numeroPregunta, 10) <= 0
+                        ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
+                        : 'border-[#4790FD] focus:border-[#4790FD] focus:ring-[#4790FD]'
+                    }`}
+                    placeholder="Requerido"
+                    min="1"
+                    value={numeroPregunta}
+                    onChange={(e) => setNumeroPregunta(e.target.value)}
+                  />
+                </div>
+
+                {/* Clasificación */}
+                <div className="w-full md:w-3/4">
+                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
+                    Clasificación de la pregunta
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 appearance-none focus:border-[#4790FD] focus:ring-1 focus:ring-[#4790FD] outline-none transition-all bg-white"
+                      value={newItem.clasificacionId}
+                      onChange={(e) =>
+                        setNewItem({
+                          ...newItem,
+                          clasificacionId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value={0}>
+                        Seleccionar Clasificación...
+                      </option>
+                      {clasificaciones.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {getClasificacionFullName(c.clasificacionNombre)}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="w-4 h-4 text-gray-500 absolute right-3 top-3 pointer-events-none" />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2046,62 +2103,6 @@ const Recursos = () => {
                     </div>
                   </div>
                 )}
-
-                {/* 3. FILA: NÚMERO Y TIPO DE PREGUNTA */}
-                <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
-                  <div className="flex flex-col md:flex-row gap-6">
-                    {/* Número */}
-                    <div className="w-full md:w-1/4">
-                      <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        Número de la pregunta{' '}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        className={`w-full border rounded px-3 py-2 text-gray-700 focus:ring-1 outline-none transition-all ${
-                          !numeroPregunta.trim() ||
-                          isNaN(parseInt(numeroPregunta, 10)) ||
-                          parseInt(numeroPregunta, 10) <= 0
-                            ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
-                            : 'border-[#4790FD] focus:border-[#4790FD] focus:ring-[#4790FD]'
-                        }`}
-                        placeholder="Requerido"
-                        min="1"
-                        value={numeroPregunta}
-                        onChange={(e) => setNumeroPregunta(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Clasificación */}
-                    <div className="w-full md:w-3/4">
-                      <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                        Clasificación de la pregunta
-                      </label>
-                      <div className="relative">
-                        <select
-                          className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 appearance-none focus:border-[#4790FD] focus:ring-1 focus:ring-[#4790FD] outline-none transition-all bg-white"
-                          value={newItem.clasificacionId}
-                          onChange={(e) =>
-                            setNewItem({
-                              ...newItem,
-                              clasificacionId: Number(e.target.value),
-                            })
-                          }
-                        >
-                          <option value={0}>
-                            Seleccionar Clasificación...
-                          </option>
-                          {clasificaciones.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {getClasificacionFullName(c.clasificacionNombre)}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDownIcon className="w-4 h-4 text-gray-500 absolute right-3 top-3 pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* 4. SECCIÓN ENUNCIADO (Estilo exacto a la imagen) */}
                 <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">

@@ -661,13 +661,23 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
       if (initialParent) {
         await preguntaService.update(examenId, initialParent.id, payload);
-        alert('Pregunta común actualizada con éxito');
+        alert('Guardado con éxito. Ya está genial.');
       } else {
-        const created = await preguntaService.create(payload as any);
+        let created = await preguntaService.create(payload as any);
         if (created) {
+          // Si el backend asignó un número diferente, forzamos el que el usuario ingresó
+          if (created.numero !== numPadre) {
+            console.log(`Backend asignó ${created.numero}, forzando a ${numPadre}...`);
+            try {
+              const corrected = await preguntaService.update(examenId, created.id, { numero: numPadre });
+              created = corrected;
+            } catch (err) {
+              console.error('No se pudo forzar el número correcto', err);
+            }
+          }
           finalIdForAssignment = created.id;
         }
-        alert('Pregunta común creada con éxito (Padre e Hijos)');
+        alert('Guardado con éxito. Ya está genial.');
       }
 
       // Asignación multi-examen

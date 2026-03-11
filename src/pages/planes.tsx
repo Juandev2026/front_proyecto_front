@@ -46,26 +46,6 @@ const planes: Plan[] = [
     ],
   },
   {
-    id: 'mensual',
-    name: 'PLAN MENSUAL',
-    subtitle: 'COMIENZA TU PREPARACIÓN',
-    type: 'mensual',
-    price: 15,
-    duration: 'por 1 mes',
-    description:
-      'Acceso completo durante 30 días para una preparación intensiva.',
-    ctaText: 'Comenzar Ahora',
-    features: [
-      'Nombramiento',
-      'Ascenso',
-      'Banco de preguntas MINEDU',
-      'Simulacros MINEDU',
-      'Práctica con tus respuestas erradas',
-      'Estadísticas de rendimiento',
-      'Seguimiento de progreso',
-    ],
-  },
-  {
     id: 'semestral',
     name: 'PLAN SEMESTRAL',
     subtitle: 'IMPULSA TU NOMBRAMIENTO Y ASCENSO',
@@ -134,7 +114,7 @@ const faqs = [
           <li className="flex items-center gap-2">
             <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
             <span>
-              <strong>Plan Mensual / Semestral</strong> → Un solo pago por el periodo completo.
+              <strong>Plan Semestral</strong> → Un solo pago por el periodo completo.
             </span>
           </li>
           <li className="flex items-center gap-2">
@@ -307,7 +287,7 @@ const Planes = () => {
 
 
         {/* Plans Grid */}
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {planes.map((plan: Plan) => (
             <div
               key={plan.id}
