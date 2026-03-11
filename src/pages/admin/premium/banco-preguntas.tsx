@@ -1743,7 +1743,7 @@ const Recursos = () => {
       const payload = {
         id: editingId || 0,
         examenId: targetExamenId,
-        year: selectedYear || '0',
+        year: String(selectedYear || '0'),
         numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
         tipoPreguntaId: Number(newItem.tipoPreguntaId),

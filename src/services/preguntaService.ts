@@ -311,7 +311,7 @@ const transformQuestions = (rawData: any[]): Pregunta[] => {
       const mapped: Pregunta = {
         id: q.id,
         examenId: q.examenId,
-        year: q.year || q.anio,
+        year: String(q.year || q.anio || '0'),
         numero: q.numero,
         enunciado: (q.enunciados || [])
           .map((e: any) => e.contenido)

@@ -626,7 +626,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
-        year: initialParent?.year || selectedYear || '0',
+        year: String(initialParent?.year || selectedYear || '0'),
         tipoPreguntaId: 2,
         numero: numPadre,
         clasificacionId: firstSubClasificacionId,
@@ -655,7 +655,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
           return {
             examenId,
-            year: initialParent?.year || selectedYear || '0',
+            year: String(initialParent?.year || selectedYear || '0'),
             preguntaId: initialParent ? initialParent.id : 0,
             id: q.id || 0, // Sending 0 for new records
             clasificacionId: q.clasificacionId,
