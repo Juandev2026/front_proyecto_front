@@ -355,14 +355,6 @@ const AdminNews = () => {
       return;
     }
 
-    const descriptionText = stripHtml(formData.descripcion || '');
-    if (descriptionText.length > 800) {
-      // eslint-disable-next-line no-alert
-      alert(
-        `La descripción no puede exceder los 800 caracteres. Actual: ${descriptionText.length} caracteres.`
-      );
-      return;
-    }
 
     if (!formData.usuarioEdicionId || Number(formData.usuarioEdicionId) <= 0) {
       const storedId =
@@ -740,18 +732,6 @@ const AdminNews = () => {
                         className="h-44"
                       />
                     )}
-                  </div>
-                  <div className="flex justify-end mb-4 -mt-6 mr-1">
-                    <span
-                      className={`text-sm font-medium ${
-                        stripHtml(formData.descripcion || '').length > 800
-                          ? 'text-red-600'
-                          : 'text-gray-500'
-                      }`}
-                    >
-                      {stripHtml(formData.descripcion || '').length} / 800
-                      caracteres
-                    </span>
                   </div>
                 </div>
 
