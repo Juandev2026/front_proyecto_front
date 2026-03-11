@@ -2024,6 +2024,7 @@ const Recursos = () => {
                 onCancel={() => setViewMode('list')}
                 numero={numeroPregunta}
                 selectedTipo={Number(selectedTipo)}
+                existingItems={items}
               />
             ) : (
               /* --- FORMULARIO INDIVIDUAL (Estándar) --- */

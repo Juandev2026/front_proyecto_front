@@ -53,6 +53,7 @@ interface PreguntaComunFormProps {
   onCancel: () => void;
   numero?: string;
   selectedTipo: number;
+  existingItems?: any[];
 }
 
 const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
@@ -65,7 +66,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   onCancel,
   numero,
   selectedTipo,
+  existingItems = [],
 }) => {
+  const [isCollisionModalOpen, setIsCollisionModalOpen] = useState(false);
+  const [collisionNumStr, setCollisionNumStr] = useState('');
   // --- HELPERS ---
   const parseHtmlToBlocks = (html: string): ContentBlock[] => {
     if (!html) return [];
@@ -593,6 +597,21 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       return;
     }
 
+    // --- DETECCIÓN DE NÚMERO DUPLICADO (solo pregunta padre) ---
+    const numPadreCheck =
+      initialParent?.numero || (numero ? parseInt(numero, 10) : null);
+    if (numPadreCheck && !initialParent) {
+      // Solo validar en modo crear (no editar)
+      const collision = existingItems.find(
+        (q) => q.numero === numPadreCheck && q.examenId === examenId
+      );
+      if (collision) {
+        setCollisionNumStr(numPadreCheck.toString());
+        setIsCollisionModalOpen(true);
+        return;
+      }
+    }
+
     const commonHtml = serializeBlocks(commonStatement);
 
     console.log('=== GUARDANDO PREGUNTA AGRUPADA (ATÓMICA) ===');
@@ -647,7 +666,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 contenido: serializeBlocks(q.specificStatement),
               },
             ],
-            alternativas: q.alternatives.map((alt, altIdx) => ({
+            alternativas: q.alternatives.map((alt) => ({
               id: typeof alt.id === 'number' && alt.id > 0 ? alt.id : 0,
               contenido: alt.contenido || '',
             })),
@@ -863,6 +882,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   };
 
   return (
+    <>
     <div className="space-y-8 pb-20">
       <input
         type="file"
@@ -1270,7 +1290,40 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         </button>
       </div>
     </div>
-  );
+
+      {/* COLLISION MODAL */}
+      {isCollisionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <DocumentTextIcon className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-800 tracking-tight">
+                Número Duplicado
+              </h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+                El número de pregunta{' '}
+                <span className="font-bold text-gray-900 mx-1">
+                  {collisionNumStr}
+                </span>{' '}
+                ya existe en este examen. Por favor, selecciona un número diferente para poder guardar la pregunta.
+              </p>
+              <div className="flex justify-center gap-4 w-full">
+                <button
+                  onClick={() => setIsCollisionModalOpen(false)}
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+    );
 };
 
 export default PreguntaComunForm;
