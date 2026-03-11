@@ -39,8 +39,8 @@ const LatestNews = () => {
         const featured = sortedNews.find((n) => n.esDestacado) || sortedNews[0];
         setFeaturedNews(featured || null);
 
-        // Filter out the featured one
-        const remaining = sortedNews.filter((n) => n.id !== featured?.id);
+        // NOT filtering out the featured one so it shows in the main list as well
+        const remaining = sortedNews;
 
         // Split into Sub-Featured (4 items) and Pagination List (rest)
         setSubFeaturedNews(remaining.slice(0, 4));
