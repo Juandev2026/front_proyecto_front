@@ -36,10 +36,10 @@ const processCitation = (html: string) => {
   if (!html) return '';
   return html.replace(
     /<p([^>]*)>\s*(Adaptado de|Tomado de|Adaptación|Fuente:)(.*?)<\/p>/gi,
-    '<p$1 style="font-size: 0.8em; color: #6b7280; text-align: right; margin-top: 1.5rem; font-style: italic;">$2$3</p>'
+    '<p$1 class="citation-text">$2$3</p>'
   ).replace(
     /(?:<br\s*\/?>\s*)*(Adaptado de|Tomado de|Fuente:)(.*?)(?=<\/p>|$)/gi,
-    '<div style="font-size: 0.8em; color: #6b7280; text-align: right; margin-top: 1.5rem; font-style: italic;">$1$2</div>'
+    '<div class="citation-text">$1$2</div>'
   );
 };
 

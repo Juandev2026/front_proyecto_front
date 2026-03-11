@@ -1,188 +1,244 @@
+/* Importa los estilos base de Tailwind (reset de CSS) */
 @tailwind base;
+/* Importa los componentes de Tailwind (ej. clases de contenedores) */
 @tailwind components;
+/* Importa las utilidades de Tailwind (clases de un solo propósito como text-center, mt-4, etc.) */
 @tailwind utilities;
 
-
+/* Define variables CSS globales disponibles en todo el proyecto */
 :root {
-  --color-primary: #4790fd;
-  --color-secondary: #2b6cb0;
-  --color-tertiaty: #99a0a3;
-  --color-bg-50: #e5e7eb; /* Softened back to gray-200 */
+  --color-primary: #4790fd; /* Color primario del tema (azul claro) */
+  --color-secondary: #2b6cb0; /* Color secundario del tema (azul más oscuro) */
+  --color-tertiaty: #99a0a3; /* Color terciario (gris) */
+  --color-bg-50: #e5e7eb; /* Color de fondo suave (gris claro, gray-200) */
 }
 
+/* Cambia el color de fondo y texto cuando el usuario selecciona texto en la página (para navegadores Webkit/Blink) */
 ::selection {
-  background-color: rgba(255, 255, 0, 0.4); /* Resaltador amarillo suave */
-  color: black;
+  background-color: rgba(255, 255, 0, 0.4); /* Fondo amarillo semitransparente como resaltador */
+  color: black; /* Texto negro al ser seleccionado */
 }
 
+/* Igual que ::selection, pero específico para navegadores basados en Mozilla Firefox */
 ::-moz-selection {
-  background-color: rgba(255, 255, 0, 0.4);
-  color: black;
+  background-color: rgba(255, 255, 0, 0.4); /* Fondo amarillo semitransparente */
+  color: black; /* Texto negro al ser seleccionado */
 }
 
+/* 
+  Clase personalizada para aplicar el color de fondo usando la variable CSS.
+  La barra invertida (\) se usa para escapar los corchetes y paréntesis en el nombre de la clase,
+  permitiendo que Tailwind la lea como una clase válida similar a bg-[#e5e7eb].
+*/
 .bg-\[var\(--color-bg-50\)\] {
   background-color: var(--color-bg-50);
 }
 
+/* Clase para justificar el texto (hacer que los bordes izquierdo y derecho del texto queden rectos) */
 .text-justify {
   text-align: justify;
 }
 
+/* Fuerza a que el texto dentro de este elemento pueda ser seleccionado por el usuario, sobreescribiendo otros estilos (útil si hay contenedores que bloquean la selección) */
 .selectable-text {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  cursor: text;
+  user-select: text !important; /* Estándar */
+  -webkit-user-select: text !important; /* Para navegadores Safari/Chrome antiguos */
+  cursor: text; /* Cambia el cursor a la forma de "I" para indicar que se puede seleccionar */
 }
 
+/* Aplica una transición suave a todos los enlaces (etiqueta <a>) cuando cambian de estado (ej. al pasar el mouse por encima) */
 a {
-  @apply transition-colors duration-200;
+  @apply transition-colors duration-200; /* Usa directivas de Tailwind: transición de colores de 200 ms */
 }
 
+/* Estilo para los enlaces cuando el cursor del mouse está sobre ellos */
 a:hover {
-  @apply text-primary;
+  @apply text-primary; /* Usa Tailwind para cambiar el color del texto al color primario definido en la configuración de Tailwind */
 }
 
+/* Añade margen vertical (arriba y abajo) a los párrafos (<p>) que estén dentro de un contenedor con la clase "content" */
 .content p {
-  @apply my-6;
+  @apply my-6; /* Tailwind: margin-top y margin-bottom de 1.5rem (24px) */
 }
 
+/* Añade margen vertical a las listas desordenadas (<ul>) dentro de un contenedor con la clase "content" */
 .content ul {
-  @apply my-6;
+  @apply my-6; /* Tailwind: margin-top y margin-bottom de 1.5rem (24px) */
 }
 
-/* React Quill Fixes */
+/* Correcciones específicas para el editor de texto enriquecido React Quill */
+/* Ajusta el tamaño de los iconos (SVG) en la barra de herramientas del editor */
 .ql-toolbar svg {
-  width: 20px !important;
-  height: 20px !important;
-  display: inline-block;
+  width: 20px !important; /* Fuerza el ancho a 20px */
+  height: 20px !important; /* Fuerza el alto a 20px */
+  display: inline-block; /* Permite que el SVG respete ancho y alto manteniéndose en línea */
 }
-.ql-container {
+/* Establece el tamaño de fuente base para el área donde se escribe en React Quill */
+ /*.ql-container {
   font-size: 16px;
-}
+}*/
 
-/* Line Clamp Utilities */
+/* Utilidades para truncar texto (limitar el número de líneas visibles y añadir "...") */
 
+/* Limita el texto a 1 sola línea */
 .line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+  overflow: hidden; /* Oculta lo que se desborde */
+  display: -webkit-box; /* Usa el modelo viejo de flexbox para Webkit (necesario para line-clamp) */
+  -webkit-box-orient: vertical; /* Orientación vertical del flexbox */
+  -webkit-line-clamp: 1; /* Limita a 1 línea */
 }
 
+/* Limita el texto a 2 líneas */
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2; /* Limita a 2 líneas */
 }
 
+/* Limita el texto a 3 líneas */
 .line-clamp-3 {
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 3; /* Limita a 3 líneas */
 }
 
-/* Shine Effect Animation */
+/* Animación personalizada de efecto "brillo" (shine) */
+/* Define los pasos de la animación: mueve el elemento de izquierda a derecha rotado 45 grados */
 @keyframes shine {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  20%, 100% { transform: translateX(100%) rotate(45deg); }
+  0% { transform: translateX(-100%) rotate(45deg); } /* Inicia fuera de la pantalla a la izquierda */
+  20%, 100% { transform: translateX(100%) rotate(45deg); } /* Avanza rápido a la derecha (al 20%) y se pausa hasta el 100% */
 }
 
+/* Clase base para el contenedor que tendrá el efecto de brillo */
 .animate-shine {
-  position: relative;
-  overflow: hidden;
+  position: relative; /* Necesario para posicionar el brillo de forma absoluta en su interior */
+  overflow: hidden; /* Oculta el brillo cuando sale de los bordes del contenedor */
 }
 
+/* Crea un elemento falso (pseudo-elemento) que actúa como el rayo de luz */
 .animate-shine::after {
-  content: '';
-  position: absolute;
-  top: -50%;
+  content: ''; /* Necesario para que el pseudo-elemento exista */
+  position: absolute; /* Lo posiciona encima del contenedor original */
+  top: -50%; /* Lo hace más grande que el contenedor para cubrir bien en la rotación */
   left: -50%;
   width: 200%;
   height: 200%;
+  /* Crea el gradiente del brillo: transparente -> blanco semitransparente -> transparente */
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0) 0%,
     rgba(255, 255, 255, 0.3) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  transform: rotate(45deg);
-  animation: shine 3s infinite;
+  transform: rotate(45deg); /* Inclina el rayo de luz */
+  animation: shine 3s infinite; /* Aplica la animación 'shine' de 3 segundos repetida infinitamente */
 }
 
-/* Editor & Lexical Styles */
+/* Estilos para el editor Lexical (texto enriquecido) */
+/* Estilos para un párrafo normal dentro del editor */
 .editor-paragraph {
-  @apply mb-2 leading-relaxed;
+  @apply mb-2 leading-relaxed; /* Tailwind: margen inferior (0.5rem) y altura de línea relajada (1.625) */
 }
 
-/* Lexical Decimal/Fraction Support */
+/* Soporte específico para mostrar fracciones o decimales en el editor Lexical */
+/* Selecciona el contenedor de la fracción */
 [data-lexical-fraction="true"] {
-  display: inline-grid !important;
-  grid-template-rows: auto auto;
-  justify-items: center;
-  vertical-align: middle;
-  font-size: 0.9em;
-  margin: 0 2px;
-  transform: translateY(-0.1em);
-  gap: 0px;
-  white-space: nowrap;
+  display: inline-grid !important; /* Usa Grid para apilar numerador y denominador de forma compacta */
+  grid-template-rows: auto auto; /* Dos filas que se ajustan a su contenido */
+  justify-items: center; /* Centra el contenido horizontalmente en la celda del grid */
+  vertical-align: middle; /* Alineación vertical respecto al texto que lo rodea */
+  font-size: 0.9em; /* Hace la fracción un 10% más pequeña que el texto normal */
+  margin: 0 2px; /* Pequeño margen horizontal */
+  transform: translateY(-0.1em); /* Lo sube ligeramente para alinear ópticamente con el texto base */
+  gap: 0px; /* Sin espacio extra entre numerador y denominador */
+  white-space: nowrap; /* Evita que la fracción se rompa en dos líneas distintas */
 }
 
+/* Estilos para el numerador (el primer span dentro de la fracción) */
 [data-lexical-fraction="true"] span:first-child {
-  border-bottom: 1px solid currentColor;
-  padding: 1px 3px;
-  line-height: 0.9;
-  grid-row: 1;
+  border-bottom: 1px solid currentColor; /* Crea la línea horizontal de la fracción usando el color del texto actual */
+  padding: 1px 3px; /* Espaciado interno pequeño */
+  line-height: 0.9; /* Altura de línea ajustada */
+  grid-row: 1; /* Lo ubica en la primera fila del grid */
 }
 
+/* Estilos para el denominador (el último span dentro de la fracción) */
 [data-lexical-fraction="true"] span:last-child {
-  padding: 1px 3px;
-  line-height: 0.9;
-  grid-row: 2;
+  padding: 1px 3px; /* Espaciado interno pequeño */
+  line-height: 0.9; /* Altura de línea ajustada */
+  grid-row: 2; /* Lo ubica en la segunda fila del grid */
 }
 
+/* Clase repetida para justificar texto (ya existía más arriba, se sugiere limpiar en refactorización) */
 .text-justify {
   text-align: justify;
 }
 
+/* Para contenido alternativo (ej. alternativas de examen), fuerza a los párrafos a estar en la misma línea */
 .alternative-content p {
-  display: inline !important;
-  margin: 0 !important;
+  display: inline !important; /* Evita que el párrafo genere un bloque nuevo de línea */
+  margin: 0 !important; /* Elimina márgenes por defecto del párrafo */
 }
 
+/* 
+  ESTA ES LA CLASE GLOBAL DE LA QUE HABLABAS 
+  Fuerza el color negro en cualquier elemento con esta clase, 
+  Y también (por el asterisco *) en CUALQUIER etiqueta hija dentro de él, ignorando colores originales.
+*/
 .force-black-text, .force-black-text * {
-  color: black !important;
+  color: black !important; /* El !important sobreescribe cualquier color en línea que venga de la base de datos */
 }
 
-/* Gray blocks for questions/dialogues */
+/* Bloques grises usados típicamente para resaltar enunciados o diálogos */
 .bg-gray-block {
-  background-color: #e5e7eb !important; /* Tailwind gray-200 */
-  border: 1px solid #d1d5db !important; /* Tailwind gray-300 border */
+  background-color: #e5e7eb !important; /* Fondo gris claro (Tailwind gray-200) forzado */
+  border: 1px solid #d1d5db !important; /* Borde gris medio (Tailwind gray-300) forzado */
 }
 
+/* Otra clase de utilidad para fondo gris, usando variable o un fallback a #f3f4f6 (gray-100) */
 .bg-var-gray {
   background-color: var(--color-bg-50, #f3f4f6) !important;
 }
 
+/* Repetición de la clase usando la variable, pero esta vez con !important forzado */
 .bg-\[var\(--color-bg-50\)\] {
   background-color: var(--color-bg-50) !important;
 }
 
-/* Custom Scrollbar Utility */
+/* 
+  ESTA CLASE VENCE AL FORCE BLACK TEXT PARA LAS CITAS
+  Aplica el tamaño reducido, color negro, itálica y alineación.
+*/
+.citation-text {
+  font-size: 0.8em !important;
+  color: black !important;
+  text-align: right !important;
+  margin-top: 1.5rem !important;
+  font-style: italic !important;
+}
+
+/* Utilidad para personalizar la apariencia de las barras de desplazamiento (Scrollbars) en navegadores Webkit (Chrome/Safari) */
+/* Ancho de la barra completa */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 6px; /* Barra delgada de 6px */
 }
+/* Fondo de la "pista" por donde se mueve el pulgar */
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent; /* Fondo invisible */
 }
+/* El "pulgar" (la barra gris que agarras para hacer scroll) */
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d1d1;
-  border-radius: 10px;
+  background: #d1d1d1; /* Gris claro */
+  border-radius: 10px; /* Bordes totalmente redondeados */
 }
+/* Al pasar el mouse sobre el pulgar de la barra */
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #a1a1a1; /* Se oscurece ligeramente */
 }
+
+/* Clase para aplicar una fuente tipo "escritura a mano" */
 .font-handwriting {
-  font-family: 'Caveat', cursive;
+  font-family: 'Caveat', cursive; /* Usa la fuente Google 'Caveat', si falla usa la recursiva del sistema */
 }
