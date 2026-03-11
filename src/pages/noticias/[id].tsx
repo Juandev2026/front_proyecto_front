@@ -212,6 +212,7 @@ const NewsDetail = ({
                 const lowerUrl = url.toLowerCase();
                 let viewerUrl = null;
                 let isOffice = false;
+                let isDownloadOnly = false;
 
                 if (lowerUrl.endsWith('.pdf')) {
                   viewerUrl = url;
@@ -227,41 +228,56 @@ const NewsDetail = ({
                     url
                   )}&embedded=true`;
                   isOffice = true;
+                } else if (
+                  lowerUrl.includes('drive.google.com') ||
+                  lowerUrl.includes('youtube.com') ||
+                  lowerUrl.includes('youtu.be')
+                ) {
+                  isDownloadOnly = true;
                 }
 
-                if (!viewerUrl) return null;
-
                 return (
-                  <div className="p-6 md:p-8">
+                  <div className="p-6 md:p-8 border-t border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">
-                      Documento Adjunto
+                      Enlace de Descarga / Recurso
                     </h2>
-                    <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden relative">
-                      {isOffice && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                          <div className="animate-pulse text-gray-400">
-                            Cargando visor...
+
+                    {!isDownloadOnly && viewerUrl && (
+                      <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden relative mb-6">
+                        {isOffice && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                            <div className="animate-pulse text-gray-400">
+                              Cargando visor...
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        <iframe
+                          src={viewerUrl}
+                          className="w-full h-full relative z-10"
+                          title="Visor de Documento"
+                          frameBorder="0"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col items-center gap-4">
+                      {isDownloadOnly && (
+                        <p className="text-gray-600 text-center text-sm mb-2">
+                          Este recurso es un enlace externo. Haz clic abajo para
+                          acceder.
+                        </p>
                       )}
-                      <iframe
-                        src={viewerUrl}
-                        className="w-full h-full relative z-10"
-                        title="Visor de Documento"
-                        frameBorder="0"
-                      />
-                    </div>
-                    <div className="mt-4 flex justify-end">
+                      
                       {isAuthenticated ? (
                         <a
                           href={newsItem.archivoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-primary text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                          className="bg-primary text-white px-10 py-4 rounded-xl shadow-2xl text-lg font-black flex items-center gap-3 hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95 uppercase"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
+                            className="h-6 w-6"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -269,20 +285,20 @@ const NewsDetail = ({
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
+                              strokeWidth={3}
                               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                             />
                           </svg>
-                          Descargar Archivo
+                          Descargar / Ver Enlace
                         </a>
                       ) : (
                         <button
                           onClick={() => setIsAuthModalOpen(true)}
-                          className="bg-gray-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-700 transition-colors"
+                          className="bg-gray-800 text-white px-10 py-4 rounded-xl shadow-2xl text-lg font-black flex items-center gap-3 hover:bg-gray-900 transition-all transform hover:scale-105 active:scale-95 uppercase"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
+                            className="h-6 w-6"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -290,11 +306,11 @@ const NewsDetail = ({
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
+                              strokeWidth={3}
                               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                             />
                           </svg>
-                          Descargar Archivo
+                          Iniciar Sesión para Descargar
                         </button>
                       )}
                     </div>
