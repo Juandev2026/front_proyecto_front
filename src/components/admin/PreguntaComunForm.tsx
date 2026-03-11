@@ -565,7 +565,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       .join('<br/>');
   };
 
-  const handleSaveAll = async () => {
+  const handleSaveAll = async (forceSaveWithCollision = false) => {
     // --- VALIDACIÓN ---
     if (commonStatement.length === 0) {
       alert('El enunciado común está vacío. Añade texto o imagen.');
@@ -600,7 +600,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     // --- DETECCIÓN DE NÚMERO DUPLICADO (solo pregunta padre) ---
     const numPadreCheck =
       initialParent?.numero || (numero ? parseInt(numero, 10) : null);
-    if (numPadreCheck && !initialParent) {
+    if (numPadreCheck && !initialParent && !forceSaveWithCollision) {
       // Solo validar en modo crear (no editar)
       const collision = existingItems.find(
         (q) => q.numero === numPadreCheck && q.examenId === examenId
@@ -1280,7 +1280,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           Cancelar
         </button>
         <button
-          onClick={handleSaveAll}
+          onClick={() => handleSaveAll()}
           disabled={saving}
           className={`bg-primary text-white px-8 py-2 rounded shadow hover:bg-secondary font-medium transition-colors flex items-center justify-center text-sm md:text-base w-full sm:w-auto order-1 sm:order-2 ${
             saving ? 'opacity-70 cursor-wait' : ''
@@ -1310,12 +1310,21 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 </span>{' '}
                 ya existe en este examen. Por favor, selecciona un número diferente para poder guardar la pregunta.
               </p>
-              <div className="flex justify-center gap-4 w-full">
+              <div className="flex flex-col gap-3 w-full">
+                <button
+                  onClick={() => {
+                    setIsCollisionModalOpen(false);
+                    handleSaveAll(true);
+                  }}
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
+                >
+                  Permitir Duplicado
+                </button>
                 <button
                   onClick={() => setIsCollisionModalOpen(false)}
-                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center"
+                  className="px-5 py-2.5 w-full bg-gray-100 text-gray-500 font-bold uppercase tracking-tight text-xs rounded-lg hover:bg-gray-200 transition-all flex justify-center items-center"
                 >
-                  Entendido
+                  Cancelar
                 </button>
               </div>
             </div>
