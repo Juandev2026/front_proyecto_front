@@ -408,7 +408,7 @@ const AdminNews = () => {
         modalidadId: formData.modalidadId || 0,
         nivelId: formData.nivelId || 0,
         fecha: new Date(formData.fecha || new Date()).toISOString(),
-        imageUrl: imageUrl || '',
+        imageUrl: imageUrl || formData.videoUrl || '',
         archivoUrl: archivoUrl || '',
         videoUrl: formData.videoUrl || '',
         esDestacado: formData.esDestacado || false,
@@ -418,8 +418,10 @@ const AdminNews = () => {
         autor: formData.autor || 'AVEND',
         estadoId: formData.estadoId || 0,
         textoBotonDescarga: formData.textoBotonDescarga || 'CLICK AQUÍ',
-        linkDescarga: formData.linkDescarga || '',
+        linkDescarga: archivoUrl || '',
       };
+
+      console.log('Enviando Noticia:', dataToSend);
 
       if (editingId) {
         await noticiaService.update(editingId, dataToSend as Noticia);
@@ -879,15 +881,28 @@ const AdminNews = () => {
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       URL de Video (YouTube - Opcional)
                     </label>
-                    <input
-                      type="text"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={formData.videoUrl || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, videoUrl: e.target.value })
-                      }
-                      placeholder="https://www.youtube.com/watch?v=..."
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        value={formData.videoUrl || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, videoUrl: e.target.value })
+                        }
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                      {formData.videoUrl && (
+                        <a
+                          href={formData.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded inline-flex items-center shadow-sm transition-all h-[42px]"
+                          title="Ver video"
+                        >
+                          <EyeIcon className="w-5 h-5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -909,7 +924,7 @@ const AdminNews = () => {
                           href={formData.imageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-3 rounded inline-flex items-center"
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded inline-flex items-center shadow-sm transition-all h-[42px]"
                           title="Ver archivo"
                         >
                           <EyeIcon className="w-5 h-5" />
@@ -990,24 +1005,59 @@ const AdminNews = () => {
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Link de Descarga (Opcional)
-                  </label>
-                  <input
-                    type="url"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={formData.linkDescarga || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, linkDescarga: e.target.value })
-                    }
-                    placeholder="https://drive.google.com/..."
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Link de Descarga (Opcional)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          value={formData.archivoUrl || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              archivoUrl: e.target.value,
+                            })
+                          }
+                          placeholder="https://drive.google.com/..."
+                        />
+                        {formData.archivoUrl && (
+                          <a
+                            href={formData.archivoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded inline-flex items-center shadow-sm transition-all h-[42px]"
+                            title="Ver link"
+                          >
+                            <EyeIcon className="w-5 h-5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Texto del Botón (ej: CLICK AQUÍ)
+                      </label>
+                      <input
+                        type="text"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        value={formData.textoBotonDescarga || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            textoBotonDescarga: e.target.value,
+                          })
+                        }
+                        placeholder="CLICK AQUÍ"
+                      />
+                    </div>
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
                     Enlace externo para descargar el contenido (ej: Google
                     Drive)
                   </p>
-                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
@@ -1147,8 +1197,10 @@ const AdminNews = () => {
                   )}
                   <span className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
                     <TagIcon className="w-3.5 h-3.5 text-blue-100" />
-                    {(viewingItem.categoria as string) ||
-                      getCategoryName(viewingItem.categoriaId)}
+                    {typeof viewingItem.categoria === 'object' && viewingItem.categoria !== null
+                      ? (viewingItem.categoria as any).nombre
+                      : (viewingItem.categoria as string) ||
+                        getCategoryName(viewingItem.categoriaId)}
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
                     <CalendarIcon className="w-4 h-4 text-gray-400" />

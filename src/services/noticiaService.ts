@@ -10,7 +10,7 @@ export interface Noticia {
   titulo: string;
   descripcion: string;
   categoriaId: number;
-  categoria?: string;
+  categoria?: string | { id: number; nombre: string; noticias?: any[] };
   fecha: string;
   imageUrl: string | null;
   archivoUrl: string | null;
@@ -157,6 +157,8 @@ export const noticiaService = {
         });
       }
 
+      console.log('Final Request Body (CREATE):', body);
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers,
@@ -218,6 +220,8 @@ export const noticiaService = {
           linkDescarga: n.linkDescarga || '',
         });
       }
+
+      console.log('Final Request Body (UPDATE):', body);
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
