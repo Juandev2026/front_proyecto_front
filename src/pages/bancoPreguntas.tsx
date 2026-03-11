@@ -264,7 +264,7 @@ const BancoPreguntasPage = () => {
           'Educación Básica Regular',
           'Educación Básica Alternativa',
           'Educación Básica Especial',
-          'CETPRO'
+          'CETPRO',
         ];
         const idxA = orderValues.findIndex((o) => a.nombre.includes(o));
         const idxB = orderValues.findIndex((o) => b.nombre.includes(o));
@@ -291,7 +291,10 @@ const BancoPreguntasPage = () => {
         }
       });
     return Array.from(map.values()).filter(
-      (n) => n.nombre && n.nombre.toUpperCase() !== 'NINGUNO' && n.nombre !== 'string'
+      (n) =>
+        n.nombre &&
+        n.nombre.toUpperCase() !== 'NINGUNO' &&
+        n.nombre !== 'string'
     );
   }, [examenes, selectedTipoExamenId, selectedModalidadId]);
 
@@ -316,15 +319,11 @@ const BancoPreguntasPage = () => {
         }
       });
     return Array.from(map.values()).filter(
-      (e) => e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
+      (e) =>
+        e.nombre && e.nombre !== 'string' && e.nombre.toLowerCase() !== 'null'
     );
-  }, [
-    examenes,
-    selectedTipoExamenId,
-    selectedModalidadId,
-    selectedNivelId,
-  ]);
-  
+  }, [examenes, selectedTipoExamenId, selectedModalidadId, selectedNivelId]);
+
   const yearsData = useMemo(() => {
     const map = new Map<number, { id: number; nombre: string }>();
     examenes
@@ -335,13 +334,17 @@ const BancoPreguntasPage = () => {
           (!selectedModalidadId ||
             String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
       )
       .forEach((e) => {
         if (e.years && Array.isArray(e.years)) {
           e.years.forEach((y: any) => {
             const yVal = typeof y === 'object' ? y.year : y;
-            const yCant = typeof y === 'object' ? (y.cantidadPreguntas ?? y.cantidad_p ?? 1) : 1;
+            const yCant =
+              typeof y === 'object'
+                ? y.cantidadPreguntas ?? y.cantidad_p ?? 1
+                : 1;
 
             if (yVal && Number(yVal) > 0 && yCant > 0) {
               map.set(Number(yVal), {
@@ -414,7 +417,8 @@ const BancoPreguntasPage = () => {
         (nivelesData.length === 1 &&
         firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
           ? String(firstNivel.id)
-          : null) || '0';
+          : null) ||
+        '0';
 
       const matchedExams = examenes.filter(
         (e) =>
@@ -424,8 +428,9 @@ const BancoPreguntasPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : !e.especialidadId || e.especialidadId === 0) &&
-          (selectedYearId !== '0' 
-            ? (e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId)
+          (selectedYearId !== '0'
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) ||
+              String(e.year) === selectedYearId
             : true)
       );
 
@@ -440,7 +445,7 @@ const BancoPreguntasPage = () => {
               const meta = allClasificaciones.find(
                 (c) => c.clasificacionNombre === name
               );
-              
+
               let cantidad = 0;
               if (selectedYearId === '0') {
                 // Total accumulation (existing logic)
@@ -448,8 +453,12 @@ const BancoPreguntasPage = () => {
               } else if (selectedYearId) {
                 // Year-specific drill down
                 if (item.years && Array.isArray(item.years)) {
-                  const yrObj = item.years.find((y: any) => String(y.year) === selectedYearId);
-                  cantidad = yrObj ? (yrObj.cantidadPreguntas || yrObj.cantidad_p || 0) : 0;
+                  const yrObj = item.years.find(
+                    (y: any) => String(y.year) === selectedYearId
+                  );
+                  cantidad = yrObj
+                    ? yrObj.cantidadPreguntas || yrObj.cantidad_p || 0
+                    : 0;
                 } else if (String(exam.year) === selectedYearId) {
                   cantidad = item.cantidadPreguntas || 0;
                 }
@@ -460,13 +469,17 @@ const BancoPreguntasPage = () => {
                 let correctedMinimo = meta?.minimo || item.minimo || 0;
                 let correctedCantidad = cantidad;
 
-                if (String(selectedTipoExamenId) === '2') { // Nombramiento
+                if (String(selectedTipoExamenId) === '2') {
+                  // Nombramiento
                   if (name === 'CL' || name === 'Comprensión Lectora') {
                     correctedMinimo = 0;
                     if (cantidad > 0) correctedCantidad = 15;
                   } else if (name === 'RL' || name === 'Razonamiento Lógico') {
                     correctedMinimo = 0;
-                  } else if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') {
+                  } else if (
+                    name === 'CCP' ||
+                    name === 'Conocimientos Curriculares y Pedagógicos'
+                  ) {
                     correctedMinimo = 90;
                     if (cantidad > 0) correctedCantidad = 50;
                   }
@@ -475,28 +488,40 @@ const BancoPreguntasPage = () => {
                 countMap[name] = {
                   cantidad: correctedCantidad,
                   puntos: meta?.puntos || item.puntos || 0,
-                  tiempoPregunta: meta?.tiempoPregunta || item.tiempoPregunta || 0,
+                  tiempoPregunta:
+                    meta?.tiempoPregunta || item.tiempoPregunta || 0,
                   minimo: correctedMinimo,
                 };
               } else {
-                let correctedCantidad = cantidad;
+                const correctedCantidad = cantidad;
                 if (String(selectedTipoExamenId) === '2') {
-                  if ((name === 'CL' || name === 'Comprensión Lectora') && cantidad > 0) {
-                     // We don't want to sum up to more than 15 if it's already set or being accumulated
-                     // but the logic here handles accumulation. For Nombramiento, it's usually one exam anyway.
-                     // If it's multi-source, we ensure the final display is 15.
+                  if (
+                    (name === 'CL' || name === 'Comprensión Lectora') &&
+                    cantidad > 0
+                  ) {
+                    // We don't want to sum up to more than 15 if it's already set or being accumulated
+                    // but the logic here handles accumulation. For Nombramiento, it's usually one exam anyway.
+                    // If it's multi-source, we ensure the final display is 15.
                   }
                 }
                 countMap[name].cantidad += correctedCantidad;
-                
+
                 // Final cap for Nombramiento display
                 if (String(selectedTipoExamenId) === '2') {
-                  if (name === 'CL' || name === 'Comprensión Lectora') countMap[name].cantidad = 15;
-                  if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos') countMap[name].cantidad = 50;
+                  if (name === 'CL' || name === 'Comprensión Lectora')
+                    countMap[name].cantidad = 15;
+                  if (
+                    name === 'CCP' ||
+                    name === 'Conocimientos Curriculares y Pedagógicos'
+                  )
+                    countMap[name].cantidad = 50;
                 }
               }
 
-              if (nextTipos[name] === undefined && countMap[name].cantidad > 0) {
+              if (
+                nextTipos[name] === undefined &&
+                countMap[name].cantidad > 0
+              ) {
                 nextTipos[name] = true;
               }
             }
@@ -558,7 +583,8 @@ const BancoPreguntasPage = () => {
             ? String(e.especialidadId) === selectedEspecialidadId
             : true) &&
           (selectedYearId !== '0'
-            ? e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) ||
+              String(e.year) === selectedYearId
             : true)
       );
 
@@ -597,10 +623,10 @@ const BancoPreguntasPage = () => {
       console.log('Enviando filtro a la API:', payloadFiltro);
 
       // 4. LLAMADA AL SERVICIO
-      let questions = await preguntaService.examenFilter(payloadFiltro);
+      const questions = await preguntaService.examenFilter(payloadFiltro);
 
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
-      // Note: We used to filter locally here, but it was causing missing questions 
+      // Note: We used to filter locally here, but it was causing missing questions
       // when metadata was inconsistent. Trust the API result.
 
       setQuestionsToStore(questions);
@@ -631,7 +657,11 @@ const BancoPreguntasPage = () => {
 
     router.push(`/examen?from=${router.asPath}`);
   };
-  if (loading || !isAuthenticated || (isFetchingExamenes && examenes.length === 0)) {
+  if (
+    loading ||
+    !isAuthenticated ||
+    (isFetchingExamenes && examenes.length === 0)
+  ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0a192f]"></div>
@@ -788,8 +818,8 @@ const BancoPreguntasPage = () => {
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
                 disabled={
-                  isLoading || 
-                  !selectedModalidadId || 
+                  isLoading ||
+                  !selectedModalidadId ||
                   (nivelesData.length > 1 && !selectedNivelId) ||
                   (especialidadesData.length > 0 && !selectedEspecialidadId)
                 }
@@ -804,81 +834,81 @@ const BancoPreguntasPage = () => {
             </div>
           )}
 
-
-
           {/* Tipos de Pregunta - Only show after Year is selected */}
           {selectedYearId && (
             <div className="border border-primary rounded-lg p-4 bg-white">
-            <div className="flex items-center gap-2 mb-3 text-primary font-bold">
-              <QuestionMarkCircleIcon className="h-5 w-5" />
-              <span>Tipos de Pregunta*</span>
-            </div>
+              <div className="flex items-center gap-2 mb-3 text-primary font-bold">
+                <QuestionMarkCircleIcon className="h-5 w-5" />
+                <span>Tipos de Pregunta*</span>
+              </div>
 
-            <div className="space-y-3">
-              {Object.entries(conteoPreguntas)
-                .sort(([a], [b]) => {
-                  const order: Record<string, number> = { 
-                    'CL': 1, 'Comprensión Lectora': 1,
-                    'RL': 2, 'Razonamiento Lógico': 2,
-                    'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
-                    'Conocimientos Curriculares y Pedagócicos': 3
-                  };
-                  const valA = order[a] || 99;
-                  const valB = order[b] || 99;
-                  if (valA !== valB) return valA - valB;
-                  return a.localeCompare(b);
-                })
-                .map(([name, data]: [string, any]) => (
-                  <label
-                    key={name}
-                    className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
-                      data.cantidad > 0
-                        ? `cursor-pointer hover:bg-gray-50 ${
-                            tiposPregunta[name]
-                              ? 'border-primary bg-blue-50 ring-1 ring-primary'
-                              : 'border-gray-300'
-                          }`
-                        : 'cursor-not-allowed opacity-50 border-gray-300 bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
-                        checked={tiposPregunta[name] || false}
-                        disabled={data.cantidad === 0}
-                        onChange={(e) =>
-                          setTiposPregunta({
-                            ...tiposPregunta,
-                            [name]: e.target.checked,
-                          })
-                        }
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-[#2B3674] font-bold text-lg">
-                          {name}
-                        </span>
-                        <span
-                          className={`${
-                            data.cantidad > 0
-                              ? 'text-[#05CD99]'
-                              : 'text-gray-400'
-                          } text-sm font-medium`}
-                        >
-                          {data.cantidad > 0
-                            ? `${data.cantidad} preguntas`
-                            : '0 preguntas (no disponible)'}
-                        </span>
+              <div className="space-y-3">
+                {Object.entries(conteoPreguntas)
+                  .sort(([a], [b]) => {
+                    const order: Record<string, number> = {
+                      CL: 1,
+                      'Comprensión Lectora': 1,
+                      RL: 2,
+                      'Razonamiento Lógico': 2,
+                      CCP: 3,
+                      'Conocimientos Curriculares y Pedagógicos': 3,
+                      'Conocimientos Curriculares y Pedagócicos': 3,
+                    };
+                    const valA = order[a] || 99;
+                    const valB = order[b] || 99;
+                    if (valA !== valB) return valA - valB;
+                    return a.localeCompare(b);
+                  })
+                  .map(([name, data]: [string, any]) => (
+                    <label
+                      key={name}
+                      className={`border rounded-xl p-4 flex flex-col gap-2 transition-all ${
+                        data.cantidad > 0
+                          ? `cursor-pointer hover:bg-gray-50 ${
+                              tiposPregunta[name]
+                                ? 'border-primary bg-blue-50 ring-1 ring-primary'
+                                : 'border-gray-300'
+                            }`
+                          : 'cursor-not-allowed opacity-50 border-gray-300 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
+                          checked={tiposPregunta[name] || false}
+                          disabled={data.cantidad === 0}
+                          onChange={(e) =>
+                            setTiposPregunta({
+                              ...tiposPregunta,
+                              [name]: e.target.checked,
+                            })
+                          }
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-[#2B3674] font-bold text-lg">
+                            {name}
+                          </span>
+                          <span
+                            className={`${
+                              data.cantidad > 0
+                                ? 'text-[#05CD99]'
+                                : 'text-gray-400'
+                            } text-sm font-medium`}
+                          >
+                            {data.cantidad > 0
+                              ? `${data.cantidad} preguntas`
+                              : '0 preguntas (no disponible)'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                )
-              )}
+                    </label>
+                  ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                * Selecciona al menos un tipo de pregunta
+              </p>
             </div>
-            <p className="text-xs text-gray-500 mt-3">
-              * Selecciona al menos un tipo de pregunta
-            </p>
-          </div>
           )}
 
           {Object.values(tiposPregunta).some((isChecked) => isChecked) && (
@@ -893,7 +923,7 @@ const BancoPreguntasPage = () => {
                     className="flex items-center justify-between cursor-pointer mb-4"
                   >
                     <h3 className="font-bold text-[#2B3674] text-lg">
-                 Tipos de Pregunta Seleccionados
+                      Tipos de Pregunta Seleccionados
                     </h3>
                     <button className="text-[#A3AED0] hover:text-[#4790FD] transition-colors focus:outline-none bg-blue-50/50 p-2 rounded-full">
                       {isDesgloseOpen ? (
@@ -904,10 +934,18 @@ const BancoPreguntasPage = () => {
                     </button>
                   </div>
 
-                  <div className={`space-y-3 ${isDesgloseOpen ? 'block animate-fadeIn' : 'hidden'}`}>
+                  <div
+                    className={`space-y-3 ${
+                      isDesgloseOpen ? 'block animate-fadeIn' : 'hidden'
+                    }`}
+                  >
                     {Object.entries(conteoPreguntas)
                       .sort(([a], [b]) => {
-                        const order: Record<string, number> = { CL: 1, RL: 2, CCP: 3 };
+                        const order: Record<string, number> = {
+                          CL: 1,
+                          RL: 2,
+                          CCP: 3,
+                        };
                         return (order[a] || 99) - (order[b] || 99);
                       })
                       .map(([name, data]: [string, any]) => {
@@ -927,22 +965,29 @@ const BancoPreguntasPage = () => {
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <span className="bg-blue-100/50 text-blue-500 border border-blue-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-blue-400">📝</span> {data.cantidad} preguntas
+                                  <span className="text-blue-400">📝</span>{' '}
+                                  {data.cantidad} preguntas
                                 </span>
                                 <span className="bg-green-100/50 text-green-600 border border-green-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-green-500">⭐</span> {data.puntos} pts/correcta
+                                  <span className="text-green-500">⭐</span>{' '}
+                                  {data.puntos} pts/correcta
                                 </span>
                                 <span className="bg-purple-100/50 text-purple-500 border border-purple-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-purple-400">🎯</span> Máx: {data.cantidad * data.puntos} pts
+                                  <span className="text-purple-400">🎯</span>{' '}
+                                  Máx: {data.cantidad * data.puntos} pts
                                 </span>
                                 <span className="bg-orange-100/50 text-orange-500 border border-orange-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-orange-400">✅</span> Mínimo: {data.minimo} pts
+                                  <span className="text-orange-400">✅</span>{' '}
+                                  Mínimo: {data.minimo} pts
                                 </span>
                                 <span className="bg-yellow-100/50 text-yellow-600 border border-yellow-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-yellow-500">⏱️</span> {data.tiempoPregunta} min/preg
+                                  <span className="text-yellow-500">⏱️</span>{' '}
+                                  {data.tiempoPregunta} min/preg
                                 </span>
                                 <span className="bg-red-100/50 text-red-500 border border-red-200 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 whitespace-nowrap">
-                                  <span className="text-red-400">⏰</span> Total: {data.cantidad * data.tiempoPregunta} min
+                                  <span className="text-red-400">⏰</span>{' '}
+                                  Total: {data.cantidad * data.tiempoPregunta}{' '}
+                                  min
                                 </span>
                               </div>
                             </div>
@@ -995,18 +1040,25 @@ const BancoPreguntasPage = () => {
                       <span className="bg-orange-50 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-md">
                         <span>✅</span>{' '}
                         {(() => {
-                          const isNombramiento = String(selectedTipoExamenId) === '2';
+                          const isNombramiento =
+                            String(selectedTipoExamenId) === '2';
                           const hasCCP = Object.entries(conteoPreguntas).some(
-                            ([name, _]) => tiposPregunta[name] && (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos')
+                            ([name, _]) =>
+                              tiposPregunta[name] &&
+                              (name === 'CCP' ||
+                                name ===
+                                  'Conocimientos Curriculares y Pedagógicos')
                           );
-                          
+
                           if (isNombramiento) {
                             return hasCCP ? 110 : 0;
                           }
 
                           return Object.entries(conteoPreguntas).reduce(
                             (acc, [name, curr]: [string, any]) =>
-                              tiposPregunta[name] ? acc + (curr.minimo || 0) : acc,
+                              tiposPregunta[name]
+                                ? acc + (curr.minimo || 0)
+                                : acc,
                             0
                           );
                         })()}{' '}
@@ -1094,9 +1146,8 @@ const BancoPreguntasPage = () => {
                         <CalendarIcon className="h-4 w-4" />
                       </div>
                       {
-                        yearsData.find(
-                          (y) => String(y.id) === selectedYearId
-                        )?.nombre
+                        yearsData.find((y) => String(y.id) === selectedYearId)
+                          ?.nombre
                       }
                     </div>
                   </div>
@@ -1140,7 +1191,7 @@ const BancoPreguntasPage = () => {
           </div>
         </div>
       </div>
-      
+
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
@@ -1148,17 +1199,20 @@ const BancoPreguntasPage = () => {
         title="¿Estás listo para rendir el examen?"
         message={`Se cargará el examen de ${
           examToStart?.tipoExamenNombre || ''
-        } con las preferencias de ${
-          examToStart?.modalidadNombre || ''
-        }${
-          examToStart?.nivelNombre && examToStart.nivelNombre.toUpperCase() !== 'NINGUNO' && examToStart.nivelNombre.toUpperCase() !== 'SIN NIVEL' && examToStart.nivelNombre.toUpperCase() !== 'TODAS'
+        } con las preferencias de ${examToStart?.modalidadNombre || ''}${
+          examToStart?.nivelNombre &&
+          examToStart.nivelNombre.toUpperCase() !== 'NINGUNO' &&
+          examToStart.nivelNombre.toUpperCase() !== 'SIN NIVEL' &&
+          examToStart.nivelNombre.toUpperCase() !== 'TODAS'
             ? ` - ${examToStart.nivelNombre}`
             : ''
         }${
-          examToStart?.especialidadNombre && examToStart.especialidadNombre.toUpperCase() !== 'SIN ESPECIALIDAD' && examToStart.especialidadNombre.toUpperCase() !== 'TODAS'
+          examToStart?.especialidadNombre &&
+          examToStart.especialidadNombre.toUpperCase() !== 'SIN ESPECIALIDAD' &&
+          examToStart.especialidadNombre.toUpperCase() !== 'TODAS'
             ? ` - ${examToStart.especialidadNombre}`
             : ''
-        }? ¿Deseas comenzar ahora?`}
+        }¿Deseas comenzar ahora?`}
         confirmText="Sí, ¡empezar!"
         cancelText="No, revisar"
         type="success"
@@ -1179,4 +1233,3 @@ const BancoPreguntasPage = () => {
 };
 
 export default BancoPreguntasPage;
-
