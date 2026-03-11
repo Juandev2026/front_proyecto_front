@@ -37,10 +37,7 @@ interface SubPregunta {
   alternatives: { id: any; contenido: string; esCorrecta: boolean }[];
   sustento: string;
   isExpanded: boolean;
-<<<<<<< Updated upstream
-=======
   numero: number;
->>>>>>> Stashed changes
   enunciados?: any[];
   alternativas?: any[];
   justificaciones?: any[];
@@ -187,10 +184,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               ],
           sustento: s.sustento || '',
           isExpanded: false,
-<<<<<<< Updated upstream
-=======
           numero: s.numero || 1,
->>>>>>> Stashed changes
           enunciados: s.enunciados,
           justificaciones: s.justificaciones,
         }))
@@ -654,11 +648,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               },
             ],
             respuestaCorrecta: respuestaInt, // Reverted to number (no quotes)
-<<<<<<< Updated upstream
-            numero: index + 1,
-=======
             numero: q.numero || index + 1,
->>>>>>> Stashed changes
           };
         }),
         autor: 'AVEND',
