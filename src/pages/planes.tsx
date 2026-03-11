@@ -6,10 +6,10 @@ import {
   CheckCircleIcon,
   StarIcon,
 } from '@heroicons/react/solid';
-import Link from 'next/link';
 
 import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/useAuth';
+import AuthModal from '../components/AuthModal';
 
 interface Plan {
   id: string;
@@ -270,6 +270,7 @@ const faqs = [
 
 const Planes = () => {
   const { isAuthenticated } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
 
   return (
     <MainLayout>
@@ -344,7 +345,7 @@ const Planes = () => {
                 {/* CTA Button */}
                 {isAuthenticated ? (
                   <a
-                    href={`https://wa.me/51947282682?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(
+                    href={`https://wa.me/51954562938?text=Hola,%20me%20interesa%20el%20${encodeURIComponent(
                       plan.name
                     )}`}
                     target="_blank"
@@ -362,27 +363,20 @@ const Planes = () => {
                     {plan.ctaText}
                   </a>
                 ) : (
-                  <Link
-                    href={`/login?planId=${
-                      plan.id
-                    }&planName=${encodeURIComponent(plan.name)}`}
+                  <button
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${
+                      plan.highlighted ? 'animate-shine' : ''
+                    }`}
+                    style={{
+                      backgroundColor: plan.highlighted ? '#1e40af' : '#2b7fff',
+                      boxShadow: plan.highlighted
+                        ? '0 10px 15px -3px rgba(30, 64, 175, 0.3)'
+                        : undefined,
+                    }}
                   >
-                    <a
-                      className={`block w-full text-center py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 mb-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 ${
-                        plan.highlighted ? 'animate-shine' : ''
-                      }`}
-                      style={{
-                        backgroundColor: plan.highlighted
-                          ? '#1e40af'
-                          : '#2b7fff',
-                        boxShadow: plan.highlighted
-                          ? '0 10px 15px -3px rgba(30, 64, 175, 0.3)'
-                          : undefined,
-                      }}
-                    >
-                      {plan.ctaText}
-                    </a>
-                  </Link>
+                    {plan.ctaText}
+                  </button>
                 )}
 
                 {/* Features */}
@@ -454,6 +448,13 @@ const Planes = () => {
             ))}
           </div>
         </div>
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          title="¡Empieza tu preparación hoy!"
+          description="Para adquirir un plan y acceder a todos los beneficios, primero debes registrarte o iniciar sesión en nuestra plataforma."
+          redirect="/planes"
+        />
       </div>
     </MainLayout>
   );

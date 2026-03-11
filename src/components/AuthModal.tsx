@@ -6,9 +6,18 @@ import Link from 'next/link';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  title?: string;
+  description?: string;
+  redirect?: string;
 }
 
-const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+const AuthModal = ({
+  isOpen,
+  onClose,
+  title = 'Acceso Restringido',
+  description = 'Para acceder a este contenido, necesitas iniciar sesión o registrarte en nuestra plataforma.',
+  redirect,
+}: AuthModalProps) => {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog
@@ -50,22 +59,27 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900 text-center"
               >
-                Acceso Restringido
+                {title}
               </Dialog.Title>
               <div className="mt-4">
-                <p className="text-sm text-gray-500 text-center">
-                  Para acceder a este contenido, necesitas iniciar sesión o
-                  registrarte en nuestra plataforma.
-                </p>
+                <p className="text-sm text-gray-500 text-center">{description}</p>
               </div>
 
               <div className="mt-6 flex flex-col space-y-3">
-                <Link href="/login">
+                <Link
+                  href={`/login${
+                    redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
+                  }`}
+                >
                   <a className="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                     Iniciar Sesión
                   </a>
                 </Link>
-                <Link href="/register">
+                <Link
+                  href={`/register${
+                    redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
+                  }`}
+                >
                   <a className="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-primary bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                     Registrarse
                   </a>

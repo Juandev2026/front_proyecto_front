@@ -223,6 +223,23 @@ const Icons = {
       <path d="M18 7V4H6l6 8-6 8h12v-3" />
     </svg>
   ),
+  Eraser: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.9-9.9c1-1 2.5-1 3.4 0l4.4 4.4c1 1 1 2.5 0 3.4L7 21Z" />
+      <path d="M22 21H7" />
+      <path d="m5 11 9 9" />
+    </svg>
+  ),
 };
 
 interface EditorToolbarProps {
@@ -376,16 +393,30 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         <span className="hidden sm:inline text-[10px] md:text-xs text-gray-500 font-medium">
           Resaltar:
         </span>
-        <label className="flex items-center cursor-pointer" title="Resaltado">
+        <div className="flex items-center gap-1">
           <input
-            type="checkbox"
-            className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400 cursor-pointer"
-            checked={editor.isActive('highlight')}
-            onChange={() =>
-              editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run()
+            type="color"
+            className="w-5 h-5 md:w-6 md:h-6 border border-gray-300 rounded cursor-pointer p-0"
+            onChange={(e) =>
+              editor.chain().focus().setHighlight({ color: e.target.value }).run()
             }
+            defaultValue="#ffff00"
+            title="Color de resaltado"
           />
-        </label>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().unsetHighlight().run()}
+            className={`p-1 rounded transition-colors ${
+              editor.isActive('highlight')
+                ? 'text-red-500 hover:bg-red-50'
+                : 'text-gray-300 cursor-not-allowed'
+            }`}
+            disabled={!editor.isActive('highlight')}
+            title="Quitar resaltado"
+          >
+            <Icons.Eraser />
+          </button>
+        </div>
       </div>
 
       <Divider />

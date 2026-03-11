@@ -107,10 +107,18 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     onUpdate: ({ editor: ed }) => {
       onChange(ed.getHTML());
     },
+    autofocus: false,
     editorProps: {
       attributes: {
-        class: 'prose-reset',
+        class: 'prose-reset min-h-[120px]',
         'data-placeholder': placeholder,
+      },
+      handleClick: (view, _pos, _event) => {
+        // Ensure the editor gets focus when clicked
+        if (!view.hasFocus()) {
+          view.focus();
+        }
+        return false;
       },
     },
   });

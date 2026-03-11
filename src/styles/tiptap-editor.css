@@ -12,10 +12,18 @@
   line-height: 1.6;
   color: #1f2937;
   word-break: break-word;
+  caret-color: #000000 !important; /* Ensure the blinking cursor is visible */
+  cursor: text !important;
 }
 
 .tiptap-editor-wrapper .ProseMirror:focus {
   outline: none;
+}
+
+/* Add a visual indicator when the wrapper contains a focused editor */
+.tiptap-editor-wrapper:focus-within {
+  border-color: #4a90f9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 249, 0.1);
 }
 
 /* --- Placeholder --- */

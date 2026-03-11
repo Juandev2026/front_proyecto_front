@@ -184,7 +184,7 @@ const Login = () => {
       } else if (redirect) {
         router.push(redirect);
       } else {
-        router.push('/');
+        router.push('/planes');
       }
     } catch (err: any) {
       setError(
