@@ -17,8 +17,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isRedirectingToWsp, setIsRedirectingToWsp] = useState(false);
-  const [redirectTarget, setRedirectTarget] = useState('');
 
   const planName = router.query.planName as string;
   const planId = router.query.planId as string;
@@ -177,19 +175,6 @@ const Login = () => {
         localStorage.removeItem('loginExamenes');
       }
 
-      if (planName || finalRole?.toUpperCase() === 'CLIENT') {
-        setRedirectTarget(finalRole?.toUpperCase() === 'CLIENT' ? 'PLAN GRATUITO' : planName);
-        setIsRedirectingToWsp(true);
-        setTimeout(() => {
-          const message = finalRole?.toUpperCase() === 'CLIENT'
-            ? "Hola 👋, vengo desde AVEND ESCALA para activar mi PLAN GRATUITO."
-            : `Hola, me interesa el ${planName}`;
-            
-          const wspUrl = `https://wa.me/51947282682?text=${encodeURIComponent(message)}`;
-          window.location.href = wspUrl;
-        }, 2500);
-        return;
-      }
 
       if (
         finalRole?.toUpperCase() === 'ADMIN' ||
@@ -246,34 +231,6 @@ const Login = () => {
               </div>
             </div>
 
-            {isRedirectingToWsp && (
-              <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-xl text-center animate-pulse">
-                <div className="flex justify-center mb-3">
-                  <div className="bg-green-100 p-2 rounded-full">
-                    <svg
-                      className="w-8 h-8 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-green-800 mb-2">
-                  ¡Felicitaciones!
-                </h3>
-                <p className="text-green-700">
-                  Acceso concedido. Estamos redirigiéndote al chat con Juan para
-                  activar tu {redirectTarget}...
-                </p>
-              </div>
-            )}
 
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4 text-sm text-red-700">
