@@ -37,6 +37,10 @@ interface SubPregunta {
   alternatives: { id: any; contenido: string; esCorrecta: boolean }[];
   sustento: string;
   isExpanded: boolean;
+<<<<<<< Updated upstream
+=======
+  numero: number;
+>>>>>>> Stashed changes
   enunciados?: any[];
   alternativas?: any[];
   justificaciones?: any[];
@@ -183,6 +187,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               ],
           sustento: s.sustento || '',
           isExpanded: false,
+<<<<<<< Updated upstream
+=======
+          numero: s.numero || 1,
+>>>>>>> Stashed changes
           enunciados: s.enunciados,
           justificaciones: s.justificaciones,
         }))
@@ -210,6 +218,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             ],
             sustento: '',
             isExpanded: true,
+            numero: 1,
           },
         ]
   );
@@ -477,6 +486,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         ],
         sustento: '',
         isExpanded: true,
+        numero: prev.length + 1,
       },
     ]);
   };
@@ -644,7 +654,11 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               },
             ],
             respuestaCorrecta: respuestaInt, // Reverted to number (no quotes)
+<<<<<<< Updated upstream
             numero: index + 1,
+=======
+            numero: q.numero || index + 1,
+>>>>>>> Stashed changes
           };
         }),
         autor: 'AVEND',
@@ -1037,9 +1051,18 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
                         Número
                       </label>
-                      <div className="w-full border border-gray-300 rounded px-3 py-2 text-gray-500 bg-gray-100 cursor-not-allowed">
-                        {index + 1}
-                      </div>
+                      <input
+                        type="number"
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:border-primary outline-none transition-all bg-white"
+                        value={q.numero}
+                        onChange={(e) =>
+                          updateSubQuestionField(
+                            q.tempId,
+                            'numero',
+                            parseInt(e.target.value, 10) || 0
+                          )
+                        }
+                      />
                     </div>
                     <div className="w-full md:w-3/4">
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
