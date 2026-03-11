@@ -707,7 +707,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 const corrected = await preguntaService.update(
                   examenId,
                   created.id,
-                  { numero: numPadre }
+                  { ...payload, id: created.id, numero: numPadre } as any
                 );
                 created = corrected;
               } catch (err) {
@@ -1100,7 +1100,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             >
               <div className="flex items-center gap-3">
                 <span className="bg-primary text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                  {index + 1}
+                  {q.numero || index + 1}
                 </span>
                 <span className="font-medium text-gray-700 truncate max-w-md">
                   {q.specificStatement.length > 0 ? (
@@ -1316,7 +1316,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                     setIsCollisionModalOpen(false);
                     handleSaveAll(true);
                   }}
-                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
                 >
                   Permitir Duplicado
                 </button>

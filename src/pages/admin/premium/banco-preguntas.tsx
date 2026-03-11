@@ -1799,7 +1799,7 @@ const Recursos = () => {
                 const corrected = await preguntaService.update(
                   targetExamenId,
                   created.id,
-                  { numero: numPreguntaParsed }
+                  { ...payload, id: created.id, numero: numPreguntaParsed }
                 );
                 created = corrected;
               } catch (err) {
@@ -2656,7 +2656,7 @@ const Recursos = () => {
                     setIsCollisionModalOpen(false);
                     handleSubmit(undefined, collisionTargetConfig.stayInCreateMode, true);
                   }}
-                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
                 >
                   Permitir Duplicado
                 </button>
@@ -3139,7 +3139,7 @@ const Recursos = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
                           {!isParent
-                            ? item.displayIndex || item.numero || '-'
+                            ? item.numero || item.displayIndex || '-'
                             : ''}
                         </div>
 
@@ -3261,10 +3261,10 @@ const Recursos = () => {
                                   {/* Header mini */}
                                   <div className="flex items-center gap-2 mb-3">
                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                      {sub.displayIndex}
+                                      {sub.numero || sub.displayIndex}
                                     </span>
                                     <span className="text-xs font-bold text-gray-500 uppercase">
-                                      Sub-Pregunta {sub.displayIndex}
+                                      Sub-Pregunta {sub.numero || sub.displayIndex}
                                     </span>
 
                                     <div className="ml-auto flex gap-2">
