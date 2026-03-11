@@ -18,16 +18,8 @@ import PremiumLayout from '../../layouts/PremiumLayout';
 import ConfirmModal from '../../components/ConfirmModal';
 import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
 import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
+import { clasificacionService } from '../../services/clasificacionService';
 import { erroneasService } from '../../services/erroneasService';
-
-const normalizeName = (name: string): string => {
-  const n = (name || '').toUpperCase();
-  if (n.includes('COMPRENSIÓN')) return 'CL';
-  if (n.includes('RAZONAMIENTO')) return 'RL';
-  if (n.includes('PEDAG') || n.includes('ESPECIALIDAD') || n.includes('CCP'))
-    return 'CCP';
-  return name || '';
-};
 
 const ResultadoPage = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -43,6 +35,7 @@ const ResultadoPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [isNewExamModalOpen, setIsNewExamModalOpen] = useState(false);
 
+
   useEffect(() => {
     setIsMounted(true);
     if (!loading && !isAuthenticated) {
@@ -50,28 +43,45 @@ const ResultadoPage = () => {
       return;
     }
 
-    const savedQuestions = localStorage.getItem('currentQuestions');
-    const savedResult = localStorage.getItem('lastExamResult');
-    const savedRespuestas = localStorage.getItem('lastRespuestas');
-    const savedTime = localStorage.getItem('lastExamTime');
-    const savedMetadata = localStorage.getItem('currentExamMetadata');
+    const loadData = async () => {
+      let cmap = new Map<number, { nombre: string; abreviatura: string; puntos: number }>();
+      try {
+        const classData = await clasificacionService.getAll();
+        cmap = new Map(
+          classData.map((c) => [
+            c.id,
+            {
+              nombre: c.clasificacionNombre,
+              abreviatura: c.abreviatura || '',
+              puntos: c.puntos || 0,
+            },
+          ])
+        );
 
-    if (savedMetadata) setExamMetadata(JSON.parse(savedMetadata));
-    if (savedQuestions) {
+      } catch (err) {
+        console.error('Error fetching classifications', err);
+      }
+
+      const savedQuestions = localStorage.getItem('currentQuestions');
+      const savedResult = localStorage.getItem('lastExamResult');
+      const savedRespuestas = localStorage.getItem('lastRespuestas');
+      const savedTime = localStorage.getItem('lastExamTime');
+      const savedMetadata = localStorage.getItem('currentExamMetadata');
+
+      if (savedMetadata) setExamMetadata(JSON.parse(savedMetadata));
+      if (savedQuestions) {
       const rawQuestions = JSON.parse(savedQuestions);
       const flattened: PreguntaExamen[] = [];
 
       rawQuestions.forEach((q: any) => {
         if (q.subPreguntas && q.subPreguntas.length > 0) {
           q.subPreguntas.forEach((sub: any, subIdx: number) => {
-            const normalizedName = normalizeName(
-              sub.clasificacionNombre || q.clasificacionNombre
-            );
-            let pointValue = sub.puntos ?? q.puntos;
-
-            if (normalizedName === 'CL' || normalizedName === 'RL')
-              pointValue = 2;
-            if (normalizedName === 'CCP') pointValue = 3;
+            const classId = sub.clasificacionId || q.clasificacionId;
+            const cmapData = classId ? cmap.get(classId) : null;
+            const rawName = sub.clasificacionNombre || q.clasificacionNombre || '';
+            const finalName = cmapData?.abreviatura || rawName;
+            
+            let pointValue = cmapData?.puntos || sub.puntos || q.puntos;
 
             const mappedIdA = sub.idAlternativaA ?? sub.alternativas?.[0]?.id;
             const mappedIdB = sub.idAlternativaB ?? sub.alternativas?.[1]?.id;
@@ -106,8 +116,8 @@ const ResultadoPage = () => {
                 }
                 return res;
               })(),
-              clasificacionId: sub.clasificacionId || q.clasificacionId,
-              clasificacionNombre: normalizedName,
+              clasificacionId: classId,
+              clasificacionNombre: finalName,
               isSubPregunta: true,
               subPreguntas: [],
               examenId: sub.examenId || q.examenId || 0,
@@ -115,12 +125,12 @@ const ResultadoPage = () => {
             });
           });
         } else {
-          const normalizedName = normalizeName(q.clasificacionNombre);
-          let pointValue = q.puntos;
+          const classId = q.clasificacionId;
+          const cmapData = classId ? cmap.get(classId) : null;
+          const rawName = q.clasificacionNombre || '';
+          const finalName = cmapData?.abreviatura || rawName;
 
-          if (normalizedName === 'CL' || normalizedName === 'RL')
-            pointValue = 2;
-          if (normalizedName === 'CCP') pointValue = 3;
+          let pointValue = cmapData?.puntos || q.puntos;
 
           const mappedIdA = q.idAlternativaA ?? q.alternativas?.[0]?.id;
           const mappedIdB = q.idAlternativaB ?? q.alternativas?.[1]?.id;
@@ -139,7 +149,7 @@ const ResultadoPage = () => {
             idAlternativaB: mappedIdB,
             idAlternativaC: mappedIdC,
             idAlternativaD: mappedIdD,
-            clasificacionNombre: normalizedName,
+            clasificacionNombre: finalName,
             puntos: pointValue || q.puntaje,
             respuesta: (() => {
               const res = q.respuestaCorrecta || q.respuesta || '';
@@ -160,9 +170,12 @@ const ResultadoPage = () => {
       setQuestions(flattened);
     }
 
-    if (savedResult) setExamResult(JSON.parse(savedResult));
-    if (savedRespuestas) setRespuestas(JSON.parse(savedRespuestas));
-    if (savedTime) setTimeTaken(parseInt(savedTime, 10));
+      if (savedResult) setExamResult(JSON.parse(savedResult));
+      if (savedRespuestas) setRespuestas(JSON.parse(savedRespuestas));
+      if (savedTime) setTimeTaken(parseInt(savedTime, 10));
+    };
+
+    loadData();
   }, [loading, isAuthenticated, router]);
 
 
@@ -245,11 +258,7 @@ const ResultadoPage = () => {
     const classificationStats: Record<
       string,
       { points: number; correct: number; total: number; earnedPoints: number }
-    > = {
-      CL: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
-      RL: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
-      CCP: { points: 0, earnedPoints: 0, correct: 0, total: 0 },
-    };
+    > = {};
 
     questions.forEach((q) => {
       const className = q.clasificacionNombre || '';

@@ -44,6 +44,7 @@ export interface ClasificacionExamen {
   puntos: number;
   tiempoPregunta: number;
   minimo: number;
+  abreviatura?: string;
 }
 
 const API_URL = `${API_BASE_URL}/Preguntas`;

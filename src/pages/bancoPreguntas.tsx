@@ -89,6 +89,7 @@ const BancoPreguntasPage = () => {
       puntos: number;
       tiempoPregunta: number;
       minimo: number;
+      abreviatura?: string;
     };
   }>({});
 
@@ -443,8 +444,10 @@ const BancoPreguntasPage = () => {
             const name = item.clasificacionNombre;
             if (name) {
               const meta = allClasificaciones.find(
-                (c) => c.clasificacionNombre === name
+                (c) => c.clasificacionNombre === name || c.abreviatura === name
               );
+              const clCode =
+                meta?.abreviatura || name.substring(0, 3).toUpperCase();
 
               let cantidad = 0;
               if (selectedYearId === '0') {
@@ -491,6 +494,7 @@ const BancoPreguntasPage = () => {
                   tiempoPregunta:
                     meta?.tiempoPregunta || item.tiempoPregunta || 0,
                   minimo: correctedMinimo,
+                  abreviatura: clCode,
                 };
               } else {
                 const correctedCantidad = cantidad;
@@ -960,7 +964,8 @@ const BancoPreguntasPage = () => {
                                   {TIPO_FULL_NAMES[name] || name}
                                 </span>
                                 <div className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg shadow-indigo-200">
-                                  {name.substring(0, 3).toUpperCase()}
+                                  {data.abreviatura ||
+                                    name.substring(0, 3).toUpperCase()}
                                 </div>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
@@ -1212,7 +1217,7 @@ const BancoPreguntasPage = () => {
           examToStart.especialidadNombre.toUpperCase() !== 'TODAS'
             ? ` - ${examToStart.especialidadNombre}`
             : ''
-        }¿Deseas comenzar ahora?`}
+        } ¿Deseas comenzar ahora?`}
         confirmText="Sí, ¡empezar!"
         cancelText="No, revisar"
         type="success"
