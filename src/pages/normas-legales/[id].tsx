@@ -96,33 +96,32 @@ const NormaLegalDetail = ({ norma, error, url }: NormaLegalDetailProps) => {
                     <DocumentTextIcon className="h-24 w-24 text-blue-300" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-8">
-                  <h1
-                    className="text-3xl sm:text-4xl font-extrabold text-white leading-tight shadow-sm"
-                    dangerouslySetInnerHTML={{ __html: norma.nombre }}
-                  />
-                </div>
               </div>
 
               <div className="p-8 sm:p-12">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 border-b border-gray-100 pb-8 gap-4">
-                  <div className="flex space-x-4">
+                <div className="mb-8 border-b border-gray-100 pb-8">
+                  <h1
+                    className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-8"
+                    dangerouslySetInnerHTML={{ __html: norma.nombre }}
+                  />
+
+                  <div className="flex flex-col gap-4">
                     <a
                       href={norma.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:scale-105"
+                      className="w-full inline-flex items-center justify-center px-6 py-4 border border-transparent text-lg font-bold rounded-xl shadow-lg text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:scale-[1.02] active:scale-95"
                     >
-                      <DocumentTextIcon className="h-5 w-5 mr-2" />
+                      <DocumentTextIcon className="h-6 w-6 mr-2" />
                       Descargar PDF
                     </a>
+                    
+                    <ShareButton
+                      title={stripHtml(norma.nombre)}
+                      url={url}
+                      className="w-full"
+                    />
                   </div>
-                  <ShareButton
-                    title={stripHtml(norma.nombre)}
-                    url={url}
-                    className="w-full sm:w-auto"
-                  />
                 </div>
 
                 <div className="prose prose-lg max-w-none text-gray-600">
