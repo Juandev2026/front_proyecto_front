@@ -234,6 +234,18 @@ const Recursos = () => {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [aiTopic, setAiTopic] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
+  // Collision Modal State
+  const [isCollisionModalOpen, setIsCollisionModalOpen] = useState(false);
+  const [collisionTargetConfig, setCollisionTargetConfig] = useState<{
+    toBump: Pregunta[];
+    numStr: string;
+    stayInCreateMode: boolean;
+  } | null>(null);
+
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+
   // Ideally fetch this from env or context, but user provided it directly for now.
   const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
 
@@ -1521,7 +1533,7 @@ const Recursos = () => {
       return null;
     }
 
-    const effectiveYear = selectedYear || '0';
+    const effectiveYear = selectedYear || '';
 
     // Determine the effective especialidadId:
     // If user explicitly selected one, use it.
@@ -1558,51 +1570,36 @@ const Recursos = () => {
 
     try {
       const allExams = await examenService.getAll();
-      const target = allExams.find(
-        (e: any) =>
-          Number(e.tipoExamenId) === Number(selectedTipo) &&
-          Number(e.fuenteId) === Number(selectedFuente) &&
-          (effectiveModalidadId === 0
-            ? !e.modalidadId || Number(e.modalidadId) === 0
-            : Number(e.modalidadId) === effectiveModalidadId) &&
-          (effectiveNivelId === 0
-            ? !e.nivelId || Number(e.nivelId) === 0
-            : Number(e.nivelId) === effectiveNivelId) &&
-          (effectiveEspecialidadId === 0
-            ? !e.especialidadId || Number(e.especialidadId) === 0
-            : Number(e.especialidadId) === effectiveEspecialidadId) &&
-          (String(e.year) === effectiveYear ||
-            (e.years &&
-              Array.isArray(e.years) &&
-              e.years.some(
-                (y: any) =>
-                  String(y) === effectiveYear ||
-                  String(y.year) === effectiveYear
-              )))
-      );
 
-      console.log('resolveCurrentExamenId - Target Match:', target);
+      const matchesCoreFilters = (e: any) =>
+        Number(e.tipoExamenId) === Number(selectedTipo) &&
+        Number(e.fuenteId) === Number(selectedFuente) &&
+        (effectiveModalidadId === 0
+          ? !e.modalidadId || Number(e.modalidadId) === 0
+          : Number(e.modalidadId) === effectiveModalidadId) &&
+        (effectiveNivelId === 0
+          ? !e.nivelId || Number(e.nivelId) === 0
+          : Number(e.nivelId) === effectiveNivelId) &&
+        (effectiveEspecialidadId === 0
+          ? !e.especialidadId || Number(e.especialidadId) === 0
+          : Number(e.especialidadId) === effectiveEspecialidadId);
+
+      const matchesYear = (e: any) =>
+        String(e.year) === effectiveYear ||
+        (e.years && Array.isArray(e.years) &&
+          e.years.some((y: any) => String(y) === effectiveYear || String(y.year) === effectiveYear));
+
+      // Try exact match (with year) first, then fall back to any exam matching core filters
+      let target = effectiveYear
+        ? allExams.find((e: any) => matchesCoreFilters(e) && matchesYear(e))
+        : undefined;
+
+      // Fallback: if no year selected or year match failed, take first exam matching core filters
       if (!target) {
-        console.warn(
-          'resolveCurrentExamenId - No exam found matching filters.',
-          {
-            allExamsCount: allExams.length,
-            tipo: selectedTipo,
-            fuente: selectedFuente,
-            mod: effectiveModalidadId,
-            niv: effectiveNivelId,
-            esp: effectiveEspecialidadId,
-            year: selectedYear,
-          }
-        );
-        const closestExams = allExams.filter(
-          (e: any) =>
-            e.tipoExamenId === Number(selectedTipo) &&
-            e.fuenteId === Number(selectedFuente)
-        );
-        console.log('Closest Exams for this Tipo and Fuente:', closestExams);
+        target = allExams.find((e: any) => matchesCoreFilters(e));
       }
 
+      console.log('resolveCurrentExamenId - Target Match:', target);
       return target ? target.id : null;
     } catch (error) {
       console.error('Error resolving examen ID', error);
@@ -1610,33 +1607,33 @@ const Recursos = () => {
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent, stayInCreateMode = false) => {
+  const handleSubmit = async (e?: React.FormEvent, stayInCreateMode = false, forceSaveWithCollision = false) => {
     if (e) e.preventDefault();
+    setErrorMsg(null);
+
+    const showErr = (msg: string) => {
+      setErrorMsg(msg);
+      console.warn('[handleSubmit]', msg);
+    };
 
     // Validar Tipo de Pregunta
     if (!newItem.tipoPreguntaId) {
-      alert('El tipo de pregunta es obligatorio');
+      showErr('El tipo de pregunta es obligatorio');
       return;
     }
 
     // Validar Número de Pregunta
     const numPreguntaParsed = parseInt(numeroPregunta, 10);
-    if (
-      !numeroPregunta.trim() ||
-      isNaN(numPreguntaParsed) ||
-      numPreguntaParsed <= 0
-    ) {
-      alert('El número de la pregunta es obligatorio y debe ser mayor a 0');
+    if (!numeroPregunta.trim() || isNaN(numPreguntaParsed) || numPreguntaParsed <= 0) {
+      showErr('El número de la pregunta es obligatorio y debe ser mayor a 0');
       return;
     }
 
     const hasEnunciadoContent = enunciadoBlocks.some(
       (b) => (b.type === 'text' && b.content.trim()) || b.type === 'image'
     );
-
     if (!hasEnunciadoContent) {
-      // eslint-disable-next-line no-alert
-      alert('El enunciado es obligatorio');
+      showErr('El enunciado es obligatorio');
       return;
     }
 
@@ -1645,12 +1642,41 @@ const Recursos = () => {
     if (!editingId && (!targetExamenId || targetExamenId === 0)) {
       const resolvedId = await resolveCurrentExamenId();
       if (!resolvedId) {
-        alert(
-          'No se pudo determinar el examen al cual asociar esta pregunta. Asegúrate de tener todos los filtros (Año incluido) seleccionados.'
-        );
+        showErr('No se pudo determinar el examen. Asegúrate de tener Año y demás filtros seleccionados.');
         return;
       }
       targetExamenId = resolvedId;
+    }
+
+    // --- REORDENAMIENTO AUTOMÁTICO DE PREGUNTAS ---
+    if (!forceSaveWithCollision) {
+      const collisionQuestion = items.find(
+        (q) => q.numero === numPreguntaParsed && q.examenId === targetExamenId && q.id !== editingId
+      );
+      if (collisionQuestion) {
+        setCollisionTargetConfig({
+          toBump: items
+            .filter((q) => q.numero >= numPreguntaParsed && q.examenId === targetExamenId && q.id !== editingId)
+            .sort((a, b) => b.numero - a.numero),
+          numStr: numPreguntaParsed.toString(),
+          stayInCreateMode
+        });
+        setIsCollisionModalOpen(true);
+        return;
+      }
+    } else if (collisionTargetConfig) {
+      setIsSaving(true);
+      try {
+        for (const q of collisionTargetConfig.toBump) {
+          await preguntaService.update(q.examenId, q.id, { numero: q.numero + 1 });
+        }
+      } catch (err) {
+        console.error('Error al desplazar preguntas:', err);
+        showErr('Hubo un error al reordenar las preguntas posteriores.');
+        setIsSaving(false);
+        setIsCollisionModalOpen(false);
+        return;
+      }
     }
 
     try {
@@ -1662,80 +1688,56 @@ const Recursos = () => {
 
       const correctAlt = alternatives.find((a) => a.esCorrecta);
       if (newItem.tipoPreguntaId === 1 && !correctAlt) {
-        // Only validate for Individual questions for now
-        alert('Debes marcar una alternativa como correcta.');
+        showErr('Debes marcar una alternativa como correcta.');
+        setIsSaving(false);
         return;
       }
 
       if (Number(newItem.clasificacionId) <= 0) {
-        alert('Por favor selecciona una Clasificación para la pregunta.');
+        showErr('Por favor selecciona una Clasificación para la pregunta.');
+        setIsSaving(false);
         return;
       }
 
       // Format alternatives with temporary IDs (1, 2, 3...)
-      // strictly for linking with 'respuesta' in the same save operation.
       const safeAlts = alternatives.map((a) => ({ ...a }));
       const mappedAlternativas = safeAlts.map((alt, idx) => {
         let tempId = Number(alt.id);
-        // Fallback backward compat & fix Int32 overflow from Date.now() IDs
         if (isNaN(tempId) || tempId < 1 || tempId > 2000000000) {
           tempId = idx + 1;
         }
-
-        return {
-          id: tempId,
-          contenido: alt.contenido || '',
-        };
+        return { id: tempId, contenido: alt.contenido || '' };
       });
 
-      // Find the answer referencing our mapped items
       let finalRespuesta: number = 0;
       const correctIdx = safeAlts.findIndex((a) => a.esCorrecta);
       if (correctIdx !== -1) {
         const matchedAlt = mappedAlternativas[correctIdx];
-        if (matchedAlt) {
-          finalRespuesta = matchedAlt.id;
-        }
+        if (matchedAlt) finalRespuesta = matchedAlt.id;
       }
 
-      // STRICT PAYLOAD as per Latest Schema
       const payload = {
-        id: editingId || 0, // Mandatory 0 for POST
+        id: editingId || 0,
         examenId: targetExamenId,
         year: selectedYear || '0',
         numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
         respuesta: finalRespuesta,
-        enunciados: [
-          {
-            id: editingId ? 1 : 1, // Defaulting to 1 for structure as requested
-            contenido: enunciadoBlocks
-              .map((b) => {
-                if (b.type === 'image') {
-                  return `<div data-block-type="image"><img src="${b.content}" alt="imagen" /></div>`;
-                }
-                if (b.isGray) {
-                  return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 bg-gray-block bg-var-gray rounded-md text-justify">${b.content}</div>`;
-                }
-                return b.content;
-              })
-              .join('<br/>'),
-          },
-        ],
-        alternativas: mappedAlternativas,
-        justificaciones: justificationBlocks.map((b, idx) => ({
-          id: idx + 1,
-          contenido: b.content,
-        })),
-        sustento: justificationBlocks
-          .map((b) => {
-            if (b.type === 'image') {
-              return `<div data-block-type="image"><img src="${b.content}" alt="justificacion" /></div>`;
-            }
+        enunciados: [{
+          id: 1,
+          contenido: enunciadoBlocks.map((b) => {
+            if (b.type === 'image') return `<div data-block-type="image"><img src="${b.content}" alt="imagen" /></div>`;
+            if (b.isGray) return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 rounded-md text-justify">${b.content}</div>`;
             return b.content;
-          })
-          .join('<br/>'),
+          }).join('<br/>'),
+        }],
+        alternativas: mappedAlternativas,
+        justificaciones: justificationBlocks.map((b, idx) => ({ id: idx + 1, contenido: b.content })),
+        sustento: justificationBlocks.map((b) => {
+          if (b.type === 'image') return `<div data-block-type="image"><img src="${b.content}" alt="justificacion" /></div>`;
+          return b.content;
+        }).join('<br/>'),
         subPreguntas: [],
         imagen: finalUrl || '',
       };
@@ -1743,61 +1745,46 @@ const Recursos = () => {
       let finalIdForAssignment = editingId;
 
       if (editingId) {
-        // UPDATE Logic
-        const updated = await preguntaService.update(
-          payload.examenId,
-          editingId,
-          payload
-        );
-
-        // Optimistic Update
+        const updated = await preguntaService.update(payload.examenId, editingId, payload);
         setItems((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
-        alert('Pregunta actualizada con éxito');
       } else {
-        // POST /api/Preguntas
-        const created = await preguntaService.create(payload as any);
+        let created = await preguntaService.create(payload as any);
         if (created) {
+          if (created.numero !== numPreguntaParsed) {
+            console.log(`Backend asignó ${created.numero}, forzando a ${numPreguntaParsed}...`);
+            try {
+              const corrected = await preguntaService.update(targetExamenId, created.id, { numero: numPreguntaParsed });
+              created = corrected;
+            } catch (err) {
+              console.error('No se pudo forzar el número correcto', err);
+            }
+          }
           setItems((prev) => [created, ...prev]);
-          alert('Pregunta creada con éxito');
-          // Update targeting ID for assignment logic below
-          finalIdForAssignment = created.id; 
+          finalIdForAssignment = created.id;
         }
       }
 
-      // Logic for Multi-Assign (Nombramiento)
-    if (Number(selectedTipo) === 2 && isMultiAssign && assignmentInfo) {
+      if (Number(selectedTipo) === 2 && isMultiAssign && assignmentInfo) {
         await preguntaService.asignarExamenes({
           preguntaId: finalIdForAssignment || 0,
           year: selectedYear || '0',
           examenIds: assignmentInfo.examenesAsignadosIds,
         });
-        console.log('Asignación de exámenes completada');
       }
 
       const prevClasificacionId = newItem.clasificacionId;
       const prevTipoPreguntaId = newItem.tipoPreguntaId;
 
-      // DO NOT reset filters, keep context
-      if (!stayInCreateMode) {
-        setViewMode('list');
-      }
+      if (!stayInCreateMode) setViewMode('list');
       resetForm();
-
 
       if (stayInCreateMode) {
         setNumeroPregunta((numPreguntaParsed + 1).toString());
-        setNewItem((prev) => ({
-          ...prev,
-          clasificacionId: prevClasificacionId,
-          tipoPreguntaId: prevTipoPreguntaId,
-          examenId: targetExamenId,
-        }));
+        setNewItem((prev) => ({ ...prev, clasificacionId: prevClasificacionId, tipoPreguntaId: prevTipoPreguntaId, examenId: targetExamenId }));
       }
 
-      // Sync the list view with the server to ensure all fields (like respuestaCorrecta) are correctly mapped
       await fetchData();
 
-      // Scroll to the modified question if we are returning to the list view
       const targetIdToScroll = stayInCreateMode ? finalIdForAssignment : (editingId || finalIdForAssignment);
       if (targetIdToScroll) {
         setTimeout(() => {
@@ -1805,16 +1792,13 @@ const Recursos = () => {
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.classList.add('ring-[6px]', 'ring-blue-300', 'transition-shadow', 'duration-500');
-            setTimeout(() => {
-              el.classList.remove('ring-[6px]', 'ring-blue-300');
-            }, 3000);
+            setTimeout(() => el.classList.remove('ring-[6px]', 'ring-blue-300'), 3000);
           }
-        }, 500); // Allow list render time
+        }, 500);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      // eslint-disable-next-line no-alert
-      alert('Error guardando pregunta');
+      showErr('Error guardando pregunta: ' + (err.message || 'Error desconocido'));
     } finally {
       setIsSaving(false);
     }
@@ -2432,21 +2416,32 @@ const Recursos = () => {
                 </div>
 
                 {/* 6. FOOTER ACTIONS */}
-                <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-20 flex flex-col sm:flex-row justify-end gap-3 md:px-10">
-                  <button
-                    onClick={() => handleSubmit(undefined, false)}
-                    disabled={isSaving}
-                    className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
-                  >
-                    {isSaving ? 'Guardando...' : 'Guardar Pregunta'}
-                  </button>
-                  <button
-                    onClick={() => handleSubmit(undefined, true)}
-                    disabled={isSaving}
-                    className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
-                  >
-                    {isSaving ? 'Guardando...' : 'Guardar y Añadir otra'}
-                  </button>
+                <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-lg z-20 md:px-10">
+                  {errorMsg && (
+                    <div className="w-full bg-red-600 text-white text-sm font-semibold px-6 py-3 flex items-center gap-2">
+                      <span>&#9888;</span>
+                      <span>{errorMsg}</span>
+                      <button className="ml-auto text-white opacity-70 hover:opacity-100" onClick={() => setErrorMsg(null)}>&#x2715;</button>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 p-4">
+                    <button
+                      onClick={() => handleSubmit(undefined, false)}
+                      disabled={isSaving}
+                      className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
+                    >
+                      {isSaving ? 'Guardando...' : editingId ? 'Actualizar Pregunta' : 'Guardar Pregunta'}
+                    </button>
+                    {!editingId && (
+                      <button
+                        onClick={() => handleSubmit(undefined, true)}
+                        disabled={isSaving}
+                        className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
+                      >
+                        {isSaving ? 'Guardando...' : 'Guardar y Añadir otra'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -3333,6 +3328,45 @@ const Recursos = () => {
                 )}
                 Generar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COLLISION MODAL */}
+      {isCollisionModalOpen && collisionTargetConfig && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <DocumentTextIcon className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-800 tracking-tight">
+                Número Duplicado
+              </h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+                El número de pregunta <span className="font-bold text-gray-900 mx-1">{collisionTargetConfig.numStr}</span> ya existe en este examen. ¿Deseas insertar esta y desplazar (+1) todas las preguntas posteriores automáticamente?
+              </p>
+              <div className="flex justify-center gap-4 w-full">
+                <button
+                  onClick={() => setIsCollisionModalOpen(false)}
+                  className="px-5 py-2.5 w-full border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsCollisionModalOpen(false);
+                    await handleSubmit(undefined, collisionTargetConfig.stayInCreateMode, true);
+                  }}
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center"
+                  disabled={isSaving}
+                >
+                  Aceptar
+                </button>
+              </div>
             </div>
           </div>
         </div>
