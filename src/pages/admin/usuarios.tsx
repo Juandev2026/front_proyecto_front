@@ -9,7 +9,6 @@ import {
 
 import AdminLayout from '../../components/AdminLayout';
 import { estructuraAcademicaService } from '../../services/estructuraAcademicaService';
-import { premiumService, PremiumContent } from '../../services/premiumService';
 import { regionService, Region } from '../../services/regionService';
 import {
   tipoAccesoService,
@@ -41,7 +40,6 @@ const UsersPage = () => {
     []
   );
   const [showPassword, setShowPassword] = useState(false);
-  const [plans, setPlans] = useState<PremiumContent[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,20 +61,19 @@ const UsersPage = () => {
     tiempo: 0,
     ie: '',
     observaciones: '',
-    planId: 0,
     fechaInicio: '',
     fechaFin: '',
     estadoPago: '',
   } as any);
 
   const [expirationMode, setExpirationMode] = useState<
-    '1year' | '5months' | '10months' | 'custom'
+    '1year' | '1month' | '6months' | 'custom'
   >('custom');
   const [userExamenes, setUserExamenes] = useState<AcademicAccess[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleExpirationPresetChange = (
-    mode: '1year' | '5months' | '10months'
+    mode: '1year' | '1month' | '6months'
   ) => {
     setExpirationMode(mode);
     const today = new Date();
@@ -84,10 +81,10 @@ const UsersPage = () => {
 
     if (mode === '1year') {
       newDate.setFullYear(today.getFullYear() + 1);
-    } else if (mode === '5months') {
-      newDate.setMonth(today.getMonth() + 5);
-    } else if (mode === '10months') {
-      newDate.setMonth(today.getMonth() + 10);
+    } else if (mode === '1month') {
+      newDate.setMonth(today.getMonth() + 1);
+    } else if (mode === '6months') {
+      newDate.setMonth(today.getMonth() + 6);
     }
 
     const isoDate = newDate.toISOString();
@@ -164,17 +161,15 @@ const UsersPage = () => {
 
       // Load other catalogs
       try {
-        const [
-          regionsData,
-          tiposAccesoData,
-          academicStructure,
-          plansData,
-        ] = await Promise.all([
-          regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
-          tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
-          estructuraAcademicaService.getAll().catch(err => { console.error('Error loading academic structure:', err); return []; }),
-          premiumService.getAll().catch(err => { console.error('Error loading plans:', err); return []; }),
-        ]);
+          const [
+            regionsData,
+            tiposAccesoData,
+            academicStructure,
+          ] = await Promise.all([
+            regionService.getAll().catch(err => { console.error('Error loading regions:', err); return []; }),
+            tipoAccesoService.getAll().catch(err => { console.error('Error loading access types:', err); return []; }),
+            estructuraAcademicaService.getAll().catch(err => { console.error('Error loading academic structure:', err); return []; }),
+          ]);
 
         setRegions(regionsData);
         
@@ -214,7 +209,6 @@ const UsersPage = () => {
         setNiveles(flatNiveles);
         setEspecialidades(flatEspecialidades);
         setTiposAcceso(tiposAccesoData);
-        setPlans(plansData);
       } catch (error) {
         console.error('Error loading catalog data:', error);
       }
@@ -1172,8 +1166,8 @@ const UsersPage = () => {
                     <div className="space-y-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
                       {[
                         { key: '1year', label: '1 año desde hoy' },
-                        { key: '5months', label: '5 meses desde hoy' },
-                        { key: '10months', label: '10 meses desde hoy' },
+                        { key: '1month', label: '1 mes desde hoy' },
+                        { key: '6months', label: '6 meses desde hoy' },
                         { key: 'custom', label: 'Elegir fecha específica' },
                       ].map(({ key, label }) => (
                         <label
@@ -1196,28 +1190,7 @@ const UsersPage = () => {
                       ))}
                     </div>
 
-                    <div className="mb-3">
-                      <label className="block text-sm text-gray-700 mb-1">
-                        Plan
-                      </label>
-                      <select
-                        value={(formData as any).planId ?? 0}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            planId: Number(e.target.value),
-                          } as any)
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9]"
-                      >
-                        <option value={0}>Seleccionar Plan</option>
-                        {plans.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.titulo} - ${p.precio}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>

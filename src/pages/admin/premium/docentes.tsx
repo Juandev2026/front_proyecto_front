@@ -96,7 +96,7 @@ const AdminPremiumDocentes = () => {
 
   // Expiration Logic
   const [expirationMode, setExpirationMode] = useState<
-    '1year' | '5months' | '10months' | 'custom'
+    '1year' | '1month' | '6months' | 'custom'
   >('custom');
 
   // Academic accesses (userExamenes)
@@ -108,20 +108,20 @@ const AdminPremiumDocentes = () => {
   const [userExamenes, setUserExamenes] = useState<AcademicAccess[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
-  const calculateExpirationDate = (mode: '1year' | '5months' | '10months') => {
+  const calculateExpirationDate = (mode: '1year' | '1month' | '6months') => {
     const date = new Date();
     if (mode === '1year') {
       date.setFullYear(date.getFullYear() + 1);
-    } else if (mode === '5months') {
-      date.setMonth(date.getMonth() + 5);
-    } else if (mode === '10months') {
-      date.setMonth(date.getMonth() + 10);
+    } else if (mode === '1month') {
+      date.setMonth(date.getMonth() + 1);
+    } else if (mode === '6months') {
+      date.setMonth(date.getMonth() + 6);
     }
     return date.toISOString();
   };
 
   const handleExpirationPresetChange = (
-    mode: '1year' | '5months' | '10months'
+    mode: '1year' | '1month' | '6months'
   ) => {
     setExpirationMode(mode);
     const newDate = calculateExpirationDate(mode);
@@ -1817,8 +1817,8 @@ const AdminPremiumDocentes = () => {
                     <div className="grid grid-cols-2 gap-2">
                       {[
                         { key: '1year', label: '1 año' },
-                        { key: '5months', label: '5 meses' },
-                        { key: '10months', label: '10 meses' },
+                        { key: '1month', label: '1 mes' },
+                        { key: '6months', label: '6 meses' },
                         { key: 'custom', label: 'Específico' },
                       ].map(({ key, label }) => (
                         <label
