@@ -783,7 +783,7 @@ const ExamenPage = () => {
 
     Object.keys(respuestas).forEach((key) => {
       const resp = respuestas[key];
-      if (resp?.alternativa) {
+      if (resp?.isCorrect !== undefined) {
         answeredCount++;
         if (resp.isCorrect === true) correctCount++;
         else if (resp.isCorrect === false) incorrectCount++;
@@ -1249,7 +1249,7 @@ const ExamenPage = () => {
 
                     {(() => {
                       const isAnyAnswered =
-                        respuestas[String(currentIndex)] !== undefined;
+                        respuestas[String(currentIndex)]?.isCorrect !== undefined;
                       return (
                         <div
                           className={`${
@@ -1585,7 +1585,7 @@ const ExamenPage = () => {
                   <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto px-2 py-2 -mx-2 custom-scrollbar">
                     {questions.map((_, i) => {
                       const status = getQuestionStatus(i);
-                      const isAnswered = respuestas[String(i)] !== undefined;
+                      const isAnswered = respuestas[String(i)]?.isCorrect !== undefined;
 
                       let btnClass =
                         'bg-white border-gray-100 text-gray-400 hover:border-gray-300 hover:bg-gray-50';
