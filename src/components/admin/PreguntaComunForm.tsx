@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 
 import {
   PlusIcon,
@@ -7,24 +7,24 @@ import {
   ChevronUpIcon,
   DocumentTextIcon,
   SparklesIcon,
-} from "@heroicons/react/outline";
-import dynamic from "next/dynamic";
+} from '@heroicons/react/outline';
+import dynamic from 'next/dynamic';
 
 import {
   clasificacionService,
   Clasificacion,
-} from "../../services/clasificacionService";
-import { preguntaService } from "../../services/preguntaService";
-import { uploadService } from "../../services/uploadService";
+} from '../../services/clasificacionService';
+import { preguntaService } from '../../services/preguntaService';
+import { uploadService } from '../../services/uploadService';
 
 // Dynamic import for Tiptap Editor
-const TiptapEditor = dynamic(() => import("../editor/TiptapEditor"), {
+const TiptapEditor = dynamic(() => import('../editor/TiptapEditor'), {
   ssr: false,
 });
 
 interface ContentBlock {
   id: string;
-  type: "text" | "image";
+  type: 'text' | 'image';
   content: string; // HTML or Image URL
   isGray?: boolean;
 }
@@ -69,62 +69,62 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   // --- HELPERS ---
   const parseHtmlToBlocks = (html: string): ContentBlock[] => {
     if (!html) return [];
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.innerHTML = html;
 
     const blocks: ContentBlock[] = [];
     const children = Array.from(div.childNodes);
 
-    let currentTextHtml = "";
+    let currentTextHtml = '';
 
     const flushCurrentText = () => {
-      const textContent = currentTextHtml.replace(/<[^>]*>?/gm, "").trim();
-      if (textContent !== "" || currentTextHtml.includes("<img")) {
+      const textContent = currentTextHtml.replace(/<[^>]*>?/gm, '').trim();
+      if (textContent !== '' || currentTextHtml.includes('<img')) {
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
-          type: "text",
+          type: 'text',
           content: currentTextHtml,
           isGray: false,
         });
       }
-      currentTextHtml = "";
+      currentTextHtml = '';
     };
 
     children.forEach((node) => {
-      if (node.nodeName === "IMG") {
+      if (node.nodeName === 'IMG') {
         flushCurrentText();
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
-          type: "image",
+          type: 'image',
           content: (node as HTMLImageElement).src,
         });
       } else if (
         node.nodeType === Node.ELEMENT_NODE &&
-        node.nodeName === "DIV" &&
-        (node as HTMLElement).getAttribute("data-block-type") === "image"
+        node.nodeName === 'DIV' &&
+        (node as HTMLElement).getAttribute('data-block-type') === 'image'
       ) {
         flushCurrentText();
-        const img = (node as HTMLElement).querySelector("img");
+        const img = (node as HTMLElement).querySelector('img');
         if (img) {
           blocks.push({
             id: Math.random().toString(36).substr(2, 9),
-            type: "image",
+            type: 'image',
             content: img.src,
           });
         }
       } else if (
         node.nodeType === Node.ELEMENT_NODE &&
-        node.nodeName === "DIV" &&
-        ((node as HTMLElement).classList.contains("bg-gray-100") ||
-          (node as HTMLElement).classList.contains("bg-gray-50") ||
-          (node as HTMLElement).classList.contains("bg-gray-block") ||
-          (node as HTMLElement).classList.contains("bg-var-gray") ||
-          (node as HTMLElement).className.includes("bg-[var(--color-bg-50)]"))
+        node.nodeName === 'DIV' &&
+        ((node as HTMLElement).classList.contains('bg-gray-100') ||
+          (node as HTMLElement).classList.contains('bg-gray-50') ||
+          (node as HTMLElement).classList.contains('bg-gray-block') ||
+          (node as HTMLElement).classList.contains('bg-var-gray') ||
+          (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
       ) {
         flushCurrentText();
         blocks.push({
           id: Math.random().toString(36).substr(2, 9),
-          type: "text",
+          type: 'text',
           content: (node as HTMLElement).innerHTML,
           isGray: true,
         });
@@ -133,9 +133,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         node.nodeType === Node.ELEMENT_NODE
       ) {
         const content =
-          (node as HTMLElement).outerHTML || node.textContent || "";
-        if (content.trim() === "<br>" || content.trim() === "<br/>") {
-          if (currentTextHtml !== "") {
+          (node as HTMLElement).outerHTML || node.textContent || '';
+        if (content.trim() === '<br>' || content.trim() === '<br/>') {
+          if (currentTextHtml !== '') {
             currentTextHtml += content;
           }
         } else {
@@ -171,25 +171,25 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 }))
               : [
                   {
-                    id: "A",
+                    id: 'A',
                     contenido: s.alternativaA,
                     esCorrecta:
-                      s.respuestaCorrecta === "A" || s.respuestaCorrecta === 1,
+                      s.respuestaCorrecta === 'A' || s.respuestaCorrecta === 1,
                   },
                   {
-                    id: "B",
+                    id: 'B',
                     contenido: s.alternativaB,
                     esCorrecta:
-                      s.respuestaCorrecta === "B" || s.respuestaCorrecta === 2,
+                      s.respuestaCorrecta === 'B' || s.respuestaCorrecta === 2,
                   },
                   {
-                    id: "C",
+                    id: 'C',
                     contenido: s.alternativaC,
                     esCorrecta:
-                      s.respuestaCorrecta === "C" || s.respuestaCorrecta === 3,
+                      s.respuestaCorrecta === 'C' || s.respuestaCorrecta === 3,
                   },
                 ],
-          sustento: s.sustento || "",
+          sustento: s.sustento || '',
           isExpanded: false,
           numero: s.numero || 1,
           enunciados: s.enunciados,
@@ -203,21 +203,21 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             alternatives: [
               {
                 id: Math.random().toString(36),
-                contenido: "",
+                contenido: '',
                 esCorrecta: false,
               },
               {
                 id: Math.random().toString(36),
-                contenido: "",
+                contenido: '',
                 esCorrecta: false,
               },
               {
                 id: Math.random().toString(36),
-                contenido: "",
+                contenido: '',
                 esCorrecta: false,
               },
             ],
-            sustento: "",
+            sustento: '',
             isExpanded: true,
             numero: 1,
           },
@@ -251,13 +251,13 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       setAssignmentInfo(info);
       setIsMultiAssign(info.examenesAsignadosIds.length > 0);
     } catch (err) {
-      console.error("Error fetching assignment info:", err);
+      console.error('Error fetching assignment info:', err);
     }
   };
 
   useEffect(() => {
     if (selectedTipo === 2) {
-      fetchAssignmentInfo(initialParent?.id || 0, selectedYear || "0");
+      fetchAssignmentInfo(initialParent?.id || 0, selectedYear || '0');
     }
   }, [selectedTipo, selectedYear, initialParent]);
 
@@ -303,7 +303,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   // Hidden file input for images
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeUploadContextRef = useRef<{
-    type: "common" | "specific";
+    type: 'common' | 'specific';
     subQId?: string;
   } | null>(null);
 
@@ -314,7 +314,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         const data = await clasificacionService.getAll();
         setClasificaciones(data);
       } catch (error) {
-        console.error("Error loading classifications:", error);
+        console.error('Error loading classifications:', error);
       }
     };
     loadClasificaciones();
@@ -322,14 +322,14 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
   const getClasificacionFullName = (nombre: string) => {
     switch (nombre) {
-      case "CCP":
-        return "CONOCIMIENTO CURRICULAR Y PEDAGÓGICO";
-      case "CG":
-        return "CONOCIMIENTOS GENERALES";
-      case "CL":
-        return "COMPRENSIÓN LECTORA";
-      case "RL":
-        return "RAZONAMIENTO LÓGICO";
+      case 'CCP':
+        return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
+      case 'CG':
+        return 'CONOCIMIENTOS GENERALES';
+      case 'CL':
+        return 'COMPRENSIÓN LECTORA';
+      case 'RL':
+        return 'RAZONAMIENTO LÓGICO';
       default:
         return nombre;
     }
@@ -338,19 +338,19 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   // --- ACTIONS: BLOCKS ---
 
   const addBlock = (
-    type: "text" | "image",
-    context: "common" | "specific",
+    type: 'text' | 'image',
+    context: 'common' | 'specific',
     subQId?: string,
     imageUrl?: string
   ) => {
     const newBlock: ContentBlock = {
       id: Math.random().toString(36).substr(2, 9),
       type,
-      content: imageUrl || "",
+      content: imageUrl || '',
       isGray: false,
     };
 
-    if (context === "common") {
+    if (context === 'common') {
       setCommonStatement((prev) => [...prev, newBlock]);
     } else if (subQId) {
       setSubQuestions((prev) =>
@@ -366,10 +366,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   const updateBlock = (
     val: string,
     blockId: string,
-    context: "common" | "specific",
+    context: 'common' | 'specific',
     subQId?: string
   ) => {
-    if (context === "common") {
+    if (context === 'common') {
       setCommonStatement((prev) =>
         prev.map((b) => (b.id === blockId ? { ...b, content: val } : b))
       );
@@ -391,10 +391,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
   const toggleBlockGray = (
     blockId: string,
-    context: "common" | "specific",
+    context: 'common' | 'specific',
     subQId?: string
   ) => {
-    if (context === "common") {
+    if (context === 'common') {
       setCommonStatement((prev) =>
         prev.map((b) => (b.id === blockId ? { ...b, isGray: !b.isGray } : b))
       );
@@ -416,10 +416,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
   const removeBlock = (
     blockId: string,
-    context: "common" | "specific",
+    context: 'common' | 'specific',
     subQId?: string
   ) => {
-    if (context === "common") {
+    if (context === 'common') {
       setCommonStatement((prev) => prev.filter((b) => b.id !== blockId));
     } else if (subQId) {
       setSubQuestions((prev) =>
@@ -440,7 +440,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   // --- ACTIONS: IMAGE UPLOAD ---
 
   const triggerImageUpload = (
-    context: "common" | "specific",
+    context: 'common' | 'specific',
     subQId?: string
   ) => {
     activeUploadContextRef.current = { type: context, subQId };
@@ -456,17 +456,17 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       const url = await uploadService.uploadImage(file);
 
       addBlock(
-        "image",
+        'image',
         activeUploadContextRef.current.type,
         activeUploadContextRef.current.subQId,
         url
       );
     } catch (error) {
-      console.error("Upload error:", error);
-      alert("Error al subir la imagen");
+      console.error('Upload error:', error);
+      alert('Error al subir la imagen');
     } finally {
       // Reset input
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = '';
       activeUploadContextRef.current = null;
     }
   };
@@ -481,11 +481,11 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         clasificacionId: defaultClasificacionId || 0,
         specificStatement: [],
         alternatives: [
-          { id: Math.random().toString(36), contenido: "", esCorrecta: false },
-          { id: Math.random().toString(36), contenido: "", esCorrecta: false },
-          { id: Math.random().toString(36), contenido: "", esCorrecta: false },
+          { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+          { id: Math.random().toString(36), contenido: '', esCorrecta: false },
+          { id: Math.random().toString(36), contenido: '', esCorrecta: false },
         ],
-        sustento: "",
+        sustento: '',
         isExpanded: true,
         numero: prev.length + 1,
       },
@@ -494,7 +494,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
   const removeSubQuestion = (tempId: string) => {
     if (subQuestions.length <= 1) {
-      alert("Debe haber al menos una pregunta.");
+      alert('Debe haber al menos una pregunta.');
       return;
     }
     setSubQuestions((prev) => prev.filter((q) => q.tempId !== tempId));
@@ -533,7 +533,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         const alt = newAlts[altIndex];
         if (!alt) return q;
 
-        if (field === "esCorrecta") {
+        if (field === 'esCorrecta') {
           if (value === true) {
             newAlts.forEach((a) => (a.esCorrecta = false));
           }
@@ -549,22 +549,22 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   // --- SAVE LOGIC ---
 
   const serializeBlocks = (blocks: ContentBlock[]) => {
-    if (blocks.length === 0) return "";
+    if (blocks.length === 0) return '';
     return blocks
       .map((b) => {
-        if (b.type === "image") return `<img src="${b.content}" alt="Image" />`;
+        if (b.type === 'image') return `<img src="${b.content}" alt="Image" />`;
         if (b.isGray) {
           return `<div class="mb-2 p-4 bg-gray-200 bg-gray-block border border-gray-300 rounded-md text-justify">${b.content}</div>`;
         }
         return b.content;
       })
-      .join("<br/>");
+      .join('<br/>');
   };
 
   const handleSaveAll = async () => {
     // --- VALIDACIÓN ---
     if (commonStatement.length === 0) {
-      alert("El enunciado común está vacío. Añade texto o imagen.");
+      alert('El enunciado común está vacío. Añade texto o imagen.');
       return;
     }
 
@@ -588,14 +588,14 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     const examenId = await resolveExamenId();
     if (!examenId) {
       alert(
-        "No se pudo determinar el examen. Asegúrate de tener todos los filtros (incluido Año) seleccionados."
+        'No se pudo determinar el examen. Asegúrate de tener todos los filtros (incluido Año) seleccionados.'
       );
       return;
     }
 
     const commonHtml = serializeBlocks(commonStatement);
 
-    console.log("=== GUARDANDO PREGUNTA AGRUPADA (ATÓMICA) ===");
+    console.log('=== GUARDANDO PREGUNTA AGRUPADA (ATÓMICA) ===');
     setSaving(true);
 
     try {
@@ -607,7 +607,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       const payload = {
         id: initialParent ? initialParent.id : 0,
         examenId,
-        year: initialParent?.year || selectedYear || "0",
+        year: initialParent?.year || selectedYear || '0',
         tipoPreguntaId: 2,
         numero: numPadre,
         clasificacionId: firstSubClasificacionId,
@@ -621,13 +621,13 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         alternativas: [
           {
             id: initialParent?.alternativas?.[0]?.id || 0,
-            contenido: "n",
+            contenido: 'n',
           },
         ],
         justificaciones: [
           {
             id: initialParent?.justificaciones?.[0]?.id || 0,
-            contenido: "n",
+            contenido: 'n',
           },
         ],
         subPreguntas: subQuestions.map((q, index) => {
@@ -636,7 +636,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
           return {
             examenId,
-            year: initialParent?.year || selectedYear || "0",
+            year: initialParent?.year || selectedYear || '0',
             preguntaId: initialParent ? initialParent.id : 0,
             id: q.id || 0, // Sending 0 for new records
             clasificacionId: q.clasificacionId,
@@ -648,8 +648,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
               },
             ],
             alternativas: q.alternatives.map((alt, altIdx) => ({
-              id: typeof alt.id === "number" && alt.id > 0 ? alt.id : 0,
-              contenido: alt.contenido || "",
+              id: typeof alt.id === 'number' && alt.id > 0 ? alt.id : 0,
+              contenido: alt.contenido || '',
             })),
             justificaciones: [
               {
@@ -657,24 +657,24 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                   q.justificaciones && q.justificaciones[0]?.id
                     ? q.justificaciones[0].id
                     : 0,
-                contenido: q.sustento || "",
+                contenido: q.sustento || '',
               },
             ],
             respuestaCorrecta: respuestaInt, // Reverted to number (no quotes)
             numero: q.numero || index + 1,
           };
         }),
-        autor: "AVEND",
+        autor: 'AVEND',
         precio: 0,
       };
 
-      console.log("Payload Atómico (User Requirement):", payload);
+      console.log('Payload Atómico (User Requirement):', payload);
 
       let finalIdForAssignment = initialParent?.id;
 
       if (initialParent) {
         await preguntaService.update(examenId, initialParent.id, payload);
-        alert("Pregunta común actualizada con éxito. ¡Ya está genial!");
+        alert('Pregunta común actualizada con éxito. ¡Ya está genial!');
       } else {
         try {
           let created = await preguntaService.create(payload as any);
@@ -692,17 +692,19 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 );
                 created = corrected;
               } catch (err) {
-                console.error("No se pudo forzar el número correcto", err);
+                console.error('No se pudo forzar el número correcto', err);
               }
             }
             finalIdForAssignment = created.id;
           }
-          alert("Pregunta común creada con éxito (Padre e Hijos). ¡Ya está genial!");
+          alert(
+            'Pregunta común creada con éxito (Padre e Hijos). ¡Ya está genial!'
+          );
         } catch (createError: any) {
-          let msg = createError.message || "Error al crear la pregunta común";
-          if (msg.includes("numero") || msg.includes("existe")) {
+          let msg = createError.message || 'Error al crear la pregunta común';
+          if (msg.includes('numero') || msg.includes('existe')) {
             msg =
-              "El número de pregunta ya existe en este examen. Por favor, usa uno diferente.";
+              'El número de pregunta ya existe en este examen. Por favor, usa uno diferente.';
           }
           alert(msg);
           setSaving(false);
@@ -714,17 +716,17 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
       if (selectedTipo === 2 && isMultiAssign && assignmentInfo) {
         await preguntaService.asignarExamenes({
           preguntaId: finalIdForAssignment || 0,
-          year: selectedYear || "0",
+          year: selectedYear || '0',
           examenIds: assignmentInfo.examenesAsignadosIds,
         });
-        console.log("Asignación de exámenes completada para pregunta grupo");
+        console.log('Asignación de exámenes completada para pregunta grupo');
       }
 
       onSuccess();
     } catch (saveError) {
-      console.error("Error al guardar pregunta común atómica:", saveError);
+      console.error('Error al guardar pregunta común atómica:', saveError);
       alert(
-        "Error técnico al guardar la pregunta agrupada. Revisa la consola para más detalles."
+        'Error técnico al guardar la pregunta agrupada. Revisa la consola para más detalles.'
       );
     } finally {
       setSaving(false);
@@ -735,7 +737,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   const renderContentManager = (
     blocks: ContentBlock[],
     label: string,
-    context: "common" | "specific",
+    context: 'common' | 'specific',
     subQId?: string
   ) => {
     const isEmpty = blocks.length === 0;
@@ -747,7 +749,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
-              onClick={() => addBlock("text", context, subQId)}
+              onClick={() => addBlock('text', context, subQId)}
               className="flex items-center gap-2 text-primary border border-primary px-3 md:px-4 py-1.5 rounded hover:bg-blue-50 text-xs md:text-sm font-medium transition-colors"
             >
               <DocumentTextIcon className="w-4 h-4" /> Añadir Texto
@@ -782,10 +784,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>
-                {block.type === "text" ? (
+                {block.type === 'text' ? (
                   <div
                     className={`p-4 rounded-lg border border-gray-300 shadow-sm ${
-                      block.isGray ? "bg-gray-200" : "bg-white"
+                      block.isGray ? 'bg-gray-200' : 'bg-white'
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-3 text-gray-500">
@@ -908,8 +910,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             <div className="flex justify-between items-center mb-4">
               <p className="text-xs text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                 {isMultiAssign
-                  ? "Modo Selección Múltiple Activo"
-                  : "Previsualización de Categorías"}
+                  ? 'Modo Selección Múltiple Activo'
+                  : 'Previsualización de Categorías'}
               </p>
 
               <div className="flex items-center gap-4">
@@ -937,18 +939,18 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
 
                 // Detectar jerarquía: Soporta "A > B" o simplemente el texto completo
                 let main = exam.descripcion;
-                let sub = "";
+                let sub = '';
 
-                if (exam.descripcion.includes(" > ")) {
-                  const parts = exam.descripcion.split(" > ");
-                  main = parts[0] || "";
-                  sub = parts.slice(1).join(" > ");
+                if (exam.descripcion.includes(' > ')) {
+                  const parts = exam.descripcion.split(' > ');
+                  main = parts[0] || '';
+                  sub = parts.slice(1).join(' > ');
                 } else {
                   const keywords = [
-                    "INICIAL",
-                    "PRIMARIA",
-                    "SECUNDARIA",
-                    "AVANZADO",
+                    'INICIAL',
+                    'PRIMARIA',
+                    'SECUNDARIA',
+                    'AVANZADO',
                   ];
                   for (const kw of keywords) {
                     if (exam.descripcion.includes(kw)) {
@@ -965,8 +967,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                     key={exam.id}
                     className={`flex items-start gap-3 p-2 rounded-md transition-all duration-200 group border ${
                       isChecked
-                        ? "bg-blue-50/50 border-blue-100"
-                        : "bg-white border-transparent hover:bg-gray-50"
+                        ? 'bg-blue-50/50 border-blue-100'
+                        : 'bg-white border-transparent hover:bg-gray-50'
                     }`}
                   >
                     <div className="mt-0.5">
@@ -983,7 +985,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                     >
                       <p
                         className={`text-sm font-bold leading-tight ${
-                          isChecked ? "text-blue-800" : "text-gray-700"
+                          isChecked ? 'text-blue-800' : 'text-gray-700'
                         }`}
                       >
                         {main}
@@ -1025,7 +1027,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                       key={e.id}
                       className="inline-flex items-center gap-1 bg-white border border-blue-200 text-[#4790FD] px-2 py-1 rounded text-[11px] font-bold shadow-sm"
                     >
-                      {e.descripcion.split(" > ").pop()}
+                      {e.descripcion.split(' > ').pop()}
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
@@ -1051,7 +1053,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             Enunciado Común (Contexto Compartido)
           </h3>
         </div>
-        {renderContentManager(commonStatement, "Enunciado Común", "common")}
+        {renderContentManager(commonStatement, 'Enunciado Común', 'common')}
       </div>
 
       {/* SECTION B: SUB QUESTIONS LIST */}
@@ -1067,8 +1069,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             key={q.tempId}
             className={`border rounded-xl bg-white shadow-sm transition-all ${
               q.isExpanded
-                ? "border-primary ring-1 ring-blue-100"
-                : "border-gray-200"
+                ? 'border-primary ring-1 ring-blue-100'
+                : 'border-gray-200'
             }`}
           >
             {/* Header */}
@@ -1127,7 +1129,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                         onChange={(e) =>
                           updateSubQuestionField(
                             q.tempId,
-                            "numero",
+                            'numero',
                             parseInt(e.target.value, 10) || 0
                           )
                         }
@@ -1144,7 +1146,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                           onChange={(e) =>
                             updateSubQuestionField(
                               q.tempId,
-                              "clasificacionId",
+                              'clasificacionId',
                               Number(e.target.value)
                             )
                           }
@@ -1165,8 +1167,8 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                 {/* Specific Statement Blocks */}
                 {renderContentManager(
                   q.specificStatement,
-                  "Enunciado Específico",
-                  "specific",
+                  'Enunciado Específico',
+                  'specific',
                   q.tempId
                 )}
 
@@ -1183,20 +1185,20 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-gray-400 w-6">
-                            {["A", "B", "C", "D", "E", "F"][i]})
+                            {['A', 'B', 'C', 'D', 'E', 'F'][i]})
                           </span>
                         </div>
                         <div className="flex-1 w-full overflow-hidden">
                           <TiptapEditor
                             value={alt.contenido}
                             onChange={(val) =>
-                              updateAlternative(q.tempId, i, "contenido", val)
+                              updateAlternative(q.tempId, i, 'contenido', val)
                             }
                             placeholder={`Opción...`}
                             borderColor={
                               alt.esCorrecta
-                                ? "border-green-400"
-                                : "border-gray-200"
+                                ? 'border-green-400'
+                                : 'border-gray-200'
                             }
                           />
                         </div>
@@ -1204,16 +1206,16 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                         <button
                           type="button"
                           onClick={() =>
-                            updateAlternative(q.tempId, i, "esCorrecta", true)
+                            updateAlternative(q.tempId, i, 'esCorrecta', true)
                           }
                           className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm shrink-0 uppercase self-end md:self-center
                                                     ${
                                                       alt.esCorrecta
-                                                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                     }`}
                         >
-                          {alt.esCorrecta ? "Correcta" : "Marcar"}
+                          {alt.esCorrecta ? 'Correcta' : 'Marcar'}
                         </button>
                       </div>
                     ))}
@@ -1228,7 +1230,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                   <TiptapEditor
                     value={q.sustento}
                     onChange={(val) =>
-                      updateSubQuestionField(q.tempId, "sustento", val)
+                      updateSubQuestionField(q.tempId, 'sustento', val)
                     }
                     placeholder="Explicación de la respuesta..."
                     borderColor="border-gray-200"
@@ -1261,10 +1263,10 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           onClick={handleSaveAll}
           disabled={saving}
           className={`bg-primary text-white px-8 py-2 rounded shadow hover:bg-secondary font-medium transition-colors flex items-center justify-center text-sm md:text-base w-full sm:w-auto order-1 sm:order-2 ${
-            saving ? "opacity-70 cursor-wait" : ""
+            saving ? 'opacity-70 cursor-wait' : ''
           }`}
         >
-          {saving ? "Guardando..." : "Guardar Todo"}
+          {saving ? 'Guardando...' : 'Guardar Todo'}
         </button>
       </div>
     </div>

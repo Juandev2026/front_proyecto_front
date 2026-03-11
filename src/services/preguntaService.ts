@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "../config/api";
-import { getAuthHeaders } from "../utils/apiUtils";
+import { API_BASE_URL } from '../config/api';
+import { getAuthHeaders } from '../utils/apiUtils';
 
 export interface EnunciadoItem {
   id: number;
@@ -55,7 +55,7 @@ export const preguntaService = {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
-      throw new Error("Error al obtener clasificaciones");
+      throw new Error('Error al obtener clasificaciones');
     }
     return response.json();
   },
@@ -65,7 +65,7 @@ export const preguntaService = {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
-      throw new Error("Error al obtener preguntas");
+      throw new Error('Error al obtener preguntas');
     }
     return response.json();
   },
@@ -75,24 +75,24 @@ export const preguntaService = {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
-      throw new Error("Error al obtener la pregunta");
+      throw new Error('Error al obtener la pregunta');
     }
     return response.json();
   },
 
-  create: async (item: Omit<Pregunta, "id">): Promise<Pregunta> => {
+  create: async (item: Omit<Pregunta, 'id'>): Promise<Pregunta> => {
     const response = await fetch(API_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(item),
     });
     if (!response.ok) {
       const errText = await response.text();
-      console.error("Error en preguntaService.create:", errText);
-      let errorMessage = "Error al crear la pregunta";
+      console.error('Error en preguntaService.create:', errText);
+      let errorMessage = 'Error al crear la pregunta';
       try {
         const errJson = JSON.parse(errText);
         if (errJson.error) {
@@ -113,17 +113,17 @@ export const preguntaService = {
   ): Promise<Pregunta> => {
     try {
       const response = await fetch(`${API_URL}/${examenId}/${id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
           ...getAuthHeaders(),
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(item),
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        console.error("Error en preguntaService.update:", errText);
+        console.error('Error en preguntaService.update:', errText);
         throw new Error(`Error al actualizar la pregunta: ${errText}`);
       }
 
@@ -137,11 +137,11 @@ export const preguntaService = {
 
   delete: async (id: number): Promise<void> => {
     const response = await fetch(`${API_URL}/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
-      throw new Error("Error al eliminar la pregunta");
+      throw new Error('Error al eliminar la pregunta');
     }
   },
 
@@ -167,30 +167,30 @@ export const preguntaService = {
     questions: Partial<Pregunta>[]
   ): Promise<Pregunta[]> => {
     const response = await fetch(`${API_URL}/examen/${examenId}/bulk`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(questions),
     });
     if (!response.ok) {
-      throw new Error("Error creating questions for exam");
+      throw new Error('Error creating questions for exam');
     }
     return response.json();
   },
 
   examenFilter: async (filter: ExamenFilterRequest): Promise<Pregunta[]> => {
     const response = await fetch(`${API_URL}/examen-filter`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(filter),
     });
     if (!response.ok) {
-      throw new Error("Error filtering questions");
+      throw new Error('Error filtering questions');
     }
     const rawData = await response.json();
     return transformQuestions(rawData);
@@ -198,15 +198,15 @@ export const preguntaService = {
 
   getPreguntasByFilterMultiYear: async (payload: any): Promise<Pregunta[]> => {
     const response = await fetch(`${API_URL}/examen-filter-multi-year`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      throw new Error("Error filtering multi-year questions");
+      throw new Error('Error filtering multi-year questions');
     }
     const rawData = await response.json();
     return transformQuestions(rawData);
@@ -214,15 +214,15 @@ export const preguntaService = {
 
   getPreguntasByFilter: async (filter: any): Promise<Pregunta[]> => {
     const response = await fetch(`${API_URL}/examen-filter`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(filter),
     });
     if (!response.ok) {
-      throw new Error("Error filtering questions");
+      throw new Error('Error filtering questions');
     }
     const rawData = await response.json();
     return transformQuestions(rawData);
@@ -241,7 +241,7 @@ export const preguntaService = {
       }
     );
     if (!response.ok) {
-      throw new Error("Error al obtener info de asignación de exámenes");
+      throw new Error('Error al obtener info de asignación de exámenes');
     }
     return response.json();
   },
@@ -253,9 +253,9 @@ export const preguntaService = {
   }): Promise<void> => {
     // Payload MUST match schema exactly: { preguntaId: int, year: int, examenIds: int[] }
     const isNoYear =
-      payload.year === "0" ||
+      payload.year === '0' ||
       payload.year === 0 ||
-      payload.year === "Único" ||
+      payload.year === 'Único' ||
       !payload.year;
 
     // User explicitly requested null if no year is provided, avoiding zero.
@@ -268,20 +268,20 @@ export const preguntaService = {
     };
 
     console.log(
-      "=== PAYLOAD ASIGNAR EXAMENES (SCHEMA MATCH) ===",
+      '=== PAYLOAD ASIGNAR EXAMENES (SCHEMA MATCH) ===',
       JSON.stringify(body, null, 2)
     );
 
     const response = await fetch(`${API_URL}/asignar-examenes`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      throw new Error("Error al asignar exámenes a la pregunta");
+      throw new Error('Error al asignar exámenes a la pregunta');
     }
   },
 };
@@ -290,11 +290,11 @@ const transformQuestions = (rawData: any[]): Pregunta[] => {
   if (!Array.isArray(rawData)) return [];
 
   const getLetter = (ans: any, alts: any[]) => {
-    if (ans === undefined || ans === null || ans === "") return "";
+    if (ans === undefined || ans === null || ans === '') return '';
     const sAns = String(ans).toUpperCase();
 
-    if (["A", "B", "C", "D"].includes(sAns)) return sAns;
-    if (!alts || alts.length === 0) return "";
+    if (['A', 'B', 'C', 'D'].includes(sAns)) return sAns;
+    if (!alts || alts.length === 0) return '';
 
     const idxById = alts.findIndex((a: any) => String(a.id) === String(ans));
     if (idxById !== -1) return String.fromCharCode(65 + idxById);
@@ -315,37 +315,37 @@ const transformQuestions = (rawData: any[]): Pregunta[] => {
         numero: q.numero,
         enunciado: (q.enunciados || [])
           .map((e: any) => e.contenido)
-          .join("<br/>"),
-        alternativaA: q.alternativas?.[0]?.contenido || "",
-        alternativaB: q.alternativas?.[1]?.contenido || "",
-        alternativaC: q.alternativas?.[2]?.contenido || "",
-        alternativaD: q.alternativas?.[3]?.contenido || "",
+          .join('<br/>'),
+        alternativaA: q.alternativas?.[0]?.contenido || '',
+        alternativaB: q.alternativas?.[1]?.contenido || '',
+        alternativaC: q.alternativas?.[2]?.contenido || '',
+        alternativaD: q.alternativas?.[3]?.contenido || '',
         respuesta: getLetter(q.respuesta, q.alternativas || []),
         respuestaCorrecta: q.respuesta,
         tipoPreguntaId: q.tipoPreguntaId,
         clasificacionId: q.clasificacionId,
         clasificacionNombre: q.clasificacionNombre,
-        imagen: q.imagen || "",
+        imagen: q.imagen || '',
         alternativas: q.alternativas,
         justificaciones: q.justificaciones,
         enunciados: q.enunciados,
         sustento:
           q.justificaciones && q.justificaciones.length > 0
-            ? q.justificaciones.map((j: any) => j.contenido).join("<br/>")
-            : q.sustento || "",
+            ? q.justificaciones.map((j: any) => j.contenido).join('<br/>')
+            : q.sustento || '',
         subPreguntas: (q.subPreguntas || []).map((sub: any) => ({
           ...sub,
           sustento:
             sub.justificaciones && sub.justificaciones.length > 0
-              ? sub.justificaciones.map((j: any) => j.contenido).join("<br/>")
-              : sub.sustento || "",
+              ? sub.justificaciones.map((j: any) => j.contenido).join('<br/>')
+              : sub.sustento || '',
           enunciado: (sub.enunciados || [])
             .map((e: any) => e.contenido)
-            .join("<br/>"),
-          alternativaA: sub.alternativas?.[0]?.contenido || "",
-          alternativaB: sub.alternativas?.[1]?.contenido || "",
-          alternativaC: sub.alternativas?.[2]?.contenido || "",
-          alternativaD: sub.alternativas?.[3]?.contenido || "",
+            .join('<br/>'),
+          alternativaA: sub.alternativas?.[0]?.contenido || '',
+          alternativaB: sub.alternativas?.[1]?.contenido || '',
+          alternativaC: sub.alternativas?.[2]?.contenido || '',
+          alternativaD: sub.alternativas?.[3]?.contenido || '',
           respuesta: getLetter(
             sub.respuestaCorrecta || sub.respuesta,
             sub.alternativas || []

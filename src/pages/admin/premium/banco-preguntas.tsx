@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 
 import {
   PencilIcon,
@@ -12,44 +12,44 @@ import {
   PhotographIcon,
   MenuAlt2Icon,
   MenuIcon,
-} from "@heroicons/react/outline";
-import dynamic from "next/dynamic";
+} from '@heroicons/react/outline';
+import dynamic from 'next/dynamic';
 
-import PreguntaComunForm from "../../../components/admin/PreguntaComunForm";
-import AdminLayout from "../../../components/AdminLayout";
-import HtmlMathRenderer from "../../../components/common/HtmlMathRenderer";
-import { ADMIN_CATALOG } from "../../../data/adminCatalog";
-import { aiService } from "../../../services/aiService";
+import PreguntaComunForm from '../../../components/admin/PreguntaComunForm';
+import AdminLayout from '../../../components/AdminLayout';
+import HtmlMathRenderer from '../../../components/common/HtmlMathRenderer';
+import { ADMIN_CATALOG } from '../../../data/adminCatalog';
+import { aiService } from '../../../services/aiService';
 import {
   clasificacionService,
   Clasificacion,
-} from "../../../services/clasificacionService";
+} from '../../../services/clasificacionService';
 import {
   examenService,
   ExamenGrouped,
   Examen,
-} from "../../../services/examenService";
-import { preguntaService, Pregunta } from "../../../services/preguntaService";
+} from '../../../services/examenService';
+import { preguntaService, Pregunta } from '../../../services/preguntaService';
 import {
   subPreguntaService,
   SubPreguntaResponse,
-} from "../../../services/subPreguntaService";
+} from '../../../services/subPreguntaService';
 import {
   tipoPreguntaService,
   TipoPregunta,
-} from "../../../services/tipoPreguntaService";
-import { uploadService } from "../../../services/uploadService";
-import "katex/dist/katex.min.css";
+} from '../../../services/tipoPreguntaService';
+import { uploadService } from '../../../services/uploadService';
+import 'katex/dist/katex.min.css';
 
 // Dynamic import for TiptapEditor (Math Editor)
 const TiptapEditor = dynamic(
-  () => import("../../../components/editor/TiptapEditor"),
+  () => import('../../../components/editor/TiptapEditor'),
   { ssr: false }
 );
 
 interface ContentBlock {
   id: string;
-  type: "text" | "image";
+  type: 'text' | 'image';
   content: string; // HTML or Image URL
   isGray?: boolean;
 }
@@ -60,12 +60,12 @@ const Recursos = () => {
 
   const [rawGroupedData, setRawGroupedData] = useState<ExamenGrouped[]>([]);
   const [loginExamenes, setLoginExamenes] = useState<any[]>([]);
-  const [userRole, setUserRole] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>('');
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const examenesStr = localStorage.getItem("loginExamenes");
-      const role = localStorage.getItem("role");
+    if (typeof window !== 'undefined') {
+      const examenesStr = localStorage.getItem('loginExamenes');
+      const role = localStorage.getItem('role');
 
       if (examenesStr) setLoginExamenes(JSON.parse(examenesStr));
       if (role) setUserRole(role);
@@ -93,7 +93,7 @@ const Recursos = () => {
         if (!tipo) {
           tipo = {
             tipoExamenId: tId,
-            tipoExamenNombre: le.tipoExamenNombre || "Sin nombre",
+            tipoExamenNombre: le.tipoExamenNombre || 'Sin nombre',
             fuentes: [],
           };
           combined.push(tipo);
@@ -104,7 +104,7 @@ const Recursos = () => {
         if (!fuente) {
           fuente = {
             fuenteId: fId,
-            fuenteNombre: le.fuenteNombre || "Sin nombre",
+            fuenteNombre: le.fuenteNombre || 'Sin nombre',
             modalidades: [],
           };
           tipo.fuentes.push(fuente);
@@ -115,7 +115,7 @@ const Recursos = () => {
         if (!mod) {
           mod = {
             modalidadId: mId,
-            modalidadNombre: le.modalidadNombre || "Sin nombre",
+            modalidadNombre: le.modalidadNombre || 'Sin nombre',
             niveles: [],
           };
           fuente.modalidades.push(mod);
@@ -126,7 +126,7 @@ const Recursos = () => {
         if (!niv) {
           niv = {
             nivelId: nId,
-            nivelNombre: le.nivelNombre || "Sin nombre",
+            nivelNombre: le.nivelNombre || 'Sin nombre',
             especialidades: [],
           };
           mod.niveles.push(niv);
@@ -144,7 +144,7 @@ const Recursos = () => {
         if (!hasEsp) {
           niv.especialidades.push({
             especialidadId: eId,
-            especialidadNombre: le.especialidadNombre || "General",
+            especialidadNombre: le.especialidadNombre || 'General',
           });
         }
       });
@@ -152,7 +152,7 @@ const Recursos = () => {
 
     // 4. Si el usuario es ADMIN, mostramos TODO el catálogo propocionado por la API (rawGroupedData)
     // Usamos ADMIN_CATALOG solo como fallback inicial si la API aún no responde
-    if (userRole === "Admin")
+    if (userRole === 'Admin')
       return rawGroupedData.length > 0 ? rawGroupedData : ADMIN_CATALOG;
 
     // 5. Si NO es Admin, filtramos para que solo vea lo que tiene asignado estrictamente (usa rawGroupedData como base)
@@ -223,12 +223,12 @@ const Recursos = () => {
 
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [viewMode, setViewMode] = useState<"list" | "create" | "edit">("list");
+  const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [showResults, setShowResults] = useState(false); // New state for toggling views
 
   // AI Modal State
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [aiTopic, setAiTopic] = useState("");
+  const [aiTopic, setAiTopic] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   // Collision Modal State
@@ -239,33 +239,43 @@ const Recursos = () => {
     stayInCreateMode: boolean;
   } | null>(null);
 
+  // Success Modal State
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successStayInCreate, setSuccessStayInCreate] = useState(false);
+  const [successPrevState, setSuccessPrevState] = useState<{
+    numParsed: number;
+    clasificacionId: number;
+    tipoPreguntaId: number;
+    examenId: number;
+  } | null>(null);
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Ideally fetch this from env or context, but user provided it directly for now.
-  const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || "";
+  const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
 
   // Pagination State
 
   // --- ESTADOS VISUALES (FILTROS UI) ---
-  const [selectedTipo, setSelectedTipo] = useState<number | "">(2);
-  const [selectedFuente, setSelectedFuente] = useState<number | "">("");
-  const [selectedModalidad, setSelectedModalidad] = useState<number | "">("");
-  const [selectedNivel, setSelectedNivel] = useState<number | "">("");
-  const [selectedEspecialidad, setSelectedEspecialidad] = useState<number | "">(
-    ""
+  const [selectedTipo, setSelectedTipo] = useState<number | ''>(2);
+  const [selectedFuente, setSelectedFuente] = useState<number | ''>('');
+  const [selectedModalidad, setSelectedModalidad] = useState<number | ''>('');
+  const [selectedNivel, setSelectedNivel] = useState<number | ''>('');
+  const [selectedEspecialidad, setSelectedEspecialidad] = useState<number | ''>(
+    ''
   );
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [newYearInput, setNewYearInput] = useState<string>(""); // State for input field
-  const [numeroPregunta, setNumeroPregunta] = useState<string>(""); // Número de la pregunta
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [newYearInput, setNewYearInput] = useState<string>(''); // State for input field
+  const [numeroPregunta, setNumeroPregunta] = useState<string>(''); // Número de la pregunta
 
   // Form State
   const [newItem, setNewItem] = useState({
-    enunciado: "",
-    respuesta: "", // We will determine this from alternatives
-    sustento: "",
+    enunciado: '',
+    respuesta: '', // We will determine this from alternatives
+    sustento: '',
     examenId: 0,
     clasificacionId: 0, // Not sure if used, keeping default
-    imagen: "",
+    imagen: '',
     tipoPreguntaId: 1, // Default to 1 (Individual)
   });
 
@@ -276,9 +286,9 @@ const Recursos = () => {
     esCorrecta: boolean;
   }
   const [alternatives, setAlternatives] = useState<AlternativeState[]>([
-    { id: "1", contenido: "", esCorrecta: false },
-    { id: "2", contenido: "", esCorrecta: false },
-    { id: "3", contenido: "", esCorrecta: false },
+    { id: '1', contenido: '', esCorrecta: false },
+    { id: '2', contenido: '', esCorrecta: false },
+    { id: '3', contenido: '', esCorrecta: false },
   ]);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -295,7 +305,7 @@ const Recursos = () => {
 
   const handleDragStartEnunciado = (e: React.DragEvent, index: number) => {
     setDraggedEnunciadoIndex(index);
-    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.effectAllowed = 'move';
     // Small delay to prevent the dragged image from instantly disappearing
     setTimeout(() => {
       if (document.activeElement instanceof HTMLElement) {
@@ -325,7 +335,7 @@ const Recursos = () => {
   const addEnunciadoText = () => {
     setEnunciadoBlocks((prev) => [
       ...prev,
-      { id: Date.now().toString(), type: "text", content: "", isGray: false },
+      { id: Date.now().toString(), type: 'text', content: '', isGray: false },
     ]);
   };
 
@@ -355,21 +365,21 @@ const Recursos = () => {
       const url = await uploadService.uploadImage(file);
       setEnunciadoBlocks((prev) => [
         ...prev,
-        { id: Date.now().toString(), type: "image", content: url },
+        { id: Date.now().toString(), type: 'image', content: url },
       ]);
     } catch (err) {
-      alert("Error subiendo imagen de enunciado");
+      alert('Error subiendo imagen de enunciado');
     } finally {
       setIsUploadingEnunciadoImage(false);
       if (enunciadoImageInputRef.current)
-        enunciadoImageInputRef.current.value = "";
+        enunciadoImageInputRef.current.value = '';
     }
   };
 
   // --- JUSTIFICATION STATE ---
   interface JustificationBlock {
     id: string;
-    type: "text" | "image";
+    type: 'text' | 'image';
     content: string;
   }
   const [justificationBlocks, setJustificationBlocks] = useState<
@@ -379,7 +389,7 @@ const Recursos = () => {
   const enunciadoImageInputRef = React.useRef<HTMLInputElement>(null);
 
   const selectedModalidadNombre = useMemo(() => {
-    if (!selectedModalidad) return "";
+    if (!selectedModalidad) return '';
     for (const tipo of groupedData) {
       for (const fuente of tipo.fuentes) {
         const mod = fuente.modalidades.find(
@@ -388,11 +398,11 @@ const Recursos = () => {
         if (mod) return mod.modalidadNombre;
       }
     }
-    return "";
+    return '';
   }, [groupedData, selectedModalidad]);
 
   const selectedNivelNombre = useMemo(() => {
-    if (!selectedNivel) return "";
+    if (!selectedNivel) return '';
     for (const tipo of groupedData) {
       for (const fuente of tipo.fuentes) {
         for (const mod of fuente.modalidades) {
@@ -403,11 +413,11 @@ const Recursos = () => {
         }
       }
     }
-    return "";
+    return '';
   }, [groupedData, selectedNivel]);
 
   const selectedEspecialidadNombre = useMemo(() => {
-    if (!selectedEspecialidad) return "";
+    if (!selectedEspecialidad) return '';
     for (const tipo of groupedData) {
       for (const fuente of tipo.fuentes) {
         for (const mod of fuente.modalidades) {
@@ -420,13 +430,13 @@ const Recursos = () => {
         }
       }
     }
-    return "";
+    return '';
   }, [groupedData, selectedEspecialidad]);
 
   const addJustificationText = () => {
     setJustificationBlocks([
       ...justificationBlocks,
-      { id: Date.now().toString(), type: "text", content: "" },
+      { id: Date.now().toString(), type: 'text', content: '' },
     ]);
   };
 
@@ -449,13 +459,13 @@ const Recursos = () => {
       const url = await uploadService.uploadImage(file);
       setJustificationBlocks([
         ...justificationBlocks,
-        { id: Date.now().toString(), type: "image", content: url },
+        { id: Date.now().toString(), type: 'image', content: url },
       ]);
     } catch (err) {
-      alert("Error subiendo imagen");
+      alert('Error subiendo imagen');
     }
     if (justificationFileInputRef.current)
-      justificationFileInputRef.current.value = "";
+      justificationFileInputRef.current.value = '';
   };
 
   // --- ASIGNACION DE EXAMENES ---
@@ -486,7 +496,7 @@ const Recursos = () => {
       setAssignmentInfo(info);
       setIsMultiAssign(info.examenesAsignadosIds.length > 0);
     } catch (err) {
-      console.error("Error fetching assignment info:", err);
+      console.error('Error fetching assignment info:', err);
     }
   };
 
@@ -531,8 +541,8 @@ const Recursos = () => {
 
   // --- UTILS ---
   useEffect(() => {
-    if (viewMode !== "list" && Number(selectedTipo) === 2) {
-      fetchAssignmentInfo(editingId || 0, selectedYear || "0");
+    if (viewMode !== 'list' && Number(selectedTipo) === 2) {
+      fetchAssignmentInfo(editingId || 0, selectedYear || '0');
     }
   }, [
     viewMode,
@@ -548,38 +558,38 @@ const Recursos = () => {
   const selectedTipoNombre = useMemo(() => {
     return (
       groupedData.find((t) => t.tipoExamenId === Number(selectedTipo))
-        ?.tipoExamenNombre || ""
+        ?.tipoExamenNombre || ''
     );
   }, [groupedData, selectedTipo]);
 
   const isDirectivo = useMemo(() => {
-    return selectedTipoNombre.toLowerCase().includes("directivo");
+    return selectedTipoNombre.toLowerCase().includes('directivo');
   }, [selectedTipoNombre]);
 
   const stripHtml = (html: string) => {
-    if (!html) return "";
-    if (typeof window === "undefined") return html;
-    const tmp = document.createElement("DIV");
+    if (!html) return '';
+    if (typeof window === 'undefined') return html;
+    const tmp = document.createElement('DIV');
     tmp.innerHTML = html;
-    let text = tmp.textContent || tmp.innerText || "";
-    if (text.trim().startsWith("<") && text.includes(">")) {
-      const tmp2 = document.createElement("DIV");
+    let text = tmp.textContent || tmp.innerText || '';
+    if (text.trim().startsWith('<') && text.includes('>')) {
+      const tmp2 = document.createElement('DIV');
       tmp2.innerHTML = text;
-      text = tmp2.textContent || tmp2.innerText || "";
+      text = tmp2.textContent || tmp2.innerText || '';
     }
     return text;
   };
 
   const getClasificacionFullName = (nombre: string) => {
     switch (nombre) {
-      case "CCP":
-        return "CONOCIMIENTO CURRICULAR Y PEDAGÓGICO";
-      case "CG":
-        return "CONOCIMIENTOS GENERALES";
-      case "CL":
-        return "COMPRENSIÓN LECTORA";
-      case "RL":
-        return "RAZONAMIENTO LÓGICO";
+      case 'CCP':
+        return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
+      case 'CG':
+        return 'CONOCIMIENTOS GENERALES';
+      case 'CL':
+        return 'COMPRENSIÓN LECTORA';
+      case 'RL':
+        return 'RAZONAMIENTO LÓGICO';
       default:
         return nombre;
     }
@@ -634,7 +644,7 @@ const Recursos = () => {
           );
           setSubQuestionsMap((prev) => ({ ...prev, [parent.id]: subs }));
         } catch (err) {
-          console.error("Error fetching sub-preguntas automatically:", err);
+          console.error('Error fetching sub-preguntas automatically:', err);
           setSubQuestionsMap((prev) => ({ ...prev, [parent.id]: [] }));
         } finally {
           setLoadingSubIds((prev) => {
@@ -661,8 +671,8 @@ const Recursos = () => {
     return fuentes.filter(
       (f: any) =>
         f.fuenteNombre &&
-        f.fuenteNombre !== "string" &&
-        f.fuenteNombre.toLowerCase() !== "null"
+        f.fuenteNombre !== 'string' &&
+        f.fuenteNombre.toLowerCase() !== 'null'
     );
   }, [groupedData, selectedTipo]);
 
@@ -674,8 +684,8 @@ const Recursos = () => {
     return mods.filter(
       (m: any) =>
         m.modalidadNombre &&
-        m.modalidadNombre !== "string" &&
-        m.modalidadNombre.toUpperCase() !== "NINGUNO"
+        m.modalidadNombre !== 'string' &&
+        m.modalidadNombre.toUpperCase() !== 'NINGUNO'
     );
   }, [availableFuentes, selectedFuente]);
 
@@ -688,8 +698,8 @@ const Recursos = () => {
     return nivs.filter(
       (n: any) =>
         n.nivelNombre &&
-        n.nivelNombre.toUpperCase() !== "NINGUNO" &&
-        n.nivelNombre !== "string"
+        n.nivelNombre.toUpperCase() !== 'NINGUNO' &&
+        n.nivelNombre !== 'string'
     );
   }, [availableModalidades, selectedModalidad]);
 
@@ -701,8 +711,8 @@ const Recursos = () => {
     return esps.filter(
       (e: any) =>
         e.especialidadNombre &&
-        e.especialidadNombre !== "string" &&
-        e.especialidadNombre.toLowerCase() !== "null"
+        e.especialidadNombre !== 'string' &&
+        e.especialidadNombre.toLowerCase() !== 'null'
     );
   }, [availableNiveles, selectedNivel]);
 
@@ -712,10 +722,10 @@ const Recursos = () => {
     if (
       availableEspecialidades.length === 1 &&
       !firstEsp?.especialidadId &&
-      selectedEspecialidad === ""
+      selectedEspecialidad === ''
     ) {
       setSelectedEspecialidad(
-        firstEsp?.especialidadId === null ? 0 : firstEsp?.especialidadId ?? ""
+        firstEsp?.especialidadId === null ? 0 : firstEsp?.especialidadId ?? ''
       );
     }
   }, [availableEspecialidades, selectedEspecialidad]);
@@ -724,7 +734,7 @@ const Recursos = () => {
     if (!selectedTipo || !selectedFuente) return [];
 
     // Prioridad 1: Si es Admin, usamos la jerarquía de groupedData (que ya viene de API o fallback)
-    if (userRole === "Admin") {
+    if (userRole === 'Admin') {
       const tipo = groupedData.find(
         (t) => t.tipoExamenId === Number(selectedTipo)
       );
@@ -739,7 +749,7 @@ const Recursos = () => {
       );
       const especialidad = nivel?.especialidades.find((e) => {
         const effSel =
-          selectedEspecialidad === "" ? 0 : Number(selectedEspecialidad);
+          selectedEspecialidad === '' ? 0 : Number(selectedEspecialidad);
         const effId = e.especialidadId === null ? 0 : Number(e.especialidadId);
         return effSel === effId;
       });
@@ -841,22 +851,22 @@ const Recursos = () => {
   ]);
 
   const selectedFuenteNombre = useMemo(() => {
-    if (!selectedFuente) return "";
+    if (!selectedFuente) return '';
     for (const tipo of groupedData) {
       const f = tipo.fuentes.find(
         (fu) => fu.fuenteId === Number(selectedFuente)
       );
       if (f) return f.fuenteNombre;
     }
-    return "";
+    return '';
   }, [groupedData, selectedFuente]);
 
   const showYearFilter = useMemo(() => {
     if (!selectedFuente) return false;
-    const isMinedu = selectedFuenteNombre.toUpperCase().includes("MINEDU");
+    const isMinedu = selectedFuenteNombre.toUpperCase().includes('MINEDU');
     const isDirectivoLocal = selectedTipoNombre
       .toUpperCase()
-      .includes("DIRECTIVO");
+      .includes('DIRECTIVO');
     return availableYears.length > 0 || isMinedu || isDirectivoLocal;
   }, [
     selectedFuente,
@@ -918,17 +928,17 @@ const Recursos = () => {
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
-    if (!window.confirm("¿Estás seguro de eliminar esta pregunta?")) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta pregunta?')) return;
 
     setDeletingIds((prev) => new Set(prev).add(id));
     try {
       await preguntaService.delete(id);
       // Optimistic update for UI feel, followed by refresh
       setItems((prev) => prev.filter((item) => item.id !== id));
-      alert("Pregunta eliminada con éxito");
+      alert('Pregunta eliminada con éxito');
       fetchData();
     } catch (err) {
-      alert("Error eliminando la pregunta");
+      alert('Error eliminando la pregunta');
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev);
@@ -943,7 +953,7 @@ const Recursos = () => {
     parentId: number,
     numero: number
   ) => {
-    if (!window.confirm("¿Estás seguro de eliminar esta sub-pregunta?")) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta sub-pregunta?')) return;
 
     const uniqueKey = `${examenId}-${parentId}-${numero}`;
     // @ts-ignore - use numero as temporary ID for the deleting set
@@ -961,9 +971,9 @@ const Recursos = () => {
         ...prev,
         [parentId]: Math.max(0, (prev[parentId] || 0) - 1),
       }));
-      alert("Sub-pregunta eliminada con éxito");
+      alert('Sub-pregunta eliminada con éxito');
     } catch (err) {
-      alert("Error eliminando la sub-pregunta");
+      alert('Error eliminando la sub-pregunta');
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev);
@@ -976,7 +986,7 @@ const Recursos = () => {
 
   const handleEdit = async (item: Pregunta) => {
     setEditingId(item.id);
-    setNumeroPregunta(item.numero?.toString() || "");
+    setNumeroPregunta(item.numero?.toString() || '');
 
     // If it's a grouped question, we might need to fetch sub-questions if they aren't loaded
     if (item.tipoPreguntaId === 2) {
@@ -991,7 +1001,7 @@ const Recursos = () => {
           subs = loadedSubs;
           setSubQuestionsMap((prev) => ({ ...prev, [item.id]: loadedSubs }));
         } catch (err) {
-          console.error("Error loading subs for edit:", err);
+          console.error('Error loading subs for edit:', err);
           subs = [];
         } finally {
           setLoading(false);
@@ -1000,68 +1010,68 @@ const Recursos = () => {
     }
 
     const rawEnunciado = item.enunciados
-      ? item.enunciados.map((e: any) => e.contenido).join("")
-      : item.enunciado || "";
+      ? item.enunciados.map((e: any) => e.contenido).join('')
+      : item.enunciado || '';
 
     const enunciadoBlocksLocal: ContentBlock[] = [];
 
-    if (typeof window !== "undefined") {
-      const div = document.createElement("div");
+    if (typeof window !== 'undefined') {
+      const div = document.createElement('div');
       div.innerHTML = rawEnunciado;
 
       const children = Array.from(div.childNodes);
-      let currentTextHtml = "";
+      let currentTextHtml = '';
 
       const flushCurrentText = () => {
-        const textContent = currentTextHtml.replace(/<[^>]*>?/gm, "").trim();
+        const textContent = currentTextHtml.replace(/<[^>]*>?/gm, '').trim();
         // Allow if it contains an image like <img /> inside the text that wasn't a parsed block,
         // or actually has text content. Skip lonely `<br/>` elements.
-        if (textContent !== "" || currentTextHtml.includes("<img")) {
+        if (textContent !== '' || currentTextHtml.includes('<img')) {
           enunciadoBlocksLocal.push({
             id: Math.random().toString(36).substr(2, 9),
-            type: "text",
+            type: 'text',
             content: currentTextHtml,
             isGray: false,
           });
         }
-        currentTextHtml = "";
+        currentTextHtml = '';
       };
 
       children.forEach((node) => {
-        if (node.nodeName === "IMG") {
+        if (node.nodeName === 'IMG') {
           flushCurrentText();
           enunciadoBlocksLocal.push({
             id: Math.random().toString(36).substr(2, 9),
-            type: "image",
+            type: 'image',
             content: (node as HTMLImageElement).src,
           });
         } else if (
           node.nodeType === Node.ELEMENT_NODE &&
-          node.nodeName === "DIV" &&
-          (node as HTMLElement).getAttribute("data-block-type") === "image"
+          node.nodeName === 'DIV' &&
+          (node as HTMLElement).getAttribute('data-block-type') === 'image'
         ) {
           flushCurrentText();
-          const img = (node as HTMLElement).querySelector("img");
+          const img = (node as HTMLElement).querySelector('img');
           if (img) {
             enunciadoBlocksLocal.push({
               id: Math.random().toString(36).substr(2, 9),
-              type: "image",
+              type: 'image',
               content: img.src,
             });
           }
         } else if (
           node.nodeType === Node.ELEMENT_NODE &&
-          node.nodeName === "DIV" &&
-          ((node as HTMLElement).classList.contains("bg-gray-100") ||
-            (node as HTMLElement).classList.contains("bg-gray-50") ||
-            (node as HTMLElement).classList.contains("bg-gray-block") ||
-            (node as HTMLElement).classList.contains("bg-var-gray") ||
-            (node as HTMLElement).className.includes("bg-[var(--color-bg-50)]"))
+          node.nodeName === 'DIV' &&
+          ((node as HTMLElement).classList.contains('bg-gray-100') ||
+            (node as HTMLElement).classList.contains('bg-gray-50') ||
+            (node as HTMLElement).classList.contains('bg-gray-block') ||
+            (node as HTMLElement).classList.contains('bg-var-gray') ||
+            (node as HTMLElement).className.includes('bg-[var(--color-bg-50)]'))
         ) {
           flushCurrentText();
           enunciadoBlocksLocal.push({
             id: Math.random().toString(36).substr(2, 9),
-            type: "text",
+            type: 'text',
             content: (node as HTMLElement).innerHTML,
             isGray: true,
           });
@@ -1070,11 +1080,11 @@ const Recursos = () => {
           node.nodeType === Node.ELEMENT_NODE
         ) {
           const content =
-            (node as HTMLElement).outerHTML || node.textContent || "";
+            (node as HTMLElement).outerHTML || node.textContent || '';
           // We optionally skip a standing <br> if we're at the start to avoid leading newlines
           // caused by our join('<br/>') strategy
-          if (content.trim() === "<br>" || content.trim() === "<br/>") {
-            if (currentTextHtml !== "") {
+          if (content.trim() === '<br>' || content.trim() === '<br/>') {
+            if (currentTextHtml !== '') {
               currentTextHtml += content;
             }
           } else {
@@ -1088,12 +1098,12 @@ const Recursos = () => {
     setEnunciadoBlocks(enunciadoBlocksLocal);
 
     setNewItem({
-      enunciado: "", // Now using blocks
-      respuesta: item.respuesta?.toString() || "",
-      sustento: item.sustento || "",
+      enunciado: '', // Now using blocks
+      respuesta: item.respuesta?.toString() || '',
+      sustento: item.sustento || '',
       examenId: item.examenId,
       clasificacionId: item.clasificacionId || 0,
-      imagen: item.imagen || "",
+      imagen: item.imagen || '',
       tipoPreguntaId: item.tipoPreguntaId,
     });
 
@@ -1101,7 +1111,7 @@ const Recursos = () => {
     if (item.alternativas && item.alternativas.length > 0) {
       const mappedAlts = item.alternativas.map((alt: any, idx: number) => ({
         id: (idx + 1).toString(),
-        contenido: alt.contenido || "",
+        contenido: alt.contenido || '',
         esCorrecta:
           item.respuesta === String.fromCharCode(65 + idx) ||
           String(item.respuesta) === String(alt.id),
@@ -1110,27 +1120,27 @@ const Recursos = () => {
     } else {
       setAlternatives([
         {
-          id: "1",
-          contenido: item.alternativaA || "",
-          esCorrecta: item.respuesta === "A",
+          id: '1',
+          contenido: item.alternativaA || '',
+          esCorrecta: item.respuesta === 'A',
         },
         {
-          id: "2",
-          contenido: item.alternativaB || "",
-          esCorrecta: item.respuesta === "B",
+          id: '2',
+          contenido: item.alternativaB || '',
+          esCorrecta: item.respuesta === 'B',
         },
         {
-          id: "3",
-          contenido: item.alternativaC || "",
-          esCorrecta: item.respuesta === "C",
+          id: '3',
+          contenido: item.alternativaC || '',
+          esCorrecta: item.respuesta === 'C',
         },
         // Only add D if it has content or was previously there
         ...(item.alternativaD
           ? [
               {
-                id: "4",
+                id: '4',
                 contenido: item.alternativaD,
-                esCorrecta: item.respuesta === "D",
+                esCorrecta: item.respuesta === 'D',
               },
             ]
           : []),
@@ -1145,48 +1155,48 @@ const Recursos = () => {
       item.justificaciones.forEach((j: any) => {
         justificationBlocksLocal.push({
           id: j.id?.toString() || Math.random().toString(),
-          type: "text", // Backend usually sends text, improve if it supports images
-          content: j.contenido || "",
+          type: 'text', // Backend usually sends text, improve if it supports images
+          content: j.contenido || '',
         });
       });
     } else if (item.sustento) {
-      if (typeof window !== "undefined") {
-        const div = document.createElement("div");
+      if (typeof window !== 'undefined') {
+        const div = document.createElement('div');
         div.innerHTML = item.sustento;
         const children = Array.from(div.children);
         const hasMarkers = children.some((c: any) =>
-          c.getAttribute("data-block-type")
+          c.getAttribute('data-block-type')
         );
 
         if (hasMarkers) {
           children.forEach((c: any) => {
-            const type = c.getAttribute("data-block-type");
-            if (type === "image") {
-              const imgTag = c.querySelector("img");
+            const type = c.getAttribute('data-block-type');
+            if (type === 'image') {
+              const imgTag = c.querySelector('img');
               justificationBlocksLocal.push({
                 id: Math.random().toString(),
-                type: "image",
-                content: imgTag?.src || "",
+                type: 'image',
+                content: imgTag?.src || '',
               });
             } else {
               justificationBlocksLocal.push({
                 id: Math.random().toString(),
-                type: "text",
+                type: 'text',
                 content: c.innerHTML,
               });
             }
           });
         } else {
           justificationBlocksLocal.push({
-            id: "1",
-            type: "text",
+            id: '1',
+            type: 'text',
             content: item.sustento,
           });
         }
       } else {
         justificationBlocksLocal.push({
-          id: "1",
-          type: "text",
+          id: '1',
+          type: 'text',
           content: item.sustento,
         });
       }
@@ -1195,31 +1205,31 @@ const Recursos = () => {
 
     // Cargar info de asignación si es Nombramiento
     if (Number(selectedTipo) === 2) {
-      fetchAssignmentInfo(item.id, item.year?.toString() || "0");
+      fetchAssignmentInfo(item.id, item.year?.toString() || '0');
     }
 
-    setViewMode("edit");
+    setViewMode('edit');
   };
 
   const resetForm = () => {
     setEditingId(null);
     setJustificationBlocks([]);
     setImageFile(null);
-    setNumeroPregunta("");
+    setNumeroPregunta('');
     setEnunciadoBlocks([]);
     setNewItem({
-      enunciado: "",
-      respuesta: "",
-      sustento: "",
+      enunciado: '',
+      respuesta: '',
+      sustento: '',
       examenId: 0, // Will be set by resolvedExamenId if present
       clasificacionId: 0,
-      imagen: "",
+      imagen: '',
       tipoPreguntaId: 1,
     });
     setAlternatives([
-      { id: "1", contenido: "", esCorrecta: false },
-      { id: "2", contenido: "", esCorrecta: false },
-      { id: "3", contenido: "", esCorrecta: false },
+      { id: '1', contenido: '', esCorrecta: false },
+      { id: '2', contenido: '', esCorrecta: false },
+      { id: '3', contenido: '', esCorrecta: false },
     ]);
   };
 
@@ -1237,12 +1247,12 @@ const Recursos = () => {
       fetchAssignmentInfo(0, selectedYear);
     }
 
-    setViewMode("create");
+    setViewMode('create');
   };
 
   const handleGenerateQuestionAI = async () => {
     if (!aiTopic.trim()) {
-      alert("Por favor ingresa un tema.");
+      alert('Por favor ingresa un tema.');
       return;
     }
 
@@ -1263,19 +1273,19 @@ const Recursos = () => {
 
       setAlternatives([
         {
-          id: "1",
+          id: '1',
           contenido: generated.alternativaA,
-          esCorrecta: generated.respuesta === "A",
+          esCorrecta: generated.respuesta === 'A',
         },
         {
-          id: "2",
+          id: '2',
           contenido: generated.alternativaB,
-          esCorrecta: generated.respuesta === "B",
+          esCorrecta: generated.respuesta === 'B',
         },
         {
-          id: "3",
+          id: '3',
           contenido: generated.alternativaC,
-          esCorrecta: generated.respuesta === "C",
+          esCorrecta: generated.respuesta === 'C',
         },
       ]);
 
@@ -1284,20 +1294,20 @@ const Recursos = () => {
         setAlternatives((prev) => [
           ...prev,
           {
-            id: "4",
+            id: '4',
             contenido: generated.alternativaD!,
-            esCorrecta: generated.respuesta === "D",
+            esCorrecta: generated.respuesta === 'D',
           },
         ]);
       }
 
       setIsAiModalOpen(false);
-      setAiTopic("");
-      setViewMode("create");
-      alert("Pregunta generada con éxito. Revisa y guarda.");
+      setAiTopic('');
+      setViewMode('create');
+      alert('Pregunta generada con éxito. Revisa y guarda.');
     } catch (error) {
       alert(
-        "Error generando pregunta con IA. Verifica tu API Key o intenta de nuevo."
+        'Error generando pregunta con IA. Verifica tu API Key o intenta de nuevo.'
       );
       console.error(error);
     } finally {
@@ -1307,8 +1317,8 @@ const Recursos = () => {
 
   const handleGenerateAnswersAI = async () => {
     // Must be in create/edit mode and have an enunciado
-    if (!newItem.enunciado || newItem.enunciado === "<p><br></p>") {
-      alert("Primero debes ingresar el enunciado de la pregunta.");
+    if (!newItem.enunciado || newItem.enunciado === '<p><br></p>') {
+      alert('Primero debes ingresar el enunciado de la pregunta.');
       return;
     }
 
@@ -1328,19 +1338,19 @@ const Recursos = () => {
 
       setAlternatives([
         {
-          id: "1",
+          id: '1',
           contenido: generated.alternativaA,
-          esCorrecta: generated.respuesta === "A",
+          esCorrecta: generated.respuesta === 'A',
         },
         {
-          id: "2",
+          id: '2',
           contenido: generated.alternativaB,
-          esCorrecta: generated.respuesta === "B",
+          esCorrecta: generated.respuesta === 'B',
         },
         {
-          id: "3",
+          id: '3',
           contenido: generated.alternativaC,
-          esCorrecta: generated.respuesta === "C",
+          esCorrecta: generated.respuesta === 'C',
         },
       ]);
 
@@ -1348,15 +1358,15 @@ const Recursos = () => {
         setAlternatives((prev) => [
           ...prev,
           {
-            id: "4",
+            id: '4',
             contenido: generated.alternativaD!,
-            esCorrecta: generated.respuesta === "D",
+            esCorrecta: generated.respuesta === 'D',
           },
         ]);
       }
-      alert("Respuestas generadas con éxito.");
+      alert('Respuestas generadas con éxito.');
     } catch (error) {
-      alert("Error generando respuestas con IA.");
+      alert('Error generando respuestas con IA.');
       console.error(error);
     } finally {
       setIsGeneratingAi(false);
@@ -1366,14 +1376,14 @@ const Recursos = () => {
   const handleAddYear = async () => {
     if (!selectedTipo || !selectedFuente || !selectedModalidad) {
       alert(
-        "Por favor selecciona los filtros base (Tipo, Fuente, Modalidad) antes de añadir un año."
+        'Por favor selecciona los filtros base (Tipo, Fuente, Modalidad) antes de añadir un año.'
       );
       return;
     }
 
     const year = newYearInput.trim();
     if (!year) {
-      alert("Por favor ingresa un año válido.");
+      alert('Por favor ingresa un año válido.');
       return;
     }
 
@@ -1387,12 +1397,12 @@ const Recursos = () => {
         nivelId: selectedNivel ? Number(selectedNivel) : 0,
         especialidadId: selectedEspecialidad ? Number(selectedEspecialidad) : 0,
       });
-      alert("Año añadido con éxito.");
-      setNewYearInput("");
+      alert('Año añadido con éxito.');
+      setNewYearInput('');
       await fetchData(true);
       setSelectedYear(year);
     } catch (e: any) {
-      alert("Error creando el año/examen: " + e.message);
+      alert(`Error creando el año/examen: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -1423,11 +1433,11 @@ const Recursos = () => {
       };
 
       await examenService.removeYear(payload);
-      alert("Año eliminado correctamente.");
-      setSelectedYear("");
+      alert('Año eliminado correctamente.');
+      setSelectedYear('');
       await fetchData(true);
     } catch (e: any) {
-      alert("Error eliminando: " + e.message);
+      alert(`Error eliminando: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -1451,7 +1461,7 @@ const Recursos = () => {
           const grouped = await examenService.getGrouped();
           setRawGroupedData(grouped);
         } catch (err: any) {
-          console.error("Examen Service Error:", err);
+          console.error('Examen Service Error:', err);
         }
       }
 
@@ -1460,7 +1470,7 @@ const Recursos = () => {
           const all = await examenService.getAll();
           setAllExams(all);
         } catch (e: any) {
-          console.error("All Exams Error", e);
+          console.error('All Exams Error', e);
         }
       }
 
@@ -1469,7 +1479,7 @@ const Recursos = () => {
           const tipos = await tipoPreguntaService.getAll();
           setTipoPreguntas(tipos);
         } catch (err: any) {
-          console.error("TipoPregunta Service Error:", err);
+          console.error('TipoPregunta Service Error:', err);
         }
       }
 
@@ -1478,7 +1488,7 @@ const Recursos = () => {
           const classData = await clasificacionService.getAll();
           setClasificaciones(classData);
         } catch (err: any) {
-          console.error("Clasificacion Service Error:", err);
+          console.error('Clasificacion Service Error:', err);
         }
       }
 
@@ -1516,11 +1526,11 @@ const Recursos = () => {
         // Sort by ID descending (newest first)
         setItems(data.sort((a, b) => b.id - a.id));
       } catch (err) {
-        console.error("Error fetching questions:", err);
+        console.error('Error fetching questions:', err);
         setItems([]);
       }
     } catch (err: any) {
-      console.error("Unexpected Error:", err);
+      console.error('Unexpected Error:', err);
     } finally {
       setLoading(false);
       setItemsLoading(false);
@@ -1547,7 +1557,7 @@ const Recursos = () => {
       return null;
     }
 
-    const effectiveYear = selectedYear || "";
+    const effectiveYear = selectedYear || '';
 
     // Determine the effective especialidadId:
     // If user explicitly selected one, use it.
@@ -1615,10 +1625,10 @@ const Recursos = () => {
         target = allExams.find((e: any) => matchesCoreFilters(e));
       }
 
-      console.log("resolveCurrentExamenId - Target Match:", target);
+      console.log('resolveCurrentExamenId - Target Match:', target);
       return target ? target.id : null;
     } catch (error) {
-      console.error("Error resolving examen ID", error);
+      console.error('Error resolving examen ID', error);
       return null;
     }
   };
@@ -1633,12 +1643,12 @@ const Recursos = () => {
 
     const showErr = (msg: string) => {
       setErrorMsg(msg);
-      console.warn("[handleSubmit]", msg);
+      console.warn('[handleSubmit]', msg);
     };
 
     // Validar Tipo de Pregunta
     if (!newItem.tipoPreguntaId) {
-      showErr("El tipo de pregunta es obligatorio");
+      showErr('El tipo de pregunta es obligatorio');
       return;
     }
 
@@ -1649,15 +1659,15 @@ const Recursos = () => {
       isNaN(numPreguntaParsed) ||
       numPreguntaParsed <= 0
     ) {
-      showErr("El número de la pregunta es obligatorio y debe ser mayor a 0");
+      showErr('El número de la pregunta es obligatorio y debe ser mayor a 0');
       return;
     }
 
     const hasEnunciadoContent = enunciadoBlocks.some(
-      (b) => (b.type === "text" && b.content.trim()) || b.type === "image"
+      (b) => (b.type === 'text' && b.content.trim()) || b.type === 'image'
     );
     if (!hasEnunciadoContent) {
-      showErr("El enunciado es obligatorio");
+      showErr('El enunciado es obligatorio');
       return;
     }
 
@@ -1667,7 +1677,7 @@ const Recursos = () => {
       const resolvedId = await resolveCurrentExamenId();
       if (!resolvedId) {
         showErr(
-          "No se pudo determinar el examen. Asegúrate de tener Año y demás filtros seleccionados."
+          'No se pudo determinar el examen. Asegúrate de tener Año y demás filtros seleccionados.'
         );
         return;
       }
@@ -1702,13 +1712,13 @@ const Recursos = () => {
 
       const correctAlt = alternatives.find((a) => a.esCorrecta);
       if (newItem.tipoPreguntaId === 1 && !correctAlt) {
-        showErr("Debes marcar una alternativa como correcta.");
+        showErr('Debes marcar una alternativa como correcta.');
         setIsSaving(false);
         return;
       }
 
       if (Number(newItem.clasificacionId) <= 0) {
-        showErr("Por favor selecciona una Clasificación para la pregunta.");
+        showErr('Por favor selecciona una Clasificación para la pregunta.');
         setIsSaving(false);
         return;
       }
@@ -1720,7 +1730,7 @@ const Recursos = () => {
         if (isNaN(tempId) || tempId < 1 || tempId > 2000000000) {
           tempId = idx + 1;
         }
-        return { id: tempId, contenido: alt.contenido || "" };
+        return { id: tempId, contenido: alt.contenido || '' };
       });
 
       let finalRespuesta: number = 0;
@@ -1733,7 +1743,7 @@ const Recursos = () => {
       const payload = {
         id: editingId || 0,
         examenId: targetExamenId,
-        year: selectedYear || "0",
+        year: selectedYear || '0',
         numero: numPreguntaParsed,
         clasificacionId: Number(newItem.clasificacionId),
         tipoPreguntaId: Number(newItem.tipoPreguntaId),
@@ -1743,13 +1753,13 @@ const Recursos = () => {
             id: 1,
             contenido: enunciadoBlocks
               .map((b) => {
-                if (b.type === "image")
+                if (b.type === 'image')
                   return `<div data-block-type="image"><img src="${b.content}" alt="imagen" /></div>`;
                 if (b.isGray)
                   return `<div class="mb-2 p-4 bg-[var(--color-bg-50)] bg-gray-100 rounded-md text-justify">${b.content}</div>`;
                 return b.content;
               })
-              .join("<br/>"),
+              .join('<br/>'),
           },
         ],
         alternativas: mappedAlternativas,
@@ -1759,13 +1769,13 @@ const Recursos = () => {
         })),
         sustento: justificationBlocks
           .map((b) => {
-            if (b.type === "image")
+            if (b.type === 'image')
               return `<div data-block-type="image"><img src="${b.content}" alt="justificacion" /></div>`;
             return b.content;
           })
-          .join("<br/>"),
+          .join('<br/>'),
         subPreguntas: [],
-        imagen: finalUrl || "",
+        imagen: finalUrl || '',
       };
 
       let finalIdForAssignment = editingId;
@@ -1793,14 +1803,14 @@ const Recursos = () => {
                 );
                 created = corrected;
               } catch (err) {
-                console.error("No se pudo forzar el número correcto", err);
+                console.error('No se pudo forzar el número correcto', err);
               }
             }
             setItems((prev) => [created, ...prev]);
             finalIdForAssignment = created.id;
           }
         } catch (error: any) {
-          alert(error.message || "Error al crear la pregunta");
+          alert(error.message || 'Error al crear la pregunta');
           return;
         }
       }
@@ -1808,7 +1818,7 @@ const Recursos = () => {
       if (Number(selectedTipo) === 2 && isMultiAssign && assignmentInfo) {
         await preguntaService.asignarExamenes({
           preguntaId: finalIdForAssignment || 0,
-          year: selectedYear || "0",
+          year: selectedYear || '0',
           examenIds: assignmentInfo.examenesAsignadosIds,
         });
       }
@@ -1816,8 +1826,17 @@ const Recursos = () => {
       const prevClasificacionId = newItem.clasificacionId;
       const prevTipoPreguntaId = newItem.tipoPreguntaId;
 
-      alert("Guardado con éxito. ¡Ya está genial!");
-      if (!stayInCreateMode) setViewMode("list");
+      // Show success modal instead of alert
+      setSuccessStayInCreate(stayInCreateMode);
+      if (stayInCreateMode) {
+        setSuccessPrevState({
+          numParsed: numPreguntaParsed,
+          clasificacionId: prevClasificacionId,
+          tipoPreguntaId: prevTipoPreguntaId,
+          examenId: targetExamenId,
+        });
+      }
+      setIsSuccessModalOpen(true);
       resetForm();
 
       if (stayInCreateMode) {
@@ -1841,15 +1860,15 @@ const Recursos = () => {
             `pregunta-row-${targetIdToScroll}`
           );
           if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.classList.add(
-              "ring-[6px]",
-              "ring-blue-300",
-              "transition-shadow",
-              "duration-500"
+              'ring-[6px]',
+              'ring-blue-300',
+              'transition-shadow',
+              'duration-500'
             );
             setTimeout(
-              () => el.classList.remove("ring-[6px]", "ring-blue-300"),
+              () => el.classList.remove('ring-[6px]', 'ring-blue-300'),
               3000
             );
           }
@@ -1858,7 +1877,7 @@ const Recursos = () => {
     } catch (err: any) {
       console.error(err);
       showErr(
-        "Error guardando pregunta: " + (err.message || "Error desconocido")
+        `Error guardando pregunta: ${err.message || 'Error desconocido'}`
       );
     } finally {
       setIsSaving(false);
@@ -1878,8 +1897,9 @@ const Recursos = () => {
   // ... (Tu lógica anterior se mantiene igual, solo cambia el render del formulario)
 
   // --- RENDER FORM VIEW (DISEÑO MEJORADO) ---
-  if (viewMode === "create" || viewMode === "edit") {
+  if (viewMode === 'create' || viewMode === 'edit') {
     return (
+      <>
       <AdminLayout>
         <div className="space-y-6 pb-20 -m-6">
           {/* pb-20 para dar espacio al footer flotante si lo hubiera */}
@@ -1887,7 +1907,7 @@ const Recursos = () => {
           <div className="w-full bg-[#4a90f9] py-3 px-6 shadow-md flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => setViewMode("list")}
+                onClick={() => setViewMode('list')}
                 className="text-white hover:text-gray-100 flex items-center text-sm font-medium"
               >
                 <ChevronLeftIcon className="w-5 h-5 mr-1" />
@@ -1895,9 +1915,9 @@ const Recursos = () => {
               </button>
             </div>
             <h1 className="text-lg font-bold text-white text-center flex-1">
-              {editingId ? "Editar pregunta" : "Añadir preguntas"}
+              {editingId ? 'Editar pregunta' : 'Añadir preguntas'}
             </h1>
-            <div className="w-20"></div>{" "}
+            <div className="w-20"></div>{' '}
             {/* Espaciador para centrar el título */}
           </div>
           {/* MAIN FORM CONTAINER */}
@@ -1971,9 +1991,7 @@ const Recursos = () => {
                         })
                       }
                     >
-                      <option value={0}>
-                        Seleccionar Clasificación...
-                      </option>
+                      <option value={0}>Seleccionar Clasificación...</option>
                       {clasificaciones.map((c) => (
                         <option key={c.id} value={c.id}>
                           {getClasificacionFullName(c.clasificacionNombre)}
@@ -2001,9 +2019,9 @@ const Recursos = () => {
                 selectedYear={selectedYear}
                 onSuccess={() => {
                   fetchData();
-                  setViewMode("list");
+                  setViewMode('list');
                 }}
-                onCancel={() => setViewMode("list")}
+                onCancel={() => setViewMode('list')}
                 numero={numeroPregunta}
                 selectedTipo={Number(selectedTipo)}
               />
@@ -2050,8 +2068,8 @@ const Recursos = () => {
                       <div className="flex justify-between items-center mb-4">
                         <p className="text-xs text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                           {isMultiAssign
-                            ? "Modo Selección Múltiple Activo"
-                            : "Previsualización de Categorías"}
+                            ? 'Modo Selección Múltiple Activo'
+                            : 'Previsualización de Categorías'}
                         </p>
 
                         <div className="flex items-center gap-4">
@@ -2081,18 +2099,18 @@ const Recursos = () => {
 
                           // Detectar jerarquía: Soporta "A > B" o simplemente el texto completo
                           let main = exam.descripcion;
-                          let sub = "";
+                          let sub = '';
 
-                          if (exam.descripcion.includes(" > ")) {
-                            const parts = exam.descripcion.split(" > ");
-                            main = parts[0] || "";
-                            sub = parts.slice(1).join(" > ");
+                          if (exam.descripcion.includes(' > ')) {
+                            const parts = exam.descripcion.split(' > ');
+                            main = parts[0] || '';
+                            sub = parts.slice(1).join(' > ');
                           } else {
                             const keywords = [
-                              "INICIAL",
-                              "PRIMARIA",
-                              "SECUNDARIA",
-                              "AVANZADO",
+                              'INICIAL',
+                              'PRIMARIA',
+                              'SECUNDARIA',
+                              'AVANZADO',
                             ];
                             for (const kw of keywords) {
                               if (exam.descripcion.includes(kw)) {
@@ -2109,8 +2127,8 @@ const Recursos = () => {
                               key={exam.id}
                               className={`flex items-start gap-3 p-2 rounded-md transition-all duration-200 group border ${
                                 isChecked
-                                  ? "bg-blue-50/50 border-blue-100"
-                                  : "bg-white border-transparent hover:bg-gray-50"
+                                  ? 'bg-blue-50/50 border-blue-100'
+                                  : 'bg-white border-transparent hover:bg-gray-50'
                               }`}
                             >
                               <div className="mt-0.5">
@@ -2130,8 +2148,8 @@ const Recursos = () => {
                                 <p
                                   className={`text-sm font-bold leading-tight ${
                                     isChecked
-                                      ? "text-blue-800"
-                                      : "text-gray-700"
+                                      ? 'text-blue-800'
+                                      : 'text-gray-700'
                                   }`}
                                 >
                                   {main}
@@ -2173,7 +2191,7 @@ const Recursos = () => {
                                 key={e.id}
                                 className="inline-flex items-center gap-1 bg-white border border-blue-200 text-[#4790FD] px-2 py-1 rounded text-[11px] font-bold shadow-sm"
                               >
-                                {e.descripcion.split(" > ").pop()}
+                                {e.descripcion.split(' > ').pop()}
                                 <button
                                   onClick={(event) => {
                                     event.stopPropagation();
@@ -2217,10 +2235,10 @@ const Recursos = () => {
                           <span className="font-bold text-lg leading-none">
                             +
                           </span>
-                        )}{" "}
+                        )}{' '}
                         {isUploadingEnunciadoImage
-                          ? "Subiendo..."
-                          : "Añadir Imagen"}
+                          ? 'Subiendo...'
+                          : 'Añadir Imagen'}
                       </button>
                       <input
                         type="file"
@@ -2250,8 +2268,8 @@ const Recursos = () => {
                           key={block.id}
                           className={`relative group w-full flex gap-3 transition-opacity ${
                             draggedEnunciadoIndex === index
-                              ? "opacity-50"
-                              : "opacity-100"
+                              ? 'opacity-50'
+                              : 'opacity-100'
                           }`}
                           draggable
                           onDragStart={(e) =>
@@ -2259,7 +2277,7 @@ const Recursos = () => {
                           }
                           onDragOver={(e) => handleDragOverEnunciado(e, index)}
                           onDragEnd={handleDragEndEnunciado}
-                          style={{ cursor: "default" }}
+                          style={{ cursor: 'default' }}
                         >
                           {/* Drag Handle */}
                           <div className="flex flex-col items-center justify-center text-gray-400 hover:text-[#4790FD] cursor-move transition-colors pt-4">
@@ -2274,12 +2292,12 @@ const Recursos = () => {
                             >
                               <TrashIcon className="w-4 h-4" />
                             </button>
-                            {block.type === "text" ? (
+                            {block.type === 'text' ? (
                               <div
                                 className={`p-4 rounded-lg border shadow-sm ${
                                   block.isGray
-                                    ? "bg-gray-100 border-gray-200"
-                                    : "bg-white border-gray-100"
+                                    ? 'bg-gray-100 border-gray-200'
+                                    : 'bg-white border-gray-100'
                                 }`}
                                 onDragStart={(e) => {
                                   // Prevent child inputs from triggering drag if user is just selecting text
@@ -2377,8 +2395,8 @@ const Recursos = () => {
                             placeholder="Ingresa el texto de la alternativa"
                             borderColor={
                               alt.esCorrecta
-                                ? "border-green-500 ring-1 ring-green-500 shadow-sm"
-                                : "border-sky-400"
+                                ? 'border-green-500 ring-1 ring-green-500 shadow-sm'
+                                : 'border-sky-400'
                             }
                           />
                         </div>
@@ -2398,11 +2416,11 @@ const Recursos = () => {
                             className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all shadow-sm
                             ${
                               alt.esCorrecta
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
                             }`}
                           >
-                            {alt.esCorrecta ? "Correcta" : "Marcar"}
+                            {alt.esCorrecta ? 'Correcta' : 'Marcar'}
                           </button>
 
                           {/* Botón ELIMINAR (Icono Rojo) */}
@@ -2410,7 +2428,7 @@ const Recursos = () => {
                             type="button"
                             onClick={() => {
                               if (alternatives.length <= 2) {
-                                alert("Mínimo 2 alternativas requeridas.");
+                                alert('Mínimo 2 alternativas requeridas.');
                                 return;
                               }
                               setAlternatives(
@@ -2434,7 +2452,7 @@ const Recursos = () => {
                         ...alternatives,
                         {
                           id: Date.now().toString(),
-                          contenido: "",
+                          contenido: '',
                           esCorrecta: false,
                         },
                       ])
@@ -2498,7 +2516,7 @@ const Recursos = () => {
                           <TrashIcon className="w-4 h-4" />
                         </button>
 
-                        {block.type === "text" ? (
+                        {block.type === 'text' ? (
                           <div className="w-full">
                             <TiptapEditor
                               value={block.content}
@@ -2544,10 +2562,10 @@ const Recursos = () => {
                       className="bg-[#4a90f9] text-white px-6 py-2 rounded shadow hover:bg-blue-600 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                     >
                       {isSaving
-                        ? "Guardando..."
+                        ? 'Guardando...'
                         : editingId
-                        ? "Actualizar Pregunta"
-                        : "Guardar Pregunta"}
+                        ? 'Actualizar Pregunta'
+                        : 'Guardar Pregunta'}
                     </button>
                     {!editingId && (
                       <button
@@ -2555,7 +2573,7 @@ const Recursos = () => {
                         disabled={isSaving}
                         className="bg-white text-[#4a90f9] border border-[#4a90f9] px-6 py-2 rounded shadow hover:bg-blue-50 font-medium transition-colors disabled:opacity-50 text-sm md:text-base w-full sm:w-auto"
                       >
-                        {isSaving ? "Guardando..." : "Guardar y Añadir otra"}
+                        {isSaving ? 'Guardando...' : 'Guardar y Añadir otra'}
                       </button>
                     )}
                   </div>
@@ -2565,6 +2583,85 @@ const Recursos = () => {
           </div>
         </div>
       </AdminLayout>
+
+      {/* SUCCESS MODAL */}
+      {isSuccessModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-800 tracking-tight">
+                ¡Guardado con éxito!
+              </h3>
+              <p className="text-gray-500 mb-8 text-sm leading-relaxed">
+                {successStayInCreate
+                  ? "La pregunta fue guardada. Puedes continuar añadiendo la siguiente."
+                  : "La pregunta ha sido guardada correctamente."}
+              </p>
+              <div className="flex justify-center gap-4 w-full">
+                <button
+                  onClick={() => {
+                    setIsSuccessModalOpen(false);
+                    if (successStayInCreate && successPrevState) {
+                      setNumeroPregunta((successPrevState.numParsed + 1).toString());
+                      setNewItem((prev) => ({
+                        ...prev,
+                        clasificacionId: successPrevState.clasificacionId,
+                        tipoPreguntaId: successPrevState.tipoPreguntaId,
+                        examenId: successPrevState.examenId,
+                      }));
+                      resetForm();
+                    } else {
+                      setViewMode("list");
+                    }
+                  }}
+                  className="px-5 py-2.5 w-full bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 hover:shadow-lg transition-all flex justify-center items-center"
+                >
+                  {successStayInCreate ? "Continuar añadiendo" : "Aceptar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COLLISION MODAL */}
+      {isCollisionModalOpen && collisionTargetConfig && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <DocumentTextIcon className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-800 tracking-tight">
+                Número Duplicado
+              </h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+                El número de pregunta{" "}
+                <span className="font-bold text-gray-900 mx-1">
+                  {collisionTargetConfig.numStr}
+                </span>{" "}
+                ya existe en este examen. Por favor, selecciona un número diferente para poder guardar la pregunta.
+              </p>
+              <div className="flex justify-center gap-4 w-full">
+                <button
+                  onClick={() => setIsCollisionModalOpen(false)}
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
     );
   }
   // --- RENDER LIST VIEW ---
@@ -2594,13 +2691,13 @@ const Recursos = () => {
                   value={selectedTipo}
                   onChange={(e) => {
                     setSelectedTipo(
-                      e.target.value ? Number(e.target.value) : ""
+                      e.target.value ? Number(e.target.value) : ''
                     );
-                    setSelectedFuente("");
-                    setSelectedModalidad("");
-                    setSelectedNivel("");
-                    setSelectedEspecialidad("");
-                    setSelectedYear("");
+                    setSelectedFuente('');
+                    setSelectedModalidad('');
+                    setSelectedNivel('');
+                    setSelectedEspecialidad('');
+                    setSelectedYear('');
                   }}
                 >
                   <option value="">Seleccionar Tipo Exámen</option>
@@ -2622,19 +2719,19 @@ const Recursos = () => {
                   value={selectedFuente}
                   onChange={(e) => {
                     setSelectedFuente(
-                      e.target.value ? Number(e.target.value) : ""
+                      e.target.value ? Number(e.target.value) : ''
                     );
-                    setSelectedModalidad("");
-                    setSelectedNivel("");
-                    setSelectedEspecialidad("");
-                    setSelectedYear("");
+                    setSelectedModalidad('');
+                    setSelectedNivel('');
+                    setSelectedEspecialidad('');
+                    setSelectedYear('');
                   }}
                   disabled={!selectedTipo}
                 >
                   <option value="">
                     {selectedTipo
-                      ? "Selecciona una sección"
-                      : "Primero selecciona tipo"}
+                      ? 'Selecciona una sección'
+                      : 'Primero selecciona tipo'}
                   </option>
                   {availableFuentes.map((f: any) => (
                     <option key={f.fuenteId} value={f.fuenteId}>
@@ -2648,18 +2745,18 @@ const Recursos = () => {
               {availableModalidades.length > 0 && (
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-primary">
-                    {isDirectivo ? "Sección Directiva" : "Modalidad"}
+                    {isDirectivo ? 'Sección Directiva' : 'Modalidad'}
                   </label>
                   <select
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                     value={selectedModalidad}
                     onChange={(e) => {
                       setSelectedModalidad(
-                        e.target.value ? Number(e.target.value) : ""
+                        e.target.value ? Number(e.target.value) : ''
                       );
-                      setSelectedNivel("");
-                      setSelectedEspecialidad("");
-                      setSelectedYear("");
+                      setSelectedNivel('');
+                      setSelectedEspecialidad('');
+                      setSelectedYear('');
                     }}
                     disabled={
                       !selectedFuente || availableModalidades.length === 0
@@ -2681,7 +2778,7 @@ const Recursos = () => {
               {availableNiveles.length > 0 &&
                 !(
                   availableNiveles.length === 1 &&
-                  availableNiveles[0]?.nivelNombre?.toUpperCase() === "NINGUNO"
+                  availableNiveles[0]?.nivelNombre?.toUpperCase() === 'NINGUNO'
                 ) && (
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-primary">
@@ -2692,10 +2789,10 @@ const Recursos = () => {
                       value={selectedNivel}
                       onChange={(e) => {
                         setSelectedNivel(
-                          e.target.value ? Number(e.target.value) : ""
+                          e.target.value ? Number(e.target.value) : ''
                         );
-                        setSelectedEspecialidad("");
-                        setSelectedYear("");
+                        setSelectedEspecialidad('');
+                        setSelectedYear('');
                       }}
                       disabled={!selectedModalidad}
                     >
@@ -2727,9 +2824,9 @@ const Recursos = () => {
                       value={selectedEspecialidad}
                       onChange={(e) => {
                         setSelectedEspecialidad(
-                          e.target.value ? Number(e.target.value) : ""
+                          e.target.value ? Number(e.target.value) : ''
                         );
-                        setSelectedYear("");
+                        setSelectedYear('');
                       }}
                       disabled={!selectedNivel}
                     >
@@ -2746,10 +2843,10 @@ const Recursos = () => {
                           value={
                             e.especialidadId !== null
                               ? e.especialidadId.toString()
-                              : ""
+                              : ''
                           }
                         >
-                          {e.especialidadNombre ?? "General"}
+                          {e.especialidadNombre ?? 'General'}
                         </option>
                       ))}
                     </select>
@@ -2774,8 +2871,8 @@ const Recursos = () => {
                       {availableYears.map(
                         (y: { year: string; count?: number }) => (
                           <option key={y.year} value={y.year}>
-                            {y.year}{" "}
-                            {y.count !== undefined ? `(${y.count})` : ""}
+                            {y.year}{' '}
+                            {y.count !== undefined ? `(${y.count})` : ''}
                           </option>
                         )
                       )}
@@ -2813,8 +2910,8 @@ const Recursos = () => {
                       disabled={!selectedYear}
                       className={`flex-1 sm:flex-none px-6 py-2 rounded-lg transition-all text-sm font-bold shadow-md whitespace-nowrap ${
                         !selectedYear
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-red-500 text-white hover:bg-red-600"
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-red-500 text-white hover:bg-red-600'
                       }`}
                     >
                       Eliminar
@@ -2843,11 +2940,11 @@ const Recursos = () => {
               <button
                 onClick={handleGenerateAnswersAI}
                 className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-primary transition-colors text-sm font-medium shadow-md"
-                disabled={isGeneratingAi || viewMode === "list"}
+                disabled={isGeneratingAi || viewMode === 'list'}
                 title={
-                  viewMode === "list"
-                    ? "Entra a modo crear/editar primero"
-                    : "Generar respuestas para el enunciado actual"
+                  viewMode === 'list'
+                    ? 'Entra a modo crear/editar primero'
+                    : 'Generar respuestas para el enunciado actual'
                 }
               >
                 {isGeneratingAi ? (
@@ -2862,7 +2959,7 @@ const Recursos = () => {
                 disabled={!selectedTipo || itemsLoading}
                 onClick={() => {
                   if (filteredItems.length === 0) {
-                    alert("No se encontraron preguntas para esta categoría.");
+                    alert('No se encontraron preguntas para esta categoría.');
                   } else {
                     setShowResults(true);
                   }
@@ -2959,8 +3056,8 @@ const Recursos = () => {
                       Criterios de selección
                     </span>
                     <span className="bg-gray-900 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-sm uppercase tracking-wider">
-                      {totalQuestionCount}{" "}
-                      {totalQuestionCount === 1 ? "Pregunta" : "Preguntas"}
+                      {totalQuestionCount}{' '}
+                      {totalQuestionCount === 1 ? 'Pregunta' : 'Preguntas'}
                     </span>
                   </div>
 
@@ -3032,12 +3129,12 @@ const Recursos = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
                           {!isParent
-                            ? item.displayIndex || item.numero || "-"
-                            : ""}
+                            ? item.displayIndex || item.numero || '-'
+                            : ''}
                         </div>
 
                         <span className="text-sm font-bold text-gray-900">
-                          {isParent ? "Pregunta Grupal" : "Pregunta Individual"}
+                          {isParent ? 'Pregunta Grupal' : 'Pregunta Individual'}
                         </span>
                       </div>
 
@@ -3045,13 +3142,13 @@ const Recursos = () => {
                         {item.clasificacionNombre && (
                           <span
                             className={`px-2 py-1 text-xs font-bold rounded-md ${
-                              item.clasificacionNombre === "CL"
-                                ? "bg-blue-100 text-blue-700"
-                                : item.clasificacionNombre === "RL"
-                                ? "bg-purple-100 text-purple-700"
-                                : item.clasificacionNombre === "CCP"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-700"
+                              item.clasificacionNombre === 'CL'
+                                ? 'bg-blue-100 text-blue-700'
+                                : item.clasificacionNombre === 'RL'
+                                ? 'bg-purple-100 text-purple-700'
+                                : item.clasificacionNombre === 'CCP'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
                             }`}
                           >
                             {item.clasificacionNombre}
@@ -3086,14 +3183,14 @@ const Recursos = () => {
                       {/* Enunciado */}
                       <div className="mb-6 prose max-w-none text-gray-800 bg-blue-50/30 p-4 rounded-lg border border-blue-100">
                         <div className="text-xs font-bold text-blue-800 uppercase mb-2 tracking-wider">
-                          {isParent ? "Lectura / Contexto" : "Enunciado"}
+                          {isParent ? 'Lectura / Contexto' : 'Enunciado'}
                         </div>
                         {item.enunciados && item.enunciados.length > 0 ? (
                           item.enunciados.map((e: any) => (
                             <HtmlMathRenderer key={e.id} html={e.contenido} />
                           ))
                         ) : (
-                          <HtmlMathRenderer html={item.enunciado || ""} />
+                          <HtmlMathRenderer html={item.enunciado || ''} />
                         )}
 
                         {item.imagen && (
@@ -3191,7 +3288,7 @@ const Recursos = () => {
                                       ))
                                     ) : (
                                       <HtmlMathRenderer
-                                        html={sub.enunciado || ""}
+                                        html={sub.enunciado || ''}
                                       />
                                     )}
                                   </div>
@@ -3224,32 +3321,32 @@ const Recursos = () => {
                                                 key={alt.id}
                                                 className={`p-3 rounded-lg border transition-all ${
                                                   isCorrect
-                                                    ? "bg-green-50 border-green-500 shadow-sm"
-                                                    : "bg-white border-gray-200 hover:border-gray-300"
+                                                    ? 'bg-green-50 border-green-500 shadow-sm'
+                                                    : 'bg-white border-gray-200 hover:border-gray-300'
                                                 }`}
                                               >
                                                 <HtmlMathRenderer
-                                                  html={alt.contenido || ""}
+                                                  html={alt.contenido || ''}
                                                   alternativeLabel={String.fromCharCode(
                                                     65 + altIdx
                                                   )}
                                                   className={`text-sm ${
                                                     isCorrect
-                                                      ? "text-green-800 font-medium"
-                                                      : "text-gray-800"
+                                                      ? 'text-green-800 font-medium'
+                                                      : 'text-gray-800'
                                                   }`}
                                                 />
                                               </div>
                                             );
                                           }
                                         )
-                                      : ["A", "B", "C", "D"].map((opt, i) => {
+                                      : ['A', 'B', 'C', 'D'].map((opt, i) => {
                                           const altText =
-                                            opt === "A"
+                                            opt === 'A'
                                               ? sub.alternativaA
-                                              : opt === "B"
+                                              : opt === 'B'
                                               ? sub.alternativaB
-                                              : opt === "C"
+                                              : opt === 'C'
                                               ? sub.alternativaC
                                               : sub.alternativaD;
                                           const respString =
@@ -3271,23 +3368,23 @@ const Recursos = () => {
                                               key={opt}
                                               className={`p-3 rounded-lg border transition-all ${
                                                 isCorrect
-                                                  ? "bg-green-50 border-green-500 shadow-sm"
-                                                  : "bg-white border-gray-200 hover:border-gray-300"
+                                                  ? 'bg-green-50 border-green-500 shadow-sm'
+                                                  : 'bg-white border-gray-200 hover:border-gray-300'
                                               }`}
                                             >
                                               <div className="flex items-start gap-2">
                                                 <span
                                                   className={`font-bold text-sm ${
                                                     isCorrect
-                                                      ? "text-green-700"
-                                                      : "text-gray-500"
+                                                      ? 'text-green-700'
+                                                      : 'text-gray-500'
                                                   }`}
                                                 >
                                                   {opt})
                                                 </span>
                                                 <span className="text-sm">
                                                   <HtmlMathRenderer
-                                                    html={altText || ""}
+                                                    html={altText || ''}
                                                     alternativeLabel={opt}
                                                   />
                                                 </span>
@@ -3306,7 +3403,7 @@ const Recursos = () => {
                                       {sub.sustento ? (
                                         <HtmlMathRenderer html={sub.sustento} />
                                       ) : (
-                                        "Sin sustento disponible"
+                                        'Sin sustento disponible'
                                       )}
                                     </div>
                                   </div>
@@ -3335,32 +3432,32 @@ const Recursos = () => {
                                         key={alt.id}
                                         className={`p-4 rounded-lg border transition-all ${
                                           isCorrect
-                                            ? "bg-green-50 border-green-500 shadow-sm"
-                                            : "bg-white border-gray-200 hover:border-gray-300"
+                                            ? 'bg-green-50 border-green-500 shadow-sm'
+                                            : 'bg-white border-gray-200 hover:border-gray-300'
                                         }`}
                                       >
                                         <HtmlMathRenderer
-                                          html={alt.contenido || ""}
+                                          html={alt.contenido || ''}
                                           alternativeLabel={String.fromCharCode(
                                             65 + altIdx
                                           )}
                                           className={`text-sm ${
                                             isCorrect
-                                              ? "text-green-800 font-medium"
-                                              : "text-gray-800"
+                                              ? 'text-green-800 font-medium'
+                                              : 'text-gray-800'
                                           }`}
                                         />
                                       </div>
                                     );
                                   }
                                 )
-                              : ["A", "B", "C", "D"].map((opt, i) => {
+                              : ['A', 'B', 'C', 'D'].map((opt, i) => {
                                   const altText =
-                                    opt === "A"
+                                    opt === 'A'
                                       ? item.alternativaA
-                                      : opt === "B"
+                                      : opt === 'B'
                                       ? item.alternativaB
-                                      : opt === "C"
+                                      : opt === 'C'
                                       ? item.alternativaC
                                       : item.alternativaD;
                                   const respString = item.respuesta?.toString();
@@ -3377,22 +3474,22 @@ const Recursos = () => {
                                       key={opt}
                                       className={`p-4 rounded-lg border transition-all ${
                                         isCorrect
-                                          ? "bg-green-50 border-green-500 shadow-sm"
-                                          : "bg-white border-gray-200 hover:border-gray-300"
+                                          ? 'bg-green-50 border-green-500 shadow-sm'
+                                          : 'bg-white border-gray-200 hover:border-gray-300'
                                       }`}
                                     >
                                       <div className="flex items-start gap-3">
                                         <span
                                           className={`font-bold ${
                                             isCorrect
-                                              ? "text-green-700"
-                                              : "text-gray-500"
+                                              ? 'text-green-700'
+                                              : 'text-gray-500'
                                           }`}
                                         >
                                           {opt})
                                         </span>
                                         <HtmlMathRenderer
-                                          html={altText || ""}
+                                          html={altText || ''}
                                           alternativeLabel={opt}
                                           className="text-gray-800"
                                         />
@@ -3410,7 +3507,7 @@ const Recursos = () => {
                               {item.sustento ? (
                                 <HtmlMathRenderer html={item.sustento} />
                               ) : (
-                                "Sin sustento disponible"
+                                'Sin sustento disponible'
                               )}
                             </div>
                           </div>
@@ -3479,11 +3576,12 @@ const Recursos = () => {
                 Número Duplicado
               </h3>
               <p className="text-gray-600 mb-8 text-sm leading-relaxed">
-                El número de pregunta{" "}
+                El número de pregunta{' '}
                 <span className="font-bold text-gray-900 mx-1">
                   {collisionTargetConfig.numStr}
-                </span>{" "}
-                ya existe en este examen. Por favor, selecciona un número diferente para poder guardar la pregunta.
+                </span>{' '}
+                ya existe en este examen. Por favor, selecciona un número
+                diferente para poder guardar la pregunta.
               </p>
               <div className="flex justify-center gap-4 w-full">
                 <button
