@@ -481,7 +481,8 @@ const BancoPreguntasPage = () => {
                     correctedMinimo = 0;
                   } else if (
                     name === 'CCP' ||
-                    name === 'Conocimientos Curriculares y Pedagógicos'
+                    name === 'Conocimientos Curriculares y Pedagógicos' ||
+                    name === 'Conocimientos Curriculares y Pedagócicos'
                   ) {
                     correctedMinimo = 90;
                     if (cantidad > 0) correctedCantidad = 50;
@@ -516,7 +517,8 @@ const BancoPreguntasPage = () => {
                     countMap[name].cantidad = 15;
                   if (
                     name === 'CCP' ||
-                    name === 'Conocimientos Curriculares y Pedagógicos'
+                    name === 'Conocimientos Curriculares y Pedagógicos' ||
+                    name === 'Conocimientos Curriculares y Pedagócicos'
                   )
                     countMap[name].cantidad = 50;
                 }
@@ -630,10 +632,14 @@ const BancoPreguntasPage = () => {
       const questions = await preguntaService.examenFilter(payloadFiltro);
 
       // --- PARCHE DE FRONTEND: Filtrar localmente si el backend nos devuelve todo mezclado ---
-      // Note: We used to filter locally here, but it was causing missing questions
-      // when metadata was inconsistent. Trust the API result.
+      let filteredQuestions = questions;
+      if (clasificacionIds.length > 0) {
+        filteredQuestions = questions.filter((q) =>
+          clasificacionIds.includes(q.clasificacionId)
+        );
+      }
 
-      setQuestionsToStore(questions);
+      setQuestionsToStore(filteredQuestions);
       setExamToStart(exam);
       setIsConfirmModalOpen(true);
     } catch (error) {
@@ -1052,7 +1058,9 @@ const BancoPreguntasPage = () => {
                               tiposPregunta[name] &&
                               (name === 'CCP' ||
                                 name ===
-                                  'Conocimientos Curriculares y Pedagógicos')
+                                  'Conocimientos Curriculares y Pedagógicos' ||
+                                name ===
+                                  'Conocimientos Curriculares y Pedagócicos')
                           );
 
                           if (isNombramiento) {
