@@ -4,6 +4,10 @@ import { getAuthHeaders } from '../utils/apiUtils';
 export interface Clasificacion {
   id: number;
   clasificacionNombre: string;
+  abreviatura?: string | null;
+  puntos?: number;
+  tiempoPregunta?: number;
+  minimo?: number;
 }
 
 const API_URL = `${API_BASE_URL}/Preguntas/clasificaciones`;
