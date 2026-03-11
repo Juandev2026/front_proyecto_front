@@ -1,14 +1,12 @@
 import React from 'react';
 
 import { Disclosure } from '@headlessui/react';
-import { XIcon } from '@heroicons/react/outline';
 import {
   ChevronUpIcon,
   CheckCircleIcon,
   StarIcon,
 } from '@heroicons/react/solid';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/useAuth';
@@ -45,6 +43,26 @@ const planes: Plan[] = [
       'Simulacros con exámenes de MINEDU',
       'Práctica con tus respuestas erradas',
       'Visualización básica de resultados',
+    ],
+  },
+  {
+    id: 'mensual',
+    name: 'PLAN MENSUAL',
+    subtitle: 'COMIENZA TU PREPARACIÓN',
+    type: 'mensual',
+    price: 15,
+    duration: 'por 1 mes',
+    description:
+      'Acceso completo durante 30 días para una preparación intensiva.',
+    ctaText: 'Comenzar Ahora',
+    features: [
+      'Nombramiento',
+      'Ascenso',
+      'Banco de preguntas MINEDU',
+      'Simulacros MINEDU',
+      'Práctica con tus respuestas erradas',
+      'Estadísticas de rendimiento',
+      'Seguimiento de progreso',
     ],
   },
   {
@@ -116,8 +134,7 @@ const faqs = [
           <li className="flex items-center gap-2">
             <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
             <span>
-              <strong>Plan 5 meses</strong> → Un solo pago por los 5 meses
-              completos.
+              <strong>Plan Mensual / Semestral</strong> → Un solo pago por el periodo completo.
             </span>
           </li>
           <li className="flex items-center gap-2">
@@ -272,9 +289,7 @@ const faqs = [
 ];
 
 const Planes = () => {
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const showVideo = router.query.showVideo === 'true';
 
   return (
     <MainLayout>
@@ -290,55 +305,9 @@ const Planes = () => {
           </p>
         </div>
 
-        {/* Video Section (Conditional) */}
-        {showVideo && (
-          <div className="max-w-4xl mx-auto mb-12 animate-fade-in-down">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-100">
-              <div className="bg-blue-600 py-3 px-6 flex items-center justify-between">
-                <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                  Recorrido por la Plataforma AVEND ESCALA
-                </h2>
-                <button
-                  onClick={() =>
-                    router.push('/planes', undefined, { shallow: true })
-                  }
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  <XIcon className="w-6 h-6" />
-                </button>
-              </div>
-              <div
-                className="relative w-full"
-                style={{ paddingBottom: '56.25%' }}
-              >
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-              <div className="p-4 bg-gray-50 border-t border-gray-100">
-                <p className="text-sm text-gray-600 font-medium text-center">
-                  Descubre todo lo que puedes lograr con AVEND ESCALA. Prepárate
-                  con simulacros reales y banco de preguntas actualizado.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Plans Grid */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {planes.map((plan: Plan) => (
             <div
               key={plan.id}
