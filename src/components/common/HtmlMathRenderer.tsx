@@ -40,8 +40,9 @@ const HtmlMathRenderer: React.FC<HtmlMathRendererProps> = ({
       processedHtml = cleanAlternativeContent(html, alternativeLabel);
     }
 
-    // 1.5 Replace asterisks with bullet points (dots) globally as requested
-    processedHtml = processedHtml.replace(/\*/g, '•');
+    // 1.5 Replace asterisks with visual bullet points hidden from TTS (aria-hidden)
+    // The span is purely decorative; screen readers and TTS will skip it and read only the text.
+    processedHtml = processedHtml.replace(/\*/g, '<span aria-hidden="true" style="user-select:none">• </span>');
 
     // 1.6 Intensify gray backgrounds globally as requested
     processedHtml = processedHtml.replace(/bg-gray-100/g, 'bg-gray-200 border border-gray-200')

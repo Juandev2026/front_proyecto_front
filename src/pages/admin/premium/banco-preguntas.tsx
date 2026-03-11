@@ -2165,7 +2165,7 @@ const Recursos = () => {
                           onDragStart={(e) => handleDragStartEnunciado(e, index)}
                           onDragOver={(e) => handleDragOverEnunciado(e, index)}
                           onDragEnd={handleDragEndEnunciado}
-                          style={{ cursor: 'move' }}
+                          style={{ cursor: 'default' }}
                         >
                           {/* Drag Handle */}
                           <div className="flex flex-col items-center justify-center text-gray-400 hover:text-[#4790FD] cursor-move transition-colors pt-4">
@@ -2190,7 +2190,7 @@ const Recursos = () => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                 }}
-                                draggable={true}
+                                draggable={false}
                               >
                                 <div className="flex items-center gap-2 mb-3 text-gray-500">
                                     <DocumentTextIcon className="w-4 h-4" />

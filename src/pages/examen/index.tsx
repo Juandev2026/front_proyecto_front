@@ -472,7 +472,8 @@ const ExamenPage = () => {
         tmp.innerHTML = html;
         return tmp.textContent || tmp.innerText || '';
       };
-      const cleanText = stripHtml(textToRead);
+      const cleanText = stripHtml(textToRead)
+        .replace(/[•\*]\s*/g, ''); // Remove bullet symbols so TTS reads only the text
       const utterance = new SpeechSynthesisUtterance(cleanText);
       if (selectedVoice) utterance.voice = selectedVoice;
       utterance.onend = () => setIsReading(false);
