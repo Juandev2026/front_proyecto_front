@@ -31,11 +31,15 @@ interface ContentBlock {
 
 interface SubPregunta {
   tempId: string;
+  id?: number;
   clasificacionId: number;
   specificStatement: ContentBlock[];
-  alternatives: { id: string; contenido: string; esCorrecta: boolean }[];
+  alternatives: { id: any; contenido: string; esCorrecta: boolean }[];
   sustento: string;
   isExpanded: boolean;
+  enunciados?: any[];
+  alternativas?: any[];
+  justificaciones?: any[];
 }
 
 interface PreguntaComunFormProps {
@@ -154,25 +158,33 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           id: s.id, // Keep the real ID
           clasificacionId: s.clasificacionId,
           specificStatement: parseHtmlToBlocks(s.enunciado),
-          alternatives: [
-            {
-              id: 'A',
-              contenido: s.alternativaA,
-              esCorrecta: s.respuestaCorrecta === 'A' || s.respuestaCorrecta === 1,
-            },
-            {
-              id: 'B',
-              contenido: s.alternativaB,
-              esCorrecta: s.respuestaCorrecta === 'B' || s.respuestaCorrecta === 2,
-            },
-            {
-              id: 'C',
-              contenido: s.alternativaC,
-              esCorrecta: s.respuestaCorrecta === 'C' || s.respuestaCorrecta === 3,
-            },
-          ],
+          alternatives: s.alternativas && s.alternativas.length > 0
+            ? s.alternativas.map((alt: any, altIdx: number) => ({
+                id: alt.id,
+                contenido: alt.contenido,
+                esCorrecta: s.respuestaCorrecta === (altIdx + 1) || s.respuestaCorrecta === String.fromCharCode(65 + altIdx),
+              }))
+            : [
+                {
+                  id: 'A',
+                  contenido: s.alternativaA,
+                  esCorrecta: s.respuestaCorrecta === 'A' || s.respuestaCorrecta === 1,
+                },
+                {
+                  id: 'B',
+                  contenido: s.alternativaB,
+                  esCorrecta: s.respuestaCorrecta === 'B' || s.respuestaCorrecta === 2,
+                },
+                {
+                  id: 'C',
+                  contenido: s.alternativaC,
+                  esCorrecta: s.respuestaCorrecta === 'C' || s.respuestaCorrecta === 3,
+                },
+              ],
           sustento: s.sustento || '',
           isExpanded: false,
+          enunciados: s.enunciados,
+          justificaciones: s.justificaciones,
         }))
       : [
           {
@@ -586,22 +598,22 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         tipoPreguntaId: 2,
         numero: numPadre,
         clasificacionId: firstSubClasificacionId,
-        respuesta: 1, // Defaulting to 1 as per example
+        respuesta: null, // Corrected to null for common questions
         enunciados: [
           {
-            id: initialParent?.enunciados?.[0]?.id || 1,
+            id: initialParent?.enunciados?.[0]?.id || 0,
             contenido: commonHtml,
           },
         ],
         alternativas: [
           {
-            id: initialParent?.alternativas?.[0]?.id || 1,
+            id: initialParent?.alternativas?.[0]?.id || 0,
             contenido: 'n',
           },
         ],
         justificaciones: [
           {
-            id: initialParent?.justificaciones?.[0]?.id || 1,
+            id: initialParent?.justificaciones?.[0]?.id || 0,
             contenido: 'n',
           },
         ],
@@ -613,28 +625,30 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             examenId,
             year: initialParent?.year || selectedYear || '0',
             preguntaId: initialParent ? initialParent.id : 0,
-            id: (q as any).id || 0,
+            id: q.id || 0, // Sending 0 for new records
             clasificacionId: q.clasificacionId,
             enunciados: [
               {
-                id: (q as any).enunciados?.[0]?.id || 1,
+                id: q.enunciados && q.enunciados[0]?.id ? q.enunciados[0].id : 0,
                 contenido: serializeBlocks(q.specificStatement),
               },
             ],
             alternativas: q.alternatives.map((alt, altIdx) => ({
-              id: altIdx + 1,
+              id: (typeof alt.id === 'number' && alt.id > 0) ? alt.id : 0,
               contenido: alt.contenido || '',
             })),
             justificaciones: [
               {
-                id: (q as any).justificaciones?.[0]?.id || 1,
+                id: q.justificaciones && q.justificaciones[0]?.id ? q.justificaciones[0].id : 0,
                 contenido: q.sustento || '',
               },
             ],
-            respuestaCorrecta: respuestaInt,
-            numero: numPadre + index + 1,
+            respuestaCorrecta: respuestaInt, // Reverted to number (no quotes)
+            numero: index + 1,
           };
         }),
+        autor: 'AVEND',
+        precio: 0,
       };
 
       console.log('Payload Atómico (User Requirement):', payload);

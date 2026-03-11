@@ -13,7 +13,7 @@ export interface Pregunta {
   numero: number;
   clasificacionId: number;
   tipoPreguntaId: number;
-  respuesta: string | number;
+  respuesta: string | number | null;
   enunciado?: string;
   alternativaA?: string;
   alternativaB?: string;
