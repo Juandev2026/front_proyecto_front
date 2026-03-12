@@ -888,28 +888,50 @@ const Recursos = () => {
   //   Real [1,1,2,3,8,9]   → Visual [1,2,3,4,8,9]  (gap at 5-7 preserved)
   //   Real [1,1,1,1]       → Visual [1,2,3,4]
   //   Real [1,1,2,3,8,8,9] → Visual [1,2,3,4,8,9,10]
-  const computeVisualNums = (sorted: Pregunta[]): Map<number, number> => {
-    const visualMap = new Map<number, number>();
+  // --- SMART VISUAL RENUMBERING ---
+  const computeVisualNums = (sorted: Pregunta[]): { 
+    mainMap: Map<number, number>, 
+    subMap: Map<string, number> 
+  } => {
+    const mainMap = new Map<number, number>();
+    const subMap = new Map<string, number>();
     let cursor = 0; // next available visual slot
 
     for (let i = 0; i < sorted.length; i++) {
       const item = sorted[i]!;
       const real = item.numero || 0;
+      const isParent = item.tipoPreguntaId === 2;
 
-      let visual: number;
+      let visualStart: number;
       if (real >= cursor) {
-        // No conflict: use the real number (gap handling is automatic)
-        visual = real;
+        visualStart = real;
       } else {
-        // Conflict: this slot is already taken by a shifted item above
-        visual = cursor;
+        visualStart = cursor;
       }
 
-      visualMap.set(item.id, visual);
-      cursor = visual + 1;
+      if (!isParent) {
+        mainMap.set(item.id, visualStart);
+        cursor = visualStart + 1;
+      } else {
+        // Parent block. We don't set mainMap for parents (they are empty circles)
+        // But we number the subs starting from visualStart
+        const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
+        // Important: Sort subs same way as they are displayed
+        const sortedSubs = [...subs].sort(
+          (a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id
+        );
+
+        sortedSubs.forEach((sub, sIdx) => {
+          const subVisual = visualStart + sIdx;
+          const key = `${sub.examenId}-${sub.preguntaId}-${sub.numero}`;
+          subMap.set(key, subVisual);
+        });
+
+        cursor = visualStart + (sortedSubs.length > 0 ? sortedSubs.length : 0);
+      }
     }
 
-    return visualMap;
+    return { mainMap, subMap };
   };
 
   // --- CONTINUOUS INDEXING LOGIC ---
@@ -921,8 +943,8 @@ const Recursos = () => {
       return numA - numB || a.id - b.id;
     });
 
-    // Compute smart visual numbers for duplicates
-    const visualNums = computeVisualNums(sortedItems);
+    // Compute smart visual numbers for main and sub questions
+    const { mainMap, subMap } = computeVisualNums(sortedItems);
 
     return sortedItems.map((item) => {
       const isParent = item.tipoPreguntaId === 2;
@@ -934,23 +956,25 @@ const Recursos = () => {
       }
 
       const subPreguntas = item.subPreguntas || subQuestionsMap[item.id] || [];
-      // Sort subs by order (numero) then by id
       const sortedSubs = [...subPreguntas].sort(
         (a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id
       );
 
       const subsWithIdx = sortedSubs.map((s) => {
         globalCounter++;
-        return { ...s, displayIndex: globalCounter };
+        const subKey = `${s.examenId}-${s.preguntaId}-${s.numero}`;
+        return { 
+          ...s, 
+          displayIndex: globalCounter,
+          visualNumero: subMap.get(subKey) ?? s.numero
+        };
       });
 
       return {
         ...item,
         displayIndex: mainIdx,
         subsWithIdx,
-        // visualNumero: the display number to show in the list.
-        // If no duplicate exists, it equals item.numero.
-        visualNumero: visualNums.get(item.id) ?? item.numero,
+        visualNumero: mainMap.get(item.id) ?? item.numero,
       };
     });
   }, [filteredItems, subQuestionsMap]);
@@ -3317,11 +3341,17 @@ const Recursos = () => {
                                 >
                                   {/* Header mini */}
                                   <div className="flex items-center gap-2 mb-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">
-                                      {sub.numero || sub.displayIndex}
+                                    <span 
+                                      className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs relative"
+                                      title={sub.visualNumero !== sub.numero ? `Número real: ${sub.numero}` : undefined}
+                                    >
+                                      {sub.visualNumero ?? sub.numero ?? sub.displayIndex}
+                                      {sub.visualNumero !== sub.numero && (
+                                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border border-white" title={`Número real: ${sub.numero}`} />
+                                      )}
                                     </span>
                                     <span className="text-xs font-bold text-gray-500 uppercase">
-                                      Sub-Pregunta {sub.numero || sub.displayIndex}
+                                      Sub-Pregunta {sub.visualNumero ?? sub.numero ?? sub.displayIndex}
                                     </span>
 
                                     <div className="ml-auto flex gap-2">
