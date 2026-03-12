@@ -5,6 +5,8 @@ import {
   ChevronUpIcon,
   CheckCircleIcon,
   StarIcon,
+  PlayIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/solid';
 
 import MainLayout from '../components/MainLayout';
@@ -286,6 +288,66 @@ const Planes = () => {
           </p>
         </div>
 
+
+        {/* Video Guía */}
+        <div className="max-w-md mx-auto mb-16 px-4 group">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-blue-50/50 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(30,64,175,0.2)] hover:-translate-y-1">
+            {/* Header del video con Glassmorphism */}
+            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-6 py-5 flex items-center gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+              
+              <div className="flex-shrink-0 bg-white/20 rounded-2xl p-3 backdrop-blur-md border border-white/30 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                <VideoCameraIcon className="w-6 h-6 text-white" />
+              </div>
+              
+              <div className="flex-1 min-w-0 relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-200"></span>
+                  </span>
+                  <span className="text-[10px] font-bold text-blue-100 uppercase tracking-[0.2em]">Guía Esencial</span>
+                </div>
+                <h2 className="text-white font-extrabold text-lg leading-tight tracking-tight">
+                  ¿Cómo empezar ahora?
+                </h2>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <PlayIcon className="w-3.5 h-3.5 text-blue-200/80" />
+                  <p className="text-blue-100/70 text-xs font-medium italic">
+                    Descubre el proceso en 1 minuto
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contenedor del Video con efecto sutil */}
+            <div className="relative w-full shadow-inner" style={{ paddingTop: '177.78%' }}>
+              <div className="absolute inset-0 bg-gray-900 animate-pulse group-hover:opacity-0 transition-opacity duration-700" />
+              <iframe
+                className="absolute inset-0 w-full h-full z-10"
+                src="https://www.youtube.com/embed/O1h2k1aNGc8?rel=0&modestbranding=1&controls=1"
+                title="¿Cómo registrarse y solicitar tu acceso en AVEND ESCALA?"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+
+            {/* Footer sutil con pasos */}
+            <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="w-8 h-8 rounded-full bg-white border-2 border-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600 shadow-sm relative z-[10-step]">
+                    {step}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Registro • Plan • Acceso
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Plans Grid */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
