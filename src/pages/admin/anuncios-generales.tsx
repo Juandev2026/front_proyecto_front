@@ -29,6 +29,7 @@ const AdminAnunciosGenerales = () => {
     ruta: '',
     precio: 0,
     telefono: '',
+    posicion: 0,
   };
 
   const [currentAnuncio, setCurrentAnuncio] = useState(initialFormState);
@@ -71,6 +72,7 @@ const AdminAnunciosGenerales = () => {
       ruta: anuncio.ruta || '',
       precio: anuncio.precio || 0,
       telefono: anuncio.telefono || '',
+      posicion: anuncio.posicion ?? 0,
     });
     setEditingId(anuncio.id);
     setPreviewUrl(anuncio.imagenUrl || '');
@@ -144,6 +146,9 @@ const AdminAnunciosGenerales = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Pos
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Imagen
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -163,13 +168,16 @@ const AdminAnunciosGenerales = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center">
+                  <td colSpan={6} className="px-6 py-4 text-center">
                     Cargando...
                   </td>
                 </tr>
               ) : (
-                anuncios.map((item) => (
+                [...anuncios].sort((a, b) => a.posicion - b.posicion).map((item) => (
                   <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                      {item.posicion}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.imagenUrl && (
                         <img
@@ -208,7 +216,7 @@ const AdminAnunciosGenerales = () => {
               {!loading && anuncios.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     No hay anuncios registrados.
@@ -305,6 +313,24 @@ const AdminAnunciosGenerales = () => {
                     }
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Posición
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={currentAnuncio.posicion}
+                  onChange={(e) =>
+                    setCurrentAnuncio({
+                      ...currentAnuncio,
+                      posicion: Number(e.target.value),
+                    })
+                  }
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

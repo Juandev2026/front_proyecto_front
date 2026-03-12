@@ -140,6 +140,7 @@ const AdminInformacionRelevante = () => {
     url: '',
     precio: 0,
     telefono: '',
+    posicion: 0,
   });
 
   const fetchData = useCallback(async () => {
@@ -185,6 +186,7 @@ const AdminInformacionRelevante = () => {
         url: '',
         precio: 0,
         telefono: '',
+        posicion: 0,
       });
       setFile(null);
       fetchData();
@@ -223,6 +225,7 @@ const AdminInformacionRelevante = () => {
         url: '',
         precio: 0,
         telefono: '',
+        posicion: 0,
       });
       setFile(null);
       fetchData();
@@ -253,6 +256,7 @@ const AdminInformacionRelevante = () => {
         url: item.url,
         precio: item.precio || 0,
         telefono: item.telefono || '',
+        posicion: item.posicion ?? 0,
       });
     } else {
       setEditingId(null);
@@ -264,6 +268,7 @@ const AdminInformacionRelevante = () => {
         url: '',
         precio: 0,
         telefono: '',
+        posicion: 0,
       });
     }
     setIsModalOpen(true);
@@ -289,6 +294,9 @@ const AdminInformacionRelevante = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Pos
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ID
                 </th>
@@ -316,7 +324,7 @@ const AdminInformacionRelevante = () => {
               {loading && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     Cargando...
@@ -326,7 +334,7 @@ const AdminInformacionRelevante = () => {
               {!loading && data.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     No hay elementos registrados.
@@ -335,8 +343,11 @@ const AdminInformacionRelevante = () => {
               )}
               {!loading &&
                 data.length > 0 &&
-                data.map((item) => (
+                [...data].sort((a, b) => a.posicion - b.posicion).map((item) => (
                   <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                      {item.posicion}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.id}
                     </td>
@@ -646,6 +657,26 @@ const AdminInformacionRelevante = () => {
                     setFormData({ ...formData, telefono: e.target.value })
                   }
                   placeholder="51999999999"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Posición
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={formData.posicion}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      posicion: isNaN(parseInt(e.target.value))
+                        ? 0
+                        : parseInt(e.target.value),
+                    })
+                  }
                 />
               </div>
 
