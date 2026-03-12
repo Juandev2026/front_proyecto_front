@@ -875,6 +875,43 @@ const Recursos = () => {
     availableYears,
   ]);
 
+  // --- SMART VISUAL RENUMBERING ---
+  // Assigns sequential visual numbers to items sorted by (numero ASC, id ASC).
+  //
+  // Algorithm (cursor-based):
+  //   - Walk items in order.
+  //   - If item.numero >= cursor → use item.numero as visual (respects gaps naturally).
+  //   - If item.numero < cursor → use cursor (item falls in the shifted zone due to a duplicate above).
+  //   - cursor always advances to visual + 1.
+  //
+  // Examples:
+  //   Real [1,1,2,3,8,9]   → Visual [1,2,3,4,8,9]  (gap at 5-7 preserved)
+  //   Real [1,1,1,1]       → Visual [1,2,3,4]
+  //   Real [1,1,2,3,8,8,9] → Visual [1,2,3,4,8,9,10]
+  const computeVisualNums = (sorted: Pregunta[]): Map<number, number> => {
+    const visualMap = new Map<number, number>();
+    let cursor = 0; // next available visual slot
+
+    for (let i = 0; i < sorted.length; i++) {
+      const item = sorted[i]!;
+      const real = item.numero || 0;
+
+      let visual: number;
+      if (real >= cursor) {
+        // No conflict: use the real number (gap handling is automatic)
+        visual = real;
+      } else {
+        // Conflict: this slot is already taken by a shifted item above
+        visual = cursor;
+      }
+
+      visualMap.set(item.id, visual);
+      cursor = visual + 1;
+    }
+
+    return visualMap;
+  };
+
   // --- CONTINUOUS INDEXING LOGIC ---
   const itemsWithIndices = useMemo(() => {
     let globalCounter = 0;
@@ -883,6 +920,9 @@ const Recursos = () => {
       const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
       return numA - numB || a.id - b.id;
     });
+
+    // Compute smart visual numbers for duplicates
+    const visualNums = computeVisualNums(sortedItems);
 
     return sortedItems.map((item) => {
       const isParent = item.tipoPreguntaId === 2;
@@ -904,7 +944,14 @@ const Recursos = () => {
         return { ...s, displayIndex: globalCounter };
       });
 
-      return { ...item, displayIndex: mainIdx, subsWithIdx };
+      return {
+        ...item,
+        displayIndex: mainIdx,
+        subsWithIdx,
+        // visualNumero: the display number to show in the list.
+        // If no duplicate exists, it equals item.numero.
+        visualNumero: visualNums.get(item.id) ?? item.numero,
+      };
     });
   }, [filteredItems, subQuestionsMap]);
 
@@ -3137,10 +3184,20 @@ const Recursos = () => {
                     {/* --- TOP BAR (INDICADORES Y ACCIONES) --- */}
                     <div className="bg-gray-50 px-6 py-3 border-b flex justify-between items-center flex-wrap gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm">
+                        <div
+                          className="w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm relative"
+                          title={
+                            !isParent && (item as any).visualNumero !== item.numero
+                              ? `Número real: ${item.numero}`
+                              : undefined
+                          }
+                        >
                           {!isParent
-                            ? item.numero || item.displayIndex || '-'
+                            ? (item as any).visualNumero ?? item.numero ?? item.displayIndex ?? '-'
                             : ''}
+                          {!isParent && (item as any).visualNumero !== item.numero && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border border-white" title={`Número real: ${item.numero}`} />
+                          )}
                         </div>
 
                         <span className="text-sm font-bold text-gray-900">
