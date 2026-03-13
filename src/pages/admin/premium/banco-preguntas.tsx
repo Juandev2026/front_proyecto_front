@@ -902,12 +902,7 @@ const Recursos = () => {
       const real = item.numero || 0;
       const isParent = item.tipoPreguntaId === 2;
 
-      let visualStart: number;
-      if (real >= cursor) {
-        visualStart = real;
-      } else {
-        visualStart = cursor;
-      }
+      let visualStart = real;
 
       if (!isParent) {
         mainMap.set(item.id, visualStart);
@@ -3680,12 +3675,21 @@ const Recursos = () => {
                 ya existe en este examen. Por favor, selecciona un número
                 diferente para poder guardar la pregunta.
               </p>
-              <div className="flex justify-center gap-4 w-full">
+              <div className="flex flex-col gap-3 w-full">
+                <button
+                  onClick={() => {
+                    setIsCollisionModalOpen(false);
+                    handleSubmit(undefined, collisionTargetConfig.stayInCreateMode, true);
+                  }}
+                  className="px-5 py-2.5 w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center shadow-md font-bold uppercase tracking-tight text-xs"
+                >
+                  Permitir Duplicado
+                </button>
                 <button
                   onClick={() => setIsCollisionModalOpen(false)}
-                  className="px-5 py-2.5 w-full bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center"
+                  className="px-5 py-2.5 w-full bg-gray-100 text-gray-400 font-bold uppercase tracking-tight text-xs rounded-lg hover:bg-gray-200 transition-all flex justify-center items-center"
                 >
-                  Entendido
+                  Cancelar
                 </button>
               </div>
             </div>
