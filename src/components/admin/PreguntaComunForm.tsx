@@ -620,8 +620,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
     try {
       const firstSubClasificacionId =
         subQuestions[0]?.clasificacionId || defaultClasificacionId || 0;
-      const numPadre =
-        initialParent?.numero || (numero ? parseInt(numero, 10) : 1);
+      const numPadre = numero ? parseInt(numero, 10) : (initialParent?.numero || 1);
 
       const payload = {
         id: initialParent ? initialParent.id : 0,

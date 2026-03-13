@@ -19,6 +19,7 @@ export interface CreateSubPreguntaDTO {
 }
 
 export interface SubPreguntaResponse extends CreateSubPreguntaDTO {
+  id: number;
   // El backend puede retornar campos adicionales
   enunciados?: EnunciadoItem[];
   alternativas?: any[];
