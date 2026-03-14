@@ -895,34 +895,19 @@ const Recursos = () => {
   } => {
     const mainMap = new Map<number, number>();
     const subMap = new Map<string, number>();
-    let cursor = 0; // next available visual slot
-
     for (let i = 0; i < sorted.length; i++) {
       const item = sorted[i]!;
       const real = item.numero || 0;
       const isParent = item.tipoPreguntaId === 2;
 
-      let visualStart = real;
-
       if (!isParent) {
-        mainMap.set(item.id, visualStart);
-        cursor = visualStart + 1;
+        mainMap.set(item.id, real);
       } else {
-        // Parent block. We don't set mainMap for parents (they are empty circles)
-        // But we number the subs starting from visualStart
         const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
-        // Important: Sort subs same way as they are displayed
-        const sortedSubs = [...subs].sort(
-          (a, b) => (a.numero || 0) - (b.numero || 0) || a.id - b.id
-        );
-
-        sortedSubs.forEach((sub, sIdx) => {
-          const subVisual = visualStart + sIdx;
+        subs.forEach((sub) => {
           const key = `${sub.examenId}-${sub.preguntaId}-${sub.numero}`;
-          subMap.set(key, subVisual);
+          subMap.set(key, sub.numero || 0);
         });
-
-        cursor = visualStart + (sortedSubs.length > 0 ? sortedSubs.length : 0);
       }
     }
 
@@ -2083,9 +2068,29 @@ const Recursos = () => {
                 resolveExamenId={resolveCurrentExamenId}
                 defaultClasificacionId={Number(newItem.clasificacionId) || 0}
                 selectedYear={selectedYear}
-                onSuccess={() => {
+                onSuccess={(subInfo) => {
                   fetchData();
                   setViewMode('list');
+                  if (subInfo) {
+                    setTimeout(() => {
+                      const el = document.getElementById(
+                        `subpregunta-row-${subInfo.examenId}-${subInfo.parentId}-${subInfo.numero}`
+                      );
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.classList.add(
+                          'ring-[6px]',
+                          'ring-indigo-300',
+                          'transition-shadow',
+                          'duration-500'
+                        );
+                        setTimeout(
+                          () => el.classList.remove('ring-[6px]', 'ring-indigo-300'),
+                          3000
+                        );
+                      }
+                    }, 500);
+                  }
                 }}
                 onCancel={() => setViewMode('list')}
                 numero={numeroPregunta}
@@ -3174,8 +3179,46 @@ const Recursos = () => {
                   </div>
                 </div>
 
-                {/* Botón de Acción a la derecha/abajo */}
-                <div className="w-full md:w-auto shrink-0">
+                {/* Buscador por Número */}
+                <div className="w-full md:w-auto flex items-center gap-2">
+                  <div className="relative flex-1 md:w-40">
+                    <input
+                      type="number"
+                      placeholder="Ir a #..."
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = (e.target as HTMLInputElement).value;
+                          if (val) {
+                            // First try to find a sub-question with that visual number
+                            const sub = currentItems.flatMap(i => i.subsWithIdx || []).find(s => s.visualNumero === Number(val));
+                            if (sub) {
+                              const el = document.getElementById(`subpregunta-row-${sub.examenId}-${sub.preguntaId}-${sub.numero}`);
+                              if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                el.classList.add('ring-4', 'ring-indigo-300');
+                                setTimeout(() => el.classList.remove('ring-4', 'ring-indigo-300'), 2000);
+                              }
+                            } else {
+                              // Try to find a main question
+                              const main = currentItems.find(i => i.visualNumero === Number(val));
+                              if (main) {
+                                const el = document.getElementById(`pregunta-row-${main.id}`);
+                                if (el) {
+                                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  el.classList.add('ring-4', 'ring-blue-300');
+                                  setTimeout(() => el.classList.remove('ring-4', 'ring-blue-300'), 2000);
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                    <div className="absolute right-3 top-2.5 text-gray-400">
+                      <SparklesIcon className="w-4 h-4" />
+                    </div>
+                  </div>
                   <button
                     onClick={handleAddNew}
                     className="w-full md:w-auto bg-primary text-white px-8 py-3 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
@@ -3332,6 +3375,7 @@ const Recursos = () => {
                               subs.map((sub) => (
                                 <div
                                   key={`${sub.examenId}-${sub.preguntaId}-${sub.numero}`}
+                                  id={`subpregunta-row-${sub.examenId}-${sub.preguntaId}-${sub.numero}`}
                                   className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
                                 >
                                   {/* Header mini */}

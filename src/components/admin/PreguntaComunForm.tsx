@@ -49,7 +49,7 @@ interface PreguntaComunFormProps {
   resolveExamenId: () => Promise<number | null>;
   defaultClasificacionId: number;
   selectedYear: string;
-  onSuccess: () => void;
+  onSuccess: (subInfo?: { examenId: number; parentId: number; numero: number }) => void;
   onCancel: () => void;
   numero?: string;
   selectedTipo: number;
@@ -199,6 +199,7 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
           enunciados: s.enunciados,
           justificaciones: s.justificaciones,
         }))
+        .sort((a, b) => (a.numero || 0) - (b.numero || 0))
       : [
           {
             tempId: Math.random().toString(36).substr(2, 9),
@@ -648,7 +649,9 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
             contenido: 'n',
           },
         ],
-        subPreguntas: subQuestions.map((q, index) => {
+        subPreguntas: [...subQuestions]
+          .sort((a, b) => (a.numero || 0) - (b.numero || 0))
+          .map((q, index) => {
           const correctIndex = q.alternatives.findIndex((a) => a.esCorrecta);
           const respuestaInt = correctIndex !== -1 ? correctIndex + 1 : 1;
 
@@ -740,7 +743,19 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
         console.log('Asignación de exámenes completada para pregunta grupo');
       }
 
-      onSuccess();
+      // Final step: Sort local state before finishing
+      setSubQuestions((prev) => [...prev].sort((a, b) => (a.numero || 0) - (b.numero || 0)));
+
+      // If we're editing an existing group, we can scroll to the first sub-question
+      // or we can pass the info of the first sub if it's a new group.
+      const firstSub = subQuestions[0];
+      const targetSubInfo = firstSub ? {
+        examenId,
+        parentId: finalIdForAssignment || 0,
+        numero: firstSub.numero || 1
+      } : undefined;
+
+      onSuccess(targetSubInfo);
     } catch (saveError) {
       console.error('Error al guardar pregunta común atómica:', saveError);
       alert(
