@@ -911,14 +911,16 @@ const Recursos = () => {
   } => {
     const mainMap = new Map<number, number>();
     const subMap = new Map<string, number>();
+
     for (let i = 0; i < sorted.length; i++) {
       const item = sorted[i]!;
-      const real = item.numero || 0;
       const isParent = isGroupedType(item.tipoPreguntaId);
 
       if (!isParent) {
-        mainMap.set(item.id, real);
+        // Individual Question: uses real number
+        mainMap.set(item.id, item.numero || 0);
       } else {
+        // Grouped Question: sub-questions use their real numbers
         const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
         subs.forEach((sub) => {
           const key = `${sub.examenId}-${sub.preguntaId}-${sub.numero}`;
@@ -932,16 +934,35 @@ const Recursos = () => {
 
   // --- CONTINUOUS INDEXING LOGIC ---
   const itemsWithIndices = useMemo(() => {
-    let globalCounter = 0;
     const sortedItems = [...filteredItems].sort((a, b) => {
-      const numA = a.numero && a.numero > 0 ? a.numero : Infinity;
-      const numB = b.numero && b.numero > 0 ? b.numero : Infinity;
+      // Helper to get a stable number for sorting (even for groups)
+      const getSortNum = (q: Pregunta) => {
+        const isGroup = isGroupedType(q.tipoPreguntaId);
+
+        // 1. If it's a group, sub-questions are the ABSOLUTE priority for sorting
+        if (isGroup) {
+          const subs = q.subPreguntas || subQuestionsMap[q.id] || [];
+          if (subs.length > 0) {
+            const minSub = Math.min(...subs.map((s) => s.numero || Infinity));
+            if (minSub !== Infinity) return minSub;
+          }
+        }
+
+        // 2. If it's an individual question or a group without loaded subs, use parent number
+        if (q.numero && q.numero > 0) return q.numero;
+
+        return Infinity;
+      };
+
+      const numA = getSortNum(a);
+      const numB = getSortNum(b);
       return numA - numB || a.id - b.id;
     });
 
-    // Compute smart visual numbers for main and sub questions
+    // Compute visual numbers for main and sub questions (now just real numbers)
     const { mainMap, subMap } = computeVisualNums(sortedItems);
 
+    let globalCounter = 0;
     return sortedItems.map((item) => {
       const isParent = isGroupedType(item.tipoPreguntaId);
       let mainIdx = null;
@@ -973,7 +994,7 @@ const Recursos = () => {
         visualNumero: mainMap.get(item.id) ?? item.numero,
       };
     });
-  }, [filteredItems, subQuestionsMap]);
+  }, [filteredItems, subQuestionsMap, tipoPreguntas]);
 
   const currentItems = itemsWithIndices;
 
@@ -990,7 +1011,7 @@ const Recursos = () => {
       }
     }
     return count;
-  }, [filteredItems, subQuestionsMap]);
+  }, [filteredItems, subQuestionsMap, tipoPreguntas]);
 
   // --- HANDLERS (CRUD) ---
   const handleDelete = async (id: number) => {
