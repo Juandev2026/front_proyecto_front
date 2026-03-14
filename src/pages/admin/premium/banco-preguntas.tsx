@@ -606,7 +606,7 @@ const Recursos = () => {
 
   // Fetch sub-question counts and details for parent questions when items change
   useEffect(() => {
-    const parentItems = items.filter((q) => q.tipoPreguntaId === 2);
+    const parentItems = items.filter((q) => isGroupedType(q.tipoPreguntaId));
     if (parentItems.length === 0) return;
 
     parentItems.forEach(async (parent) => {
@@ -889,16 +889,32 @@ const Recursos = () => {
   //   Real [1,1,1,1]       → Visual [1,2,3,4]
   //   Real [1,1,2,3,8,8,9] → Visual [1,2,3,4,8,9,10]
   // --- SMART VISUAL RENUMBERING ---
-  const computeVisualNums = (sorted: Pregunta[]): { 
-    mainMap: Map<number, number>, 
-    subMap: Map<string, number> 
+  // Helper to determine if a question type is grouped (Pregunta Común)
+  const isGroupedType = (tpId: number) => {
+    const tp = tipoPreguntas.find((t) => t.id === tpId);
+    if (!tp) return tpId === 2; // Fallback to ID 2
+    const name = tp.tipoPreguntaNombre.toLowerCase();
+    return (
+      name.includes('común') ||
+      name.includes('comun') ||
+      name.includes('grupal') ||
+      tpId === 2
+    );
+  };
+
+  // --- SMART VISUAL RENUMBERING ---
+  const computeVisualNums = (
+    sorted: Pregunta[]
+  ): {
+    mainMap: Map<number, number>;
+    subMap: Map<string, number>;
   } => {
     const mainMap = new Map<number, number>();
     const subMap = new Map<string, number>();
     for (let i = 0; i < sorted.length; i++) {
       const item = sorted[i]!;
       const real = item.numero || 0;
-      const isParent = item.tipoPreguntaId === 2;
+      const isParent = isGroupedType(item.tipoPreguntaId);
 
       if (!isParent) {
         mainMap.set(item.id, real);
@@ -927,7 +943,7 @@ const Recursos = () => {
     const { mainMap, subMap } = computeVisualNums(sortedItems);
 
     return sortedItems.map((item) => {
-      const isParent = item.tipoPreguntaId === 2;
+      const isParent = isGroupedType(item.tipoPreguntaId);
       let mainIdx = null;
 
       if (!isParent) {
@@ -965,7 +981,7 @@ const Recursos = () => {
   const totalQuestionCount = useMemo(() => {
     let count = 0;
     for (const item of filteredItems) {
-      if (item.tipoPreguntaId === 2) {
+      if (isGroupedType(item.tipoPreguntaId)) {
         // Pregunta agrupada: cuenta sus sub-preguntas
         const subs = item.subPreguntas || subQuestionsMap[item.id] || [];
         count += subs.length;
@@ -1039,8 +1055,8 @@ const Recursos = () => {
     setEditingId(item.id);
     setNumeroPregunta(item.numero?.toString() || '');
 
-    // If it's a grouped question, we might need to fetch sub-questions if they aren't loaded
-    if (item.tipoPreguntaId === 2) {
+    // Updated check: using helper
+    if (isGroupedType(item.tipoPreguntaId)) {
       let subs = subQuestionsMap[item.id];
       if (!subs) {
         setLoading(true);
@@ -2005,7 +2021,7 @@ const Recursos = () => {
             <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
               <div className="flex flex-col md:flex-row gap-6">
                 {/* Número (Solo si no es Grupal) */}
-                {newItem.tipoPreguntaId !== 2 && (
+                {!isGroupedType(newItem.tipoPreguntaId) && (
                   <div className="w-full md:w-1/4">
                     <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
                       Número de la pregunta <span className="text-red-500">*</span>
@@ -2028,7 +2044,7 @@ const Recursos = () => {
                 )}
 
                 {/* Clasificación */}
-                <div className={newItem.tipoPreguntaId === 2 ? "w-full" : "w-full md:w-3/4"}>
+                <div className={isGroupedType(newItem.tipoPreguntaId) ? "w-full" : "w-full md:w-3/4"}>
                   <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
                     Clasificación de la pregunta
                   </label>
@@ -2057,7 +2073,7 @@ const Recursos = () => {
             </div>
 
             {/* CONDITIONAL RENDER: INDIVIDUAL vs GROUP */}
-            {newItem.tipoPreguntaId === 2 ? (
+            {isGroupedType(newItem.tipoPreguntaId) ? (
               /* --- FORMULARIO DE PREGUNTA COMÚN (Grupal) --- */
               <PreguntaComunForm
                 initialParent={
@@ -3233,7 +3249,7 @@ const Recursos = () => {
 
             <div className="space-y-6 -mx-6">
               {currentItems.map((item) => {
-                const isParent = item.tipoPreguntaId === 2;
+                const isParent = isGroupedType(item.tipoPreguntaId);
                 const subCount = subCountsMap[item.id] || 0;
                 const isLoadingSubs = loadingSubIds.has(item.id);
                 const subs = item.subsWithIdx || [];
