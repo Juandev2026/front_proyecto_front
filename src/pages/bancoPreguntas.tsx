@@ -41,7 +41,7 @@ const TIPO_FULL_NAMES: Record<string, string> = {
   CCP: 'Conocimientos Curriculares y Pedagógicos',
   CL: 'Comprensión Lectora',
   RL: 'Razonamiento Lógico',
-  CG: 'Conocimientos Generales',
+  CG: 'Conocimientos de Gestión Educativa y de Gestión Pública',
 };
 
 const BancoPreguntasPage = () => {

@@ -585,7 +585,7 @@ const Recursos = () => {
       case 'CCP':
         return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
       case 'CG':
-        return 'CONOCIMIENTOS GENERALES';
+        return 'CONOCIMIENTOS DE GESTIÓN EDUCATIVA Y DE GESTIÓN PÚBLICA';
       case 'CL':
         return 'COMPRENSIÓN LECTORA';
       case 'RL':
