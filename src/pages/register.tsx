@@ -206,6 +206,14 @@ const Register = () => {
     setLoading(true);
     setError('');
 
+    // Validar formato de correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor ingrese un correo electrónico válido.');
+      setLoading(false);
+      return;
+    }
+
     // Validate password complexity
     if (!validatePassword(formData.password)) {
       setError(

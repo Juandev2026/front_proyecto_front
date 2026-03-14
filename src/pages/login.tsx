@@ -35,6 +35,14 @@ const Login = () => {
     setLoading(true);
     setError('');
 
+    // Validar formato de correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor ingrese un correo electrónico válido.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const loginPayload = await authService.login({
         email: formData.email,

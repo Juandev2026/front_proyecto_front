@@ -20,6 +20,17 @@ const ForgotPassword = () => {
     setLoading(true);
     setMessage(null);
 
+    // Validar formato de correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage({
+        type: 'error',
+        text: 'Por favor ingrese un correo electrónico válido.',
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       await authService.forgotPassword(email);
       setMessage({
