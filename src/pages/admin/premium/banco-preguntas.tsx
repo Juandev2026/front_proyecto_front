@@ -2004,30 +2004,31 @@ const Recursos = () => {
             {/* 3. FILA: NÚMERO Y CLASIFICACIÓN (Visible para ambos modos) */}
             <div className="border border-[#4790FD] rounded-lg p-6 bg-white shadow-sm">
               <div className="flex flex-col md:flex-row gap-6">
-                {/* Número */}
-                <div className="w-full md:w-1/4">
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                    Número de la pregunta{' '}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    className={`w-full border rounded px-3 py-2 text-gray-700 focus:ring-1 outline-none transition-all ${
-                      !numeroPregunta.trim() ||
-                      isNaN(parseInt(numeroPregunta, 10)) ||
-                      parseInt(numeroPregunta, 10) <= 0
-                        ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
-                        : 'border-[#4790FD] focus:border-[#4790FD] focus:ring-[#4790FD]'
-                    }`}
-                    placeholder="Requerido"
-                    min="1"
-                    value={numeroPregunta}
-                    onChange={(e) => setNumeroPregunta(e.target.value)}
-                  />
-                </div>
+                {/* Número (Solo si no es Grupal) */}
+                {newItem.tipoPreguntaId !== 2 && (
+                  <div className="w-full md:w-1/4">
+                    <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
+                      Número de la pregunta <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      className={`w-full border rounded px-3 py-2 text-gray-700 focus:ring-1 outline-none transition-all ${
+                        !numeroPregunta.trim() ||
+                        isNaN(parseInt(numeroPregunta, 10)) ||
+                        parseInt(numeroPregunta, 10) <= 0
+                          ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
+                          : 'border-[#4790FD] focus:border-[#4790FD] focus:ring-[#4790FD]'
+                      }`}
+                      placeholder="Requerido"
+                      min="1"
+                      value={numeroPregunta}
+                      onChange={(e) => setNumeroPregunta(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 {/* Clasificación */}
-                <div className="w-full md:w-3/4">
+                <div className={newItem.tipoPreguntaId === 2 ? "w-full" : "w-full md:w-3/4"}>
                   <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
                     Clasificación de la pregunta
                   </label>
@@ -3254,9 +3255,11 @@ const Recursos = () => {
                               : undefined
                           }
                         >
-                          {!isParent
-                            ? (item as any).visualNumero ?? item.numero ?? item.displayIndex ?? '-'
-                            : ''}
+                          {isParent ? (
+                            <DocumentTextIcon className="w-5 h-5 text-indigo-500" />
+                          ) : (
+                            (item as any).visualNumero ?? item.numero ?? item.displayIndex ?? '-'
+                          )}
                           {!isParent && (item as any).visualNumero !== item.numero && (
                             <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border border-white" title={`Número real: ${item.numero}`} />
                           )}
