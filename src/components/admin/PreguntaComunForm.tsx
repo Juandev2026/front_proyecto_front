@@ -1167,6 +1167,12 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
                             parseInt(e.target.value, 10) || 0
                           )
                         }
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     </div>
                     <div className="w-full md:w-3/4">

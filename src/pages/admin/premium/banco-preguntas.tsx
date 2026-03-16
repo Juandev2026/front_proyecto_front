@@ -2060,6 +2060,12 @@ const Recursos = () => {
                       min="1"
                       value={numeroPregunta}
                       onChange={(e) => setNumeroPregunta(e.target.value)}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
                 )}
