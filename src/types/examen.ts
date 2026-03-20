@@ -40,6 +40,9 @@ export interface PreguntaExamen {
   idAlternativaC?: number;
   idAlternativaD?: number;
   alternativas?: any[];
+  isSubPregunta?: boolean;
+  parentImagen?: string;
+  parentEnunciado?: string;
 }
 
 export interface RespuestaUsuario {

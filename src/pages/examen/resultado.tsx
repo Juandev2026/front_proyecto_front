@@ -9,6 +9,7 @@ import {
   AcademicCapIcon,
   ClockIcon,
   ChartBarIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/outline';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -20,6 +21,85 @@ import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
 import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
 import { clasificacionService } from '../../services/clasificacionService';
 import { erroneasService } from '../../services/erroneasService';
+
+const processCitation = (html: string) => {
+  if (!html) return '';
+  return html
+    .replace(
+      /<p([^>]*)>\s*(Adaptado de|Tomado de|Adaptación|Fuente:)(.*?)<\/p>/gi,
+      '<p$1 class="citation-text">$2$3</p>'
+    )
+    .replace(
+      /(?:<br\s*\/?>\s*)*(Adaptado de|Tomado de|Fuente:)(.*?)(?=<\/p>|$)/gi,
+      '<div class="citation-text">$1$2</div>'
+    );
+};
+
+const isImageUrl = (url: string) => {
+  if (!url) return false;
+  // Soporta extensiones comunes y URLs de S3 que contienen /images/ o extensiones
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.jfif'];
+  const lowercaseUrl = url.trim().toLowerCase();
+  
+  // Si la cadena contiene un espacio, podría ser un enlace mezclado con texto, 
+  // pero buscaremos si al menos "parece" una imagen de S3 o termina en extensión
+  const hasExtension = imageExtensions.some((ext) => lowercaseUrl.includes(ext));
+  const isS3Image = lowercaseUrl.includes('amazonaws.com') && (lowercaseUrl.includes('/images/') || hasExtension);
+  
+  return hasExtension || isS3Image;
+};
+
+const SustentoCollapse = ({ sustento }: { sustento: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const isImage = isImageUrl(sustento);
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-50">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-[10px] font-black text-[#4790FD] uppercase tracking-widest hover:text-blue-600 transition-all group"
+      >
+        <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+          <ChevronDownIcon className="w-4 h-4" />
+        </div>
+        <span>Sustento</span>
+        {!isOpen && <span className="text-[9px] lowercase font-medium text-gray-400">(clic para ver)</span>}
+      </button>
+
+      {isOpen && (
+        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          {(isImage || sustento.trim().startsWith('http')) ? (
+            (() => {
+              const imageUrl = sustento.match(/https?:\/\/[^\s]+/)?.[0] || sustento;
+              if (isImage) {
+                return (
+                  <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md max-w-3xl bg-gray-50">
+                    <img
+                      src={imageUrl}
+                      alt="Sustento"
+                      className="w-full h-auto object-contain max-h-[500px]"
+                    />
+                  </div>
+                );
+              }
+              return (
+                <div
+                  className="text-sm text-gray-600 italic leading-relaxed bg-blue-50/30 p-4 rounded-xl border border-blue-50"
+                  dangerouslySetInnerHTML={{ __html: sustento }}
+                />
+              );
+            })()
+          ) : (
+            <div
+              className="text-sm text-gray-600 italic leading-relaxed bg-blue-50/30 p-4 rounded-xl border border-blue-50"
+              dangerouslySetInnerHTML={{ __html: sustento }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ResultadoPage = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -94,6 +174,7 @@ const ResultadoPage = () => {
               preguntaId: q.preguntaId || q.id || q.preguntaId, 
               enunciado: sub.enunciado || '',
               parentEnunciado: q.enunciado || '',
+              parentImagen: q.imagen || '',
               imagen: sub.imagen || q.imagen || '',
               alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
               alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
@@ -162,6 +243,7 @@ const ResultadoPage = () => {
               return res;
             })(),
             isSubPregunta: false,
+            parentImagen: '',
             examenId: q.examenId || 0,
             year: q.year || 0,
           });
@@ -658,10 +740,8 @@ const ResultadoPage = () => {
 
               // Only show parent enunciado if it's different from the previous one
               const showParent =
-                (q as any).parentEnunciado &&
-                (idx === 0 ||
-                  (questions[idx - 1] as any).parentEnunciado !==
-                    (q as any).parentEnunciado);
+                q.parentEnunciado &&
+                (idx === 0 || questions[idx - 1]?.preguntaId !== q.preguntaId);
 
               const getStatusLabel = () => {
                 if (isCorrect) return 'Correcta';
@@ -692,11 +772,9 @@ const ResultadoPage = () => {
                       <div className="absolute top-0 left-8 -translate-y-1/2 bg-gray-400 text-white text-[9px] font-black px-4 py-1 rounded-md uppercase tracking-widest shadow-sm">
                         Texto de Referencia
                       </div>
-                      <div
-                        className="text-gray-800 font-serif leading-relaxed text-sm text-justify"
-                        dangerouslySetInnerHTML={{
-                          __html: (q as any).parentEnunciado,
-                        }}
+                      <HtmlMathRenderer
+                        className="text-gray-800 text-lg md:text-xl leading-relaxed italic border-l-4 border-[#4790FD] pl-6 py-2 bg-blue-50/10 rounded-r-xl"
+                        html={processCitation(q.parentEnunciado || '')}
                       />
                     </div>
                   )}
@@ -742,9 +820,30 @@ const ResultadoPage = () => {
                     </div>
 
                     <div className="space-y-6">
-                      <div
-                        className="text-gray-900 font-bold text-base leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: q.enunciado }}
+                      {/* Imagen de la pregunta */}
+                      {(() => {
+                        const showImage = q.imagen && (
+                          !q.isSubPregunta || 
+                          q.imagen !== q.parentImagen ||
+                          (idx === 0 || questions[idx - 1]?.preguntaId !== q.preguntaId)
+                        );
+                        
+                        if (!showImage) return null;
+                        
+                        return (
+                          <div className="mb-6 rounded-2xl overflow-hidden border border-gray-100 shadow-md bg-white">
+                            <img
+                              src={q.imagen}
+                              alt="Imagen de la pregunta"
+                              className="w-full h-auto object-contain max-h-[400px]"
+                            />
+                          </div>
+                        );
+                      })()}
+
+                      <HtmlMathRenderer
+                        className="text-gray-800 text-lg md:text-xl leading-relaxed"
+                        html={processCitation(q.enunciado || '')}
                       />
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -784,7 +883,7 @@ const ResultadoPage = () => {
                                 {opt}
                               </div>
                               <HtmlMathRenderer
-                                className="text-xs font-semibold"
+                                className="text-sm md:text-base font-medium"
                                 html={optContent}
                                 alternativeLabel={opt}
                               />
@@ -794,18 +893,9 @@ const ResultadoPage = () => {
                       </div>
 
                       {/* Sustento */}
-                      {q.sustento && (
-                        <div className="mt-8 pt-6 border-t border-gray-50">
-                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                            Sustento:
-                          </div>
-                          <div
-                            className="text-xs text-gray-600 italic leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: q.sustento }}
-                          />
-                        </div>
-                      )}
-                      {!q.sustento && (
+                      {q.sustento ? (
+                        <SustentoCollapse sustento={q.sustento} />
+                      ) : (
                         <div className="mt-8 pt-6 border-t border-gray-50">
                           <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
                             Sustento:

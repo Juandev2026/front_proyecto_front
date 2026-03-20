@@ -79,10 +79,13 @@ const RelevantInfoCarousel = () => {
         onTouchEnd={() => setIsHovered(false)}
       >
         {/* Left: Image Section */}
-        <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden">
+        <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden bg-gray-100">
           <div
             className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-in-out hover:scale-105"
-            style={{ backgroundImage: `url(${currentItem.urlImagen})` }}
+            style={{ 
+              backgroundImage: currentItem.urlImagen ? `url(${currentItem.urlImagen})` : 'none',
+              backgroundColor: currentItem.urlImagen ? 'transparent' : '#f3f4f6'
+            }}
           />
         </div>
 
