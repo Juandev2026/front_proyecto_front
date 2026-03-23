@@ -158,7 +158,23 @@ const AdminPremiumDocentes = () => {
       
       // eaData is ModalidadEA[]
       const mods = eaData.map((m: any) => ({ id: m.id, nombre: m.nombre, niveles: m.niveles }));
-      setModalidades(mods as any);
+      const sortedMods = mods.sort((a, b) => {
+        const orderValues = [
+          'EDUCACIÓN BÁSICA REGULAR',
+          'EDUCACIÓN BÁSICA ALTERNATIVA',
+          'EDUCACIÓN BÁSICA ESPECIAL',
+          'CETPRO',
+        ];
+        const nameA = (a.nombre || '').toUpperCase();
+        const nameB = (b.nombre || '').toUpperCase();
+        const idxA = orderValues.findIndex((o) => nameA.includes(o));
+        const idxB = orderValues.findIndex((o) => nameB.includes(o));
+        const valA = idxA === -1 ? 99 : idxA;
+        const valB = idxB === -1 ? 99 : idxB;
+        if (valA !== valB) return valA - valB;
+        return nameA.localeCompare(nameB);
+      });
+      setModalidades(sortedMods as any);
       
       // Flat list of levels for general usage
       const allNivs: any[] = [];

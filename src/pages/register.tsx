@@ -93,7 +93,24 @@ const Register = () => {
           });
         });
 
-        setModalidades(flatModalidades);
+        const sortedModalidades = flatModalidades.sort((a, b) => {
+          const orderValues = [
+            'EDUCACIÓN BÁSICA REGULAR',
+            'EDUCACIÓN BÁSICA ALTERNATIVA',
+            'EDUCACIÓN BÁSICA ESPECIAL',
+            'CETPRO',
+          ];
+          const nameA = (a.nombre || '').toUpperCase();
+          const nameB = (b.nombre || '').toUpperCase();
+          const idxA = orderValues.findIndex((o) => nameA.includes(o));
+          const idxB = orderValues.findIndex((o) => nameB.includes(o));
+          const valA = idxA === -1 ? 99 : idxA;
+          const valB = idxB === -1 ? 99 : idxB;
+          if (valA !== valB) return valA - valB;
+          return nameA.localeCompare(nameB);
+        });
+
+        setModalidades(sortedModalidades);
         setNiveles(flatNiveles);
         setEspecialidades(flatEspecialidades);
       } catch (err) {

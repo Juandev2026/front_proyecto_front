@@ -90,17 +90,19 @@ const SimulacrosDirectivosPage = () => {
       )
       .sort((a, b) => {
         const orderValues = [
-          'Educación Básica Regular',
-          'Educación Básica Alternativa',
-          'Educación Básica Especial',
-          'CETPRO'
+          'EDUCACIÓN BÁSICA REGULAR',
+          'EDUCACIÓN BÁSICA ALTERNATIVA',
+          'EDUCACIÓN BÁSICA ESPECIAL',
+          'CETPRO',
         ];
-        const idxA = orderValues.findIndex((o) => a.nombre.includes(o));
-        const idxB = orderValues.findIndex((o) => b.nombre.includes(o));
+        const nameA = (a.nombre || '').toUpperCase();
+        const nameB = (b.nombre || '').toUpperCase();
+        const idxA = orderValues.findIndex((o) => nameA.includes(o));
+        const idxB = orderValues.findIndex((o) => nameB.includes(o));
         const valA = idxA === -1 ? 99 : idxA;
         const valB = idxB === -1 ? 99 : idxB;
         if (valA !== valB) return valA - valB;
-        return a.nombre.localeCompare(b.nombre);
+        return nameA.localeCompare(nameB);
       });
   }, [filteredExams]);
 

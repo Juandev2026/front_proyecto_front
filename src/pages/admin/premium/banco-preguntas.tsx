@@ -681,12 +681,29 @@ const Recursos = () => {
     const mods =
       availableFuentes.find((f: any) => f.fuenteId === Number(selectedFuente))
         ?.modalidades || [];
-    return mods.filter(
-      (m: any) =>
-        m.modalidadNombre &&
-        m.modalidadNombre !== 'string' &&
-        m.modalidadNombre.toUpperCase() !== 'NINGUNO'
-    );
+    return mods
+      .filter(
+        (m: any) =>
+          m.modalidadNombre &&
+          m.modalidadNombre !== 'string' &&
+          m.modalidadNombre.toUpperCase() !== 'NINGUNO'
+      )
+      .sort((a, b) => {
+        const orderValues = [
+          'EDUCACIÓN BÁSICA REGULAR',
+          'EDUCACIÓN BÁSICA ALTERNATIVA',
+          'EDUCACIÓN BÁSICA ESPECIAL',
+          'CETPRO',
+        ];
+        const nameA = (a.modalidadNombre || '').toUpperCase();
+        const nameB = (b.modalidadNombre || '').toUpperCase();
+        const idxA = orderValues.findIndex((o) => nameA.includes(o));
+        const idxB = orderValues.findIndex((o) => nameB.includes(o));
+        const valA = idxA === -1 ? 99 : idxA;
+        const valB = idxB === -1 ? 99 : idxB;
+        if (valA !== valB) return valA - valB;
+        return nameA.localeCompare(nameB);
+      });
   }, [availableFuentes, selectedFuente]);
 
   const availableNiveles = useMemo(() => {
