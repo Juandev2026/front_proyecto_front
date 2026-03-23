@@ -478,7 +478,6 @@ const BancoPreguntasPage = () => {
                   // Nombramiento
                   if (name === 'CL' || name === 'Comprensión Lectora') {
                     correctedMinimo = 0;
-                    if (cantidad > 0) correctedCantidad = 15;
                   } else if (name === 'RL' || name === 'Razonamiento Lógico') {
                     correctedMinimo = 0;
                   } else if (
@@ -487,7 +486,6 @@ const BancoPreguntasPage = () => {
                     name === 'Conocimientos Curriculares y Pedagócicos'
                   ) {
                     correctedMinimo = 90;
-                    if (cantidad > 0) correctedCantidad = 50;
                   }
                 }
 
@@ -501,29 +499,7 @@ const BancoPreguntasPage = () => {
                 };
               } else {
                 const correctedCantidad = cantidad;
-                if (String(selectedTipoExamenId) === '2') {
-                  if (
-                    (name === 'CL' || name === 'Comprensión Lectora') &&
-                    cantidad > 0
-                  ) {
-                    // We don't want to sum up to more than 15 if it's already set or being accumulated
-                    // but the logic here handles accumulation. For Nombramiento, it's usually one exam anyway.
-                    // If it's multi-source, we ensure the final display is 15.
-                  }
-                }
                 countMap[name].cantidad += correctedCantidad;
-
-                // Final cap for Nombramiento display
-                if (String(selectedTipoExamenId) === '2') {
-                  if (name === 'CL' || name === 'Comprensión Lectora')
-                    countMap[name].cantidad = 15;
-                  if (
-                    name === 'CCP' ||
-                    name === 'Conocimientos Curriculares y Pedagógicos' ||
-                    name === 'Conocimientos Curriculares y Pedagócicos'
-                  )
-                    countMap[name].cantidad = 50;
-                }
               }
 
               if (
@@ -640,6 +616,7 @@ const BancoPreguntasPage = () => {
           clasificacionIds.includes(q.clasificacionId)
         );
       }
+
 
       setQuestionsToStore(filteredQuestions);
       setExamToStart(exam);
