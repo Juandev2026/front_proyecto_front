@@ -54,6 +54,57 @@ interface ContentBlock {
   isGray?: boolean;
 }
 
+const isImageUrl = (url: string) => {
+  if (!url) return false;
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.jfif'];
+  const lowercaseUrl = url.trim().toLowerCase();
+  const hasExtension = imageExtensions.some((ext) => lowercaseUrl.includes(ext));
+  const isS3Image = (lowercaseUrl.includes('amazonaws.com') || lowercaseUrl.includes('s3.')) && 
+                     (lowercaseUrl.includes('/images/') || lowercaseUrl.includes('/img/') || hasExtension);
+  const isDirectImage = lowercaseUrl.startsWith('http') && hasExtension;
+  return hasExtension || isS3Image || isDirectImage;
+};
+
+const SustentoDisplay = ({ sustento }: { sustento: string }) => {
+  if (!sustento) return <span className="text-gray-400 italic font-medium">Sin sustento disponible</span>;
+  
+  const isImage = isImageUrl(sustento);
+  
+  if (isImage || sustento.trim().startsWith('http')) {
+    let imageUrl = sustento.trim();
+    if (!imageUrl.startsWith('http')) {
+      const match = sustento.match(/https?:\/\/[^\s]+/);
+      imageUrl = match ? match[0] : sustento.trim();
+    }
+    
+    if (isImage) {
+      const encodedUrl = imageUrl.replace(/ /g, '%20');
+      return (
+        <div className="mt-2 rounded-lg overflow-hidden border border-gray-100 shadow-sm max-w-xl bg-white p-1">
+          <img
+            src={encodedUrl}
+            alt="Sustento"
+            className="w-full h-auto object-contain max-h-[400px]"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                const fallback = document.createElement('div');
+                fallback.className = 'text-sm text-red-500 italic p-2';
+                fallback.innerText = 'URL de imagen no válida o inaccesible.';
+                parent.appendChild(fallback);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+  }
+
+  return <HtmlMathRenderer html={sustento} />;
+};
+
 const Recursos = () => {
   // --- ESTADOS LOGICOS (CRUD) ---
   const [items, setItems] = useState<Pregunta[]>([]);
@@ -3599,11 +3650,7 @@ const Recursos = () => {
                                       Sustento:
                                     </span>
                                     <div className="text-gray-800 mt-2">
-                                      {sub.sustento ? (
-                                        <HtmlMathRenderer html={sub.sustento} />
-                                      ) : (
-                                        'Sin sustento disponible'
-                                      )}
+                                      <SustentoDisplay sustento={sub.sustento || ''} />
                                     </div>
                                   </div>
                                 </div>
@@ -3703,11 +3750,7 @@ const Recursos = () => {
                               Sustento:
                             </span>
                             <div className="text-gray-800 mt-2">
-                              {item.sustento ? (
-                                <HtmlMathRenderer html={item.sustento} />
-                              ) : (
-                                'Sin sustento disponible'
-                              )}
+                              <SustentoDisplay sustento={item.sustento || ''} />
                             </div>
                           </div>
                         </div>

@@ -41,12 +41,15 @@ const isImageUrl = (url: string) => {
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.jfif'];
   const lowercaseUrl = url.trim().toLowerCase();
   
-  // Si la cadena contiene un espacio, podría ser un enlace mezclado con texto, 
-  // pero buscaremos si al menos "parece" una imagen de S3 o termina en extensión
+  // Verificamos si termina o contiene una extensión de imagen
   const hasExtension = imageExtensions.some((ext) => lowercaseUrl.includes(ext));
-  const isS3Image = lowercaseUrl.includes('amazonaws.com') && (lowercaseUrl.includes('/images/') || hasExtension);
+  // Verificamos si es una URL de S3 que suele contener imágenes aunque no tenga extensión clásica al final (a veces tienen params)
+  const isS3Image = (lowercaseUrl.includes('amazonaws.com') || lowercaseUrl.includes('s3.')) && 
+                     (lowercaseUrl.includes('/images/') || lowercaseUrl.includes('/img/') || hasExtension);
+  // Verificamos si la cadena misma EMPIEZA con http y tiene apariencia de imagen
+  const isDirectImage = lowercaseUrl.startsWith('http') && hasExtension;
   
-  return hasExtension || isS3Image;
+  return hasExtension || isS3Image || isDirectImage;
 };
 
 const SustentoCollapse = ({ sustento }: { sustento: string }) => {
@@ -70,14 +73,37 @@ const SustentoCollapse = ({ sustento }: { sustento: string }) => {
         <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
           {(isImage || sustento.trim().startsWith('http')) ? (
             (() => {
-              const imageUrl = sustento.match(/https?:\/\/[^\s]+/)?.[0] || sustento;
+              // Si es una imagen o parece URL, intentamos extraerla. 
+              // Usamos una regex más permisiva que capture espacios si están en medio de una URL (común en S3 mal formateado)
+              // Pero lo ideal es capturar todo si la cadena empieza por http
+              let imageUrl = sustento.trim();
+              if (!imageUrl.startsWith('http')) {
+                const match = sustento.match(/https?:\/\/[^\s]+/);
+                imageUrl = match ? match[0] : sustento.trim();
+              }
+              
+              // Si es imagen, la mostramos. Si tiene espacios, los codificamos para el src
               if (isImage) {
+                // Codificamos solo los espacios si la URL los tiene sueltos
+                const encodedUrl = imageUrl.replace(/ /g, '%20');
                 return (
-                  <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md max-w-3xl bg-gray-50">
+                  <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md max-w-3xl bg-gray-50 p-1">
                     <img
-                      src={imageUrl}
+                      src={encodedUrl}
                       alt="Sustento"
                       className="w-full h-auto object-contain max-h-[500px]"
+                      onError={(e) => {
+                        // Si falla la carga, mostramos el texto como fallback
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'text-sm text-red-500 italic p-2';
+                          fallback.innerText = 'Error al cargar la imagen de sustento.';
+                          parent.appendChild(fallback);
+                        }
+                      }}
                     />
                   </div>
                 );

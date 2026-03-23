@@ -193,6 +193,12 @@ const faqs = [
           <li className="flex items-center gap-2">
             <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
             <span>
+              <strong>CETPRO</strong>
+            </span>
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+            <span>
               <strong>Especialidades según convocatoria</strong>
             </span>
           </li>

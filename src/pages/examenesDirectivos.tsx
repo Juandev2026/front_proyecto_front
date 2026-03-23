@@ -47,14 +47,31 @@ const ExamenesDirectivosPage = () => {
   );
 
   const groupedByModalidad = useMemo(() => {
-    const groups: Record<number, { nombre: string; exams: ExamenLogin[] }> = {};
+    const groupsMap: Record<number, { id: number; nombre: string; exams: ExamenLogin[] }> = {};
     directivosExams.forEach((e) => {
-      if (!groups[e.modalidadId]) {
-        groups[e.modalidadId] = { nombre: e.modalidadNombre, exams: [] };
+      if (!groupsMap[e.modalidadId]) {
+        groupsMap[e.modalidadId] = { id: e.modalidadId, nombre: e.modalidadNombre, exams: [] };
       }
-      groups[e.modalidadId]!.exams.push(e);
+      groupsMap[e.modalidadId]!.exams.push(e);
     });
-    return groups;
+
+    const orderValues = [
+      'EDUCACIÓN BÁSICA REGULAR',
+      'EDUCACIÓN BÁSICA ALTERNATIVA',
+      'EDUCACIÓN BÁSICA ESPECIAL',
+      'CETPRO',
+    ];
+
+    return Object.values(groupsMap).sort((a, b) => {
+      const nameA = (a.nombre || '').toUpperCase();
+      const nameB = (b.nombre || '').toUpperCase();
+      const idxA = orderValues.findIndex((o) => nameA.includes(o));
+      const idxB = orderValues.findIndex((o) => nameB.includes(o));
+      const valA = idxA === -1 ? 99 : idxA;
+      const valB = idxB === -1 ? 99 : idxB;
+      if (valA !== valB) return valA - valB;
+      return nameA.localeCompare(nameB);
+    });
   }, [directivosExams]);
 
   const handleToggleClass = (examId: number, classId: number) => {
@@ -177,16 +194,16 @@ const ExamenesDirectivosPage = () => {
 
         {/* Accordions List */}
         <div className="space-y-3">
-          {Object.entries(groupedByModalidad).map(([id, group]) => (
+          {groupedByModalidad.map((group) => (
             <div
-              key={id}
+              key={group.id}
               className="border border-[#4790FD]/20 rounded-xl bg-white overflow-hidden shadow-sm transition-all duration-200"
             >
               <button
                 onClick={() =>
                   setOpenAccordions((prev) => ({
                     ...prev,
-                    [Number(id)]: !prev[Number(id)],
+                    [Number(group.id)]: !prev[Number(group.id)],
                   }))
                 }
                 className="w-full flex items-center justify-between p-4 px-6 hover:bg-blue-50/50 transition-all font-bold text-[#4790FD]"
@@ -195,14 +212,14 @@ const ExamenesDirectivosPage = () => {
                   <FolderIcon className="h-6 w-6 text-[#4790FD]" />
                   <span className="text-lg">{group.nombre}</span>
                 </div>
-                {openAccordions[Number(id)] ? (
+                {openAccordions[Number(group.id)] ? (
                   <ChevronUpIcon className="h-5 w-5 text-gray-400" />
                 ) : (
                   <ChevronDownIcon className="h-5 w-5 text-gray-400" />
                 )}
               </button>
 
-              {openAccordions[Number(id)] && (
+              {openAccordions[Number(group.id)] && (
                 <div className="p-6 bg-[#F8FAFF] border-t border-blue-50 space-y-6">
                   {group.exams.map((exam) => (
                     <div key={exam.id} className="space-y-4">

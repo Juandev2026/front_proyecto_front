@@ -81,7 +81,26 @@ const BancoPreguntasEdPage = () => {
         clasificaciones: s.clasificaciones || [],
       }));
 
-      const filtered = mapped.filter((s: SeccionPropia) => s.visible === true);
+      const orderValues = [
+        'EDUCACIÓN BÁSICA REGULAR',
+        'EDUCACIÓN BÁSICA ALTERNATIVA',
+        'EDUCACIÓN BÁSICA ESPECIAL',
+        'CETPRO',
+      ];
+
+      const filtered = mapped
+        .filter((s: SeccionPropia) => s.visible === true)
+        .sort((a: any, b: any) => {
+          const nameA = (a.nombre || '').toUpperCase();
+          const nameB = (b.nombre || '').toUpperCase();
+          const idxA = orderValues.findIndex((o) => nameA.includes(o));
+          const idxB = orderValues.findIndex((o) => nameB.includes(o));
+          const valA = idxA === -1 ? 99 : idxA;
+          const valB = idxB === -1 ? 99 : idxB;
+          if (valA !== valB) return valA - valB;
+          return nameA.localeCompare(nameB);
+        });
+
       setSecciones(filtered);
 
       if (filtered.length > 0 && filtered[0]) {
