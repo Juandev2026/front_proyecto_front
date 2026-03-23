@@ -289,7 +289,7 @@ const UsersPage = () => {
       if (!payload.estado) payload.estado = 'Activo';
       if (!payload.tiempo) payload.tiempo = 1;
 
-      if (payload.role !== 'Premium' && payload.role !== 'Admin' && payload.role !== 'Invitado' && payload.role !== 'Prueba_Gratis_7' && payload.role !== 'Prueba_Gratis_15') {
+      if (payload.role !== 'Premium' && payload.role !== 'Admin' && payload.role !== 'Client' && payload.role !== 'Invitado' && payload.role !== 'Prueba_Gratis_7' && payload.role !== 'Prueba_Gratis_15') {
         payload.ie = '';
         payload.observaciones = '';
         payload.accesoIds = [];
@@ -1175,7 +1175,7 @@ const UsersPage = () => {
                 )}
 
                 {/* === SECCIÓN 3: INFORMACIÓN DE SUSCRIPCIÓN (Premium, Admin o Prueba Gratis) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Client' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCardIcon className="w-5 h-5 text-[#4a90f9]" />
@@ -1258,7 +1258,7 @@ const UsersPage = () => {
                 )}
 
                 {/* === SECCIÓN 4: TIPO DE ACCESO (Premium, Admin o Prueba Gratis) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
+                {(formData.role === 'Premium' || formData.role === 'Admin' || formData.role === 'Client' || formData.role === 'Invitado' || formData.role === 'Prueba_Gratis_7' || formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <LockClosedIcon className="w-5 h-5 text-[#4a90f9]" />

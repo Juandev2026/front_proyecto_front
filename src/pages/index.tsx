@@ -35,10 +35,11 @@ const App = () => {
       try {
         const anuncios = await anuncioService.getAll();
         if (anuncios.length > 0) {
-          const formattedSlides = anuncios
+          const formattedSlides = [...anuncios]
+            .sort((a, b) => (a.posicion ?? 0) - (b.posicion ?? 0))
             .filter((a) => a.imagenUrl)
             .map((a) => ({
-              image: a.imagenUrl,
+              image: a.imagenUrl.replace(/\s/g, '%20'),
               title: a.titulo,
               description: a.descripcion,
               celular: a.celular,

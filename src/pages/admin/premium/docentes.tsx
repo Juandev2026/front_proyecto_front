@@ -1440,7 +1440,10 @@ const AdminPremiumDocentes = () => {
                 {/* === SECCIÓN 2: INFORMACIÓN ACADÉMICA (Premium, Admin o Client) === */}
                 {(formData.role === 'Premium' ||
                   formData.role === 'Admin' ||
-                  formData.role === 'Client') && (
+                  formData.role === 'Client' ||
+                  formData.role === 'Invitado' ||
+                  formData.role === 'Prueba_Gratis_7' ||
+                  formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <svg
@@ -1724,7 +1727,12 @@ const AdminPremiumDocentes = () => {
                 )}
 
                 {/* === SECCIÓN 3: TIPO DE ACCESO (Solo Premium o Admin) === */}
-                {(formData.role === 'Premium' || formData.role === 'Admin') && (
+                {(formData.role === 'Premium' || 
+                  formData.role === 'Admin' || 
+                  formData.role === 'Client' || 
+                  formData.role === 'Invitado' || 
+                  formData.role === 'Prueba_Gratis_7' || 
+                  formData.role === 'Prueba_Gratis_15') && (
                   <div className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <svg

@@ -17,7 +17,7 @@ const RelevantInfoCarousel = () => {
     const fetchData = async () => {
       try {
         const data = await informacionRelevanteService.getAll();
-        setItems(data);
+        setItems([...data].sort((a, b) => (a.posicion ?? 0) - (b.posicion ?? 0)));
       } catch (error) {
         console.error('Error fetching relevant info:', error);
       } finally {
@@ -81,10 +81,11 @@ const RelevantInfoCarousel = () => {
         {/* Left: Image Section */}
         <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden bg-gray-100">
           <div
+            key={currentItem.id}
             className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-in-out hover:scale-105"
             style={{
               backgroundImage: currentItem.urlImagen
-                ? `url(${currentItem.urlImagen})`
+                ? `url("${currentItem.urlImagen.replace(/\s/g, '%20')}")`
                 : 'none',
               backgroundColor: currentItem.urlImagen
                 ? 'transparent'

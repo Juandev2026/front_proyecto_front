@@ -10,6 +10,7 @@ export interface Anuncio {
   ruta: string;
   precio: number;
   telefono: string;
+  posicion: number;
 }
 
 const API_URL = `${API_BASE_URL}/AnunciosGenerales`;
