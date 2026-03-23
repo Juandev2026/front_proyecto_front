@@ -77,7 +77,7 @@ const PoliticaPrivacidad = () => {
 
                 <div>
                   <h3 className="text-xl font-bold mb-3">2. Duración del acceso</h3>
-                  <p>El acceso tendrá la duración del plan contratado (5 meses o 12 meses).</p>
+                  <p>El acceso tendrá la duración del plan contratado (6 meses o 12 meses).</p>
                 </div>
 
                 <div>

@@ -288,10 +288,15 @@ const Planes = () => {
           <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
             Elige el Plan Perfecto para Ti
           </h1>
-          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
-            Invierte en tu desarrollo profesional con nuestros planes diseñados
-            para docentes comprometidos
-          </p>
+          <div className="space-y-2">
+            <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
+              Invierte en tu desarrollo profesional con nuestros planes diseñados
+              para docentes comprometidos
+            </p>
+            <p className="text-blue-600 font-bold text-lg">
+              Todo de acuerdo a tu nivel y/o especialidad
+            </p>
+          </div>
         </div>
 
 
