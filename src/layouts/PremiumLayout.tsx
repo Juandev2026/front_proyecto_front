@@ -439,7 +439,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                       w-full group flex items-center justify-between px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                       ${
                         isActive
-                          ? 'bg-[#4790FD] text-white shadow-[#4790FD]/30 shadow-lg'
+                          ? 'bg-[#4790FD] !text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
                           : isExpanded
                           ? 'bg-blue-50 text-[#4790FD]'
                           : 'text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]'
@@ -491,7 +491,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                         group flex items-center px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
                         ${
                           isActive
-                            ? 'bg-[#4790FD] text-white hover:text-white shadow-[#4790FD]/30 shadow-lg'
+                            ? 'bg-[#4790FD] !text-white hover:text-white active:text-white shadow-[#4790FD]/30 shadow-lg'
                             : 'text-[#2B3674] hover:bg-gray-50 hover:text-[#4790FD]'
                         }
                          ${isCollapsed ? 'justify-center' : ''} 
@@ -532,7 +532,7 @@ const PremiumLayout: React.FC<PremiumLayoutProps> = ({
                                   child.locked
                                     ? 'text-gray-400 cursor-not-allowed opacity-75'
                                     : isChildActive
-                                    ? 'bg-[#4790FD] text-white shadow-md'
+                                    ? 'bg-[#4790FD] !text-white hover:text-white active:text-white shadow-md'
                                     : 'text-[#2B3674] hover:text-[#4790FD] hover:bg-gray-50'
                                 }
                              `}

@@ -172,7 +172,7 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-green-500 hover:bg-green-600 !text-white hover:text-white active:text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-2 transition-all transform active:scale-110"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -200,7 +200,7 @@ const AdSidebar = ({ forceGeneral = false }: { forceGeneral?: boolean }) => {
                     href={webLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-3 right-3 bg-primary hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-all shadow-md hover:shadow-lg"
+                    className="absolute bottom-3 right-3 bg-primary hover:bg-blue-700 !text-white hover:text-white active:text-white text-xs font-bold py-2 px-4 rounded-full transition-all shadow-md hover:shadow-lg active:scale-110"
                   >
                     VER MÁS
                   </a>

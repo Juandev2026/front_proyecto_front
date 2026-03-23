@@ -234,7 +234,7 @@ const LatestNews = () => {
                               </p>
                             </div>
                             <div className="mt-6 flex justify-end">
-                              <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
+                              <span className="inline-block px-7 py-2.5 bg-primary !text-white group-hover:text-white active:text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-all uppercase shadow-md active:scale-110">
                                 Ver más
                               </span>
                             </div>
