@@ -5,9 +5,9 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import LogoutModal from './LogoutModal';
 import config from '../config/index.json';
 import { useAuth } from '../hooks/useAuth';
-import LogoutModal from './LogoutModal';
 
 const Menu = () => {
   const router = useRouter();
@@ -82,7 +82,7 @@ const Menu = () => {
                       : '/planes?showVideo=true'
                   }
                 >
-                  <a className="bg-[#4a90f9] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-[10px] sm:text-xs font-extrabold shadow-md hover:bg-blue-600 transition-all active:scale-95 whitespace-nowrap">
+                  <a className="bg-[#4a90f9] !text-white hover:text-white active:text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-[10px] sm:text-xs font-extrabold shadow-md hover:bg-blue-600 transition-all active:scale-110 whitespace-nowrap">
                     AVEND ESCALA
                   </a>
                 </Link>
@@ -118,7 +118,7 @@ const Menu = () => {
                         : '/planes?showVideo=true'
                     }
                   >
-                  <a className="bg-[#4a90f9] !text-white hover:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
+                    <a className="bg-[#4a90f9] !text-white hover:text-white active:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-blue-600 transition-all hover:scale-110 hover:shadow-xl active:scale-105 whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                       AVEND ESCALA
                     </a>
                   </Link>
@@ -183,7 +183,14 @@ const Menu = () => {
                     <div className="flex flex-col items-end min-w-0">
                       <span className="hidden lg:block text-gray-700 font-bold md:font-semibold text-sm md:text-base lg:text-lg truncate max-w-[100px] lg:max-w-none">
                         <span className="hidden md:inline">Hola, </span>
-                        {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
+                        {
+                          (
+                            user?.fullName ||
+                            (user as any)?.nombreCompleto ||
+                            user?.email ||
+                            'Usuario'
+                          ).split(' ')[0]
+                        }
                       </span>
                       <button
                         onClick={handleLogout}
@@ -193,19 +200,26 @@ const Menu = () => {
                       </button>
                     </div>
                     <div className="h-9 w-9 md:h-12 md:w-12 rounded-full bg-[#4a90f9] text-white flex items-center justify-center font-bold text-base md:text-xl shadow-md">
-                      {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'U').charAt(0).toUpperCase()}
+                      {(
+                        user?.fullName ||
+                        (user as any)?.nombreCompleto ||
+                        user?.email ||
+                        'U'
+                      )
+                        .charAt(0)
+                        .toUpperCase()}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="hidden md:flex items-center space-x-2 md:space-x-4">
                   <Link href="/login">
-                    <a className="text-xs md:text-sm font-medium text-gray-500 hover:text-primary transition-colors whitespace-nowrap">
+                    <a className="text-xs md:text-sm font-bold text-gray-700 hover:text-primary transition-all active:scale-110 whitespace-nowrap">
                       Iniciar Sesión
                     </a>
                   </Link>
                   <Link href="/register">
-                    <a className="inline-flex items-center justify-center px-3 md:px-4 py-1.5 border border-transparent rounded-md shadow-sm text-xs md:text-sm font-bold text-white bg-primary hover:bg-secondary transition-colors whitespace-nowrap">
+                    <a className="inline-flex items-center justify-center px-4 md:px-6 py-2 border border-transparent rounded-full shadow-md text-xs md:text-sm font-bold !text-white hover:text-white active:text-white bg-primary hover:bg-blue-600 transition-all transform active:scale-110 whitespace-nowrap">
                       Regístrese
                     </a>
                   </Link>
@@ -368,7 +382,15 @@ const Menu = () => {
                 {isAuthenticated && (
                   <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                     <div className="font-bold text-gray-800 text-lg">
-                      Hola, {(user?.fullName || (user as any)?.nombreCompleto || user?.email || 'Usuario').split(' ')[0]}
+                      Hola,{' '}
+                      {
+                        (
+                          user?.fullName ||
+                          (user as any)?.nombreCompleto ||
+                          user?.email ||
+                          'Usuario'
+                        ).split(' ')[0]
+                      }
                     </div>
                     <button
                       onClick={handleLogout}
@@ -400,12 +422,12 @@ const Menu = () => {
                     </div>
                     <div className="flex flex-col gap-3">
                       <Link href="/login">
-                        <a className="block w-full px-5 py-3.5 text-center font-extrabold text-white bg-primary hover:bg-blue-600 rounded-xl transition-colors shadow-md text-sm">
+                        <a className="block w-full px-5 py-3.5 text-center font-extrabold !text-white hover:text-white bg-primary hover:bg-blue-600 rounded-xl transition-all shadow-md text-sm active:scale-110">
                           INICIAR SESIÓN
                         </a>
                       </Link>
                       <Link href="/register">
-                        <a className="block w-full px-5 py-3.5 text-center font-extrabold text-white bg-gray-600 hover:bg-gray-700 rounded-xl transition-colors shadow-md text-sm">
+                        <a className="block w-full px-5 py-3.5 text-center font-extrabold !text-white hover:text-white bg-gray-600 hover:bg-gray-700 rounded-xl transition-all shadow-md text-sm active:scale-110">
                           REGÍSTRESE
                         </a>
                       </Link>
@@ -419,7 +441,7 @@ const Menu = () => {
                       (user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN') && (
                         <Link href="/admin">
-                          <a className="block w-full px-5 py-2.5 text-center font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl transition-colors shadow-md text-sm">
+                          <a className="block w-full px-5 py-2.5 text-center font-bold !text-white hover:text-white bg-gray-800 hover:bg-gray-900 rounded-xl transition-all shadow-md text-sm active:scale-110">
                             Panel Admin
                           </a>
                         </Link>

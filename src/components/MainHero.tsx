@@ -86,7 +86,7 @@ const MainHero = ({
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full text-white bg-green-600 hover:bg-green-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider`}
+              className={`flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full !text-white hover:text-white active:text-white bg-[#25D366] hover:bg-[#20bd5a] md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 active:scale-110 shadow-lg uppercase tracking-wider`}
             >
               WhatsApp
             </a>
@@ -107,7 +107,7 @@ const MainHero = ({
                 href={ruta}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-auto flex items-center justify-center px-6 py-3 text-base font-bold rounded-full text-white bg-primary hover:bg-blue-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 uppercase tracking-wider shadow-md`}
+                className={`w-auto flex items-center justify-center px-6 py-3 text-base font-bold rounded-full !text-white hover:text-white active:text-white bg-primary hover:bg-blue-700 md:text-lg md:px-8 transition-all duration-300 transform hover:scale-105 active:scale-110 uppercase tracking-wider shadow-md`}
               >
                 Ver más
               </a>

@@ -16,7 +16,7 @@ const Footer = () => {
             href="https://whatsapp.com/channel/0029VaiXOlh6WaKx6FA8XH0r"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-[#25D366] transition-all"
+            className="text-gray-400 hover:text-[#25D366] transition-all transform active:scale-125"
           >
             <span className="sr-only">WhatsApp</span>
             <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@ const Footer = () => {
             href="https://www.facebook.com/liderdocenteperu"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-blue-600 transition-all"
+            className="text-gray-400 hover:text-blue-600 transition-all transform active:scale-125"
           >
             <span className="sr-only">Facebook</span>
             <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
@@ -42,7 +42,7 @@ const Footer = () => {
             href="https://www.youtube.com/@JuanCarlosAvend"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-red-600 transition-all"
+            className="text-gray-400 hover:text-red-600 transition-all transform active:scale-125"
           >
             <span className="sr-only">YouTube</span>
             <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
@@ -55,7 +55,7 @@ const Footer = () => {
             href="https://www.tiktok.com/@juan_avend"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-black transition-all"
+            className="text-gray-400 hover:text-black transition-all transform active:scale-125"
           >
             <span className="sr-only">TikTok</span>
             <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">

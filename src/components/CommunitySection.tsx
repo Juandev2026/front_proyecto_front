@@ -25,7 +25,7 @@ const CommunitySection = () => {
               href="https://whatsapp.com/channel/0029VaiXOlh6WaKx6FA8XH0r"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full text-white bg-[#25D366] hover:bg-[#20bd5a] transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full !text-white hover:text-white active:text-white bg-[#25D366] hover:bg-[#20bd5a] transition-all transform hover:scale-105 active:scale-110 shadow-md hover:shadow-lg"
             >
               <svg
                 className="w-6 h-6 mr-2 text-white"
@@ -42,7 +42,7 @@ const CommunitySection = () => {
               href="https://t.me/+w1G0nssmiTRiZTcx"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full !text-white hover:text-white active:text-white bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-110 shadow-md hover:shadow-lg"
             >
               <svg
                 className="w-6 h-6 mr-2 text-white"

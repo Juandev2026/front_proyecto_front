@@ -131,7 +131,7 @@ const LatestNews = () => {
                   </span>
                 </p>
                 <Link href="/login?redirect=/recursos">
-                  <a className="whitespace-nowrap px-8 py-3 bg-primary text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-all hover:scale-105 shadow-md">
+                  <a className="whitespace-nowrap px-8 py-3 bg-primary !text-white hover:text-white active:text-white text-sm font-bold rounded-full hover:bg-blue-700 transition-all hover:scale-105 active:scale-110 shadow-md flex items-center justify-center">
                     Iniciar Sesión
                   </a>
                 </Link>
@@ -177,7 +177,7 @@ const LatestNews = () => {
                         </p>
                       </div>
                       <div className="mt-6 flex justify-end">
-                        <span className="inline-block px-7 py-2.5 bg-primary text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-colors uppercase shadow-md">
+                        <span className="inline-block px-7 py-2.5 bg-primary !text-white group-hover:text-white active:text-white rounded-full text-base font-semibold group-hover:bg-blue-700 transition-all uppercase shadow-md active:scale-110">
                           Ver más
                         </span>
                       </div>

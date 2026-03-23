@@ -82,9 +82,13 @@ const RelevantInfoCarousel = () => {
         <div className="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden bg-gray-100">
           <div
             className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-in-out hover:scale-105"
-            style={{ 
-              backgroundImage: currentItem.urlImagen ? `url(${currentItem.urlImagen})` : 'none',
-              backgroundColor: currentItem.urlImagen ? 'transparent' : '#f3f4f6'
+            style={{
+              backgroundImage: currentItem.urlImagen
+                ? `url(${currentItem.urlImagen})`
+                : 'none',
+              backgroundColor: currentItem.urlImagen
+                ? 'transparent'
+                : '#f3f4f6',
             }}
           />
         </div>
@@ -112,7 +116,7 @@ const RelevantInfoCarousel = () => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="flex-1 text-center px-4 py-2.5 bg-green-500 hover:bg-green-600 !text-white hover:text-white active:text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-110"
                 >
                   <span>Comprar</span>
                 </a>
@@ -124,7 +128,7 @@ const RelevantInfoCarousel = () => {
                   href={currentItem.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center"
+                  className="flex-1 text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 !text-white hover:text-white active:text-white rounded-lg transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center transform active:scale-110"
                 >
                   Ver más
                 </a>
