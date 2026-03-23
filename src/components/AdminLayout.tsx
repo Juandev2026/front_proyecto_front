@@ -484,7 +484,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   <a
                     className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       router.pathname === item.href
-                        ? 'bg-primary text-white'
+                        ? 'bg-primary !text-white hover:text-white active:text-white'
                         : 'text-gray-700 hover:bg-blue-100'
                     } ${isCollapsed ? 'justify-center' : ''}`}
                     title={isCollapsed ? item.name : ''}
@@ -538,7 +538,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                             <a
                               className={`flex items-center pl-12 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
                                 router.pathname === subItem.href
-                                  ? 'text-primary bg-blue-100'
+                                  ? 'text-primary bg-blue-100 font-bold'
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-blue-100'
                               }`}
                             >

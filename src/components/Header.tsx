@@ -139,7 +139,7 @@ const Menu = () => {
 
                 {/* AVEND PLANIFICA */}
                 <div className="relative group">
-                  <div className="bg-purple-600 !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
+                  <div className="bg-purple-600 !text-white hover:text-white active:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-purple-700 transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                     AVEND PLANIFICA
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -151,7 +151,7 @@ const Menu = () => {
 
                 {/* AVEND IUS */}
                 <div className="relative group">
-                  <div className="bg-[#004c7a] !text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
+                  <div className="bg-[#004c7a] !text-white hover:text-white active:text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-base font-extrabold shadow-lg hover:bg-[#003d62] transition-all hover:scale-110 hover:shadow-xl active:scale-105 cursor-default whitespace-nowrap inline-flex items-center justify-center min-w-[120px] lg:min-w-[160px]">
                     AVEND IUS
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-[60]">
@@ -173,7 +173,7 @@ const Menu = () => {
                       (user?.role?.toUpperCase() === 'ADMIN' ||
                         user?.role?.toUpperCase() === 'SUBADMIN') && (
                         <Link href="/admin">
-                          <a className="text-xs lg:text-sm font-bold bg-gray-800 text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-colors shadow-md whitespace-nowrap">
+                          <a className="text-xs lg:text-sm font-bold bg-gray-800 !text-white hover:text-white active:text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-full hover:bg-gray-900 transition-all active:scale-110 shadow-md whitespace-nowrap">
                             Panel Admin
                           </a>
                         </Link>
