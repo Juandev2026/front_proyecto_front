@@ -200,7 +200,6 @@ export const userService = {
 
       // Remove sensitive or redundant fields for PATCH
       delete payload.id;
-      delete payload.password;
       delete payload.passwordHash;
 
       const response = await fetch(`${API_URL}/${id}`, {

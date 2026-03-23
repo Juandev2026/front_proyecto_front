@@ -314,9 +314,9 @@ const UsersPage = () => {
       delete payload.nivel;
       delete payload.especialidad;
 
-      if (editingUser) {
-        delete payload.password;
-        console.log('Modo edición: Removiendo campo password del payload');
+      // Solo incluir password si hay un valor escrito (en creación es obligatorio por HTML, en edición es opcional)
+      if (formData.password && formData.password.trim() !== '') {
+        payload.password = formData.password;
       }
 
       console.log('Payload final que se enviará al Backend:', payload);
@@ -410,7 +410,8 @@ const UsersPage = () => {
     const matchesSearch =
       (user.nombreCompleto || '').toLowerCase().includes(term) ||
       (user.email || '').toLowerCase().includes(term) ||
-      (effectiveRole || '').toLowerCase().includes(term);
+      (effectiveRole || '').toLowerCase().includes(term) ||
+      (user.celular || '').includes(term);
 
     return matchesSearch;
   });
@@ -579,6 +580,9 @@ const UsersPage = () => {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                  Celular
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                   Rol
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
@@ -592,13 +596,13 @@ const UsersPage = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={7} className="px-6 py-4 text-center">
                     Cargando...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={7} className="px-6 py-4 text-center">
                     No hay usuarios encontrados
                   </td>
                 </tr>
@@ -616,6 +620,9 @@ const UsersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        {user.celular || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                         {user.role}
@@ -827,37 +834,35 @@ const UsersPage = () => {
                     </div>
                   </div>
 
-                  {/* Contraseña (Solo para creación) */}
-                  {!editingUser && (
-                    <div className="mb-3">
-                      <label className="block text-sm text-gray-700 mb-1">
-                        Contraseña*
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="Contraseña"
-                          value={formData.password}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              password: e.target.value,
-                            })
-                          }
-                          autoComplete="new-password"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          <EyeIcon className="h-5 w-5" />
-                        </button>
-                      </div>
+                  {/* Contraseña */}
+                  <div className="mb-3">
+                    <label className="block text-sm text-gray-700 mb-1">
+                      {editingUser ? 'Nueva Contraseña (opcional)' : 'Contraseña*'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder={editingUser ? 'Dejar en blanco para no cambiar' : 'Contraseña'}
+                        value={formData.password}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            password: e.target.value,
+                          })
+                        }
+                        autoComplete="new-password"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4a90f9] pr-10"
+                        required={!editingUser}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        <EyeIcon className="h-5 w-5" />
+                      </button>
                     </div>
-                  )}
+                  </div>
 
                   {/* Región */}
                   <div className="mb-3">
