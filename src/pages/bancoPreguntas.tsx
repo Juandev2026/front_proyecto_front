@@ -475,18 +475,8 @@ const BancoPreguntasPage = () => {
                 let correctedCantidad = cantidad;
 
                 if (String(selectedTipoExamenId) === '2') {
-                  // Nombramiento
-                  if (name === 'CL' || name === 'Comprensión Lectora') {
-                    correctedMinimo = 0;
-                  } else if (name === 'RL' || name === 'Razonamiento Lógico') {
-                    correctedMinimo = 0;
-                  } else if (
-                    name === 'CCP' ||
-                    name === 'Conocimientos Curriculares y Pedagógicos' ||
-                    name === 'Conocimientos Curriculares y Pedagócicos'
-                  ) {
-                    correctedMinimo = 90;
-                  }
+                  // Nombramiento specific rules can be added here if they don't override the DB
+                  // For now, removing hardcoded minimums to favor database values
                 }
 
                 countMap[name] = {
