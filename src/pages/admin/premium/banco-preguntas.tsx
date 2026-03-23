@@ -3141,7 +3141,7 @@ const Recursos = () => {
                 }
               >
                 {isGeneratingAi ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
                 ) : (
                   <SparklesIcon className="w-4 h-4 mr-2" />
                 )}
