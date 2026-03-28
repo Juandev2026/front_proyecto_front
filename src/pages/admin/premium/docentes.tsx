@@ -667,10 +667,14 @@ const AdminPremiumDocentes = () => {
 
   // Filtering logic for the search bar and dropdown
   const filteredDocentes = docentes.filter((d) => {
+    const cleanSearchTerm = searchTerm.replace(/\s+/g, '');
+    const cleanTelefono = (d.telefono || '').replace(/\s+/g, '');
+
     const matchesSearch =
       d.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (d.telefono || '').includes(searchTerm);
+      cleanTelefono.includes(cleanSearchTerm);
+      
     const matchesFilter = filterOption
       ? d.estado.toLowerCase() === filterOption.toLowerCase()
       : true;
