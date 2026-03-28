@@ -471,8 +471,8 @@ const BancoPreguntasPage = () => {
 
               if (!countMap[name]) {
                 // Official Nombramiento 2024 Score Logic
-                let correctedMinimo = meta?.minimo || item.minimo || 0;
-                let correctedCantidad = cantidad;
+                const correctedMinimo = meta?.minimo || item.minimo || 0;
+                const correctedCantidad = cantidad;
 
                 if (String(selectedTipoExamenId) === '2') {
                   // Nombramiento specific rules can be added here if they don't override the DB
@@ -606,7 +606,6 @@ const BancoPreguntasPage = () => {
           clasificacionIds.includes(q.clasificacionId)
         );
       }
-
 
       setQuestionsToStore(filteredQuestions);
       setExamToStart(exam);
@@ -866,7 +865,9 @@ const BancoPreguntasPage = () => {
                         />
                         <div className="flex flex-col">
                           <span className="text-[#2B3674] font-bold text-lg">
-                            {name}
+                            {name === 'Conocimientos Curriculares y Pedagócicos'
+                              ? 'Conocimientos Curriculares y Pedagógicos'
+                              : name}
                           </span>
                           <span
                             className={`${

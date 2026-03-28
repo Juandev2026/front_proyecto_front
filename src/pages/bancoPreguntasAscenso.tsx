@@ -11,12 +11,8 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '../hooks/useAuth';
 import PremiumLayout from '../layouts/PremiumLayout';
-import {
-  authService,
-} from '../services/authService';
-import {
-  preguntaService,
-} from '../services/preguntaService';
+import { authService } from '../services/authService';
+import { preguntaService } from '../services/preguntaService';
 
 // ----- Types derived from login examenes -----
 interface FilterOption {
@@ -204,7 +200,7 @@ const BancoPreguntasAscensoPage = () => {
       });
     return Array.from(map.values());
   }, [examenes, selectedTipoExamenId, selectedModalidadId, selectedNivelId]);
-  
+
   const yearsData = useMemo(() => {
     const map = new Map<number, { id: number; nombre: string }>();
     examenes
@@ -215,13 +211,17 @@ const BancoPreguntasAscensoPage = () => {
           (!selectedModalidadId ||
             String(e.modalidadId) === selectedModalidadId) &&
           (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-          (!selectedEspecialidadId || String(e.especialidadId) === selectedEspecialidadId)
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId)
       )
       .forEach((e) => {
         if (e.years && Array.isArray(e.years)) {
           e.years.forEach((y: any) => {
             const yVal = typeof y === 'object' ? y.year : y;
-            const yCant = typeof y === 'object' ? (y.cantidadPreguntas ?? y.cantidad_p ?? 1) : 1;
+            const yCant =
+              typeof y === 'object'
+                ? y.cantidadPreguntas ?? y.cantidad_p ?? 1
+                : 1;
 
             if (yVal && Number(yVal) > 0 && yCant > 0) {
               map.set(Number(yVal), {
@@ -284,7 +284,8 @@ const BancoPreguntasAscensoPage = () => {
         (nivelesData.length === 1 &&
         firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
           ? String(firstNivel.id)
-          : null) || '0';
+          : null) ||
+        '0';
 
       const matchedExams = examenes.filter(
         (e) =>
@@ -294,8 +295,9 @@ const BancoPreguntasAscensoPage = () => {
           (selectedEspecialidadId
             ? String(e.especialidadId) === selectedEspecialidadId
             : true) &&
-          (selectedYearId !== '0' && selectedYearId !== '' 
-            ? (e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId)
+          (selectedYearId !== '0' && selectedYearId !== ''
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) ||
+              String(e.year) === selectedYearId
             : true)
       );
 
@@ -310,8 +312,10 @@ const BancoPreguntasAscensoPage = () => {
                 cantidad = item.cantidadPreguntas || 0;
               } else if (selectedYearId) {
                 if (item.years && Array.isArray(item.years)) {
-                  const yrObj = item.years.find((y: any) => String(y.year) === selectedYearId);
-                  cantidad = yrObj ? (yrObj.cantidadPreguntas || 0) : 0;
+                  const yrObj = item.years.find(
+                    (y: any) => String(y.year) === selectedYearId
+                  );
+                  cantidad = yrObj ? yrObj.cantidadPreguntas || 0 : 0;
                 } else if (String(exam.year) === selectedYearId) {
                   cantidad = item.cantidadPreguntas || 0;
                 }
@@ -319,7 +323,11 @@ const BancoPreguntasAscensoPage = () => {
 
               if (!countMap[name]) {
                 let correctedCantidad = cantidad;
-                if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                if (
+                  name === 'CCP' ||
+                  name === 'Conocimientos Curriculares y Pedagógicos' ||
+                  name === 'Conocimientos Curriculares y Pedagócicos'
+                ) {
                   if (cantidad > 0) correctedCantidad = 60;
                 }
 
@@ -331,7 +339,11 @@ const BancoPreguntasAscensoPage = () => {
                 };
               } else {
                 countMap[name].cantidad += cantidad;
-                if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
+                if (
+                  name === 'CCP' ||
+                  name === 'Conocimientos Curriculares y Pedagógicos' ||
+                  name === 'Conocimientos Curriculares y Pedagócicos'
+                ) {
                   if (countMap[name].cantidad > 0) countMap[name].cantidad = 60;
                 }
               }
@@ -348,7 +360,7 @@ const BancoPreguntasAscensoPage = () => {
     selectedEspecialidadId,
     selectedYearId,
     examenes,
-    nivelesData
+    nivelesData,
   ]);
 
   // ---------- Handlers ----------
@@ -384,7 +396,8 @@ const BancoPreguntasAscensoPage = () => {
             ? String(e.especialidadId) === selectedEspecialidadId
             : true) &&
           (selectedYearId !== '0' && selectedYearId !== ''
-            ? e.years?.some((y: any) => String(y.year) === selectedYearId) || String(e.year) === selectedYearId
+            ? e.years?.some((y: any) => String(y.year) === selectedYearId) ||
+              String(e.year) === selectedYearId
             : true)
       );
 
@@ -412,10 +425,10 @@ const BancoPreguntasAscensoPage = () => {
         clasificaciones: [], // empty to fetch all questions for this exam
       };
 
-      let questions = await preguntaService.examenFilter(payloadFiltro);
+      const questions = await preguntaService.examenFilter(payloadFiltro);
 
-      // Note: We used to filter locally here by year and clasificacionId, 
-      // but since the API is already doing it, it's safer to trust the API result 
+      // Note: We used to filter locally here by year and clasificacionId,
+      // but since the API is already doing it, it's safer to trust the API result
       // to avoid missing questions with inconsistent metadata.
       // (e.g. 53 vs 60 questions issue).
 
@@ -570,8 +583,8 @@ const BancoPreguntasAscensoPage = () => {
                 }}
                 className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary bg-white transition-all"
                 disabled={
-                  isLoading || 
-                  !selectedModalidadId || 
+                  isLoading ||
+                  !selectedModalidadId ||
                   (nivelesData.length > 1 && !selectedNivelId) ||
                   (especialidadesData.length > 0 && !selectedEspecialidadId)
                 }
@@ -597,10 +610,13 @@ const BancoPreguntasAscensoPage = () => {
               <div className="space-y-3">
                 {Object.entries(conteoPreguntas)
                   .sort(([a], [b]) => {
-                    const order: Record<string, number> = { 
-                      'CL': 1, 'Comprensión Lectora': 1,
-                      'RL': 2, 'Razonamiento Lógico': 2,
-                      'CCP': 3, 'Conocimientos Curriculares y Pedagógicos': 3,
+                    const order: Record<string, number> = {
+                      CL: 1,
+                      'Comprensión Lectora': 1,
+                      RL: 2,
+                      'Razonamiento Lógico': 2,
+                      CCP: 3,
+                      'Conocimientos Curriculares y Pedagógicos': 3,
                     };
                     return (order[a] || 99) - (order[b] || 99);
                   })
@@ -615,7 +631,9 @@ const BancoPreguntasAscensoPage = () => {
                     >
                       <div className="flex flex-col">
                         <span className="text-[#2B3674] font-bold text-lg">
-                          {name}
+                          {name === 'Conocimientos Curriculares y Pedagócicos'
+                            ? 'Conocimientos Curriculares y Pedagógicos'
+                            : name}
                         </span>
                         <span
                           className={`${
@@ -645,35 +663,59 @@ const BancoPreguntasAscensoPage = () => {
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-gray-500 uppercase">Modalidad</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase">
+                    Modalidad
+                  </span>
                   <div className="inline-flex px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-sm font-bold w-fit">
-                    {modalidadesData.find(m => String(m.id) === selectedModalidadId)?.nombre}
+                    {
+                      modalidadesData.find(
+                        (m) => String(m.id) === selectedModalidadId
+                      )?.nombre
+                    }
                   </div>
                 </div>
 
                 {selectedNivelId && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Nivel</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase">
+                      Nivel
+                    </span>
                     <div className="inline-flex px-3 py-1 bg-green-50 text-green-600 border border-green-100 rounded-lg text-sm font-bold w-fit">
-                      {nivelesData.find(n => String(n.id) === selectedNivelId)?.nombre}
+                      {
+                        nivelesData.find(
+                          (n) => String(n.id) === selectedNivelId
+                        )?.nombre
+                      }
                     </div>
                   </div>
                 )}
 
                 {selectedEspecialidadId && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Especialidad</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase">
+                      Especialidad
+                    </span>
                     <div className="inline-flex px-3 py-1 bg-purple-50 text-purple-600 border border-purple-100 rounded-lg text-sm font-bold w-fit">
-                      {especialidadesData.find(e => String(e.id) === selectedEspecialidadId)?.nombre}
+                      {
+                        especialidadesData.find(
+                          (e) => String(e.id) === selectedEspecialidadId
+                        )?.nombre
+                      }
                     </div>
                   </div>
                 )}
 
                 {selectedYearId && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Año</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase">
+                      Año
+                    </span>
                     <div className="inline-flex px-3 py-1 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-sm font-bold w-fit">
-                      {yearsData.find(y => String(y.id) === selectedYearId)?.nombre || (selectedYearId === '0' ? 'Todos los años' : selectedYearId)}
+                      {yearsData.find((y) => String(y.id) === selectedYearId)
+                        ?.nombre ||
+                        (selectedYearId === '0'
+                          ? 'Todos los años'
+                          : selectedYearId)}
                     </div>
                   </div>
                 )}
@@ -692,11 +734,7 @@ const BancoPreguntasAscensoPage = () => {
             </button>
             <button
               onClick={handleConfirm}
-              disabled={
-                isLoading ||
-                !selectedModalidadId ||
-                !selectedYearId
-              }
+              disabled={isLoading || !selectedModalidadId || !selectedYearId}
               className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-opacity-90 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? 'Cargando...' : 'Confirmar selección'}
