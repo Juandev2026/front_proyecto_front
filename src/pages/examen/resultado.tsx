@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from "react";
 
 import {
   CheckCircleIcon,
@@ -10,45 +10,59 @@ import {
   ClockIcon,
   ChartBarIcon,
   ChevronDownIcon,
-} from '@heroicons/react/outline';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
+} from "@heroicons/react/outline";
+import Head from "next/head";
+import { useRouter } from "next/router";
 
-import { useAuth } from '../../hooks/useAuth';
-import PremiumLayout from '../../layouts/PremiumLayout';
-import ConfirmModal from '../../components/ConfirmModal';
-import { ResultadoExamenResponse, PreguntaExamen } from '../../types/examen';
-import HtmlMathRenderer from '../../components/common/HtmlMathRenderer';
-import { clasificacionService } from '../../services/clasificacionService';
-import { erroneasService } from '../../services/erroneasService';
+import { useAuth } from "../../hooks/useAuth";
+import PremiumLayout from "../../layouts/PremiumLayout";
+import ConfirmModal from "../../components/ConfirmModal";
+import { ResultadoExamenResponse, PreguntaExamen } from "../../types/examen";
+import HtmlMathRenderer from "../../components/common/HtmlMathRenderer";
+import { clasificacionService } from "../../services/clasificacionService";
+import { erroneasService } from "../../services/erroneasService";
 
 const processCitation = (html: string) => {
-  if (!html) return '';
+  if (!html) return "";
   return html
     .replace(
       /<p([^>]*)>\s*(Adaptado de|Tomado de|Adaptación|Fuente:)(.*?)<\/p>/gi,
-      '<p$1 class="citation-text">$2$3</p>'
+      '<p$1 class="citation-text">$2$3</p>',
     )
     .replace(
       /(?:<br\s*\/?>\s*)*(Adaptado de|Tomado de|Fuente:)(.*?)(?=<\/p>|$)/gi,
-      '<div class="citation-text">$1$2</div>'
+      '<div class="citation-text">$1$2</div>',
     );
 };
 
 const isImageUrl = (url: string) => {
   if (!url) return false;
   // Soporta extensiones comunes y URLs de S3 que contienen /images/ o extensiones
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.jfif'];
+  const imageExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".svg",
+    ".bmp",
+    ".jfif",
+  ];
   const lowercaseUrl = url.trim().toLowerCase();
-  
+
   // Verificamos si termina o contiene una extensión de imagen
-  const hasExtension = imageExtensions.some((ext) => lowercaseUrl.includes(ext));
+  const hasExtension = imageExtensions.some((ext) =>
+    lowercaseUrl.includes(ext),
+  );
   // Verificamos si es una URL de S3 que suele contener imágenes aunque no tenga extensión clásica al final (a veces tienen params)
-  const isS3Image = (lowercaseUrl.includes('amazonaws.com') || lowercaseUrl.includes('s3.')) && 
-                     (lowercaseUrl.includes('/images/') || lowercaseUrl.includes('/img/') || hasExtension);
+  const isS3Image =
+    (lowercaseUrl.includes("amazonaws.com") || lowercaseUrl.includes("s3.")) &&
+    (lowercaseUrl.includes("/images/") ||
+      lowercaseUrl.includes("/img/") ||
+      hasExtension);
   // Verificamos si la cadena misma EMPIEZA con http y tiene apariencia de imagen
-  const isDirectImage = lowercaseUrl.startsWith('http') && hasExtension;
-  
+  const isDirectImage = lowercaseUrl.startsWith("http") && hasExtension;
+
   return hasExtension || isS3Image || isDirectImage;
 };
 
@@ -62,30 +76,36 @@ const SustentoCollapse = ({ sustento }: { sustento: string }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 text-[10px] font-black text-[#4790FD] uppercase tracking-widest hover:text-blue-600 transition-all group"
       >
-        <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+        <div
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        >
           <ChevronDownIcon className="w-4 h-4" />
         </div>
         <span>Sustento</span>
-        {!isOpen && <span className="text-[9px] lowercase font-medium text-gray-400">(clic para ver)</span>}
+        {!isOpen && (
+          <span className="text-[9px] lowercase font-medium text-gray-400">
+            (clic para ver)
+          </span>
+        )}
       </button>
 
       {isOpen && (
         <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-          {(isImage || sustento.trim().startsWith('http')) ? (
+          {isImage || sustento.trim().startsWith("http") ? (
             (() => {
-              // Si es una imagen o parece URL, intentamos extraerla. 
+              // Si es una imagen o parece URL, intentamos extraerla.
               // Usamos una regex más permisiva que capture espacios si están en medio de una URL (común en S3 mal formateado)
               // Pero lo ideal es capturar todo si la cadena empieza por http
               let imageUrl = sustento.trim();
-              if (!imageUrl.startsWith('http')) {
+              if (!imageUrl.startsWith("http")) {
                 const match = sustento.match(/https?:\/\/[^\s]+/);
                 imageUrl = match ? match[0] : sustento.trim();
               }
-              
+
               // Si es imagen, la mostramos. Si tiene espacios, los codificamos para el src
               if (isImage) {
                 // Codificamos solo los espacios si la URL los tiene sueltos
-                const encodedUrl = imageUrl.replace(/ /g, '%20');
+                const encodedUrl = imageUrl.replace(/ /g, "%20");
                 return (
                   <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md max-w-3xl bg-gray-50 p-1">
                     <img
@@ -95,12 +115,14 @@ const SustentoCollapse = ({ sustento }: { sustento: string }) => {
                       onError={(e) => {
                         // Si falla la carga, mostramos el texto como fallback
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
+                        target.style.display = "none";
                         const parent = target.parentElement;
                         if (parent) {
-                          const fallback = document.createElement('div');
-                          fallback.className = 'text-sm text-red-500 italic p-2';
-                          fallback.innerText = 'Error al cargar la imagen de sustento.';
+                          const fallback = document.createElement("div");
+                          fallback.className =
+                            "text-sm text-red-500 italic p-2";
+                          fallback.innerText =
+                            "Error al cargar la imagen de sustento.";
                           parent.appendChild(fallback);
                         }
                       }}
@@ -133,7 +155,7 @@ const ResultadoPage = () => {
 
   const [questions, setQuestions] = useState<PreguntaExamen[]>([]);
   const [examResult, setExamResult] = useState<ResultadoExamenResponse | null>(
-    null
+    null,
   );
   const [respuestas, setRespuestas] = useState<Record<string, any>>({});
   const [timeTaken, setTimeTaken] = useState<number>(0);
@@ -141,16 +163,18 @@ const ResultadoPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [isNewExamModalOpen, setIsNewExamModalOpen] = useState(false);
 
-
   useEffect(() => {
     setIsMounted(true);
     if (!loading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     const loadData = async () => {
-      let cmap = new Map<number, { nombre: string; abreviatura: string; puntos: number }>();
+      let cmap = new Map<
+        number,
+        { nombre: string; abreviatura: string; puntos: number }
+      >();
       try {
         const classData = await clasificacionService.getAll();
         cmap = new Map(
@@ -158,125 +182,137 @@ const ResultadoPage = () => {
             c.id,
             {
               nombre: c.clasificacionNombre,
-              abreviatura: c.abreviatura || '',
+              abreviatura: c.abreviatura || "",
               puntos: c.puntos || 0,
             },
-          ])
+          ]),
         );
-
       } catch (err) {
-        console.error('Error fetching classifications', err);
+        console.error("Error fetching classifications", err);
       }
 
-      const savedQuestions = localStorage.getItem('currentQuestions');
-      const savedResult = localStorage.getItem('lastExamResult');
-      const savedRespuestas = localStorage.getItem('lastRespuestas');
-      const savedTime = localStorage.getItem('lastExamTime');
-      const savedMetadata = localStorage.getItem('currentExamMetadata');
+      const savedQuestions = localStorage.getItem("currentQuestions");
+      const savedResult = localStorage.getItem("lastExamResult");
+      const savedRespuestas = localStorage.getItem("lastRespuestas");
+      const savedTime = localStorage.getItem("lastExamTime");
+      const savedMetadata = localStorage.getItem("currentExamMetadata");
 
       if (savedMetadata) setExamMetadata(JSON.parse(savedMetadata));
       if (savedQuestions) {
-      const rawQuestions = JSON.parse(savedQuestions);
-      const flattened: PreguntaExamen[] = [];
+        const rawQuestions = JSON.parse(savedQuestions);
+        const flattened: PreguntaExamen[] = [];
 
-      rawQuestions.forEach((q: any) => {
-        if (q.subPreguntas && q.subPreguntas.length > 0) {
-          q.subPreguntas.forEach((sub: any, subIdx: number) => {
-            const classId = sub.clasificacionId || q.clasificacionId;
+        rawQuestions.forEach((q: any) => {
+          if (q.subPreguntas && q.subPreguntas.length > 0) {
+            q.subPreguntas.forEach((sub: any, subIdx: number) => {
+              const classId = sub.clasificacionId || q.clasificacionId;
+              const cmapData = classId ? cmap.get(classId) : null;
+              const rawName =
+                sub.clasificacionNombre || q.clasificacionNombre || "";
+              const finalName = cmapData?.abreviatura || rawName;
+
+              let pointValue = cmapData?.puntos || sub.puntos || q.puntos;
+
+              const mappedIdA = sub.idAlternativaA ?? sub.alternativas?.[0]?.id;
+              const mappedIdB = sub.idAlternativaB ?? sub.alternativas?.[1]?.id;
+              const mappedIdC = sub.idAlternativaC ?? sub.alternativas?.[2]?.id;
+              const mappedIdD = sub.idAlternativaD ?? sub.alternativas?.[3]?.id;
+
+              flattened.push({
+                ...q,
+                id: sub.id || sub.subPreguntaId || q.id || q.preguntaId,
+                preguntaId: q.preguntaId || q.id || q.preguntaId,
+                enunciado: sub.enunciado || "",
+                parentEnunciado: q.enunciado || "",
+                parentImagen: q.imagen || "",
+                imagen: sub.imagen || q.imagen || "",
+                alternativaA:
+                  sub.alternativaA || sub.alternativas?.[0]?.contenido || "",
+                alternativaB:
+                  sub.alternativaB || sub.alternativas?.[1]?.contenido || "",
+                alternativaC:
+                  sub.alternativaC || sub.alternativas?.[2]?.contenido || "",
+                alternativaD:
+                  sub.alternativaD || sub.alternativas?.[3]?.contenido || "",
+                idAlternativaA: mappedIdA,
+                idAlternativaB: mappedIdB,
+                idAlternativaC: mappedIdC,
+                idAlternativaD: mappedIdD,
+                puntos: pointValue || sub.puntaje || q.puntaje,
+                tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
+                numeroSubPregunta:
+                  sub.numero ||
+                  sub.subPreguntaNumero ||
+                  sub.orden ||
+                  subIdx + 1,
+                respuesta: (() => {
+                  const res = sub.respuestaCorrecta || sub.respuesta || "";
+                  if (typeof res === "number") {
+                    if (res === mappedIdA) return "A";
+                    if (res === mappedIdB) return "B";
+                    if (res === mappedIdC) return "C";
+                    if (res === mappedIdD) return "D";
+                  }
+                  return res;
+                })(),
+                clasificacionId: classId,
+                clasificacionNombre: finalName,
+                isSubPregunta: true,
+                subPreguntas: [],
+                examenId: sub.examenId || q.examenId || 0,
+                year: sub.year || q.year || 0,
+              });
+            });
+          } else {
+            const classId = q.clasificacionId;
             const cmapData = classId ? cmap.get(classId) : null;
-            const rawName = sub.clasificacionNombre || q.clasificacionNombre || '';
+            const rawName = q.clasificacionNombre || "";
             const finalName = cmapData?.abreviatura || rawName;
-            
-            let pointValue = cmapData?.puntos || sub.puntos || q.puntos;
 
-            const mappedIdA = sub.idAlternativaA ?? sub.alternativas?.[0]?.id;
-            const mappedIdB = sub.idAlternativaB ?? sub.alternativas?.[1]?.id;
-            const mappedIdC = sub.idAlternativaC ?? sub.alternativas?.[2]?.id;
-            const mappedIdD = sub.idAlternativaD ?? sub.alternativas?.[3]?.id;
+            let pointValue = cmapData?.puntos || q.puntos;
+
+            const mappedIdA = q.idAlternativaA ?? q.alternativas?.[0]?.id;
+            const mappedIdB = q.idAlternativaB ?? q.alternativas?.[1]?.id;
+            const mappedIdC = q.idAlternativaC ?? q.alternativas?.[2]?.id;
+            const mappedIdD = q.idAlternativaD ?? q.alternativas?.[3]?.id;
 
             flattened.push({
               ...q,
-              id: sub.id || sub.subPreguntaId || q.id || q.preguntaId,
-              preguntaId: q.preguntaId || q.id || q.preguntaId, 
-              enunciado: sub.enunciado || '',
-              parentEnunciado: q.enunciado || '',
-              parentImagen: q.imagen || '',
-              imagen: sub.imagen || q.imagen || '',
-              alternativaA: sub.alternativaA || sub.alternativas?.[0]?.contenido || '',
-              alternativaB: sub.alternativaB || sub.alternativas?.[1]?.contenido || '',
-              alternativaC: sub.alternativaC || sub.alternativas?.[2]?.contenido || '',
-              alternativaD: sub.alternativaD || sub.alternativas?.[3]?.contenido || '',
+              id: q.id || q.preguntaId,
+              preguntaId: q.preguntaId || q.id,
+              alternativaA:
+                q.alternativaA || q.alternativas?.[0]?.contenido || "",
+              alternativaB:
+                q.alternativaB || q.alternativas?.[1]?.contenido || "",
+              alternativaC:
+                q.alternativaC || q.alternativas?.[2]?.contenido || "",
+              alternativaD:
+                q.alternativaD || q.alternativas?.[3]?.contenido || "",
               idAlternativaA: mappedIdA,
               idAlternativaB: mappedIdB,
               idAlternativaC: mappedIdC,
               idAlternativaD: mappedIdD,
-              puntos: pointValue || sub.puntaje || q.puntaje,
-              tiempoPregunta: sub.tiempoPregunta ?? q.tiempoPregunta,
-              numeroSubPregunta: sub.numero || sub.subPreguntaNumero || sub.orden || (subIdx + 1),
+              clasificacionNombre: finalName,
+              puntos: pointValue || q.puntaje,
               respuesta: (() => {
-                const res = sub.respuestaCorrecta || sub.respuesta || '';
-                if (typeof res === 'number') {
-                  if (res === mappedIdA) return 'A';
-                  if (res === mappedIdB) return 'B';
-                  if (res === mappedIdC) return 'C';
-                  if (res === mappedIdD) return 'D';
+                const res = q.respuestaCorrecta || q.respuesta || "";
+                if (typeof res === "number") {
+                  if (res === mappedIdA) return "A";
+                  if (res === mappedIdB) return "B";
+                  if (res === mappedIdC) return "C";
+                  if (res === mappedIdD) return "D";
                 }
                 return res;
               })(),
-              clasificacionId: classId,
-              clasificacionNombre: finalName,
-              isSubPregunta: true,
-              subPreguntas: [],
-              examenId: sub.examenId || q.examenId || 0,
-              year: sub.year || q.year || 0,
+              isSubPregunta: false,
+              parentImagen: "",
+              examenId: q.examenId || 0,
+              year: q.year || 0,
             });
-          });
-        } else {
-          const classId = q.clasificacionId;
-          const cmapData = classId ? cmap.get(classId) : null;
-          const rawName = q.clasificacionNombre || '';
-          const finalName = cmapData?.abreviatura || rawName;
-
-          let pointValue = cmapData?.puntos || q.puntos;
-
-          const mappedIdA = q.idAlternativaA ?? q.alternativas?.[0]?.id;
-          const mappedIdB = q.idAlternativaB ?? q.alternativas?.[1]?.id;
-          const mappedIdC = q.idAlternativaC ?? q.alternativas?.[2]?.id;
-          const mappedIdD = q.idAlternativaD ?? q.alternativas?.[3]?.id;
-
-          flattened.push({
-            ...q,
-            id: q.id || q.preguntaId,
-            preguntaId: q.preguntaId || q.id,
-            alternativaA: q.alternativaA || q.alternativas?.[0]?.contenido || '',
-            alternativaB: q.alternativaB || q.alternativas?.[1]?.contenido || '',
-            alternativaC: q.alternativaC || q.alternativas?.[2]?.contenido || '',
-            alternativaD: q.alternativaD || q.alternativas?.[3]?.contenido || '',
-            idAlternativaA: mappedIdA,
-            idAlternativaB: mappedIdB,
-            idAlternativaC: mappedIdC,
-            idAlternativaD: mappedIdD,
-            clasificacionNombre: finalName,
-            puntos: pointValue || q.puntaje,
-            respuesta: (() => {
-              const res = q.respuestaCorrecta || q.respuesta || '';
-              if (typeof res === 'number') {
-                if (res === mappedIdA) return 'A';
-                if (res === mappedIdB) return 'B';
-                if (res === mappedIdC) return 'C';
-                if (res === mappedIdD) return 'D';
-              }
-              return res;
-            })(),
-            isSubPregunta: false,
-            parentImagen: '',
-            examenId: q.examenId || 0,
-            year: q.year || 0,
-          });
-        }
-      });
-      setQuestions(flattened);
-    }
+          }
+        });
+        setQuestions(flattened);
+      }
 
       if (savedResult) setExamResult(JSON.parse(savedResult));
       if (savedRespuestas) setRespuestas(JSON.parse(savedRespuestas));
@@ -286,12 +322,20 @@ const ResultadoPage = () => {
     loadData();
   }, [loading, isAuthenticated, router]);
 
-
   const getQuestionResult = (
     q: PreguntaExamen,
-    _index: number
-  ): 'correct' | 'incorrect' | 'omitted' => {
-    if (!examResult) return 'omitted';
+    _index: number,
+  ): "correct" | "incorrect" | "omitted" => {
+    const userAnswer = respuestas[String(_index)]?.alternativa;
+
+    // Si el usuario no respondió, es omitida
+    if (!userAnswer) return "omitted";
+
+    // Si no hay resultado del backend, calificar localmente
+    if (!examResult) {
+      const isCorrect = userAnswer.toUpperCase() === q.respuesta?.toUpperCase();
+      return isCorrect ? "correct" : "incorrect";
+    }
 
     const backendKey = Number(q.id);
 
@@ -308,34 +352,30 @@ const ResultadoPage = () => {
       if (
         matchedResult.idsCorrectas.some((id: any) => Number(id) === backendKey)
       ) {
-        return 'correct';
+        return "correct";
       }
       if (
-        matchedResult.idsIncorrectas.some((id: any) => Number(id) === backendKey)
+        matchedResult.idsIncorrectas.some(
+          (id: any) => Number(id) === backendKey,
+        )
       ) {
-        return 'incorrect';
+        return "incorrect";
       }
       if (
         matchedResult.idsOmitidas.some((id: any) => Number(id) === backendKey)
       ) {
-        return 'omitted';
+        return "omitted";
       }
     }
 
-    // Fallback: Si el backend no la encontró (común en Respuestas Erróneas), calificar localmente
-    const userAnswer = respuestas[String(_index)]?.alternativa;
-    if (!userAnswer) return 'omitted';
-
-    // Comparar contra q.respuesta (que cargamos en el flattening)
+    // Fallback: Si el backend no la encontró (común en examenes mezclados), calificar localmente
     const isCorrect = userAnswer.toUpperCase() === q.respuesta?.toUpperCase();
-    return isCorrect ? 'correct' : 'incorrect';
+    return isCorrect ? "correct" : "incorrect";
   };
 
   const stats = useMemo(() => {
-    if (!examResult) return null;
-
-    // 1. Estadísticas Globales (desde el backend)
     const total = questions.length;
+    if (total === 0) return null;
 
     // --- RECALCULAR ESTADÍSTICAS MANUALMENTE (Para mayor precisión en lotes mixtos) ---
     let correctas = 0;
@@ -345,10 +385,10 @@ const ResultadoPage = () => {
 
     questions.forEach((q, idx) => {
       const res = getQuestionResult(q, idx);
-      if (res === 'correct') {
+      if (res === "correct") {
         correctas++;
         manualScore += Number(q.puntos) || 0;
-      } else if (res === 'incorrect') {
+      } else if (res === "incorrect") {
         incorrectas++;
       } else {
         omitidas++;
@@ -358,18 +398,17 @@ const ResultadoPage = () => {
     const answered = correctas + incorrectas;
     const maxScore = questions.reduce(
       (acc, q) => acc + (Number(q.puntos) || 0),
-      0
+      0,
     );
 
     // 2. Cálculo por Clasificación (Manual para el desglose)
-    // ... preserved classificationStats logic ...
     const classificationStats: Record<
       string,
       { points: number; correct: number; total: number; earnedPoints: number }
     > = {};
 
     questions.forEach((q) => {
-      const className = q.clasificacionNombre || '';
+      const className = q.clasificacionNombre || "";
       if (!classificationStats[className]) {
         classificationStats[className] = {
           points: 0,
@@ -382,10 +421,20 @@ const ResultadoPage = () => {
       classificationStats[className].points += Number(q.puntos) || 0;
 
       const backendKey = Number(q.id);
+      const userAnswer = respuestas[String(q.preguntaId || q.id)]?.alternativa;
 
-      const isCorrect = examResult.resultados.some((r: any) =>
-        r.idsCorrectas.some((id: any) => Number(id) === backendKey)
-      );
+      let isCorrect = false;
+
+      if (examResult) {
+        isCorrect = examResult.resultados.some((r: any) =>
+          r.idsCorrectas.some((id: any) => Number(id) === backendKey),
+        );
+      }
+
+      // Fallback: comparar localmente si el backend no matcheó
+      if (!isCorrect && userAnswer && q.respuesta) {
+        isCorrect = userAnswer.toUpperCase() === q.respuesta.toUpperCase();
+      }
 
       if (isCorrect) {
         classificationStats[className].correct += 1;
@@ -399,16 +448,21 @@ const ResultadoPage = () => {
       omitidas,
       total,
       answered,
-      score: manualScore || examResult.puntajeGlobal,
+      score: manualScore || examResult?.puntajeGlobal || 0,
       maxScore: maxScore || 200,
       classStats: Object.entries(classificationStats)
         .map(([name, data]) => ({
           name,
           ...data,
         }))
-        .filter((c) => c.name && c.name.toUpperCase() !== 'OTROS' && c.name.toUpperCase() !== 'OTRO')
+        .filter(
+          (c) =>
+            c.name &&
+            c.name.toUpperCase() !== "OTROS" &&
+            c.name.toUpperCase() !== "OTRO",
+        )
         .sort((a, b) => {
-          const order = ['CL', 'RL', 'CCP'];
+          const order = ["CL", "RL", "CCP"];
           const idxA = order.indexOf(a.name);
           const idxB = order.indexOf(b.name);
           if (idxA !== -1 && idxB !== -1) return idxA - idxB;
@@ -417,24 +471,28 @@ const ResultadoPage = () => {
           return a.name.localeCompare(b.name);
         }),
     };
-  }, [examResult, questions]);
-
+  }, [examResult, questions, respuestas]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleMarkAsReviewed = async (preguntaId: number) => {
     if (!user?.id) return;
     try {
-      if (!window.confirm('¿Estás seguro de marcar esta pregunta como revisada? Ya no aparecerá en tu lista de errores.')) return;
+      if (
+        !window.confirm(
+          "¿Estás seguro de marcar esta pregunta como revisada? Ya no aparecerá en tu lista de errores.",
+        )
+      )
+        return;
       await erroneasService.marcarRevisada(user.id, preguntaId);
-      alert('Pregunta marcada como revisada exitosamente.');
+      alert("Pregunta marcada como revisada exitosamente.");
     } catch (error) {
-      console.error('Error marking as reviewed:', error);
-      alert('Error al marcar como revisada');
+      console.error("Error marking as reviewed:", error);
+      alert("Error al marcar como revisada");
     }
   };
 
@@ -475,13 +533,13 @@ const ResultadoPage = () => {
 
             <div className="text-center">
               <p className="text-4xl font-black text-gray-800">
-                {stats?.score}{' '}
+                {stats?.score}{" "}
                 <span className="text-lg text-gray-400 font-medium">
                   / {stats?.maxScore} pts
                 </span>
               </p>
               <p className="text-sm text-gray-500 font-medium mt-1">
-                Tu promedio de aciertos es de{' '}
+                Tu promedio de aciertos es de{" "}
                 <span className="font-bold text-blue-600">
                   {(
                     ((stats?.correctas || 0) / (stats?.total || 1)) *
@@ -563,7 +621,7 @@ const ResultadoPage = () => {
                     Dar nuevo examen
                   </button>
                   <button
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push("/")}
                     className="w-full py-3 border border-blue-100 rounded-xl text-[#4790FD] text-xs font-black shadow-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
                   >
                     <ArrowLeftIcon className="w-3 h-3" />
@@ -590,7 +648,7 @@ const ResultadoPage = () => {
                   {stats?.classStats.map((c) => (
                     <div key={c.name} className="space-y-1">
                       <p className="text-2xl font-black text-[#4790FD]">
-                        {c.name === 'CCP' ? '3.0' : '2.0'}
+                        {c.name === "CCP" ? "3.0" : "2.0"}
                       </p>
                       <p className="text-sm text-gray-500 font-black uppercase tracking-widest">
                         {c.name}
@@ -611,10 +669,10 @@ const ResultadoPage = () => {
                       ¿Te equivocaste en algunas preguntas?
                     </h4>
                     <p className="text-sm text-gray-500">
-                      Revisa tu módulo de{' '}
+                      Revisa tu módulo de{" "}
                       <span className="font-bold text-blue-600">
                         &quot;Respuestas Erróneas&quot;
-                      </span>{' '}
+                      </span>{" "}
                       y convierte tus errores en oportunidades de aprendizaje.
                     </p>
                     <p className="text-xs text-gray-400">
@@ -627,14 +685,18 @@ const ResultadoPage = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => router.push(examMetadata?.tipoExamenId === 1 ? '/avendescala/respuestasErroneasAscenso' : '/avendescala/respuestasErroneas')}
+                  onClick={() =>
+                    router.push(
+                      examMetadata?.tipoExamenId === 1
+                        ? "/avendescala/respuestasErroneasAscenso"
+                        : "/avendescala/respuestasErroneas",
+                    )
+                  }
                   className="bg-[#4790FD] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap"
                 >
                   Ver Respuestas Erróneas
                 </button>
               </div>
-
-
             </div>
 
             {/* Right Column */}
@@ -648,19 +710,19 @@ const ResultadoPage = () => {
                 <div className="space-y-4">
                   {[
                     {
-                      label: 'Correctas',
+                      label: "Correctas",
                       count: stats?.correctas,
-                      color: 'bg-green-500',
+                      color: "bg-green-500",
                     },
                     {
-                      label: 'Incorrectas',
+                      label: "Incorrectas",
                       count: stats?.incorrectas,
-                      color: 'bg-red-500',
+                      color: "bg-red-500",
                     },
                     {
-                      label: 'Sin responder',
+                      label: "Sin responder",
                       count: stats?.omitidas,
-                      color: 'bg-gray-400',
+                      color: "bg-gray-400",
                     },
                   ].map((item) => (
                     <div key={item.label} className="space-y-2">
@@ -701,15 +763,15 @@ const ResultadoPage = () => {
                   Composición de la Prueba Nacional
                 </div>
                 <div className="w-full bg-white rounded-xl overflow-hidden border border-gray-50">
-                  <img 
+                  <img
                     src={
                       examMetadata?.tipoExamenId === 3
                         ? "/assets/images/directivos.jpeg"
-                        : examMetadata?.tipoExamenId === 2 
-                        ? "/assets/images/resultados_ascenso.png" 
-                        : "/assets/images/Puntaje_minimo.png"
-                    } 
-                    alt="Puntajes mínimos" 
+                        : examMetadata?.tipoExamenId === 2
+                          ? "/assets/images/resultados_ascenso.png"
+                          : "/assets/images/Puntaje_minimo.png"
+                    }
+                    alt="Puntajes mínimos"
                     className="w-full h-auto object-contain"
                   />
                 </div>
@@ -720,8 +782,6 @@ const ResultadoPage = () => {
             </div>
           </div>
         </div>
-
-
 
         {/* --- REVIEW SECTION --- */}
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden mt-12">
@@ -736,9 +796,9 @@ const ResultadoPage = () => {
               {examMetadata && (
                 <>
                   <span className="bg-blue-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                    {examMetadata.modalidad || 'Examen'}
+                    {examMetadata.modalidad || "Examen"}
                   </span>
-                  {examMetadata.nivel && examMetadata.nivel !== 'NINGUNO' && (
+                  {examMetadata.nivel && examMetadata.nivel !== "NINGUNO" && (
                     <span className="bg-green-400 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
                       {examMetadata.nivel}
                     </span>
@@ -749,8 +809,8 @@ const ResultadoPage = () => {
                     </span>
                   )}
                   <span className="bg-cyan-600 text-white text-[9px] px-3 py-1 rounded-full font-bold shadow-sm">
-                    {examMetadata.year === '0'
-                      ? 'Año Único'
+                    {examMetadata.year === "0"
+                      ? "Año Único"
                       : examMetadata.year}
                   </span>
                 </>
@@ -762,7 +822,7 @@ const ResultadoPage = () => {
             {questions.map((q, idx) => {
               const result = getQuestionResult(q, idx);
               const userAnswer = respuestas[String(idx)]?.alternativa;
-              const isCorrect = result === 'correct';
+              const isCorrect = result === "correct";
 
               // Only show parent enunciado if it's different from the previous one
               const showParent =
@@ -770,22 +830,22 @@ const ResultadoPage = () => {
                 (idx === 0 || questions[idx - 1]?.preguntaId !== q.preguntaId);
 
               const getStatusLabel = () => {
-                if (isCorrect) return 'Correcta';
-                if (result === 'omitted') return 'Omitida';
-                return 'Incorrecta';
+                if (isCorrect) return "Correcta";
+                if (result === "omitted") return "Omitida";
+                return "Incorrecta";
               };
 
               const getStatusClasses = () => {
                 if (isCorrect)
-                  return 'bg-green-50 text-green-600 border-green-100';
-                if (result === 'omitted')
-                  return 'bg-orange-50 text-orange-600 border-orange-100';
-                return 'bg-red-50 text-red-600 border-red-100';
+                  return "bg-green-50 text-green-600 border-green-100";
+                if (result === "omitted")
+                  return "bg-orange-50 text-orange-600 border-orange-100";
+                return "bg-red-50 text-red-600 border-red-100";
               };
 
               const getStatusIcon = () => {
                 if (isCorrect) return <CheckCircleIcon className="w-3 h-3" />;
-                if (result === 'omitted')
+                if (result === "omitted")
                   return <MinusCircleIcon className="w-3 h-3" />;
                 return <XCircleIcon className="w-3 h-3" />;
               };
@@ -800,7 +860,7 @@ const ResultadoPage = () => {
                       </div>
                       <HtmlMathRenderer
                         className="text-gray-800 text-lg md:text-xl leading-relaxed italic border-l-4 border-[#4790FD] pl-6 py-2 bg-blue-50/10 rounded-r-xl"
-                        html={processCitation(q.parentEnunciado || '')}
+                        html={processCitation(q.parentEnunciado || "")}
                       />
                     </div>
                   )}
@@ -808,7 +868,9 @@ const ResultadoPage = () => {
                   {/* Question Block */}
                   <div
                     className={`bg-white border-y md:border border-gray-100 p-3 md:p-6 space-y-8 ${
-                      showParent ? 'rounded-none md:rounded-b-3xl border-t-0' : 'rounded-none md:rounded-3xl'
+                      showParent
+                        ? "rounded-none md:rounded-b-3xl border-t-0"
+                        : "rounded-none md:rounded-3xl"
                     } mb-8 shadow-sm`}
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-50 pb-4">
@@ -819,9 +881,9 @@ const ResultadoPage = () => {
                         <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
                           {(q as any).isSubPregunta
                             ? `Sub pregunta ${
-                                (q as any).numeroSubPregunta || ''
+                                (q as any).numeroSubPregunta || ""
                               }`
-                            : 'Pregunta Individual'}
+                            : "Pregunta Individual"}
                         </span>
                       </div>
                       <div className="flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0">
@@ -837,7 +899,9 @@ const ResultadoPage = () => {
                           {getStatusLabel()}
                         </span>
                         <button
-                          onClick={() => handleMarkAsReviewed(q.preguntaId || q.id)}
+                          onClick={() =>
+                            handleMarkAsReviewed(q.preguntaId || q.id)
+                          }
                           className="bg-blue-50 hover:bg-blue-100 text-[#4790FD] text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm uppercase transition-colors whitespace-nowrap"
                         >
                           Revisado
@@ -848,14 +912,15 @@ const ResultadoPage = () => {
                     <div className="space-y-6">
                       {/* Imagen de la pregunta */}
                       {(() => {
-                        const showImage = q.imagen && (
-                          !q.isSubPregunta || 
-                          q.imagen !== q.parentImagen ||
-                          (idx === 0 || questions[idx - 1]?.preguntaId !== q.preguntaId)
-                        );
-                        
+                        const showImage =
+                          q.imagen &&
+                          (!q.isSubPregunta ||
+                            q.imagen !== q.parentImagen ||
+                            idx === 0 ||
+                            questions[idx - 1]?.preguntaId !== q.preguntaId);
+
                         if (!showImage) return null;
-                        
+
                         return (
                           <div className="mb-6 rounded-2xl overflow-hidden border border-gray-100 shadow-md bg-white">
                             <img
@@ -869,29 +934,29 @@ const ResultadoPage = () => {
 
                       <HtmlMathRenderer
                         className="text-gray-800 text-lg md:text-xl leading-relaxed"
-                        html={processCitation(q.enunciado || '')}
+                        html={processCitation(q.enunciado || "")}
                       />
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {['A', 'B', 'C', 'D'].map((opt) => {
+                        {["A", "B", "C", "D"].map((opt) => {
                           const optContent = (q as any)[`alternativa${opt}`];
                           if (!optContent) return null;
 
                           const isSelected = userAnswer === opt;
                           const isAnswerCorrect = q.respuesta === opt;
 
-                          let borderColor = 'border-gray-100';
-                          let bgColor = 'bg-white';
-                          let textColor = 'text-gray-700';
+                          let borderColor = "border-gray-100";
+                          let bgColor = "bg-white";
+                          let textColor = "text-gray-700";
 
                           if (isAnswerCorrect) {
-                            borderColor = 'border-green-300';
-                            bgColor = 'bg-green-50/50';
-                            textColor = 'text-green-800';
+                            borderColor = "border-green-300";
+                            bgColor = "bg-green-50/50";
+                            textColor = "text-green-800";
                           } else if (isSelected && !isAnswerCorrect) {
-                            borderColor = 'border-red-300';
-                            bgColor = 'bg-red-50/50';
-                            textColor = 'text-red-800';
+                            borderColor = "border-red-300";
+                            bgColor = "bg-red-50/50";
+                            textColor = "text-red-800";
                           }
 
                           return (
@@ -902,8 +967,8 @@ const ResultadoPage = () => {
                               <div
                                 className={`w-8 h-8 flex-shrink-0 border-2 rounded-lg flex items-center justify-center font-bold ${
                                   isAnswerCorrect
-                                    ? 'border-green-500 bg-green-500 text-white'
-                                    : 'border-gray-200 text-gray-400'
+                                    ? "border-green-500 bg-green-500 text-white"
+                                    : "border-gray-200 text-gray-400"
                                 }`}
                               >
                                 {opt}
@@ -950,12 +1015,12 @@ const ResultadoPage = () => {
       </div>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
+        @import url("https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap");
         .font-handwriting {
-          font-family: 'Caveat', cursive;
+          font-family: "Caveat", cursive;
         }
         .font-serif {
-          font-family: 'Georgia', serif;
+          font-family: "Georgia", serif;
         }
       `}</style>
       <ConfirmModal
@@ -963,7 +1028,7 @@ const ResultadoPage = () => {
         onClose={() => setIsNewExamModalOpen(false)}
         onConfirm={() => {
           setIsNewExamModalOpen(false);
-          router.push('/examen');
+          router.push("/examen");
         }}
         title="Dar nuevo examen"
         message="¿Estás seguro de que deseas iniciar un nuevo examen? Esto te llevará de vuelta a la página de examen."
