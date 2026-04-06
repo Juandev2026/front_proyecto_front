@@ -407,11 +407,15 @@ const UsersPage = () => {
     if (selectedRole && effectiveRole !== selectedRole) return false;
 
     const term = searchTerm.toLowerCase();
+    const normalizedTerm = term.replace(/\s+/g, '');
+    const normalizedCelular = (user.celular || '').replace(/\s+/g, '');
+
     const matchesSearch =
       (user.nombreCompleto || '').toLowerCase().includes(term) ||
       (user.email || '').toLowerCase().includes(term) ||
       (effectiveRole || '').toLowerCase().includes(term) ||
-      (user.celular || '').includes(term);
+      (user.celular || '').includes(term) ||
+      (normalizedTerm !== '' && normalizedCelular.includes(normalizedTerm));
 
     return matchesSearch;
   });
