@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
   AcademicCapIcon,
@@ -213,78 +214,98 @@ const SimulacroExamenAscensoPage = () => {
     selectedEspecialidadId,
   ]);
 
-  // ---------- Metadata helper per Year ----------
+  // ---------- Pre-calculated Metadata per Year (Performance) ----------
+  const allYearsMetadata = useMemo(() => {
+    if (!selectedModalidadId || !aniosData.length) return {};
 
-  const getMetadataForYear = (year: string) => {
-    if (!selectedModalidadId) return [];
+    const metaMap: Record<string, any[]> = {};
 
-    const aggCountMap: Record<
-      string,
-      {
-        cantidad: number;
-        id: number;
-        puntos: number;
-        tiempo: number;
-        minimo: number;
-      }
-    > = {};
+    aniosData.forEach((year) => {
+      const aggCountMap: Record<
+        string,
+        {
+          cantidad: number;
+          id: number;
+          puntos: number;
+          tiempo: number;
+          minimo: number;
+        }
+      > = {};
 
-    const exams = filteredExams.filter(
-      (e) =>
-        String(e.modalidadId) === selectedModalidadId &&
-        (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
-        (!selectedEspecialidadId ||
-          String(e.especialidadId) === selectedEspecialidadId) &&
-        ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
-          String(e.year) === year ||
-          e.years?.some((y) => String(y.year) === year))
-    );
+      const exams = filteredExams.filter(
+        (e) =>
+          String(e.modalidadId) === selectedModalidadId &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId) &&
+          ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
+            String(e.year) === year ||
+            e.years?.some((y) => String(y.year) === year))
+      );
 
-    exams.forEach((exam) => {
-      if (exam.clasificaciones) {
-        exam.clasificaciones.forEach((item) => {
-          const name = item.clasificacionNombre;
-          if (name) {
-            let cantidadExacta = 0;
-            const isUnico = year === 'Único';
-            if (isUnico || !item.years || item.years.length === 0) {
-              cantidadExacta = item.cantidadPreguntas;
-            } else {
-              const yrData = item.years.find(
-                (y: any) => String(y.year) === year
-              );
-              cantidadExacta = yrData ? yrData.cantidadPreguntas : 0;
-            }
-
-            if (!aggCountMap[name]) {
-              let correctedCantidad = cantidadExacta;
-              if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
-                if (cantidadExacta > 0) correctedCantidad = 60;
+      exams.forEach((exam) => {
+        if (exam.clasificaciones) {
+          exam.clasificaciones.forEach((item) => {
+            const name = item.clasificacionNombre;
+            if (name) {
+              let cantidadExacta = 0;
+              const isUnico = year === 'Único';
+              if (isUnico || !item.years || item.years.length === 0) {
+                cantidadExacta = item.cantidadPreguntas;
+              } else {
+                const yrData = item.years.find(
+                  (y: any) => String(y.year) === year
+                );
+                cantidadExacta = yrData ? yrData.cantidadPreguntas : 0;
               }
 
-              aggCountMap[name] = {
-                cantidad: correctedCantidad,
-                id: item.clasificacionId,
-                puntos: item.puntos || 0,
-                tiempo: item.tiempoPregunta || 0,
-                minimo: item.minimo || 0,
-              };
-            } else {
-              aggCountMap[name].cantidad += cantidadExacta;
-              if (name === 'CCP' || name === 'Conocimientos Curriculares y Pedagógicos' || name === 'Conocimientos Curriculares y Pedagócicos') {
-                if (aggCountMap[name].cantidad > 0) aggCountMap[name].cantidad = 60;
+              if (!aggCountMap[name]) {
+                let correctedCantidad = cantidadExacta;
+                if (
+                  name === 'CCP' ||
+                  name === 'Conocimientos Curriculares y Pedagógicos' ||
+                  name === 'Conocimientos Curriculares y Pedagócicos'
+                ) {
+                  if (cantidadExacta > 0) correctedCantidad = 60;
+                }
+
+                aggCountMap[name] = {
+                  cantidad: correctedCantidad,
+                  id: item.clasificacionId,
+                  puntos: item.puntos || 0,
+                  tiempo: item.tiempoPregunta || 0,
+                  minimo: item.minimo || 0,
+                };
+              } else {
+                aggCountMap[name].cantidad += cantidadExacta;
+                if (
+                  name === 'CCP' ||
+                  name === 'Conocimientos Curriculares y Pedagógicos' ||
+                  name === 'Conocimientos Curriculares y Pedagócicos'
+                ) {
+                  if (aggCountMap[name].cantidad > 0)
+                    aggCountMap[name].cantidad = 60;
+                }
               }
             }
-          }
-        });
-      }
+          });
+        }
+      });
+
+      metaMap[year] = Object.entries(aggCountMap).map(([name, data]) => ({
+        name,
+        ...data,
+      }));
     });
 
-    return Object.entries(aggCountMap).map(([name, data]) => ({
-      name,
-      ...data,
-    }));
-  };
+    return metaMap;
+  }, [
+    aniosData,
+    filteredExams,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Handlers ----------
 
@@ -302,7 +323,7 @@ const SimulacroExamenAscensoPage = () => {
       }
       const next = [...prev, year];
       // Initialize classifications for this year
-      const meta = getMetadataForYear(year);
+      const meta = allYearsMetadata[year] || [];
       const initialTypeSelections: Record<string, boolean> = {};
       meta.forEach((m) => {
         if (m.cantidad > 0) initialTypeSelections[m.name] = true;
@@ -313,6 +334,16 @@ const SimulacroExamenAscensoPage = () => {
       }));
       return next;
     });
+  };
+
+  const handleTypeToggle = (year: string, typeName: string) => {
+    setYearSelections((prev) => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [typeName]: !prev[year]?.[typeName],
+      },
+    }));
   };
 
 
@@ -347,7 +378,7 @@ const SimulacroExamenAscensoPage = () => {
       }
 
       const yearFilters = selectedYears.map((year) => {
-        const yearMeta = getMetadataForYear(year);
+        const yearMeta = allYearsMetadata[year] || [];
         const activeIds = yearMeta
           .filter((m) => yearSelections[year]?.[m.name] === true)
           .map((m) => m.id);
@@ -549,7 +580,7 @@ const SimulacroExamenAscensoPage = () => {
 
   const totalQuestions = useMemo(() => {
     const b1 = selectedYears.reduce((acc, year) => {
-      const meta = getMetadataForYear(year);
+      const meta = allYearsMetadata[year] || [];
       return (
         acc +
         meta.reduce((accM, m) => {
@@ -575,7 +606,7 @@ const SimulacroExamenAscensoPage = () => {
       }, 0);
 
     return b1 + b2;
-  }, [selectedYears, yearSelections, seccionesPropias, selectedPropiosIds]);
+  }, [selectedYears, yearSelections, allYearsMetadata, seccionesPropias, selectedPropiosIds]);
 
   if (loading || !isAuthenticated) {
     return (
@@ -717,22 +748,29 @@ const SimulacroExamenAscensoPage = () => {
                 <AcademicCapIcon className="h-4 w-4" />
                 <span>Selecciona mínimo dos años*</span>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="flex flex-wrap gap-4">
                 {aniosData.map((year) => {
                   const isChecked = selectedYears.includes(year);
+                  const meta = allYearsMetadata[year] || [];
 
                   return (
-                    <div key={year} className="flex flex-col gap-3">
-                      <label className="flex items-center gap-3 cursor-pointer group">
+                    <div
+                      key={year}
+                      className={`min-w-[280px] flex-1 rounded-2xl border transition-all overflow-hidden ${
+                        isChecked
+                          ? 'border-[#4790FD] bg-blue-50/20 ring-1 ring-[#4790FD] shadow-lg'
+                          : 'border-gray-200 bg-white hover:border-blue-200 shadow-sm'
+                      }`}
+                    >
+                      <label className="flex items-center gap-3 p-4 cursor-pointer hover:bg-blue-50/10 transition-colors">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleYearToggle(year)}
-                          className="h-5 w-5 rounded border-[#4790FD] text-[#4790FD] focus:ring-[#4790FD]/20 transition-all"
+                          className="h-5 w-5 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
                         />
                         <span
-                          className={`text-base font-bold transition-all ${
+                          className={`text-lg font-black transition-all ${
                             isChecked ? 'text-[#4790FD]' : 'text-blue-900'
                           }`}
                         >
@@ -740,7 +778,70 @@ const SimulacroExamenAscensoPage = () => {
                         </span>
                       </label>
 
+                      <AnimatePresence>
+                        {isChecked && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-white/50 border-t border-[#4790FD]/10 px-8 py-4"
+                          >
+                            <div className="border-l-2 border-[#4790FD] pl-4 space-y-4">
+                              <p className="text-[10px] font-black text-[#4790FD] uppercase tracking-widest pl-1">
+                                TIPOS DE PREGUNTA
+                              </p>
+                              
+                              <div className="flex flex-col gap-2">
+                                {meta.map((m) => {
+                                  const isTypeSelected =
+                                    yearSelections[year]?.[m.name] || false;
+                                  return (
+                                    <label
+                                      key={m.name}
+                                      className={`flex items-center justify-between gap-3 p-2 rounded-lg border cursor-pointer transition-all ${
+                                        isTypeSelected
+                                          ? 'border-blue-200 bg-white shadow-sm'
+                                          : 'border-transparent bg-gray-50/30'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={isTypeSelected}
+                                          onChange={(e) => {
+                                            e.stopPropagation();
+                                            handleTypeToggle(year, m.name);
+                                          }}
+                                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                                        />
+                                        <span
+                                          className={`text-[11px] font-bold ${
+                                            isTypeSelected
+                                              ? 'text-blue-900'
+                                              : 'text-gray-500'
+                                          }`}
+                                        >
+                                          {m.name}
+                                        </span>
+                                      </div>
 
+                                      <div
+                                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
+                                          isTypeSelected
+                                            ? 'bg-blue-100 text-blue-600'
+                                            : 'bg-gray-100 text-gray-400'
+                                        }`}
+                                      >
+                                        {m.cantidad}p
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   );
                 })}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
   AcademicCapIcon,
@@ -210,82 +211,83 @@ const SimulacroExamenPage = () => {
     selectedEspecialidadId,
   ]);
 
-  // ---------- Metadata helper per Year ----------
+  // ---------- Pre-calculated Metadata per Year (Performance) ----------
+  const allYearsMetadata = useMemo(() => {
+    if (!selectedModalidadId || !aniosData.length) return {};
 
-  const getMetadataForYear = (year: string) => {
-    const firstNivel = nivelesData[0];
-    const resolvedNivelId =
-      selectedNivelId ||
-      (nivelesData.length === 1 &&
-      firstNivel?.nombre?.toUpperCase() === 'NINGUNO'
-        ? String(firstNivel.id)
-        : null);
+    const metaMap: Record<string, any[]> = {};
 
-    if (resolvedNivelId === null) return [];
+    aniosData.forEach((year) => {
+      const aggCountMap: Record<
+        string,
+        {
+          cantidad: number;
+          id: number;
+          puntos: number;
+          tiempo: number;
+          minimo: number;
+        }
+      > = {};
 
-    const aggCountMap: Record<
-      string,
-      {
-        cantidad: number;
-        id: number;
-        puntos: number;
-        tiempo: number;
-        minimo: number;
-      }
-    > = {};
+      const exams = filteredExams.filter(
+        (e) =>
+          String(e.modalidadId) === selectedModalidadId &&
+          (!selectedNivelId || String(e.nivelId) === selectedNivelId) &&
+          (!selectedEspecialidadId ||
+            String(e.especialidadId) === selectedEspecialidadId) &&
+          ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
+            String(e.year) === year ||
+            e.years?.some((y) => String(y.year) === year))
+      );
 
-    const exams = filteredExams.filter(
-      (e) =>
-        String(e.modalidadId) === selectedModalidadId &&
-        String(e.nivelId) === resolvedNivelId &&
-        (selectedEspecialidadId
-          ? String(e.especialidadId) === selectedEspecialidadId
-          : !e.especialidadId || e.especialidadId === 0) &&
-        ((year === 'Único' && (e.year === '0' || Number(e.year) === 0)) ||
-          String(e.year) === year ||
-          e.years?.some((y) => String(y.year) === year))
-    );
+      exams.forEach((exam) => {
+        if (exam.clasificaciones) {
+          exam.clasificaciones.forEach((item) => {
+            const name = item.clasificacionNombre;
+            if (name) {
+              let cantidadExacta = 0;
+              const isUnico = year === 'Único';
+              if (isUnico || !item.years || item.years.length === 0) {
+                cantidadExacta = item.cantidadPreguntas;
+              } else {
+                const yrData = item.years.find(
+                  (y: any) => String(y.year) === year
+                );
+                cantidadExacta = yrData ? yrData.cantidadPreguntas : 0;
+              }
 
-    exams.forEach((exam) => {
-      if (exam.clasificaciones) {
-        exam.clasificaciones.forEach((item) => {
-          const name = item.clasificacionNombre;
-          if (name) {
-            let cantidadExacta = 0;
-            const isUnico = year === 'Único';
-            if (isUnico || !item.years || item.years.length === 0) {
-              cantidadExacta = item.cantidadPreguntas;
-            } else {
-              const yrData = item.years.find(
-                (y: any) => String(y.year) === year
-              );
-              cantidadExacta = yrData ? yrData.cantidadPreguntas : 0;
+              if (!aggCountMap[name]) {
+                aggCountMap[name] = {
+                  cantidad: cantidadExacta,
+                  id: item.clasificacionId,
+                  puntos: item.puntos || 0,
+                  tiempo: item.tiempoPregunta || 0,
+                  minimo: item.minimo || 0,
+                };
+              } else {
+                aggCountMap[name].cantidad += cantidadExacta;
+              }
             }
+          });
+        }
+      });
 
-            if (!aggCountMap[name]) {
-              aggCountMap[name] = {
-                cantidad: cantidadExacta,
-                id: item.clasificacionId,
-                puntos: item.puntos || 0,
-                tiempo: item.tiempoPregunta || 0,
-                minimo: item.minimo || 0,
-              };
-            } else {
-              aggCountMap[name].cantidad += cantidadExacta;
-            }
-          }
-        });
-      }
+      metaMap[year] = Object.entries(aggCountMap).map(([name, data]) => ({
+        name,
+        ...data,
+      }));
     });
 
-    return Object.entries(aggCountMap).map(([name, data]) => ({
-      name,
-      ...data,
-    }));
-  };
+    return metaMap;
+  }, [
+    aniosData,
+    filteredExams,
+    selectedModalidadId,
+    selectedNivelId,
+    selectedEspecialidadId,
+  ]);
 
   // ---------- Handlers ----------
-
 
 
   const handleYearToggle = (year: string) => {
@@ -302,7 +304,7 @@ const SimulacroExamenPage = () => {
       }
       const next = [...prev, year];
       // Initialize classifications for this year
-      const meta = getMetadataForYear(year);
+      const meta = allYearsMetadata[year] || [];
       const initialTypeSelections: Record<string, boolean> = {};
       meta.forEach((m) => {
         if (m.cantidad > 0) initialTypeSelections[m.name] = true;
@@ -313,6 +315,16 @@ const SimulacroExamenPage = () => {
       }));
       return next;
     });
+  };
+
+  const handleTypeToggle = (year: string, typeName: string) => {
+    setYearSelections((prev) => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [typeName]: !prev[year]?.[typeName],
+      },
+    }));
   };
 
   const handleClear = () => {
@@ -363,7 +375,7 @@ const SimulacroExamenPage = () => {
 
       // 2. Construimos el array de filtros por año
       const yearFilters = selectedYears.map((year) => {
-        const yearMeta = getMetadataForYear(year);
+        const yearMeta = allYearsMetadata[year] || [];
         // Obtenemos solo los IDs de las clasificaciones que el usuario marcó para ESTE año
         const activeIds = yearMeta
           .filter((m) => yearSelections[year]?.[m.name] === true)
@@ -561,10 +573,10 @@ const SimulacroExamenPage = () => {
   // Grand Total calculation
   const totalQuestions = useMemo(() => {
     const b1 = selectedYears.reduce((acc, year) => {
-      const meta = getMetadataForYear(year);
+      const meta = allYearsMetadata[year] || [];
       return (
         acc +
-        meta.reduce((accM, m) => {
+        meta.reduce((accM, m: any) => {
           return yearSelections[year]?.[m.name] ? accM + m.cantidad : accM;
         }, 0)
       );
@@ -587,7 +599,7 @@ const SimulacroExamenPage = () => {
       }, 0);
 
     return b1 + b2;
-  }, [selectedYears, yearSelections, seccionesPropias, selectedPropiosIds]);
+  }, [selectedYears, yearSelections, allYearsMetadata, seccionesPropias, selectedPropiosIds]);
 
   if (loading || !isAuthenticated) {
     return (
@@ -714,30 +726,103 @@ const SimulacroExamenPage = () => {
                 <CalendarIcon className="h-5 w-5" />
                 <span>Selecciona mínimo dos años*</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <div className="flex flex-wrap gap-4">
                 {aniosData.map((year) => {
                   const isChecked = selectedYears.includes(year);
+                  const meta = allYearsMetadata[year] || [];
+
                   return (
-                    <label
+                    <div
                       key={year}
-                      className={`flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      className={`min-w-[280px] flex-1 rounded-2xl border transition-all overflow-hidden ${
                         isChecked
-                          ? 'border-[#4790FD] bg-blue-50 ring-1 ring-[#4790FD]'
-                          : 'border-gray-300 hover:border-blue-200'
+                          ? 'border-[#4790FD] bg-blue-50/20 ring-1 ring-[#4790FD] shadow-lg'
+                          : 'border-gray-200 bg-white hover:border-blue-200 shadow-sm'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      {/* Year Header */}
+                      <label className="flex items-center gap-3 p-4 cursor-pointer hover:bg-blue-50/10 transition-colors">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleYearToggle(year)}
-                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                          className="h-5 w-5 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
                         />
-                        <span className={`text-sm font-bold ${isChecked ? 'text-[#4790FD]' : 'text-blue-900'}`}>
+                        <span
+                          className={`text-lg font-black ${
+                            isChecked ? 'text-[#4790FD]' : 'text-blue-900'
+                          }`}
+                        >
                           {year}
                         </span>
-                      </div>
-                    </label>
+                      </label>
+
+                      {/* Question Types (Visible when year is checked) */}
+                      <AnimatePresence>
+                        {isChecked && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-white/50 border-t border-[#4790FD]/10 px-8 py-4"
+                          >
+                            <div className="border-l-2 border-[#4790FD] pl-4 space-y-3">
+                              <p className="text-[10px] font-black text-[#4790FD] uppercase tracking-widest pl-1">
+                                TIPOS DE PREGUNTA
+                              </p>
+                              
+                              <div className="flex flex-col gap-2">
+                                {meta.map((m) => {
+                                  const isTypeSelected =
+                                    yearSelections[year]?.[m.name] || false;
+                                  return (
+                                    <label
+                                      key={m.name}
+                                      className={`flex items-center justify-between gap-3 p-2 rounded-lg border cursor-pointer transition-all ${
+                                        isTypeSelected
+                                          ? 'border-blue-200 bg-white shadow-sm'
+                                          : 'border-transparent bg-gray-50/30'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={isTypeSelected}
+                                          onChange={(e) => {
+                                            e.stopPropagation();
+                                            handleTypeToggle(year, m.name);
+                                          }}
+                                          className="h-4 w-4 rounded border-gray-300 text-[#4790FD] focus:ring-[#4790FD]"
+                                        />
+                                        <span
+                                          className={`text-[11px] font-bold ${
+                                            isTypeSelected
+                                              ? 'text-blue-900'
+                                              : 'text-gray-500'
+                                          }`}
+                                        >
+                                          {m.name}
+                                        </span>
+                                      </div>
+
+                                      <div
+                                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
+                                          isTypeSelected
+                                            ? 'bg-blue-100 text-blue-600'
+                                            : 'bg-gray-100 text-gray-400'
+                                        }`}
+                                      >
+                                        {m.cantidad}p
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
               </div>
@@ -973,8 +1058,8 @@ const SimulacroExamenPage = () => {
                         <div className="flex flex-wrap gap-2 flex-1">
                           {selectionsForYear.length > 0 ? (
                             selectionsForYear.map(([name]) => {
-                              const meta = getMetadataForYear(year).find(
-                                (m) => m.name === name
+                              const meta = (allYearsMetadata[year] || []).find(
+                                (m: any) => m.name === name
                               );
                               return (
                                 <span

@@ -283,6 +283,7 @@ const ExamenPage = () => {
             respuesta: resolvedRespuesta,
             isSubPregunta: false,
             alternativas: q.alternativas || [], // Asegurar que las alternativas estén presentes
+            year: q.year || 0,
           });
         }
       });
@@ -1238,13 +1239,24 @@ const ExamenPage = () => {
                         return null;
                       }
 
-                      return code ? (
-                        <span
-                          className={`${classes} text-[9px] md:text-xs font-black px-2 py-1.5 rounded-lg border shadow-sm whitespace-nowrap`}
-                        >
-                          {code}
-                        </span>
-                      ) : null;
+                      return (
+                        <div className="flex items-center gap-2">
+                          {code && (
+                            <span
+                              className={`${classes} text-[9px] md:text-xs font-black px-2 py-1.5 rounded-lg border shadow-sm whitespace-nowrap uppercase tracking-wider`}
+                            >
+                              {code}
+                            </span>
+                          )}
+                          {currentQuestion?.year &&
+                            currentQuestion.year !== '0' &&
+                            currentQuestion.year !== 0 && (
+                              <span className="bg-green-50 text-green-600 border-green-100 text-[9px] md:text-xs font-black px-2 py-1.5 rounded-lg border shadow-sm whitespace-nowrap">
+                                {currentQuestion.year}
+                              </span>
+                            )}
+                        </div>
+                      );
                     })()}
 
                     {(() => {
