@@ -127,6 +127,7 @@ const AdminPremiumDocentes = () => {
     const newDate = calculateExpirationDate(mode);
     setFormData((prev: any) => ({ 
       ...prev, 
+      role: 'Premium',
       fechaExpiracion: newDate,
       fechaFin: newDate.split('T')[0] // Sync with fechaFin if used
     }));
@@ -1820,6 +1821,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
+                            role: 'Premium',
                             fechaInicio: e.target.value,
                           } as any)
                         }
@@ -1836,6 +1838,7 @@ const AdminPremiumDocentes = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
+                            role: 'Premium',
                             fechaExpiracion: e.target.value ? new Date(e.target.value).toISOString() : '',
                           })
                         }
@@ -1872,6 +1875,7 @@ const AdminPremiumDocentes = () => {
                             onChange={() => {
                               if (key === 'custom') {
                                 setExpirationMode('custom');
+                                setFormData((prev: any) => ({ ...prev, role: 'Premium' }));
                               } else {
                                 handleExpirationPresetChange(key as any);
                               }

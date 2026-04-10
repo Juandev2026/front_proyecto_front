@@ -92,6 +92,7 @@ const UsersPage = () => {
 
     setFormData((prev) => ({
       ...prev,
+      role: 'Premium',
       fechaExpiracion: isoDate,
       fechaFin: simpleDate,
       fechaInicio: new Date().toISOString().split('T')[0],
@@ -1204,11 +1205,14 @@ const UsersPage = () => {
                             type="radio"
                             name="expiration-preset"
                             checked={expirationMode === key}
-                            onChange={() =>
-                              key !== 'custom'
-                                ? handleExpirationPresetChange(key as any)
-                                : setExpirationMode('custom')
-                            }
+                            onChange={() => {
+                              if (key !== 'custom') {
+                                handleExpirationPresetChange(key as any);
+                              } else {
+                                setExpirationMode('custom');
+                                setFormData((prev) => ({ ...prev, role: 'Premium' }));
+                              }
+                            }}
                             className="w-4 h-4 accent-[#4a90f9]"
                           />
                           <span className="text-sm text-gray-800">{label}</span>
@@ -1229,6 +1233,7 @@ const UsersPage = () => {
                           onChange={(e) =>
                             setFormData({
                               ...formData,
+                              role: 'Premium',
                               fechaInicio: e.target.value,
                             } as any)
                           }
@@ -1249,6 +1254,7 @@ const UsersPage = () => {
                             const val = e.target.value;
                             setFormData({
                               ...formData,
+                              role: 'Premium',
                               fechaFin: val,
                               fechaExpiracion: val ? new Date(val).toISOString() : undefined,
                             } as any);

@@ -617,6 +617,7 @@ const BancoPreguntasAscensoPage = () => {
                       'Razonamiento Lógico': 2,
                       CCP: 3,
                       'Conocimientos Curriculares y Pedagógicos': 3,
+                      'Conocimientos Curriculares y Pedagócicos': 3,
                     };
                     return (order[a] || 99) - (order[b] || 99);
                   })

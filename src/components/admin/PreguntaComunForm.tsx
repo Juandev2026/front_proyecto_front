@@ -326,9 +326,12 @@ const PreguntaComunForm: React.FC<PreguntaComunFormProps> = ({
   }, []);
 
   const getClasificacionFullName = (nombre: string) => {
+    if (nombre === 'Conocimientos Curriculares y Pedagócicos') {
+      return 'CONOCIMIENTOS CURRICULARES Y PEDAGÓGICOS';
+    }
     switch (nombre) {
       case 'CCP':
-        return 'CONOCIMIENTO CURRICULAR Y PEDAGÓGICO';
+        return 'CONOCIMIENTOS CURRICULARES Y PEDAGÓGICOS';
       case 'CG':
         return 'CONOCIMIENTOS DE GESTIÓN EDUCATIVA Y DE GESTIÓN PÚBLICA';
       case 'CL':

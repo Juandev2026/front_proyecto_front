@@ -821,7 +821,9 @@ const SimulacroExamenAscensoPage = () => {
                                               : 'text-gray-500'
                                           }`}
                                         >
-                                          {m.name}
+                                            {m.name === 'Conocimientos Curriculares y Pedagócicos'
+                                              ? 'Conocimientos Curriculares y Pedagógicos'
+                                              : m.name}
                                         </span>
                                       </div>
 
